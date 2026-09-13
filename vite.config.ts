@@ -1,13 +1,17 @@
 import { defineConfig } from "vite";
-import viteReact from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
+import tsConfigPaths from "vite-tsconfig-paths";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import { fileURLToPath, URL } from "node:url";
+import tailwindcss from "@tailwindcss/vite";
+import viteReact from "@vitejs/plugin-react";
 
 export default defineConfig({
-  server: { host: "0.0.0.0", port: 8080 },
-  resolve: {
-    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
+  server: {
+    port: 3000,
   },
-  plugins: [tailwindcss(), tanstackStart(), viteReact()],
+  plugins: [
+    tsConfigPaths({ projects: ["./tsconfig.json"] }),
+    tailwindcss(),
+    tanstackStart({ customViteReactPlugin: true }),
+    viteReact(),
+  ],
 });
