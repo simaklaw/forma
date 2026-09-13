@@ -13,7 +13,7 @@ export const EXERCISES: Exercise[] = [
     unit: "rep",
     restSec: 45,
     cues: ["Колени следят за носками", "Таз назад, грудь открыта", "Пятки в полу"],
-    poster: "/exercises/squat.jpg",
+    poster: "/exercises/squat.svg",
     video: "/exercises/squat.mp4",
   },
   {
@@ -28,7 +28,7 @@ export const EXERCISES: Exercise[] = [
     unit: "rep",
     restSec: 50,
     cues: ["Корпус прямой", "Локти ~45°", "Не проваливай поясницу"],
-    poster: "/exercises/pushup.jpg",
+    poster: "/exercises/pushup.svg",
     video: "/exercises/pushup.mp4",
   },
   {
@@ -43,7 +43,7 @@ export const EXERCISES: Exercise[] = [
     unit: "rep",
     restSec: 40,
     cues: ["Дави пятками", "Сжимай ягодицы вверху", "Не переразгибай поясницу"],
-    poster: "/exercises/glute-bridge.jpg",
+    poster: "/exercises/glute-bridge.svg",
     video: "/exercises/glute-bridge.mp4",
   },
   {
@@ -58,7 +58,7 @@ export const EXERCISES: Exercise[] = [
     unit: "sec",
     restSec: 40,
     cues: ["Локти под плечами", "Таз не провисает", "Дыши ровно"],
-    poster: "/exercises/plank.jpg",
+    poster: "/exercises/plank.svg",
     video: "/exercises/plank.mp4",
   },
   {
@@ -73,7 +73,7 @@ export const EXERCISES: Exercise[] = [
     unit: "rep",
     restSec: 45,
     cues: ["Лопатки своди", "Локти вдоль корпуса", "Не сутулься"],
-    poster: "/exercises/row-band.jpg",
+    poster: "/exercises/row-band.svg",
     video: "/exercises/row-band.mp4",
   },
   {
@@ -88,7 +88,7 @@ export const EXERCISES: Exercise[] = [
     unit: "rep",
     restSec: 50,
     cues: ["Шаг не слишком широкий", "Колено над стопой", "Корпус вертикально"],
-    poster: "/exercises/lunge.jpg",
+    poster: "/exercises/lunge.svg",
     video: "/exercises/lunge.mp4",
   },
   {
@@ -103,7 +103,7 @@ export const EXERCISES: Exercise[] = [
     unit: "rep",
     restSec: 50,
     cues: ["Не прогибай поясницу", "Локти чуть вперёд", "Контролируй опускание"],
-    poster: "/exercises/shoulder-press.jpg",
+    poster: "/exercises/shoulder-press.svg",
     video: "/exercises/shoulder-press.mp4",
   },
   {
@@ -118,7 +118,7 @@ export const EXERCISES: Exercise[] = [
     unit: "rep",
     restSec: 35,
     cues: ["Поясница прижата", "Двигай противоположные конечности", "Медленно"],
-    poster: "/exercises/dead-bug.jpg",
+    poster: "/exercises/dead-bug.svg",
     video: "/exercises/dead-bug.mp4",
   },
   {
@@ -133,7 +133,7 @@ export const EXERCISES: Exercise[] = [
     unit: "rep",
     restSec: 70,
     cues: ["Лопатки вниз", "Подбородок выше перекладины", "Без рывков"],
-    poster: "/exercises/pullup.jpg",
+    poster: "/exercises/pullup.svg",
     video: "/exercises/pullup.mp4",
   },
   {
@@ -148,7 +148,7 @@ export const EXERCISES: Exercise[] = [
     unit: "rep",
     restSec: 45,
     cues: ["Локти назад", "Плечи опущены", "Не уходи слишком низко"],
-    poster: "/exercises/chair-dip.jpg",
+    poster: "/exercises/chair-dip.svg",
     video: "/exercises/chair-dip.mp4",
   },
   {
@@ -163,7 +163,7 @@ export const EXERCISES: Exercise[] = [
     unit: "sec",
     restSec: 30,
     cues: ["Тело в одной линии", "Таз не провисает", "Дыши"],
-    poster: "/exercises/side-plank.jpg",
+    poster: "/exercises/side-plank.svg",
     video: "/exercises/side-plank.mp4",
   },
   {
@@ -178,7 +178,7 @@ export const EXERCISES: Exercise[] = [
     unit: "rep",
     restSec: 45,
     cues: ["Подбородок к груди", "Выталкивай таз вверх", "Пауза вверху"],
-    poster: "/exercises/hip-thrust.jpg",
+    poster: "/exercises/hip-thrust.svg",
     video: "/exercises/hip-thrust.mp4",
   },
 ];
