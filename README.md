@@ -1,64 +1,36 @@
 # FORMA
 
-Домашний тренер и диетолог. Спокойный интерфейс, видео-упражнения, дневник тренировок и питания, прогресс.
+Домашний тренер и диетолог. Спокойный интерфейс, видео-упражнения, дневники тренировок и питания, прогресс.
 
-**Стек (текущий прототип):** React 19 · TanStack Start/Router · Tailwind v4 · Zustand · Recharts · Vaul
+## Стек (веб-прототип)
 
-**План:** Flutter APK (домашние тренировки) → GitHub Actions → wger API / Open Food Facts.
+- TanStack Start (React + Vite)
+- Tailwind CSS v4
+- Zustand (persist)
+- Recharts, Vaul, Lucide
 
-## Быстрый старт
+Это **интерактивный веб-прототип** будущего Flutter-приложения. Логика, экраны и UX совпадают с целевым Android-клиентом.
+
+## Запуск
 
 ```bash
 npm install
 npm run dev
 ```
 
-Открой `http://localhost:8080`.
-
-## Что уже есть
-
-- Онбординг (цель, оборудование, дни, макросы)
-- Сегодня / планы / каталог упражнений с превью-видео
-- Живой плеер (сеты, отдых, скорость 0.75–1.25×)
-- Дневник питания + вода + «как вчера»
-- Прогресс: вес, талия, фото «было/стало», мышцы недели
-- Профиль: тема, оборудование, экспорт JSON
-- Данные локально (`localStorage`, ключ `forma-v1`)
-
-## Медиа упражнений
-
-Положите файлы в `public/exercises/`:
-
-| Файл | Назначение |
-|------|------------|
-| `squat.jpg` / `squat.mp4` | Приседания |
-| `pushup.jpg` / `pushup.mp4` | Отжимания |
-| `plank.jpg` / `plank.mp4` | Планка |
-| `lunge.jpg` / `lunge.mp4` | Выпады |
-| `glute.jpg` / `glute.mp4` | Ягодичный мост |
-| `birddog.jpg` | Bird dog |
-| `deadbug.jpg` | Dead bug |
-| `sideplank.jpg` | Боковая планка |
-| `chairdip.jpg` | Отжимания на стуле |
-
-Без медиа плеер покажет пустой poster — логика сетов работает.
+Открой http://localhost:3000
 
 ## Структура
 
-```
-src/
-  features/     # экраны
-  components/   # UI
-  lib/          # domain, store, catalog
-  routes/       # TanStack file routes
-public/
-  exercises/    # видео и постеры
-```
+- `src/features/` — экраны (onboarding, today, nutrition, progress, profile, player)
+- `src/lib/` — домен (forma.ts), каталог упражнений, Zustand store, типы
+- `src/components/` — UI: macro-ring, exercise-card, week-dots, muscle-map, compare-slider, shell
+- `src/routes/` — TanStack Router
 
-## Домен (wger-совместимо)
+## Дизайн
 
-Routine → Day → Slot → Session/Log · Exercise + Video · Nutrition · Weight
+Sage-палитра, Material 3 + Cupertino-гибрид, breathing rest ring, coach lines, photo compare.
 
-## Лицензия
+## Дальше
 
-Прототип для личного использования. Данные упражнений — собственный каталог дома.
+Перенос в Flutter (Riverpod, go_router, media_kit, drift) + wger backend + GitHub Actions APK.
