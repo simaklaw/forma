@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-bg: #f4f1ea;
+  --color-surface: #fffdf8;
+  --color-surface-2: #ebe6dc;
+  --color-fg: #1a1916;
+  --color-muted: #6f6a62;
+  --color-border: rgb(26 25 22 / 0.08);
+  --color-accent: #2f6f5e;
+  --color-accent-fg: #f4f1ea;
+  --color-accent-soft: rgb(47 111 94 / 0.12);
+  --color-warn: #b4532a;
+  --color-danger: #a33b32;
+  --color-scrim: rgb(18 17 15 / 0.55);
+
+  --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-2xl: 28px;
+
+  --shadow-card: 0 0 0 1px rgb(26 25 22 / 0.06), 0 1px 2px rgb(26 25 22 / 0.04);
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  .dark {
+    --color-bg: #12110f;
+    --color-surface: #1c1b18;
+    --color-surface-2: #26241f;
+    --color-fg: #f3efe6;
+    --color-muted: #a39e94;
+    --color-border: rgb(243 239 230 / 0.08);
+    --color-accent: #7eb8a4;
+    --color-accent-fg: #12110f;
+    --color-accent-soft: rgb(126 184 164 / 0.16);
+    --color-warn: #d08a5a;
+    --color-danger: #d46a62;
+    --color-scrim: rgb(0 0 0 / 0.62);
+    --shadow-card: 0 0 0 1px rgb(243 239 230 / 0.08);
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100dvh;
+    background: var(--color-bg);
+    color: var(--color-fg);
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    font-family: var(--font-display);
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.62;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-breathe {
+  animation: breathe 4s var(--ease-smooth) infinite;
+}
+
+.animate-rise {
+  animation: rise-in 400ms var(--ease-smooth) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-breathe,
+  .animate-rise {
+    animation: none;
+  }
+}
