@@ -28,155 +28,157 @@ export function todayKey(d = new Date()): string {
   return `${y}-${m}-${day}`;
 }
 
-export function bmrMifflin({
-  sex,
-  weightKg,
-  heightCm,
-  age,
-}: {
-  sex: Presentation;
+export function startOfWeek(d = new Date()): Date {
+  const x = new Date(d);
+  const day = x.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  x.setDate(x.getDate() + diff);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+
+export function calcGoals(input: {
+  presentation: Presentation;
   weightKg: number;
   heightCm: number;
   age: number;
-}): number {
-  // Mifflin-St Jeor; neutral treated as average of man/woman coefficients
-  const s = sex === "man" ? 5 : sex === "woman" ? -161 : (5 - 161) / 2;
-  return 10 * weightKg + 6.25 * heightCm - 5 * age + s;
+  goal: Goal;
+}): Macros {
+  const s = input.presentation === "man" ? 5 : input.presentation === "woman" ? -161 : -78;
+  const bmr = 10 * input.weightKg + 6.25 * input.heightCm - 5 * input.age + s;
+  const tdee = bmr * 1.375;
+  const delta = { strength: 200, tone: -300, energy: 0, recovery: 100 }[input.goal];
+  const kcal = Math.max(1200, Math.round(tdee + delta));
+  const pPerKg = { strength: 2, tone: 1.8, energy: 1.6, recovery: 1.6 }[input.goal];
+  const protein = Math.round(pPerKg * input.weightKg);
+  const fat = Math.round((kcal * 0.28) / 9);
+  const carbs = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4));
+  return { kcal, protein, fat, carbs };
 }
 
-const ACTIVITY = 1.375; // lightly active (home workouts a few times a week)
+export function exerciseAllowed(ex: Pick<Exercise, "equipment">, owned: Equipment[]): boolean {
+  if (ex.equipment.length === 0) return true;
+  return ex.equipment.every((item) => owned.includes(item));
+}
 
-export function calorieGoalFromProfile(p: Pick<Profile, "presentation" | "weightKg" | "heightCm" | "age" | "goal">): number {
-  const bmr = bmrMifflin({
-    sex: p.presentation,
-    weightKg: p.weightKg,
-    heightCm: p.heightCm,
-    age: p.age,
+export function pickTodayPlan(
+  plans: Plan[],
+  exercises: Exercise[],
+  profile: Pick<Profile, "days" | "minutes" | "goal" | "equipment">,
+  date: Date,
+): Plan | null {
+  const dow = date.getDay();
+  if (!profile.days.includes(dow)) return null;
+  const allowed = plans.filter((p) => {
+    if (p.minutes > profile.minutes && !p.optional) return false;
+    if (!p.goals.includes(profile.goal) && p.goals.length > 0) return false;
+    const exs = p.exerciseIds
+      .map((id) => exercises.find((e) => e.id === id))
+      .filter(Boolean) as Exercise[];
+    return exs.every((e) => exerciseAllowed(e, profile.equipment));
   });
-  const tdee = bmr * ACTIVITY;
-  const delta =
-    p.goal === "strength" ? 250 : p.goal === "tone" ? -300 : p.goal === "energy" ? 0 : -150;
-  return Math.round(tdee + delta);
+  if (!allowed.length) return plans.find((p) => p.minutes <= profile.minutes) ?? plans[0] ?? null;
+  const exact = allowed.find((p) => p.minutes === profile.minutes);
+  return exact ?? allowed[0];
 }
 
-export function macroGoals(kcal: number, goal: Goal): Macros {
-  // protein ~1.8–2.2 g/kg is ideal, but we only have kcal here → share of energy
-  let pPct = 0.3;
-  let fPct = 0.3;
-  let cPct = 0.4;
-  if (goal === "strength") {
-    pPct = 0.32;
-    fPct = 0.28;
-    cPct = 0.4;
-  } else if (goal === "tone") {
-    pPct = 0.35;
-    fPct = 0.3;
-    cPct = 0.35;
-  } else if (goal === "recovery") {
-    pPct = 0.28;
-    fPct = 0.32;
-    cPct = 0.4;
-  }
-  return {
-    kcal,
-    protein: Math.round((kcal * pPct) / 4),
-    fat: Math.round((kcal * fPct) / 9),
-    carbs: Math.round((kcal * cPct) / 4),
-  };
-}
-
-export function coachLine({
-  name,
-  goal,
-  doneToday,
-  restDay,
-  streak,
-}: {
+export function coachLine(args: {
   name: string;
   goal: Goal;
   doneToday: boolean;
   restDay: boolean;
   streak: number;
 }): string {
-  const first = name.trim().split(/\s+/)[0] || "друг";
-  if (doneToday) {
-    if (streak >= 5) return `${first}, уже ${streak} дней подряд. Тело запоминает.`;
+  const first = args.name.trim().split(/\s+/)[0] || "друг";
+  if (args.doneToday) {
+    if (args.streak >= 5) return `${first}, уже ${args.streak} дней подряд. Тело запоминает.`;
     return `${first}, готово. Сегодня достаточно.`;
   }
-  if (restDay) return `${first}, сегодня отдых. Можно просто пройтись.`;
+  if (args.restDay) return `${first}, сегодня отдых. Можно просто пройтись.`;
   const byGoal: Record<Goal, string> = {
     strength: `${first}, сила растёт от повторений, а не от героизма.`,
     tone: `${first}, лёгкое движение сегодня важнее идеальной формы.`,
     energy: `${first}, короткая сессия вернёт ясность.`,
     recovery: `${first}, мягко и без давления — этого достаточно.`,
   };
-  return byGoal[goal];
+  return byGoal[args.goal];
 }
 
-export function mealMacros(items: MealItem[], foods: Food[]): Macros {
-  const byId = new Map(foods.map((f) => [f.id, f]));
-  let kcal = 0;
-  let protein = 0;
-  let fat = 0;
-  let carbs = 0;
-  for (const it of items) {
-    const f = byId.get(it.foodId);
-    if (!f) continue;
-    const k = it.grams / 100;
-    kcal += f.kcal * k;
-    protein += f.protein * k;
-    fat += f.fat * k;
-    carbs += f.carbs * k;
-  }
+export function macrosFor(food: Food, grams: number): Macros {
+  const k = grams / 100;
   return {
-    kcal: Math.round(kcal),
-    protein: Math.round(protein),
-    fat: Math.round(fat),
-    carbs: Math.round(carbs),
+    kcal: Math.round(food.kcal * k),
+    protein: Math.round(food.protein * k),
+    fat: Math.round(food.fat * k),
+    carbs: Math.round(food.carbs * k),
   };
 }
 
-export function regionsFromExercises(exercises: Exercise[]): MuscleRegion[] {
-  const set = new Set<MuscleRegion>();
-  for (const e of exercises) for (const r of e.regions) set.add(r);
-  return [...set];
+export function sumMacros(items: Macros[]): Macros {
+  return items.reduce(
+    (a, b) => ({
+      kcal: a.kcal + b.kcal,
+      protein: a.protein + b.protein,
+      fat: a.fat + b.fat,
+      carbs: a.carbs + b.carbs,
+    }),
+    { kcal: 0, protein: 0, fat: 0, carbs: 0 },
+  );
 }
 
-export function isRestDay(days: number[], date = new Date()): boolean {
-  const dow = date.getDay(); // 0 Sun … 6 Sat
-  return !days.includes(dow);
-}
-
-export function streakCount(logs: { date: string; completed: boolean }[], upTo = todayKey()): number {
-  const done = new Set(logs.filter((l) => l.completed).map((l) => l.date));
-  let n = 0;
-  const d = new Date(upTo + "T12:00:00");
-  for (;;) {
-    const key = todayKey(d);
-    if (!done.has(key)) break;
-    n += 1;
-    d.setDate(d.getDate() - 1);
+export function dayMacros(items: MealItem[], foods: Food[]): Macros {
+  const byId = new Map(foods.map((f) => [f.id, f]));
+  const parts: Macros[] = [];
+  for (const it of items) {
+    const f = byId.get(it.foodId);
+    if (f) parts.push(macrosFor(f, it.grams));
   }
-  return n;
+  return sumMacros(parts);
 }
 
-export function filterPlans(
-  plans: Plan[],
-  opts: { minutes: number; goals: Goal[]; equipment: Equipment[]; noJumps?: boolean },
-): Plan[] {
-  return plans.filter((p) => {
-    if (p.minutes > opts.minutes && !p.optional) return false;
-    if (opts.noJumps && p.jumps) return false;
-    if (opts.goals.length && !p.goals.some((g) => opts.goals.includes(g))) return false;
-    return true;
+export function greeting(name: string, d = new Date()): string {
+  const h = d.getHours();
+  const first = name.trim().split(/\s+/)[0] || "";
+  const hi = h < 5 ? "Доброй ночи" : h < 12 ? "Доброе утро" : h < 18 ? "Добрый день" : "Добрый вечер";
+  return first ? `${hi}, ${first}` : hi;
+}
+
+export function weekKeys(d = new Date()): string[] {
+  const mon = startOfWeek(d);
+  return Array.from({ length: 7 }, (_, i) => {
+    const x = new Date(mon);
+    x.setDate(mon.getDate() + i);
+    return todayKey(x);
   });
 }
 
-export function planById(plans: Plan[], id: string): Plan | undefined {
-  return plans.find((p) => p.id === id);
-}
+export const MEAL_LABEL: Record<"breakfast" | "lunch" | "dinner" | "snack", string> = {
+  breakfast: "Завтрак",
+  lunch: "Обед",
+  dinner: "Ужин",
+  snack: "Перекус",
+};
 
-export function planExercises(plan: Plan, exercises: Exercise[]): Exercise[] {
-  const map = new Map(exercises.map((e) => [e.id, e]));
-  return plan.exerciseIds.map((id) => map.get(id)).filter(Boolean) as Exercise[];
+export const GOAL_LABEL: Record<Goal, string> = {
+  strength: "Сила",
+  tone: "Тонус",
+  energy: "Энергия",
+  recovery: "Восстановление",
+};
+
+export const EQUIP_LABEL: Record<Equipment, string> = {
+  bands: "Резинки",
+  dumbbells: "Гантели",
+  pullup: "Турник",
+  chair: "Стул",
+};
+
+export const PRESENT_LABEL: Record<Presentation, string> = {
+  man: "Мужской",
+  woman: "Женский",
+  neutral: "Нейтральный",
+};
+
+export function regionHit(regions: MuscleRegion[], region: MuscleRegion): boolean {
+  return regions.includes(region);
 }
