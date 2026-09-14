@@ -1,7 +1,7 @@
 import { WgerExerciseService } from './WgerExerciseService';
 
 function mockFetchOnce(body: unknown, ok = true) {
-  (global as any).fetch = jest.fn().mockResolvedValue({
+  (globalThis as any).fetch = jest.fn().mockResolvedValue({
     ok,
     json: async () => body
   });
@@ -10,8 +10,6 @@ function mockFetchOnce(body: unknown, ok = true) {
 describe('WgerExerciseService.searchExerciseImage', () => {
   afterEach(() => {
     jest.resetAllMocks();
-    // Each test uses a distinct search term to avoid hitting the module's
-    // internal cache from a previous test.
   });
 
   it('returns the first suggestion with an absolute image URL, building one from a relative path', async () => {
@@ -50,7 +48,7 @@ describe('WgerExerciseService.searchExerciseImage', () => {
   });
 
   it('returns null instead of throwing on a network error', async () => {
-    (global as any).fetch = jest.fn().mockRejectedValue(new Error('offline'));
+    (globalThis as any).fetch = jest.fn().mockRejectedValue(new Error('offline'));
     const result = await WgerExerciseService.searchExerciseImage('unique-term-5');
     expect(result).toBeNull();
   });
@@ -71,6 +69,6 @@ describe('WgerExerciseService.searchExerciseImage', () => {
     mockFetchOnce({ suggestions: [{ data: { id: 9, name: 'Cached', image: '/media/c.png' } }] });
     await WgerExerciseService.searchExerciseImage('unique-term-8');
     await WgerExerciseService.searchExerciseImage('unique-term-8');
-    expect((global as any).fetch).toHaveBeenCalledTimes(1);
+    expect((globalThis as any).fetch).toHaveBeenCalledTimes(1);
   });
 });
