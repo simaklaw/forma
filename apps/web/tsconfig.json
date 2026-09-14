@@ -4,6 +4,7 @@
     "moduleResolution": "Bundler",
     "module": "ESNext",
     "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
@@ -14,5 +15,12 @@
       "@forma/core/*": ["../../packages/core/src/*"]
     }
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src"],
+  "exclude": [
+    "node_modules",
+    "**/*.test.ts",
+    "src/routes",
+    "src/router.tsx",
+    "src/routeTree.gen.ts"
+  ]
 }

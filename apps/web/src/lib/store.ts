@@ -271,7 +271,8 @@ export const useAppStore = create<State>()(
 export function useHydrated(): boolean {
   const [ready, setReady] = useState(false);
   useEffect(() => {
-    useAppStore.persist.rehydrate().finally(() => setReady(true));
+    // rehydrate() may return void | Promise depending on zustand version
+    void Promise.resolve(useAppStore.persist.rehydrate()).finally(() => setReady(true));
   }, []);
   return ready;
 }
