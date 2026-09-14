@@ -1,5 +1,10 @@
 /**
- * @forma/core — shared business logic for Forma web + FitPulse mobile.
- * Step 1 shell only: no engines/store yet (see architectural report Step 2).
+ * @forma/core — shared domain logic for Forma web + FitPulse mobile.
+ * UI-agnostic: no React DOM, no React Native.
  */
-export const FORMA_CORE_VERSION = "0.0.1";
+
+export const FORMA_CORE_VERSION = "0.1.0";
+
+export * from "./engines/MetabolicEngine";
+export * from "./engines/WorkoutStats";
+export * from "./met/exerciseMet";
