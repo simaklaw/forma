@@ -1,0 +1,45 @@
+import {
+  RulesLocalAITrainer,
+  buildTrainerSystemPrompt,
+  type ILocalAITrainer,
+  type UserContextSnapshot,
+} from '@forma/core';
+
+/**
+ * Mobile Edge-AI adapter (report §4).
+ * llama.rn is optional (needs a native dev client + GGUF on device).
+ * Until then this is a typed port that falls back to RulesLocalAITrainer.
+ */
+export class LlamaLocalAITrainer implements ILocalAITrainer {
+  private fallback = new RulesLocalAITrainer();
+  private ready = false;
+
+  async initialize(onProgress?: (ratio: number) => void): Promise<void> {
+    try {
+      // Optional native module — do not add llama.rn to package.json until EAS dev client exists.
+      await import('llama.rn');
+      this.ready = false;
+    } catch {
+      this.ready = false;
+    }
+    await this.fallback.initialize(onProgress);
+    onProgress?.(1);
+  }
+
+  async generateAdvice(context: UserContextSnapshot, userPrompt: string): Promise<string> {
+    void buildTrainerSystemPrompt(context);
+    return this.fallback.generateAdvice(context, userPrompt);
+  }
+
+  async streamAdvice(
+    context: UserContextSnapshot,
+    userPrompt: string,
+    onToken: (token: string) => void
+  ): Promise<void> {
+    return this.fallback.streamAdvice(context, userPrompt, onToken);
+  }
+
+  isLlmReady(): boolean {
+    return this.ready;
+  }
+}
