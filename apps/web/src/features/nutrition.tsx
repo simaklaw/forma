@@ -1,5 +1,6 @@
-import { Minus, Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Minus, Plus, Search } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { OpenFoodFactsService, type NormalizedFood } from "@forma/core";
 import { Button } from "@/components/ui/button";
 import { MacroRing } from "@/components/macro-ring";
 import { FOODS, foodById } from "@/lib/catalog";
@@ -14,21 +15,42 @@ export function NutritionScreen() {
   const profile = useAppStore((s) => s.profile);
   const meals = useAppStore((s) => s.meals);
   const addMeal = useAppStore((s) => s.addMeal);
+  const addMealFromFood = useAppStore((s) => s.addMealFromFood);
   const removeMeal = useAppStore((s) => s.removeMeal);
   const [meal, setMeal] = useState<MealType>("breakfast");
   const [foodId, setFoodId] = useState(FOODS[0]?.id ?? "");
   const [grams, setGrams] = useState(100);
+  const [query, setQuery] = useState("");
+  const [hits, setHits] = useState<NormalizedFood[]>([]);
+  const [searching, setSearching] = useState(false);
 
   const today = todayKey();
   const todayItems = meals.filter((m) => m.date === today);
   const macros = useMemo(() => dayMacros(todayItems, FOODS), [todayItems]);
+
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) {
+      setHits([]);
+      return;
+    }
+    const t = window.setTimeout(() => {
+      setSearching(true);
+      OpenFoodFactsService.searchProducts(q, 6)
+        .then(setHits)
+        .finally(() => setSearching(false));
+    }, 400);
+    return () => window.clearTimeout(t);
+  }, [query]);
 
   const byMeal = (t: MealType) => todayItems.filter((m) => m.meal === t);
 
   return (
     <div className="px-5 pb-8 pt-10">
       <h1 className="font-display text-2xl tracking-tight">Питание</h1>
-      <p className="mt-1 text-sm text-muted">Сегодня · {macros.kcal} / {profile.calorieGoal} ккал</p>
+      <p className="mt-1 text-sm text-muted">
+        Сегодня · {macros.kcal} / {profile.calorieGoal} ккал
+      </p>
 
       <div className="mt-6 flex justify-center gap-4">
         <MacroRing value={macros.kcal} max={profile.calorieGoal} label="ккал" size={110} />
@@ -46,11 +68,7 @@ export function NutritionScreen() {
             <section key={t} className="rounded-xl bg-surface p-4 shadow-card">
               <div className="mb-2 flex items-center justify-between">
                 <h2 className="text-sm font-medium">{MEAL_LABEL[t]}</h2>
-                <button
-                  type="button"
-                  className="text-xs text-accent"
-                  onClick={() => setMeal(t)}
-                >
+                <button type="button" className="text-xs text-accent" onClick={() => setMeal(t)}>
                   + добавить
                 </button>
               </div>
@@ -60,10 +78,11 @@ export function NutritionScreen() {
                 <ul className="space-y-2">
                   {items.map((it) => {
                     const f = foodById(it.foodId);
+                    const label = it.name ?? f?.name ?? it.foodId;
                     return (
                       <li key={it.id} className="flex items-center justify-between text-sm">
                         <span>
-                          {f?.name ?? it.foodId} · {it.grams} г
+                          {label} · {it.grams} г
                         </span>
                         <button
                           type="button"
@@ -83,7 +102,39 @@ export function NutritionScreen() {
       </div>
 
       <div className="mt-6 rounded-2xl bg-surface p-4 shadow-card">
-        <p className="mb-3 text-sm font-medium">Быстро добавить · {MEAL_LABEL[meal]}</p>
+        <p className="mb-3 text-sm font-medium">Поиск · Open Food Facts</p>
+        <div className="relative mb-3">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
+          <input
+            className="h-11 w-full rounded-lg bg-surface-2 pl-10 pr-3 text-sm outline-none"
+            placeholder="Например: греческий йогурт"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        {searching && <p className="mb-2 text-xs text-muted">Ищем…</p>}
+        {hits.length > 0 && (
+          <ul className="mb-4 max-h-40 space-y-1 overflow-y-auto text-sm">
+            {hits.map((h) => (
+              <li key={`${h.name}-${h.kcal}`}>
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left hover:bg-surface-2"
+                  onClick={() => {
+                    addMealFromFood(meal, h, grams);
+                    setQuery("");
+                    setHits([]);
+                  }}
+                >
+                  <span className="line-clamp-1">{h.name}</span>
+                  <span className="shrink-0 tabular-nums text-muted">{h.kcal} ккал/100г</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <p className="mb-3 text-sm font-medium">Из каталога · {MEAL_LABEL[meal]}</p>
         <div className="mb-3 flex flex-wrap gap-2">
           {MEALS.map((t) => (
             <button
@@ -133,7 +184,7 @@ export function NutritionScreen() {
             if (foodId) addMeal(meal, foodId, grams);
           }}
         >
-          Добавить
+          Добавить из каталога
         </Button>
       </div>
     </div>
