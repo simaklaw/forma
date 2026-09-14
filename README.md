@@ -5,11 +5,11 @@
 ```
 forma/
 ├── apps/
-│   ├── web/          # @forma/web — Vite + React (домашние тренировки, медиа)
-│   └── mobile/       # @forma/mobile — Expo + React Native (engines, OFF, wger)
+│   ├── web/          # @forma/web — Vite + React
+│   └── mobile/       # @forma/mobile — Expo + React Native
 ├── packages/
-│   └── core/         # @forma/core — MetabolicEngine, WorkoutStats, MET
-├── package.json      # pnpm workspaces + turbo
+│   └── core/         # @forma/core — engines, MET, OFF, wger
+├── package.json
 ├── pnpm-workspace.yaml
 └── turbo.json
 ```
@@ -25,31 +25,32 @@ git clone https://github.com/simaklaw/forma.git && cd forma
 pnpm install
 ```
 
-## Скрипты (корень)
+## Скрипты
 
 | Команда | Описание |
 |---------|----------|
-| `pnpm dev` | turbo: dev во всех пакетах, где есть скрипт |
-| `pnpm --filter @forma/web dev` | только веб (порт 8080) |
-| `pnpm --filter @forma/mobile dev` | только Expo |
-| `pnpm type-check` | проверка типов |
-| `pnpm --filter @forma/mobile test` | jest (mobile, в т.ч. engines) |
+| `pnpm --filter @forma/web dev` | веб → http://localhost:8080 |
+| `pnpm --filter @forma/mobile dev` | Expo |
+| `pnpm type-check` | типы |
+| `pnpm --filter @forma/mobile test` | jest (engines + wger mocks) |
 
-## @forma/core (Шаг 2)
+## @forma/core (v0.2)
 
-Общая UI-agnostic логика:
+| Область | API |
+|---------|-----|
+| Метаболизм | `MetabolicEngine`, `calculateTargets`, BMR/TDEE, refeed |
+| Тренировки | `WorkoutStats` (стрики, объём, PR, `toDateKey`) |
+| MET | `EXERCISE_MET`, `metForExercise`, `calculateBurnedCalories` |
+| Питание API | `OpenFoodFactsService` (barcode + search) |
+| Упражнения API | `WgerExerciseService` (category + image search) |
 
-- `MetabolicEngine` — Mifflin-St Jeor, TDEE, macros, refeed/diet-break, 1RM/RPE
-- `WorkoutStats` — стрики, объём, PR, prune set logs, `toDateKey` / `todayKey`
-- `EXERCISE_MET` + `calculateBurnedCalories` — расход по MET
+Mobile: шимы в `src/engines/*` и `src/services/*` — старые импорты работают.  
+Web: `import { … } from '@forma/core'` — поиск OFF в «Питание», ~ккал в плеере.
 
-Mobile импортирует через шимы `apps/mobile/src/engines/*` (старые пути `@/engines/...` работают).
-Web: `import { … } from '@forma/core'` или `~/lib/core`.
-
-`RestTimerEngine` остаётся в mobile (expo-haptics / AppState).
+`RestTimerEngine` остаётся в mobile (haptics / AppState).
 
 ## Дальше
 
-- Единый Zustand-стор поверх core (опционально)
-- OpenFoodFacts / wger клиенты в core
-- On-device AI adapters (Этап 3 отчёта)
+- Unified store API (опционально)
+- On-device AI adapters
+- EAS / Vercel CI
