@@ -1,6 +1,6 @@
 {
   "name": "@forma/core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
@@ -8,7 +8,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./engines": "./src/engines/index.ts",
-    "./met": "./src/met/exerciseMet.ts"
+    "./met": "./src/met/exerciseMet.ts",
+    "./services": "./src/services/index.ts"
   },
   "scripts": {
     "type-check": "tsc --noEmit",
