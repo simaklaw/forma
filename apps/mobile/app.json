@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "FitPulse",
+    "slug": "fitpulse-native",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "fitpulse",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0B0E10",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "app.fitpulse.native"
+    },
+    "android": {
+      "package": "app.fitpulse.native",
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0E10"
+      },
+      "permissions": [
+        "android.permission.VIBRATE"
+      ]
+    },
+    "plugins": [
+      "expo-document-picker",
+      [
+        "expo-av",
+        {
+          "microphonePermission": false
+        }
+      ]
+    ]
+  }
+}

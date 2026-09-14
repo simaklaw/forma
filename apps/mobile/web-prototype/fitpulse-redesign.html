@@ -1,0 +1,2370 @@
+<!DOCTYPE html>
+<!--
+  ПЕРЕДАЧА / HANDOFF NOTES
+  Это кликабельный HTML-прототип (не production-код), но с настоящим слоем
+  данных: state / localStorage / расчёты — не просто вёрстка. Что реально
+  работает и что осталось заглушкой:
+
+  РЕАЛЬНО РАБОТАЕТ (данные живут в объекте state, сохраняются в localStorage
+  под ключом 'fitpulse_state_v1', переживают перезагрузку страницы):
+  - Расчёт BMR/TDEE/цели по калориям и БЖУ — формула Миффлина-Сан Жеора,
+    считается из полей профиля (пол/возраст/рост/вес/PAL/цель), см.
+    calculateTargets() и updateProfileData().
+  - Дневник питания: добавление продукта (пресет или свой) с учётом порции,
+    удаление, живой пересчёт кольца калорий и полос БЖУ — см. renderMeals(),
+    confirmAddFood(), deleteFoodItem().
+  - Вода: тап по стакану пишется в state.today.water и сохраняется.
+  - Вес: шторка "Записать вес" пишет в state.weightHistory, график веса
+    (SVG polyline) перерисовывается по реальным точкам — см. renderWeightChart().
+  - Экспорт/импорт данных в JSON (файл, не alert/prompt) — exportUserData(),
+    importUserData().
+  - Таймер отдыха 90с с реальным звуковым сигналом (Web Audio API, без
+    внешних библиотек) между подходами — startRestTimer()/playBeep().
+
+  ИЗВЕСТНЫЕ УПРОЩЕНИЯ / ЗАГЛУШКИ:
+  1. Реальная логика подходов связана только с упражнением №1 («Приседания»,
+     recordNextSet()). Упражнения №2 и №3 в списке дня — toast-заглушки
+     ("в разработке"), у них нет своей шторки.
+  2. Связь "подход записан → прогресс недели" — намеренно упрощена:
+     завершение ОДНОГО упражнения сразу двигает "Выполнено на неделе" с 2/5
+     на 3/5, хотя логически это должно происходить только после завершения
+     ВСЕХ упражнений дня.
+  3. На экране "Прогресс" вкладка "Месяц" не подключена (только toast) —
+     сделаны только "Неделя" (реальный контент) и "Год" (empty state).
+  4. Тренировки (серия, счётчик "24 тренировки", ачивки) остаются
+     статичными демо-цифрами — только питание/вес/профиль подключены к
+     реальному стейту в этой итерации.
+  5. Focus trap внутри шторок реализован вручную (trapFocus()) без сторонних
+     библиотек — при усложнении лучше заменить на проверенное решение.
+  6. Импорт JSON использует FileReader + <input type="file"> вместо
+     prompt() — это осознанный выбор (нативный prompt ломает визуальный
+     язык приложения), но нет валидации схемы файла, кроме try/catch
+     на JSON.parse.
+  7. Из открытого пользователем референса (FitLife Pro) сознательно НЕ
+     перенесено: Tailwind/glass-card эстетика, переключатель акцентного
+     цвета, alert()/prompt()-диалоги, захардкоженные внешние видео с
+     mixkit.co, генератор сплитов и модалка сравнения оборудования (не
+     функциональны по сути), confetti и KaTeX/база научных статей (валидная
+     идея, но отдельная по объёму фича, не тянущая на "докрутку" одним
+     заходом). Подробности — в сопроводительном ответе в чате.
+  8. Refeed (24ч) / Diet Break (14 дней) — добавлено по научному отчёту о
+     физиологии рекомпозиции. Реализовано по-настоящему: state.metabolic
+     {type, endsAt}, персистентность, автоистечение по времени, временный
+     подъём цели калорий до TDEE через calculateTargets(). См.
+     triggerRefeed()/triggerDietBreak()/renderPlateauStatus(). Технический
+     отчёт про Flutter/Clean Architecture/wger API (второй загруженный
+     документ) описывает ДРУГОЙ стек (нативное приложение) и сознательно не
+     переносился в этот HTML-прототип — актуален только как референс для
+     будущей нативной реализации.
+  9. Из отчёта про React Native/Zustand/WatermelonDB-архитектуру (третий
+     документ) в прототип перенесено только то, что реально работает в
+     браузере без смены стека:
+     - Формула Эпли (1RM) + RPE = 10−RIR — считается от фиксированного
+       веса/повторов упражнения №1 (80кг×8), см. calculateEpley1RM(),
+       selectRir(). RIR-переключатель не влияет на реальный подбор веса в
+       следующем подходе — это демонстрация формулы, а не адаптивный
+       алгоритм прогрессии между сессиями.
+     - Автообнаружение плато по реальной истории веса (не только ручной
+       запуск Рефида/Diet Break) — detectWeightPlateau() смотрит на разброс
+       последних 4 точек state.weightHistory.
+     - Реальный поиск Open Food Facts через fetch() с debounce 400мс и
+       fallback на локальные пресеты при офлайне/ошибке — см.
+       searchOpenFoodFacts(). ВАЖНО: браузер не даёт скрипту выставить
+       заголовок User-Agent (это в списке forbidden headers у fetch), хотя
+       политика Open Food Facts его требует — в продакшене этот запрос
+       нужно проксировать через бэкенд, который выставит заголовок как
+       положено.
+     - Haptic-отклик через navigator.vibrate() — реально работает на части
+       Android-браузеров, тихо не срабатывает на iOS Safari/десктопе (это
+       потолок для веба; настоящие haptics — только в нативной сборке).
+     НЕ перенесено осознанно: React Native/Expo/Zustand/WatermelonDB/Skia,
+     реальная синхронизация с Apple HealthKit / Google Health Connect (это
+     физически невозможно из веб-страницы), полная интеграция wger API
+     (требует токен и решения по смене каталога упражнений на другой
+     инвентарь — отдельное продуктовое решение, не принято молча).
+-->
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitPulse — Протокол тренировки</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* ---- Палитра: протокол/секундомер, не глянцевый градиент ---- */
+  --ink: #0B0E10;
+  --panel: #14181B;
+  --panel-raised: #191E22;
+  --line: rgba(244,241,234,0.09);
+  --line-strong: rgba(244,241,234,0.18);
+
+  --paper: #F4F1EA;          /* основной текст — тёплый белый, не чистый */
+  --paper-dim: rgba(244,241,234,0.56);
+  --paper-faint: rgba(244,241,234,0.28);
+
+  --lime: #D6FF3F;           /* единственный акцент для действий */
+  --lime-dim: rgba(214,255,63,0.16);
+  --ember: #FF6A39;          /* только для серии/огня */
+  --cyan: #6FE7D3;           /* только для питания */
+
+  --radius-card: 4px;        /* минимальный, "бумажный", не SaaS-скругление */
+  --radius-pill: 999px;
+
+  --mono-num: 'Barlow Condensed', sans-serif;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ---- Доступность: видимый фокус вместо browser default outline ---- */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+}
+[role="button"] { cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+html { -webkit-font-smoothing: antialiased; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: #05060a;
+  color: var(--paper);
+  min-height: 100vh;
+}
+
+.phone-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+.phone-frame {
+  width: 390px;
+  height: 844px;
+  background: var(--ink);
+  border-radius: 40px;
+  border: 1px solid var(--line);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 30px 90px rgba(0,0,0,0.6);
+}
+@media (max-width: 430px) {
+  .phone-frame { width: 100%; height: 100vh; border-radius: 0; border: none; }
+  .phone-wrapper { padding: 0; }
+}
+
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 24px 6px;
+  font-family: var(--mono-num);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+
+.scroll-content {
+  height: calc(100% - 44px);
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+.scroll-content::-webkit-scrollbar { width: 0; }
+
+.screen { display: none; padding-bottom: 110px; }
+.screen.active { display: block; }
+
+/* ================= ONE orchestrated entrance, not per-card stagger ================= */
+.screen.active .app-header,
+.screen.active .content-body {
+  animation: rise 0.5s var(--ease) backwards;
+}
+.screen.active .content-body { animation-delay: 0.06s; }
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ================= HEADER ================= */
+.app-header {
+  padding: 4px 22px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--line);
+}
+.screen-eyebrow {
+  font-size: 11px;
+  color: var(--paper-faint);
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.screen-title {
+  font-family: var(--mono-num);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.header-btn {
+  width: 34px; height: 34px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--paper-dim);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.header-btn svg { width: 16px; height: 16px; }
+.header-btn:hover { border-color: var(--line-strong); color: var(--paper); }
+
+.content-body { padding-top: 4px; }
+
+/* ================= SESSION TICKET (workout hero) ================= */
+.ticket {
+  margin: 18px 22px 0;
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+  position: relative;
+}
+.ticket-main {
+  padding: 18px 18px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.ticket-label {
+  font-size: 11px;
+  color: var(--paper-faint);
+  margin-bottom: 6px;
+}
+.ticket-name {
+  font-family: var(--mono-num);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.05;
+}
+.ticket-meta {
+  font-size: 12.5px;
+  color: var(--paper-dim);
+  margin-top: 6px;
+}
+.ticket-start {
+  width: 46px; height: 46px;
+  background: var(--lime);
+  color: var(--ink);
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.ticket-start:active { transform: scale(0.94); }
+.ticket-start svg { width: 18px; height: 18px; }
+
+.ticket-perf {
+  display: flex;
+  border-top: 1px dashed var(--line-strong);
+}
+.ticket-perf-cell {
+  flex: 1;
+  padding: 10px 18px 12px;
+  border-right: 1px dashed var(--line-strong);
+}
+.ticket-perf-cell:last-child { border-right: none; }
+.ticket-perf-val {
+  font-family: var(--mono-num);
+  font-size: 20px;
+  font-weight: 700;
+}
+.ticket-perf-lbl {
+  font-size: 10.5px;
+  color: var(--paper-faint);
+  margin-top: 1px;
+}
+
+/* ================= STREAK ROW ================= */
+.streak-row {
+  margin: 16px 22px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px;
+}
+.streak-flame { font-size: 20px; flex-shrink: 0; }
+.streak-copy { flex: 1; }
+.streak-copy-main {
+  font-size: 13px;
+  font-weight: 600;
+}
+.streak-copy-main strong { color: var(--ember); }
+.streak-ticks { display: flex; gap: 4px; margin-top: 8px; }
+.tick {
+  width: 22px; height: 4px;
+  background: var(--line-strong);
+}
+.tick.done { background: var(--ember); }
+.tick.today {
+  background: transparent;
+  border: 1px solid var(--ember);
+}
+
+/* ================= SECTION ================= */
+.section-head {
+  margin: 24px 22px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.section-head-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--paper-dim);
+}
+.section-head-count {
+  font-family: var(--mono-num);
+  font-size: 13px;
+  color: var(--paper-faint);
+}
+
+/* ================= EXERCISE LOG ROW (replaces glossy image card) ================= */
+.log-row {
+  margin: 0 22px;
+  border-bottom: 1px solid var(--line);
+  padding: 14px 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+}
+.log-row:hover .log-name { color: var(--lime); }
+.log-index {
+  font-family: var(--mono-num);
+  font-size: 15px;
+  color: var(--paper-faint);
+  width: 20px;
+  flex-shrink: 0;
+}
+.log-main { flex: 1; min-width: 0; }
+.log-name {
+  font-size: 15px;
+  font-weight: 600;
+  transition: color 0.15s;
+}
+.log-sub {
+  font-size: 12px;
+  color: var(--paper-faint);
+  margin-top: 2px;
+}
+.log-sub b { color: var(--paper-dim); font-weight: 600; }
+.log-status {
+  flex-shrink: 0;
+  text-align: right;
+}
+.log-pr {
+  font-family: var(--mono-num);
+  font-size: 17px;
+  font-weight: 700;
+}
+.log-pr-lbl {
+  font-size: 9.5px;
+  color: var(--paper-faint);
+  text-transform: none;
+}
+.log-chevron {
+  width: 16px; height: 16px;
+  color: var(--paper-faint);
+  flex-shrink: 0;
+}
+
+/* ================= DETAIL SHEET (real navigation depth, not a dead toast) ================= */
+.sheet-scrim {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.5);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s var(--ease);
+  z-index: 150;
+}
+.sheet-scrim.open { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  background: var(--panel-raised);
+  border-top: 1px solid var(--line-strong);
+  transform: translateY(100%);
+  transition: transform 0.32s var(--ease);
+  z-index: 151;
+  max-height: 78%;
+  overflow-y: auto;
+  padding-bottom: 30px;
+}
+.sheet.open { transform: translateY(0); }
+.sheet-handle {
+  width: 36px; height: 3px;
+  background: var(--line-strong);
+  margin: 12px auto 4px;
+}
+.sheet-head {
+  padding: 12px 22px 16px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.sheet-title {
+  font-family: var(--mono-num);
+  font-size: 26px;
+  font-weight: 700;
+}
+.sheet-close {
+  width: 30px; height: 30px;
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--paper-dim);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.sheet-close svg { width: 14px; height: 14px; }
+.sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid var(--line);
+}
+.sheet-grid-cell {
+  padding: 16px 20px;
+  border-right: 1px solid var(--line);
+}
+.sheet-grid-cell:last-child { border-right: none; }
+.sheet-grid-val {
+  font-family: var(--mono-num);
+  font-size: 22px;
+  font-weight: 700;
+}
+.sheet-grid-lbl {
+  font-size: 10.5px;
+  color: var(--paper-faint);
+  margin-top: 2px;
+}
+.sheet-muscles {
+  padding: 16px 22px 4px;
+  font-size: 12px;
+  color: var(--paper-faint);
+}
+.sheet-muscles b { color: var(--paper-dim); font-weight: 600; }
+.sheet-note {
+  margin: 10px 22px 0;
+  padding: 10px 12px;
+  border-left: 2px solid var(--cyan);
+  background: rgba(111,231,211,0.06);
+  font-size: 11.5px;
+  color: var(--paper-dim);
+  line-height: 1.5;
+}
+.rest-timer {
+  margin: 14px 22px 0;
+  padding: 12px 16px;
+  border: 1px dashed var(--line-strong);
+  display: flex; align-items: baseline; gap: 10px;
+}
+.rest-timer-label { font-size: 11px; color: var(--paper-faint); flex: 1; }
+.rest-timer-val { font-family: var(--mono-num); font-size: 26px; font-weight: 700; color: var(--ember); }
+.rest-skip {
+  background: none; border: none; color: var(--paper-faint);
+  font-size: 11px; text-decoration: underline; cursor: pointer;
+}
+
+/* ---- RIR selector + Epley 1RM/RPE readout ---- */
+.rir-block { margin: 14px 22px 0; }
+.rir-label { font-size: 11.5px; color: var(--paper-faint); display: block; margin-bottom: 8px; }
+.rir-btns { display: flex; gap: 8px; }
+.rir-btn {
+  flex: 1;
+  padding: 10px 0;
+  background: none;
+  border: 1px solid var(--line-strong);
+  color: var(--paper-dim);
+  font-family: var(--mono-num);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.rir-btn.active { border-color: var(--lime); color: var(--lime); background: var(--lime-dim); }
+.sheet-sets {
+  padding: 8px 22px 4px;
+}
+.sheet-set-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--mono-num);
+  font-size: 15px;
+}
+.sheet-set-row:last-child { border-bottom: none; }
+.sheet-set-num { width: 24px; color: var(--paper-faint); font-size: 13px; }
+.sheet-set-w { flex: 1; }
+.sheet-set-done { color: var(--lime); }
+.sheet-cta {
+  margin: 18px 22px 0;
+  width: calc(100% - 44px);
+  padding: 14px;
+  background: var(--lime);
+  color: var(--ink);
+  border: none;
+  font-family: var(--mono-num);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+.sheet-cta:active { transform: scale(0.98); }
+
+/* ================= NUTRITION ================= */
+.tab-strip {
+  display: flex;
+  margin: 16px 22px 0;
+  border-bottom: 1px solid var(--line);
+}
+.tab-strip-item {
+  padding: 10px 0;
+  margin-right: 22px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--paper-faint);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  background: none; border-top:none; border-left:none; border-right:none;
+  font-family: inherit;
+}
+.tab-strip-item.active {
+  color: var(--paper);
+  border-bottom-color: var(--cyan);
+}
+
+.cal-block {
+  margin: 20px 22px 0;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.cal-dial { position: relative; width: 92px; height: 92px; flex-shrink: 0; }
+.cal-dial svg { transform: rotate(-90deg); }
+.cal-dial-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.cal-dial-val { font-family: var(--mono-num); font-size: 22px; font-weight: 700; }
+.cal-dial-lbl { font-size: 9.5px; color: var(--paper-faint); }
+.macro-list { flex: 1; }
+.macro-row {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 7px;
+}
+.macro-row:last-child { margin-bottom: 0; }
+.macro-tag {
+  width: 14px; font-family: var(--mono-num); font-size: 12px; color: var(--paper-faint);
+}
+.macro-track { flex: 1; height: 3px; background: var(--line-strong); }
+.macro-fill { height: 100%; background: var(--cyan); }
+.macro-val { font-family: var(--mono-num); font-size: 12.5px; color: var(--paper-dim); width: 64px; text-align: right; }
+
+.water-block {
+  margin: 18px 22px 0;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.water-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 10px;
+}
+.water-head-title { font-size: 13px; font-weight: 600; color: var(--paper-dim); }
+.water-head-count { font-family: var(--mono-num); font-size: 14px; }
+.water-head-count b { color: var(--cyan); }
+.water-cells { display: flex; gap: 4px; }
+.water-cell {
+  flex: 1; height: 30px;
+  border: 1px solid var(--line-strong);
+  cursor: pointer;
+}
+.water-cell.filled { background: rgba(111,231,211,0.35); border-color: var(--cyan); }
+
+.meal-row {
+  margin: 0 22px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+.meal-time {
+  font-family: var(--mono-num);
+  font-size: 13px;
+  color: var(--paper-faint);
+  width: 40px;
+  flex-shrink: 0;
+}
+.meal-info { flex: 1; min-width: 0; }
+.meal-name { font-size: 14.5px; font-weight: 600; }
+.meal-desc { font-size: 12px; color: var(--paper-faint); margin-top: 1px; }
+.meal-kcal { font-family: var(--mono-num); font-size: 17px; font-weight: 700; flex-shrink: 0; }
+
+/* ---- Dynamic meal groups (functional food log, replaces static rows) ---- */
+.meal-group { margin: 0 22px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.meal-group-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.meal-group-name { font-size: 14.5px; font-weight: 600; flex: 1; }
+.meal-group-kcal { font-family: var(--mono-num); font-size: 14px; color: var(--paper-dim); }
+.meal-add-btn {
+  width: 24px; height: 24px;
+  border: 1px solid var(--line-strong);
+  background: none; color: var(--paper-dim);
+  font-size: 15px; line-height: 1;
+  cursor: pointer; flex-shrink: 0;
+}
+.meal-add-btn:hover { border-color: var(--lime); color: var(--lime); }
+.food-item-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 0; font-size: 12.5px; color: var(--paper-dim);
+}
+.food-item-name { flex: 1; min-width: 0; color: var(--paper); }
+.food-item-macro { font-family: var(--mono-num); font-size: 11.5px; color: var(--paper-faint); }
+.food-item-kcal { font-family: var(--mono-num); font-weight: 700; color: var(--cyan); width: 44px; text-align: right; flex-shrink: 0; }
+.food-item-del {
+  width: 20px; height: 20px; flex-shrink: 0;
+  border: none; background: none; color: var(--paper-faint);
+  cursor: pointer; font-size: 15px; line-height: 1;
+}
+.food-item-del:hover { color: var(--ember); }
+.food-item-empty { font-size: 11.5px; color: var(--paper-faint); font-style: italic; padding: 4px 0; }
+
+/* ---- Add-food sheet controls ---- */
+.food-search { padding: 14px 22px 4px; }
+.food-search input {
+  width: 100%; background: var(--panel); border: 1px solid var(--line-strong);
+  color: var(--paper); padding: 10px 12px; font-family: inherit; font-size: 13.5px;
+}
+.food-preset-list { padding: 4px 22px; max-height: 130px; overflow-y: auto; }
+.food-preset-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 0; border-bottom: 1px solid var(--line);
+  cursor: pointer; font-size: 13px;
+}
+.food-preset-row:last-child { border-bottom: none; }
+.food-preset-source { font-size: 10px; color: var(--paper-faint); text-transform: uppercase; letter-spacing: 0.04em; padding: 6px 0 2px; }
+.food-preset-kcal { font-family: var(--mono-num); color: var(--paper-faint); font-size: 12px; }
+.food-form { padding: 14px 22px 4px; }
+.food-form-row { margin-bottom: 10px; }
+.food-form-row label { display: block; font-size: 11px; color: var(--paper-faint); margin-bottom: 4px; }
+.food-form-row input {
+  width: 100%; background: var(--panel); border: 1px solid var(--line-strong);
+  color: var(--paper); padding: 8px 10px; font-family: var(--mono-num); font-size: 14px;
+}
+.food-form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.portion-row { display: flex; align-items: center; gap: 10px; }
+.portion-row input[type="range"] { flex: 1; accent-color: var(--lime); }
+.portion-val { font-family: var(--mono-num); font-size: 14px; width: 48px; text-align: right; }
+
+/* ================= PROGRESS ================= */
+.ring-block {
+  margin: 20px 22px 0;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+.ring-wrap { position: relative; width: 130px; height: 130px; flex-shrink: 0; }
+.ring-wrap svg { transform: rotate(-90deg); }
+.ring-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.ring-val { font-family: var(--mono-num); font-size: 34px; font-weight: 700; }
+.ring-lbl { font-size: 10.5px; color: var(--paper-faint); margin-top: 2px; }
+.ring-legend { flex: 1; }
+.legend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12.5px; color: var(--paper-dim); }
+.legend-row:last-child { margin-bottom: 0; }
+.legend-swatch { width: 8px; height: 8px; flex-shrink: 0; }
+
+.chart-block { margin: 20px 22px 0; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.chart-title { font-size: 13px; font-weight: 600; color: var(--paper-dim); margin-bottom: 14px; }
+.bars { display: flex; align-items: flex-end; gap: 8px; height: 90px; }
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+.bar { width: 100%; background: var(--line-strong); min-height: 3px; transition: height 0.8s var(--ease); }
+.bar.hi { background: var(--lime); }
+.bar-lbl { font-family: var(--mono-num); font-size: 11px; color: var(--paper-faint); }
+
+/* ================= PROFILE ================= */
+.profile-head {
+  padding: 20px 22px 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 18px;
+}
+.profile-mark {
+  width: 52px; height: 52px;
+  border: 1px solid var(--line-strong);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono-num);
+  font-size: 20px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.profile-name { font-size: 17px; font-weight: 700; }
+.profile-level { font-size: 12.5px; color: var(--paper-faint); margin-top: 2px; }
+.profile-level b { color: var(--lime); font-weight: 600; }
+
+.profile-stats {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+}
+.profile-stat-cell {
+  flex: 1;
+  padding: 16px 20px;
+  border-right: 1px solid var(--line);
+}
+.profile-stat-cell:last-child { border-right: none; }
+.profile-stat-val { font-family: var(--mono-num); font-size: 24px; font-weight: 700; }
+.profile-stat-lbl { font-size: 10.5px; color: var(--paper-faint); margin-top: 2px; }
+
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 0 22px;
+}
+.badge-cell {
+  padding: 16px 8px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+}
+.badge-cell:nth-child(3n) { border-right: none; }
+.badge-mark { font-size: 22px; display: block; margin-bottom: 6px; }
+.badge-name { font-size: 11px; font-weight: 600; }
+.badge-desc { font-size: 9.5px; color: var(--paper-faint); margin-top: 1px; }
+.badge-cell.locked { opacity: 0.4; }
+.badge-cell.locked .badge-desc { color: var(--ember); opacity: 0.9; }
+
+/* ---- Profile calorie/macro calculator (real Mifflin-St Jeor engine) ---- */
+.calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0 22px 14px;
+}
+.calc-field label { display: block; font-size: 10.5px; color: var(--paper-faint); margin-bottom: 4px; }
+.calc-field select, .calc-field input {
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  color: var(--paper);
+  padding: 8px 10px;
+  font-family: var(--mono-num);
+  font-size: 13.5px;
+}
+.calc-result {
+  display: flex;
+  margin: 0 22px 20px;
+  border: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.calc-result-cell {
+  flex: 1;
+  padding: 12px;
+  text-align: center;
+  border-right: 1px solid var(--line);
+}
+.calc-result-cell:last-child { border-right: none; }
+.calc-result-val { font-family: var(--mono-num); font-size: 19px; font-weight: 700; }
+.calc-result-lbl { font-size: 9.5px; color: var(--paper-faint); margin-top: 2px; }
+
+/* ---- Refeed / Diet Break: real metabolic-plateau protocol, not an alert() ---- */
+.plateau-status {
+  margin: 0 22px 12px;
+  padding: 10px 12px;
+  border: 1px dashed var(--line-strong);
+  font-size: 11.5px;
+  color: var(--paper-dim);
+  line-height: 1.5;
+}
+.plateau-status.active { border-color: var(--ember); border-style: solid; color: var(--paper); }
+.plateau-status.active b { color: var(--ember); }
+.plateau-actions { display: flex; gap: 10px; margin: 0 22px 20px; }
+.plateau-btn {
+  flex: 1;
+  padding: 12px 10px;
+  background: none;
+  border: 1px solid var(--line-strong);
+  color: var(--paper);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.plateau-btn span { font-size: 10px; font-weight: 400; color: var(--paper-faint); }
+.plateau-btn:hover:not(:disabled) { border-color: var(--ember); color: var(--ember); }
+.plateau-btn:hover:not(:disabled) span { color: var(--ember); opacity: 0.8; }
+.plateau-btn:disabled { opacity: 0.35; cursor: default; }
+
+.setting-row {
+  margin: 0 22px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+}
+.setting-icon {
+  width: 30px; height: 30px;
+  border: 1px solid var(--line-strong);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  color: var(--paper-dim);
+}
+.setting-icon svg { width: 15px; height: 15px; }
+.setting-text { flex: 1; }
+.setting-name { font-size: 14px; font-weight: 600; }
+.setting-desc { font-size: 11.5px; color: var(--paper-faint); margin-top: 1px; }
+.toggle {
+  width: 38px; height: 20px;
+  border: 1px solid var(--line-strong);
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.toggle::after {
+  content: ''; width: 14px; height: 14px;
+  background: var(--paper-faint);
+  position: absolute; top: 2px; left: 2px;
+  transition: all 0.2s var(--ease);
+}
+.toggle.on { border-color: var(--lime); background: var(--lime-dim); }
+.toggle.on::after { transform: translateX(18px); background: var(--lime); }
+
+/* ================= LOADING SKELETON ================= */
+.skeleton-wrap { padding-top: 4px; }
+.sk-block {
+  background: linear-gradient(90deg, var(--panel) 25%, var(--panel-raised) 42%, var(--panel) 60%);
+  background-size: 300% 100%;
+  animation: sk-shimmer 1.3s ease-in-out infinite;
+}
+@keyframes sk-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -100% 0; }
+}
+.sk-ticket { height: 118px; margin: 18px 22px 0; }
+.sk-streak { height: 46px; margin: 16px 22px 0; }
+.sk-row { height: 58px; margin: 10px 22px; }
+@media (prefers-reduced-motion: reduce) {
+  .sk-block { animation: none; opacity: 0.6; }
+}
+
+/* ================= EMPTY STATE ================= */
+.empty-state {
+  padding: 54px 30px 40px;
+  text-align: center;
+}
+.empty-mark {
+  width: 52px; height: 52px;
+  margin: 0 auto 16px;
+  border: 1px dashed var(--line-strong);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--paper-faint);
+}
+.empty-mark svg { width: 22px; height: 22px; }
+.empty-title {
+  font-size: 15px; font-weight: 700; margin-bottom: 6px;
+}
+.empty-desc {
+  font-size: 12.5px; color: var(--paper-faint);
+  line-height: 1.55; margin: 0 auto 20px; max-width: 260px;
+}
+.empty-cta {
+  padding: 12px 22px;
+  background: var(--lime); color: var(--ink);
+  border: none; cursor: pointer;
+  font-family: var(--mono-num); font-weight: 700; font-size: 14px; letter-spacing: 0.02em;
+}
+.empty-cta:active { transform: scale(0.97); }
+
+/* ================= ERROR STATE ================= */
+.setting-desc.is-error { color: var(--ember); }
+.retry-action {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.toast.error { border-left-color: var(--ember); }
+.toast.error .toast-dot { background: var(--ember); }
+
+/* ================= BOTTOM NAV ================= */
+.bottom-nav {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 78px;
+  background: rgba(11,14,16,0.92);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--line);
+  display: flex;
+  z-index: 100;
+}
+.nav-item {
+  flex: 1;
+  border: none; background: none; font-family: inherit; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 5px;
+  color: var(--paper-faint);
+  position: relative;
+}
+.nav-item::before {
+  content: '';
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 0; height: 2px; background: var(--lime);
+  transition: width 0.2s var(--ease);
+}
+.nav-item.active::before { width: 26px; }
+.nav-item.active { color: var(--lime); }
+.nav-item svg { width: 19px; height: 19px; }
+.nav-label { font-size: 10px; font-weight: 600; }
+
+/* ================= TOAST ================= */
+.toast {
+  position: absolute; top: 14px; left: 22px; right: 22px;
+  background: var(--panel-raised);
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--lime);
+  padding: 12px 14px;
+  font-size: 13px; font-weight: 600;
+  transform: translateY(-140%);
+  opacity: 0;
+  transition: all 0.35s var(--ease);
+  z-index: 200;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="phone-wrapper">
+<div class="phone-frame">
+
+  <div class="status-bar">
+    <span id="clock">9:41</span>
+    <span>●●●● Wi-Fi 100%</span>
+  </div>
+
+  <div class="scroll-content" id="scrollContent">
+
+    <!-- ===== WORKOUT ===== -->
+    <div class="screen active" id="screen-workout">
+      <div class="app-header">
+        <div>
+          <div class="screen-eyebrow">Понедельник, 12 сентября</div>
+          <div class="screen-title">Тренировка</div>
+        </div>
+        <button class="header-btn" onclick="openHistorySheet()" aria-label="Открыть историю тренировок">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        </button>
+      </div>
+
+      <div class="content-body">
+        <div class="skeleton-wrap" id="workoutSkeleton">
+          <div class="sk-block sk-ticket"></div>
+          <div class="sk-block sk-streak"></div>
+          <div class="sk-block sk-row"></div>
+          <div class="sk-block sk-row"></div>
+          <div class="sk-block sk-row"></div>
+        </div>
+        <div id="workoutReal" style="display:none;">
+        <div class="ticket">
+          <div class="ticket-main">
+            <div>
+              <div class="ticket-label">План дня</div>
+              <div class="ticket-name">Ноги — сила</div>
+              <div class="ticket-meta">5 упражнений · ≈45 мин</div>
+            </div>
+            <button class="ticket-start" onclick="showToast('Тренировка начата')" aria-label="Начать тренировку «Ноги — сила»">
+              <svg viewBox="0 0 24 24" fill="var(--ink)" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+          </div>
+          <div class="ticket-perf">
+            <div class="ticket-perf-cell">
+              <div class="ticket-perf-val" id="weeklyDoneVal">2/5</div>
+              <div class="ticket-perf-lbl">Выполнено на неделе</div>
+            </div>
+            <div class="ticket-perf-cell">
+              <div class="ticket-perf-val">130 кг</div>
+              <div class="ticket-perf-lbl">Личный рекорд</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="streak-row">
+          <div class="streak-flame">🔥</div>
+          <div class="streak-copy">
+            <div class="streak-copy-main"><strong>7 дней</strong> подряд без пропуска</div>
+            <div class="streak-ticks">
+              <div class="tick done"></div><div class="tick done"></div><div class="tick done"></div>
+              <div class="tick done"></div><div class="tick done"></div><div class="tick done"></div>
+              <div class="tick today"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-head">
+          <div class="section-head-title">Упражнения дня</div>
+          <div class="section-head-count" id="exercisesDoneCount">0/3 готово</div>
+        </div>
+
+        <div class="log-row" role="button" tabindex="0" onclick="openSheet()" aria-label="Открыть детали упражнения: приседания со штангой">
+          <div class="log-index">01</div>
+          <div class="log-main">
+            <div class="log-name">Приседания со штангой</div>
+            <div class="log-sub" id="logRow1Sub"><b>2/4</b> подходов · 80 кг</div>
+          </div>
+          <div class="log-status" id="logRow1Status">
+            <div class="log-pr">100</div>
+            <div class="log-pr-lbl">рекорд, кг</div>
+          </div>
+          <svg class="log-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+
+        <div class="log-row" role="button" tabindex="0" onclick="showToast('Становая тяга — карточка в разработке')">
+          <div class="log-index">02</div>
+          <div class="log-main">
+            <div class="log-name">Становая тяга</div>
+            <div class="log-sub"><b>3×5</b> · 100 кг · отдых 120с</div>
+          </div>
+          <div class="log-status">
+            <div class="log-pr">130</div>
+            <div class="log-pr-lbl">рекорд, кг</div>
+          </div>
+          <svg class="log-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+
+        <div class="log-row" role="button" tabindex="0" onclick="showToast('Выпады — карточка в разработке')">
+          <div class="log-index">03</div>
+          <div class="log-main">
+            <div class="log-name">Выпады с гантелями</div>
+            <div class="log-sub"><b>3×12</b> · 14 кг · отдых 60с</div>
+          </div>
+          <div class="log-status">
+            <div class="log-pr">—</div>
+            <div class="log-pr-lbl">новое упражнение</div>
+          </div>
+          <svg class="log-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== NUTRITION ===== -->
+    <div class="screen" id="screen-nutrition">
+      <div class="app-header">
+        <div>
+          <div class="screen-eyebrow">Сегодня</div>
+          <div class="screen-title">Питание</div>
+        </div>
+        <button class="header-btn" onclick="showToast('Добавить продукт')" aria-label="Добавить продукт">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+
+      <div class="content-body">
+        <div class="tab-strip" role="tablist" aria-label="Разделы питания">
+          <button class="tab-strip-item active" role="tab" aria-selected="true" onclick="switchNutriTab('today', this)">Сегодня</button>
+          <button class="tab-strip-item" role="tab" aria-selected="false" onclick="switchNutriTab('diary', this)">Дневник</button>
+          <button class="tab-strip-item" role="tab" aria-selected="false" onclick="switchNutriTab('recipes', this)">Рецепты</button>
+        </div>
+
+        <div id="nutriToday">
+        <div class="cal-block">
+          <div class="cal-dial">
+            <svg width="92" height="92" viewBox="0 0 92 92" aria-hidden="true">
+              <circle cx="46" cy="46" r="38" stroke="var(--line-strong)" stroke-width="6" fill="none"/>
+              <circle id="calRingProgress" cx="46" cy="46" r="38" stroke="var(--cyan)" stroke-width="6" fill="none" stroke-dasharray="239" stroke-dashoffset="239" stroke-linecap="square"/>
+            </svg>
+            <div class="cal-dial-center">
+              <div class="cal-dial-val" id="calRingVal">0</div>
+              <div class="cal-dial-lbl" id="calRingLbl">из 2039 ккал</div>
+            </div>
+          </div>
+          <div class="macro-list">
+            <div class="macro-row">
+              <span class="macro-tag">Б</span>
+              <div class="macro-track"><div class="macro-fill" id="proteinFill" style="width:0%"></div></div>
+              <span class="macro-val" id="proteinVal">0 / 152 г</span>
+            </div>
+            <div class="macro-row">
+              <span class="macro-tag">Ж</span>
+              <div class="macro-track"><div class="macro-fill" id="fatFill" style="width:0%"></div></div>
+              <span class="macro-val" id="fatVal">0 / 76 г</span>
+            </div>
+            <div class="macro-row">
+              <span class="macro-tag">У</span>
+              <div class="macro-track"><div class="macro-fill" id="carbFill" style="width:0%"></div></div>
+              <span class="macro-val" id="carbVal">0 / 250 г</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="water-block">
+          <div class="water-head">
+            <div class="water-head-title">Вода</div>
+            <div class="water-head-count"><b id="waterNum">5</b> / 8 стаканов</div>
+          </div>
+          <div class="water-cells" id="waterGlasses" role="group" aria-label="Стаканы воды, выпито 5 из 8">
+            <div class="water-cell filled" role="switch" aria-checked="true" tabindex="0" aria-label="Стакан 1" onclick="toggleWater(0)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleWater(0);}"></div>
+            <div class="water-cell filled" role="switch" aria-checked="true" tabindex="0" aria-label="Стакан 2" onclick="toggleWater(1)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleWater(1);}"></div>
+            <div class="water-cell filled" role="switch" aria-checked="true" tabindex="0" aria-label="Стакан 3" onclick="toggleWater(2)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleWater(2);}"></div>
+            <div class="water-cell filled" role="switch" aria-checked="true" tabindex="0" aria-label="Стакан 4" onclick="toggleWater(3)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleWater(3);}"></div>
+            <div class="water-cell filled" role="switch" aria-checked="true" tabindex="0" aria-label="Стакан 5" onclick="toggleWater(4)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleWater(4);}"></div>
+            <div class="water-cell" role="switch" aria-checked="false" tabindex="0" aria-label="Стакан 6" onclick="toggleWater(5)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleWater(5);}"></div>
+            <div class="water-cell" role="switch" aria-checked="false" tabindex="0" aria-label="Стакан 7" onclick="toggleWater(6)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleWater(6);}"></div>
+            <div class="water-cell" role="switch" aria-checked="false" tabindex="0" aria-label="Стакан 8" onclick="toggleWater(7)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleWater(7);}"></div>
+          </div>
+        </div>
+
+        <div class="section-head" style="margin-top:20px;">
+          <div class="section-head-title">Приёмы пищи</div>
+          <div class="section-head-count" id="totalKcalCount">1372 ккал</div>
+        </div>
+
+        <div class="meal-group">
+          <div class="meal-group-head">
+            <span class="meal-time">08:10</span>
+            <span class="meal-group-name">Завтрак</span>
+            <span class="meal-group-kcal" id="kcalBreakfast">0 ккал</span>
+            <button class="meal-add-btn" onclick="openAddFood('breakfast')" aria-label="Добавить в завтрак">+</button>
+          </div>
+          <div id="mealListBreakfast"></div>
+        </div>
+        <div class="meal-group">
+          <div class="meal-group-head">
+            <span class="meal-time">13:20</span>
+            <span class="meal-group-name">Обед</span>
+            <span class="meal-group-kcal" id="kcalLunch">0 ккал</span>
+            <button class="meal-add-btn" onclick="openAddFood('lunch')" aria-label="Добавить в обед">+</button>
+          </div>
+          <div id="mealListLunch"></div>
+        </div>
+        <div class="meal-group">
+          <div class="meal-group-head">
+            <span class="meal-time">16:45</span>
+            <span class="meal-group-name">Перекус</span>
+            <span class="meal-group-kcal" id="kcalSnack">0 ккал</span>
+            <button class="meal-add-btn" onclick="openAddFood('snack')" aria-label="Добавить в перекус">+</button>
+          </div>
+          <div id="mealListSnack"></div>
+        </div>
+        <div class="meal-group" style="border-bottom:none;">
+          <div class="meal-group-head">
+            <span class="meal-time">19:30</span>
+            <span class="meal-group-name">Ужин</span>
+            <span class="meal-group-kcal" id="kcalDinner">0 ккал</span>
+            <button class="meal-add-btn" onclick="openAddFood('dinner')" aria-label="Добавить в ужин">+</button>
+          </div>
+          <div id="mealListDinner"></div>
+        </div>
+        </div>
+
+        <div id="nutriDiary" class="empty-state" style="display:none;">
+          <div class="empty-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+          </div>
+          <div class="empty-title">Дневник пока пуст</div>
+          <div class="empty-desc">Здесь появится история питания за прошлые дни, как только вы отметите первый приём пищи.</div>
+          <button class="empty-cta" onclick="switchNutriTabByName('today'); showToast('Открыт сегодняшний день')">Отметить приём пищи</button>
+        </div>
+
+        <div id="nutriRecipes" class="empty-state" style="display:none;">
+          <div class="empty-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>
+          </div>
+          <div class="empty-title">Рецептов пока нет</div>
+          <div class="empty-desc">Сохраняйте блюда из дневника питания сюда — так вы сможете добавлять их одним нажатием в следующий раз.</div>
+          <button class="empty-cta" onclick="showToast('Раздел рецептов в разработке')">Добавить рецепт</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PROGRESS ===== -->
+    <div class="screen" id="screen-progress">
+      <div class="app-header">
+        <div>
+          <div class="screen-eyebrow">Последние 7 дней</div>
+          <div class="screen-title">Прогресс</div>
+        </div>
+        <button class="header-btn" onclick="showToast('Фильтры периода')" aria-label="Открыть фильтры периода">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/></svg>
+        </button>
+      </div>
+
+      <div class="content-body">
+        <div class="tab-strip" role="tablist" aria-label="Период прогресса">
+          <button class="tab-strip-item active" role="tab" aria-selected="true" onclick="switchProgTab('week', this)">Неделя</button>
+          <button class="tab-strip-item" role="tab" aria-selected="false" onclick="showToast('Месяц')">Месяц</button>
+          <button class="tab-strip-item" role="tab" aria-selected="false" onclick="switchProgTab('year', this)">Год</button>
+        </div>
+
+        <div id="progWeek">
+        <div class="ring-block">
+          <div class="ring-wrap">
+            <svg width="130" height="130" viewBox="0 0 130 130" aria-hidden="true">
+              <circle cx="65" cy="65" r="56" stroke="var(--line-strong)" stroke-width="7" fill="none"/>
+              <circle cx="65" cy="65" r="56" stroke="var(--lime)" stroke-width="7" fill="none" stroke-dasharray="352" stroke-dashoffset="88" stroke-linecap="square"/>
+            </svg>
+            <div class="ring-center">
+              <div class="ring-val">75%</div>
+              <div class="ring-lbl">цели недели</div>
+            </div>
+          </div>
+          <div class="ring-legend">
+            <div class="legend-row"><div class="legend-swatch" style="background:var(--lime)"></div>Тренировки — 4/5</div>
+            <div class="legend-row"><div class="legend-swatch" style="background:var(--cyan)"></div>Питание — 6/7 дней в цели</div>
+            <div class="legend-row"><div class="legend-swatch" style="background:var(--ember)"></div>Вес — минус 0.6 кг</div>
+          </div>
+        </div>
+
+        <div class="chart-block">
+          <div class="chart-title">Объём тренировок по дням</div>
+          <div class="bars" id="barChart">
+            <div class="bar-col"><div class="bar" style="height:45%"></div><span class="bar-lbl">Пн</span></div>
+            <div class="bar-col"><div class="bar hi" style="height:72%"></div><span class="bar-lbl">Вт</span></div>
+            <div class="bar-col"><div class="bar" style="height:28%"></div><span class="bar-lbl">Ср</span></div>
+            <div class="bar-col"><div class="bar hi" style="height:88%"></div><span class="bar-lbl">Чт</span></div>
+            <div class="bar-col"><div class="bar" style="height:60%"></div><span class="bar-lbl">Пт</span></div>
+            <div class="bar-col"><div class="bar hi" style="height:95%"></div><span class="bar-lbl">Сб</span></div>
+            <div class="bar-col"><div class="bar" style="height:15%"></div><span class="bar-lbl">Вс</span></div>
+          </div>
+        </div>
+
+        <div class="chart-block" style="border-bottom:none;">
+          <div class="chart-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Динамика веса</span>
+            <button class="section-link-btn" onclick="openWeightSheet()" style="background:none;border:none;color:var(--lime);font-family:var(--mono-num);font-size:12.5px;cursor:pointer;">+ Записать</button>
+          </div>
+          <svg width="100%" height="70" viewBox="0 0 340 70" preserveAspectRatio="none" aria-hidden="true">
+            <polyline id="weightPolyline" points="0,50 56,46 112,42 168,36 224,30 280,22 340,16" fill="none" stroke="var(--cyan)" stroke-width="2"/>
+            <circle id="weightLastPoint" cx="340" cy="16" r="3.5" fill="var(--cyan)"/>
+          </svg>
+        </div>
+        </div>
+
+        <div id="progYear" class="empty-state" style="display:none;">
+          <div class="empty-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+          </div>
+          <div class="empty-title">Пока недостаточно данных</div>
+          <div class="empty-desc">Годовой обзор появится, когда наберётся хотя бы 4 недели тренировок. Вы отслеживаете прогресс всего 3 недели.</div>
+          <button class="empty-cta" onclick="switchProgTabByName('week'); showToast('Открыта неделя')">Смотреть эту неделю</button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ===== PROFILE ===== -->
+    <div class="screen" id="screen-profile">
+      <div class="app-header">
+        <div>
+          <div class="screen-eyebrow">Аккаунт</div>
+          <div class="screen-title">Профиль</div>
+        </div>
+        <button class="header-btn" onclick="showToast('Редактирование профиля')" aria-label="Редактировать профиль">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+      </div>
+
+      <div class="content-body">
+        <div class="profile-head">
+          <div class="profile-mark">АИ</div>
+          <div>
+            <div class="profile-name">Алексей Иванов</div>
+            <div class="profile-level">Уровень: <b>Продвинутый</b> · 3 мес. в программе</div>
+          </div>
+        </div>
+
+        <div class="profile-stats">
+          <div class="profile-stat-cell"><div class="profile-stat-val">24</div><div class="profile-stat-lbl">Тренировки</div></div>
+          <div class="profile-stat-cell"><div class="profile-stat-val">7</div><div class="profile-stat-lbl">Серия, дней</div></div>
+          <div class="profile-stat-cell"><div class="profile-stat-val">12</div><div class="profile-stat-lbl">Награды</div></div>
+        </div>
+
+        <div class="section-head">
+          <div class="section-head-title">Параметры и КБЖУ</div>
+          <div class="section-head-count">Миффлин-Сан Жеор</div>
+        </div>
+        <div class="calc-grid">
+          <div class="calc-field">
+            <label for="inputSex">Пол</label>
+            <select id="inputSex" onchange="updateProfileData()">
+              <option value="male" selected>Мужской</option>
+              <option value="female">Женский</option>
+            </select>
+          </div>
+          <div class="calc-field">
+            <label for="inputAge">Возраст</label>
+            <input type="number" id="inputAge" value="26" onchange="updateProfileData()">
+          </div>
+          <div class="calc-field">
+            <label for="inputHeight">Рост, см</label>
+            <input type="number" id="inputHeight" value="178" onchange="updateProfileData()">
+          </div>
+          <div class="calc-field">
+            <label for="inputWeight">Вес, кг</label>
+            <input type="number" id="inputWeight" value="76" onchange="updateProfileData()">
+          </div>
+          <div class="calc-field">
+            <label for="selectPal">Активность (PAL)</label>
+            <select id="selectPal" onchange="updateProfileData()">
+              <option value="1.2">1.2 — низкая</option>
+              <option value="1.375" selected>1.375 — умеренная</option>
+              <option value="1.55">1.55 — высокая</option>
+            </select>
+          </div>
+          <div class="calc-field">
+            <label for="selectGoal">Бюджет калорий</label>
+            <select id="selectGoal" onchange="updateProfileData()">
+              <option value="recomp" selected>Дефицит −12%</option>
+              <option value="maintain">Поддержание</option>
+              <option value="gain">Профицит +10%</option>
+            </select>
+          </div>
+        </div>
+        <div class="calc-result">
+          <div class="calc-result-cell"><div class="calc-result-val" id="calcBmr">—</div><div class="calc-result-lbl">BMR, ккал</div></div>
+          <div class="calc-result-cell"><div class="calc-result-val" id="calcTdee">—</div><div class="calc-result-lbl">TDEE, ккал</div></div>
+          <div class="calc-result-cell"><div class="calc-result-val" id="calcTarget" style="color:var(--lime)">—</div><div class="calc-result-lbl">Цель, ккал</div></div>
+        </div>
+
+        <div class="section-head">
+          <div class="section-head-title">Метаболическое плато</div>
+          <div class="section-head-count">Refeed / Diet Break</div>
+        </div>
+        <div class="plateau-status" id="plateauStatus">Протокол не активен · цель питания рассчитывается как обычно</div>
+        <div class="plateau-actions">
+          <button class="plateau-btn" id="btnRefeed" onclick="triggerRefeed()">Рефид · 24ч<span>Цель → TDEE, углеводы</span></button>
+          <button class="plateau-btn" id="btnDietBreak" onclick="triggerDietBreak()">Diet Break · 14 дней<span>Цель → TDEE, сброс адаптации</span></button>
+        </div>
+
+        <div class="section-head">
+          <div class="section-head-title">Достижения</div>
+          <div class="section-head-count">5/6</div>
+        </div>
+        <div class="badge-grid">
+          <div class="badge-cell"><span class="badge-mark">🔥</span><div class="badge-name">7 дней</div><div class="badge-desc">серия подряд</div></div>
+          <div class="badge-cell"><span class="badge-mark">💪</span><div class="badge-name">100 кг</div><div class="badge-desc">становая</div></div>
+          <div class="badge-cell"><span class="badge-mark">🏃</span><div class="badge-name">Марафон</div><div class="badge-desc">20 тренировок</div></div>
+          <div class="badge-cell"><span class="badge-mark">🥗</span><div class="badge-name">Диетолог</div><div class="badge-desc">7 дней в цели</div></div>
+          <div class="badge-cell"><span class="badge-mark">⚡</span><div class="badge-name">Ранняя пташка</div><div class="badge-desc">тренировка до 6:00</div></div>
+          <div class="badge-cell locked"><span class="badge-mark">🔒</span><div class="badge-name">30 дней</div><div class="badge-desc">осталось 23 дня</div></div>
+        </div>
+
+        <div class="section-head">
+          <div class="section-head-title">Настройки</div>
+        </div>
+
+        <div class="setting-row" role="button" tabindex="0" onclick="showToast('Открыты цели')">
+          <div class="setting-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div>
+          <div class="setting-text"><div class="setting-name">Мои цели</div><div class="setting-desc" id="profileGoalText">Дефицит −12%, 2039 ккал/день</div></div>
+          <svg class="log-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div class="setting-row" role="button" tabindex="0" onclick="showToast('Открыты программы')">
+          <div class="setting-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="1"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+          <div class="setting-text"><div class="setting-name">Мои тренировки</div><div class="setting-desc">3 программы · 18 упражнений</div></div>
+          <svg class="log-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div class="setting-row" role="switch" aria-checked="true" id="themeSwitchRow" tabindex="0" onclick="toggleTheme()" aria-label="Тёмная тема">
+          <div class="setting-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
+          <div class="setting-text"><div class="setting-name">Тёмная тема</div><div class="setting-desc" id="themeLabel">Включена</div></div>
+          <div class="toggle on" id="themeToggle" aria-hidden="true"></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+          <div class="setting-text"><div class="setting-name">Уведомления о тренировках</div><div class="setting-desc">Напоминание за 30 минут</div></div>
+          <div class="toggle on" role="switch" aria-checked="true" tabindex="0" aria-label="Уведомления о тренировках" onclick="toggleSwitch(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSwitch(this);}"></div>
+        </div>
+        <div class="setting-row" role="button" tabindex="0" onclick="exportUserData()">
+          <div class="setting-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+          <div class="setting-text"><div class="setting-name">Экспорт данных</div><div class="setting-desc">Скачать резервную копию (JSON)</div></div>
+        </div>
+        <div class="setting-row" role="button" tabindex="0" onclick="document.getElementById('importFileInput').click()">
+          <div class="setting-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+          <div class="setting-text"><div class="setting-name">Импорт данных</div><div class="setting-desc">Восстановить из файла резервной копии</div></div>
+        </div>
+        <input type="file" id="importFileInput" accept="application/json" style="display:none;" onchange="importUserData(event)">
+        <div class="setting-row" role="button" tabindex="0" id="wgerRow" onclick="wgerSync()">
+          <div class="setting-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></div>
+          <div class="setting-text"><div class="setting-name">Синхронизация wger</div><div class="setting-desc" id="wgerDesc">Подключено</div></div>
+          <svg class="log-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Detail sheet: real drill-down instead of a dead-end toast -->
+  <div class="sheet-scrim" id="sheetScrim" onclick="closeSheet()"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" aria-hidden="true">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <div class="ticket-label">Упражнение 01</div>
+        <div class="sheet-title" id="sheetTitle">Приседания</div>
+      </div>
+      <button class="sheet-close" onclick="closeSheet()" aria-label="Закрыть карточку упражнения">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="sheet-grid">
+      <div class="sheet-grid-cell"><div class="sheet-grid-val">4×8</div><div class="sheet-grid-lbl">подходы</div></div>
+      <div class="sheet-grid-cell"><div class="sheet-grid-val">80 кг</div><div class="sheet-grid-lbl">рабочий вес</div></div>
+      <div class="sheet-grid-cell"><div class="sheet-grid-val">90с</div><div class="sheet-grid-lbl">отдых</div></div>
+    </div>
+    <div class="sheet-muscles"><b>Основные мышцы:</b> квадрицепс, ягодицы, кор</div>
+    <div class="sheet-note">Почему RIR 1–3: высокопороговые волокна рекрутируются только у отказа (принцип Хеннемана) — так работает механическое напряжение на гипертрофию.</div>
+
+    <div class="rir-block">
+      <span class="rir-label">Сколько повторений в запасе (RIR)?</span>
+      <div class="rir-btns" id="rirBtns" role="radiogroup" aria-label="RIR перед следующим подходом">
+        <button class="rir-btn" role="radio" aria-checked="false" onclick="selectRir(1, this)">1</button>
+        <button class="rir-btn active" role="radio" aria-checked="true" onclick="selectRir(2, this)">2</button>
+        <button class="rir-btn" role="radio" aria-checked="false" onclick="selectRir(3, this)">3</button>
+      </div>
+    </div>
+    <div class="sheet-grid" style="border-top:1px solid var(--line);">
+      <div class="sheet-grid-cell"><div class="sheet-grid-val" id="rpeVal">8.0</div><div class="sheet-grid-lbl">RPE (10 − RIR)</div></div>
+      <div class="sheet-grid-cell"><div class="sheet-grid-val" id="oneRmVal">101</div><div class="sheet-grid-lbl">прогноз 1ПМ, кг</div></div>
+    </div>
+
+    <div class="rest-timer" id="restTimer" style="display:none;">
+      <span class="rest-timer-label">Отдых</span>
+      <span class="rest-timer-val" id="restTimerVal">90</span>
+      <button class="rest-skip" onclick="skipRest()">пропустить</button>
+    </div>
+    <div class="sheet-sets" id="sheetSets">
+      <div class="sheet-set-row"><span class="sheet-set-num">1</span><span class="sheet-set-w">80 кг × 8</span><span class="sheet-set-done">✓ выполнен</span></div>
+      <div class="sheet-set-row"><span class="sheet-set-num">2</span><span class="sheet-set-w">80 кг × 8</span><span class="sheet-set-done">✓ выполнен</span></div>
+      <div class="sheet-set-row" id="setRow3"><span class="sheet-set-num">3</span><span class="sheet-set-w">80 кг × 8</span><span class="sheet-set-status" style="color:var(--paper-faint)">не начат</span></div>
+      <div class="sheet-set-row" id="setRow4"><span class="sheet-set-num">4</span><span class="sheet-set-w">80 кг × 8</span><span class="sheet-set-status" style="color:var(--paper-faint)">не начат</span></div>
+    </div>
+    <button class="sheet-cta" id="sheetCta" onclick="recordNextSet()">Записать подход 3</button>
+  </div>
+
+  <!-- History sheet: empty state instead of a dead toast on the journal icon -->
+  <div class="sheet-scrim" id="historyScrim" onclick="closeHistorySheet()"></div>
+  <div class="sheet" id="historySheet" role="dialog" aria-modal="true" aria-labelledby="historySheetTitle" aria-hidden="true">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <div class="ticket-label">Журнал</div>
+        <div class="sheet-title" id="historySheetTitle">История</div>
+      </div>
+      <button class="sheet-close" onclick="closeHistorySheet()" aria-label="Закрыть журнал истории">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="empty-state">
+      <div class="empty-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </div>
+      <div class="empty-title">Завершённых тренировок пока нет</div>
+      <div class="empty-desc">Как только вы закончите первую тренировку, здесь появится история с датами, весами и временем каждой сессии.</div>
+      <button class="empty-cta" onclick="closeHistorySheet(); showToast('Тренировка начата')">Начать тренировку</button>
+    </div>
+  </div>
+
+  <!-- Add-food sheet: real logging instead of a static meal list -->
+  <div class="sheet-scrim" id="foodScrim" onclick="closeFoodSheet()"></div>
+  <div class="sheet" id="foodSheet" role="dialog" aria-modal="true" aria-labelledby="foodSheetTitle" aria-hidden="true">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <div class="ticket-label">Дневник питания</div>
+        <div class="sheet-title" id="foodSheetTitle">Добавить продукт</div>
+      </div>
+      <button class="sheet-close" onclick="closeFoodSheet()" aria-label="Закрыть добавление продукта">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="food-search">
+      <input type="text" id="foodSearchInput" placeholder="Поиск в базе продуктов…" oninput="handleFoodSearchInput()" aria-label="Поиск продукта">
+    </div>
+    <div class="food-preset-list" id="foodPresetList"></div>
+
+    <div class="food-form">
+      <div class="food-form-row">
+        <label for="customFoodName">Название</label>
+        <input type="text" id="customFoodName" placeholder="Свой продукт">
+      </div>
+      <div class="food-form-grid">
+        <div class="food-form-row"><label for="customFoodKcal">Ккал / 100г</label><input type="number" id="customFoodKcal" placeholder="120"></div>
+        <div class="food-form-row"><label for="customFoodProtein">Белки, г</label><input type="number" id="customFoodProtein" placeholder="10"></div>
+        <div class="food-form-row"><label for="customFoodFat">Жиры, г</label><input type="number" id="customFoodFat" placeholder="3"></div>
+      </div>
+      <div class="food-form-row"><label for="customFoodCarbs">Углеводы, г / 100г</label><input type="number" id="customFoodCarbs" placeholder="15"></div>
+      <div class="food-form-row">
+        <label for="portionRange">Порция: <span class="portion-val" id="portionGramDisplay">100 г</span></label>
+        <div class="portion-row">
+          <input type="range" id="portionRange" min="25" max="400" step="25" value="100" oninput="updatePortionDisplay()">
+        </div>
+      </div>
+    </div>
+    <button class="sheet-cta" onclick="confirmAddFood()">Добавить в дневник</button>
+  </div>
+
+  <!-- Weight-log sheet: replaces a native prompt() with an on-brand entry -->
+  <div class="sheet-scrim" id="weightScrim" onclick="closeWeightSheet()"></div>
+  <div class="sheet" id="weightSheet" role="dialog" aria-modal="true" aria-labelledby="weightSheetTitle" aria-hidden="true">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <div class="ticket-label">Антропометрия</div>
+        <div class="sheet-title" id="weightSheetTitle">Записать вес</div>
+      </div>
+      <button class="sheet-close" onclick="closeWeightSheet()" aria-label="Закрыть запись веса">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="food-form">
+      <div class="food-form-row">
+        <label for="weightInput">Текущий вес, кг</label>
+        <input type="number" step="0.1" id="weightInput" placeholder="76.0">
+      </div>
+    </div>
+    <button class="sheet-cta" onclick="confirmWeightLog()">Сохранить</button>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav" aria-label="Основная навигация">
+    <button class="nav-item active" onclick="switchScreen('workout', this)" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6.5 6.5L17.5 17.5M6.5 17.5L17.5 6.5"/><circle cx="12" cy="12" r="9"/></svg>
+      <span class="nav-label">Тренировки</span>
+    </button>
+    <button class="nav-item" onclick="switchScreen('nutrition', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>
+      <span class="nav-label">Питание</span>
+    </button>
+    <button class="nav-item" onclick="switchScreen('progress', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+      <span class="nav-label">Прогресс</span>
+    </button>
+    <button class="nav-item" onclick="switchScreen('profile', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="nav-label">Профиль</span>
+    </button>
+  </nav>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"><span id="toastText">Готово</span></div>
+
+</div>
+</div>
+
+<script>
+// ================= APP STATE (real, persisted — replaces hardcoded demo numbers) =================
+const DEFAULT_STATE = {
+  profile: { sex: 'male', age: 26, height: 178, weight: 76, pal: 1.375, goal: 'recomp' },
+  today: {
+    water: 5,
+    meals: {
+      breakfast: [{ name: 'Овсянка с ягодами', kcal: 420, p: 22, f: 12, c: 58 }],
+      lunch: [{ name: 'Курица с киноа', kcal: 560, p: 45, f: 15, c: 52 }],
+      snack: [{ name: 'Протеиновый смузи', kcal: 340, p: 31, f: 8, c: 35 }],
+      dinner: [{ name: 'Лосось с овощами', kcal: 460, p: 38, f: 18, c: 25 }]
+    }
+  },
+  weightHistory: [78.5, 78.0, 77.4, 76.8, 76.2, 76.0],
+  targetMealForAdd: 'breakfast',
+  metabolic: { type: null, endsAt: null }
+};
+let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+
+const FOOD_PRESETS = [
+  { name: 'Куриная грудка варёная', kcal: 165, protein: 31, fat: 3.6, carbs: 0 },
+  { name: 'Рис отварной', kcal: 130, protein: 2.7, fat: 0.3, carbs: 28 },
+  { name: 'Гречка отварная', kcal: 110, protein: 4, fat: 1.1, carbs: 21 },
+  { name: 'Яйцо куриное, 1 шт.', kcal: 78, protein: 6.3, fat: 5.3, carbs: 0.6 },
+  { name: 'Творог 5%', kcal: 121, protein: 17, fat: 5, carbs: 3 },
+  { name: 'Лосось на пару', kcal: 208, protein: 20, fat: 13, carbs: 0 },
+  { name: 'Овсянка на воде', kcal: 88, protein: 3, fat: 1.7, carbs: 15 },
+  { name: 'Банан, 1 шт.', kcal: 89, protein: 1.1, fat: 0.3, carbs: 23 }
+];
+
+// ---- Persistence: localStorage save/load (was entirely missing before — every
+// number reset on refresh). Saved after any state-mutating action. ----
+function saveState() {
+  try { localStorage.setItem('fitpulse_state_v1', JSON.stringify(state)); } catch (e) {}
+}
+function loadState() {
+  try {
+    const saved = localStorage.getItem('fitpulse_state_v1');
+    if (saved) state = { ...DEFAULT_STATE, ...JSON.parse(saved) };
+  } catch (e) {}
+}
+
+// ---- Mifflin-St Jeor engine: BMR → TDEE → calorie & macro targets, driven by
+// real profile inputs instead of hardcoded "2200 ккал" text. ----
+function isPlateauProtocolActive() {
+  const m = state.metabolic;
+  if (!m || !m.type) return false;
+  if (Date.now() > m.endsAt) {
+    state.metabolic = { type: null, endsAt: null };
+    saveState();
+    return false;
+  }
+  return true;
+}
+function calculateTargets() {
+  const p = state.profile;
+  let bmr = 10 * p.weight + 6.25 * p.height - 5 * p.age;
+  bmr = p.sex === 'male' ? bmr + 5 : bmr - 161;
+  const tdee = Math.round(bmr * parseFloat(p.pal));
+  let target = tdee;
+  const protocolActive = isPlateauProtocolActive();
+  if (protocolActive) {
+    // Refeed/Diet Break: calorie target lifts to maintenance (TDEE) for the
+    // protocol's duration, regardless of the standing deficit/surplus goal —
+    // this is the whole mechanism, per the metabolic-plateau research.
+    target = tdee;
+  } else if (p.goal === 'recomp') {
+    target = Math.round(tdee * 0.88);
+  } else if (p.goal === 'gain') {
+    target = Math.round(tdee * 1.10);
+  }
+  const proteinTarget = Math.round(p.weight * 2.0);
+  const fatTarget = Math.round(p.weight * 1.0);
+  const carbTarget = Math.max(50, Math.round((target - proteinTarget * 4 - fatTarget * 9) / 4));
+  return { bmr: Math.round(bmr), tdee, target, proteinTarget, fatTarget, carbTarget, protocolActive };
+}
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+}
+updateClock(); setInterval(updateClock, 30000);
+
+// ---- Keyboard support: any div acting as role="button" responds to Enter/Space ----
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const el = e.target;
+  if (el.getAttribute && el.getAttribute('role') === 'button' && el.tagName !== 'BUTTON') {
+    e.preventDefault();
+    el.click();
+  }
+});
+
+// ---- Loading skeleton: show placeholders briefly instead of popping content in blank ----
+window.addEventListener('load', () => {
+  loadState();
+  hydrateProfileInputs();
+  renderMeals();
+  renderWeightChart();
+  setTimeout(() => {
+    document.getElementById('workoutSkeleton').style.display = 'none';
+    document.getElementById('workoutReal').style.display = 'block';
+  }, 700);
+});
+
+function hydrateProfileInputs() {
+  const p = state.profile;
+  document.getElementById('inputSex').value = p.sex;
+  document.getElementById('inputAge').value = p.age;
+  document.getElementById('inputHeight').value = p.height;
+  document.getElementById('inputWeight').value = p.weight;
+  document.getElementById('selectPal').value = p.pal;
+  document.getElementById('selectGoal').value = p.goal;
+  renderCalcResults();
+  renderPlateauStatus();
+
+  const waterCells = document.querySelectorAll('.water-cell');
+  waterCells.forEach((cell, i) => {
+    const filled = i < state.today.water;
+    cell.classList.toggle('filled', filled);
+    cell.setAttribute('aria-checked', filled ? 'true' : 'false');
+  });
+  document.getElementById('waterNum').textContent = state.today.water;
+}
+
+function renderCalcResults() {
+  const t = calculateTargets();
+  document.getElementById('calcBmr').textContent = t.bmr.toLocaleString('ru-RU');
+  document.getElementById('calcTdee').textContent = t.tdee.toLocaleString('ru-RU');
+  document.getElementById('calcTarget').textContent = t.target.toLocaleString('ru-RU');
+  const goalLabels = { recomp: 'Дефицит −12%', maintain: 'Поддержание', gain: 'Профицит +10%' };
+  const label = t.protocolActive
+    ? (state.metabolic.type === 'refeed' ? 'Рефид — цель поднята до TDEE' : 'Diet Break — цель поднята до TDEE')
+    : goalLabels[state.profile.goal];
+  const desc = document.getElementById('profileGoalText');
+  if (desc) desc.textContent = `${label}, ${t.target.toLocaleString('ru-RU')} ккал/день`;
+  return t;
+}
+
+// ---- Refeed / Diet Break: real countdown-driven protocol, persisted, and
+// wired into calculateTargets() above — not a one-off alert() with no state. ----
+// ---- Plateau detection from real weight data: per the report's spec (10+ days
+// of flat weighted trend while in deficit → suggest a protocol). Our history
+// only grows when the user actually logs weight, so this checks however many
+// points exist so far rather than requiring a fixed 10-day window of daily
+// logs the prototype can't guarantee. ----
+function detectWeightPlateau() {
+  const hist = state.weightHistory;
+  if (state.profile.goal !== 'recomp' || hist.length < 4) return false;
+  const recent = hist.slice(-4);
+  const range = Math.max(...recent) - Math.min(...recent);
+  return range <= 0.3; // flat within 300g across the last 4 logged points
+}
+
+function renderPlateauStatus() {
+  const box = document.getElementById('plateauStatus');
+  const btnRefeed = document.getElementById('btnRefeed');
+  const btnDietBreak = document.getElementById('btnDietBreak');
+  const active = isPlateauProtocolActive();
+
+  if (!active) {
+    if (detectWeightPlateau()) {
+      box.classList.add('active');
+      box.innerHTML = '<b>Похоже на плато</b> · вес почти не меняется на последних записях при дефиците — стоит запустить Рефид или Diet Break';
+    } else {
+      box.classList.remove('active');
+      box.textContent = 'Протокол не активен · цель питания рассчитывается как обычно';
+    }
+    btnRefeed.disabled = false;
+    btnDietBreak.disabled = false;
+    return;
+  }
+
+  const m = state.metabolic;
+  const msLeft = m.endsAt - Date.now();
+  const hoursLeft = Math.ceil(msLeft / (1000 * 60 * 60));
+  const label = m.type === 'refeed' ? 'Рефид' : 'Diet Break';
+  const remainText = hoursLeft > 48
+    ? `${Math.ceil(hoursLeft / 24)} дн.`
+    : `${hoursLeft} ч.`;
+  box.classList.add('active');
+  box.innerHTML = `<b>${label} активен</b> · осталось ${remainText} · цель питания временно поднята до уровня поддержки (TDEE)`;
+  btnRefeed.disabled = true;
+  btnDietBreak.disabled = true;
+}
+function triggerRefeed() {
+  if (isPlateauProtocolActive()) return;
+  state.metabolic = { type: 'refeed', endsAt: Date.now() + 24 * 60 * 60 * 1000 };
+  saveState();
+  renderPlateauStatus();
+  renderCalcResults();
+  renderNutritionSummary();
+  showToast('Рефид запущен на 24 часа — цель поднята до TDEE');
+}
+function triggerDietBreak() {
+  if (isPlateauProtocolActive()) return;
+  state.metabolic = { type: 'dietbreak', endsAt: Date.now() + 14 * 24 * 60 * 60 * 1000 };
+  saveState();
+  renderPlateauStatus();
+  renderCalcResults();
+  renderNutritionSummary();
+  showToast('Diet Break запущен на 14 дней — цель поднята до TDEE');
+}
+
+function updateProfileData() {
+  const p = state.profile;
+  p.sex = document.getElementById('inputSex').value;
+  p.age = parseInt(document.getElementById('inputAge').value) || p.age;
+  p.height = parseInt(document.getElementById('inputHeight').value) || p.height;
+  p.weight = parseFloat(document.getElementById('inputWeight').value) || p.weight;
+  p.pal = parseFloat(document.getElementById('selectPal').value);
+  p.goal = document.getElementById('selectGoal').value;
+  saveState();
+  renderCalcResults();
+  renderNutritionSummary();
+  showToast('Параметры обновлены');
+}
+
+function switchScreen(name, btn) {
+  haptic(10);
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.remove('active');
+    n.removeAttribute('aria-current');
+  });
+  btn.classList.add('active');
+  btn.setAttribute('aria-current', 'page');
+  document.getElementById('scrollContent').scrollTop = 0;
+}
+
+// ---- Nutrition tabs: real content swap, including empty states ----
+function switchNutriTab(name, btn) {
+  document.getElementById('nutriToday').style.display = name === 'today' ? 'block' : 'none';
+  document.getElementById('nutriDiary').style.display = name === 'diary' ? 'block' : 'none';
+  document.getElementById('nutriRecipes').style.display = name === 'recipes' ? 'block' : 'none';
+  btn.parentElement.querySelectorAll('.tab-strip-item').forEach(t => {
+    t.classList.remove('active');
+    t.setAttribute('aria-selected', 'false');
+  });
+  btn.classList.add('active');
+  btn.setAttribute('aria-selected', 'true');
+}
+function switchNutriTabByName(name) {
+  const label = name === 'today' ? 'Сегодня' : name === 'diary' ? 'Дневник' : 'Рецепты';
+  const btn = [...document.querySelectorAll('#screen-nutrition .tab-strip-item')]
+    .find(t => t.textContent.trim() === label);
+  if (btn) switchNutriTab(name, btn);
+}
+
+// ---- Progress tabs: real content swap, including empty "not enough data" state ----
+function switchProgTab(name, btn) {
+  document.getElementById('progWeek').style.display = name === 'week' ? 'block' : 'none';
+  document.getElementById('progYear').style.display = name === 'year' ? 'block' : 'none';
+  btn.parentElement.querySelectorAll('.tab-strip-item').forEach(t => {
+    t.classList.remove('active');
+    t.setAttribute('aria-selected', 'false');
+  });
+  btn.classList.add('active');
+  btn.setAttribute('aria-selected', 'true');
+}
+function switchProgTabByName(name) {
+  const label = name === 'week' ? 'Неделя' : 'Год';
+  const btn = [...document.querySelectorAll('#screen-progress .tab-strip-item')]
+    .find(t => t.textContent.trim() === label);
+  if (btn) switchProgTab(name, btn);
+}
+
+function toggleWater(idx) {
+  const cells = document.querySelectorAll('.water-cell');
+  let waterCount;
+  if (cells[idx].classList.contains('filled')) {
+    for (let i = idx; i < cells.length; i++) {
+      cells[i].classList.remove('filled');
+      cells[i].setAttribute('aria-checked', 'false');
+    }
+    waterCount = idx;
+  } else {
+    for (let i = 0; i <= idx; i++) {
+      cells[i].classList.add('filled');
+      cells[i].setAttribute('aria-checked', 'true');
+    }
+    waterCount = idx + 1;
+  }
+  state.today.water = waterCount;
+  saveState();
+  document.getElementById('waterNum').textContent = waterCount;
+  document.getElementById('waterGlasses').setAttribute('aria-label', `Стаканы воды, выпито ${waterCount} из 8`);
+}
+
+// ---- Generic accessible toggle switch (used by the notifications row) ----
+function toggleSwitch(el) {
+  const on = el.classList.toggle('on');
+  el.setAttribute('aria-checked', on ? 'true' : 'false');
+}
+
+// ================= NUTRITION: real food log driving the ring + macro bars =================
+function renderMeals() {
+  const keyMap = { breakfast: 'Breakfast', lunch: 'Lunch', snack: 'Snack', dinner: 'Dinner' };
+  let totalKcal = 0, totalP = 0, totalF = 0, totalC = 0;
+
+  Object.keys(keyMap).forEach(key => {
+    const items = state.today.meals[key];
+    const listEl = document.getElementById('mealList' + keyMap[key]);
+    const kcalEl = document.getElementById('kcal' + keyMap[key]);
+    if (!listEl) return;
+    listEl.innerHTML = '';
+    let mealKcal = 0;
+
+    if (!items.length) {
+      listEl.innerHTML = '<div class="food-item-empty">Нет записей</div>';
+    }
+    items.forEach((item, idx) => {
+      mealKcal += item.kcal;
+      totalKcal += item.kcal;
+      totalP += item.p || 0;
+      totalF += item.f || 0;
+      totalC += item.c || 0;
+      const row = document.createElement('div');
+      row.className = 'food-item-row';
+      row.innerHTML = `
+        <span class="food-item-name">${item.name}</span>
+        <span class="food-item-macro">Б${item.p} Ж${item.f} У${item.c}</span>
+        <span class="food-item-kcal">${item.kcal}</span>
+        <button class="food-item-del" aria-label="Удалить ${item.name}" onclick="deleteFoodItem('${key}', ${idx})">×</button>
+      `;
+      listEl.appendChild(row);
+    });
+    if (kcalEl) kcalEl.textContent = mealKcal + ' ккал';
+  });
+
+  state.today.caloriesEaten = totalKcal;
+  state.today.protein = totalP;
+  state.today.fat = totalF;
+  state.today.carbs = totalC;
+  saveState();
+  renderNutritionSummary();
+}
+
+function renderNutritionSummary() {
+  const t = calculateTargets();
+  const eaten = state.today.caloriesEaten || 0;
+  const pct = Math.min(100, Math.round((eaten / t.target) * 100));
+  const circumference = 239;
+  document.getElementById('calRingProgress').setAttribute('stroke-dashoffset', circumference - (circumference * pct / 100));
+  document.getElementById('calRingVal').textContent = eaten.toLocaleString('ru-RU');
+  document.getElementById('calRingLbl').textContent = `из ${t.target.toLocaleString('ru-RU')} ккал`;
+  document.getElementById('totalKcalCount').textContent = eaten.toLocaleString('ru-RU') + ' ккал';
+
+  const macros = [
+    ['protein', state.today.protein || 0, t.proteinTarget],
+    ['fat', state.today.fat || 0, t.fatTarget],
+    ['carb', state.today.carbs || 0, t.carbTarget]
+  ];
+  macros.forEach(([key, val, target]) => {
+    const p = Math.min(100, Math.round((val / target) * 100));
+    document.getElementById(key + 'Fill').style.width = p + '%';
+    document.getElementById(key + 'Val').textContent = `${val} / ${target} г`;
+  });
+}
+
+function openAddFood(mealKey) {
+  state.targetMealForAdd = mealKey;
+  const labels = { breakfast: 'завтрак', lunch: 'обед', snack: 'перекус', dinner: 'ужин' };
+  document.getElementById('foodSheetTitle').textContent = 'Добавить в ' + labels[mealKey];
+  document.getElementById('foodSearchInput').value = '';
+  document.getElementById('customFoodName').value = '';
+  document.getElementById('customFoodKcal').value = '';
+  document.getElementById('customFoodProtein').value = '';
+  document.getElementById('customFoodFat').value = '';
+  document.getElementById('customFoodCarbs').value = '';
+  document.getElementById('portionRange').value = 100;
+  updatePortionDisplay();
+  renderFoodPresets(''); // show local presets immediately, no network wait
+  openGenericSheet('foodSheet', 'foodScrim');
+}
+function closeFoodSheet() { closeGenericSheet('foodSheet', 'foodScrim'); }
+
+// ---- Open Food Facts live search: real public API, called directly from the
+// browser via fetch() — no backend needed for a GET search. Debounced 400ms
+// per Open Food Facts' own rate-limit guidance (max 15 req/min from one IP).
+// KNOWN LIMITATION: browsers block scripts from setting a custom User-Agent
+// header (it's on the fetch "forbidden header" list), so unlike the Node/RN
+// client in the report, this request goes out without one. Open Food Facts
+// may rate-limit or deprioritize unidentified traffic more aggressively as a
+// result — a production build should proxy this through a small backend that
+// sets the header, exactly as OFF's own usage policy asks. ----
+let foodSearchDebounce = null;
+function handleFoodSearchInput() {
+  const query = document.getElementById('foodSearchInput').value.trim();
+  clearTimeout(foodSearchDebounce);
+  if (query.length < 2) { renderFoodPresets(''); return; }
+  const container = document.getElementById('foodPresetList');
+  container.innerHTML = '<div class="food-item-empty">Ищу в Open Food Facts…</div>';
+  foodSearchDebounce = setTimeout(() => searchOpenFoodFacts(query), 400);
+}
+async function searchOpenFoodFacts(query) {
+  try {
+    const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=8`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const products = (data.products || [])
+      .filter(p => p.product_name && p.nutriments && p.nutriments['energy-kcal_100g'] != null)
+      .slice(0, 8)
+      .map(p => ({
+        name: p.product_name + (p.brands ? ` (${p.brands.split(',')[0]})` : ''),
+        kcal: Math.round(p.nutriments['energy-kcal_100g'] || 0),
+        protein: Math.round((p.nutriments['proteins_100g'] || 0) * 10) / 10,
+        fat: Math.round((p.nutriments['fat_100g'] || 0) * 10) / 10,
+        carbs: Math.round((p.nutriments['carbohydrates_100g'] || 0) * 10) / 10
+      }));
+
+    if (!products.length) {
+      renderFoodPresets(query, 'В Open Food Facts ничего не нашлось — локальная база:');
+      return;
+    }
+    renderPresetRows(products, 'Open Food Facts:');
+  } catch (e) {
+    // Offline, CORS blocked, or the API is down — fail soft to local presets
+    // instead of leaving the sheet stuck on "Ищу…".
+    renderFoodPresets(query, 'Нет связи с Open Food Facts — локальная база:');
+  }
+}
+function renderFoodPresets(query, headerOverride) {
+  const q = (query ?? document.getElementById('foodSearchInput').value).toLowerCase();
+  const matches = FOOD_PRESETS.filter(f => f.name.toLowerCase().includes(q));
+  renderPresetRows(matches, headerOverride || 'Локальная база:');
+}
+function renderPresetRows(items, headerText) {
+  const container = document.getElementById('foodPresetList');
+  container.innerHTML = '';
+  if (headerText) {
+    const head = document.createElement('div');
+    head.className = 'food-preset-source';
+    head.textContent = headerText;
+    container.appendChild(head);
+  }
+  if (!items.length) {
+    container.innerHTML += '<div class="food-item-empty">Ничего не найдено</div>';
+    return;
+  }
+  items.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'food-preset-row';
+    row.setAttribute('role', 'button');
+    row.setAttribute('tabindex', '0');
+    row.innerHTML = `<span>${item.name}</span><span class="food-preset-kcal">${item.kcal} ккал/100г</span>`;
+    row.onclick = () => selectPresetFood(item);
+    container.appendChild(row);
+  });
+}
+function selectPresetFood(item) {
+  document.getElementById('customFoodName').value = item.name;
+  document.getElementById('customFoodKcal').value = item.kcal;
+  document.getElementById('customFoodProtein').value = item.protein;
+  document.getElementById('customFoodFat').value = item.fat;
+  document.getElementById('customFoodCarbs').value = item.carbs;
+}
+function updatePortionDisplay() {
+  document.getElementById('portionGramDisplay').textContent = document.getElementById('portionRange').value + ' г';
+}
+function confirmAddFood() {
+  const name = document.getElementById('customFoodName').value || 'Продукт';
+  const mult = parseFloat(document.getElementById('portionRange').value) / 100;
+  const kcal = Math.round((parseFloat(document.getElementById('customFoodKcal').value) || 0) * mult);
+  const p = Math.round((parseFloat(document.getElementById('customFoodProtein').value) || 0) * mult);
+  const f = Math.round((parseFloat(document.getElementById('customFoodFat').value) || 0) * mult);
+  const c = Math.round((parseFloat(document.getElementById('customFoodCarbs').value) || 0) * mult);
+  state.today.meals[state.targetMealForAdd].push({ name, kcal, p, f, c });
+  renderMeals();
+  closeFoodSheet();
+  showToast(name + ' добавлен в дневник');
+}
+function deleteFoodItem(mealKey, idx) {
+  state.today.meals[mealKey].splice(idx, 1);
+  renderMeals();
+}
+
+// ================= WEIGHT: real chart driven by logged history =================
+function renderWeightChart() {
+  const hist = state.weightHistory.slice(-7);
+  if (hist.length < 2) return;
+  const min = Math.min(...hist), max = Math.max(...hist);
+  const range = max - min || 1;
+  const stepX = 340 / (hist.length - 1);
+  const points = hist.map((w, i) => {
+    const x = Math.round(i * stepX);
+    const y = Math.round(58 - ((w - min) / range) * 46);
+    return `${x},${y}`;
+  });
+  document.getElementById('weightPolyline').setAttribute('points', points.join(' '));
+  const [lastX, lastY] = points[points.length - 1].split(',');
+  document.getElementById('weightLastPoint').setAttribute('cx', lastX);
+  document.getElementById('weightLastPoint').setAttribute('cy', lastY);
+}
+function openWeightSheet() {
+  document.getElementById('weightInput').value = state.profile.weight;
+  openGenericSheet('weightSheet', 'weightScrim');
+}
+function closeWeightSheet() { closeGenericSheet('weightSheet', 'weightScrim'); }
+function confirmWeightLog() {
+  const val = parseFloat(document.getElementById('weightInput').value);
+  if (!val || isNaN(val)) { showToast('Введите вес в кг', true); return; }
+  state.profile.weight = val;
+  state.weightHistory.push(val);
+  if (state.weightHistory.length > 8) state.weightHistory.shift();
+  saveState();
+  document.getElementById('inputWeight').value = val;
+  renderCalcResults();
+  renderWeightChart();
+  renderPlateauStatus();
+  closeWeightSheet();
+  showToast('Вес записан: ' + val + ' кг');
+}
+
+// ================= BACKUP: export/import (replaces nothing — was missing entirely) =================
+function exportUserData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'fitpulse_backup.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Резервная копия скачана');
+}
+function importUserData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      state = { ...DEFAULT_STATE, ...parsed };
+      saveState();
+      hydrateProfileInputs();
+      renderMeals();
+      renderWeightChart();
+      showToast('Данные восстановлены из файла');
+    } catch (err) {
+      showToast('Файл повреждён или не в формате JSON', true);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ---- Focus trap: keep Tab cycling inside an open sheet instead of leaking to the page behind it ----
+function getFocusable(container) {
+  return [...container.querySelectorAll('button, [href], input, select, [tabindex]:not([tabindex="-1"])')]
+    .filter(el => el.offsetParent !== null && !el.disabled);
+}
+function trapFocus(e, container) {
+  if (e.key !== 'Tab') return;
+  const focusable = getFocusable(container);
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault(); last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault(); first.focus();
+  }
+}
+
+// ---- Generic sheet open/close: one implementation shared by all four sheets
+// (exercise detail, history, add-food, log-weight) instead of copy-pasted pairs ----
+const SHEET_IDS = ['sheet', 'historySheet', 'foodSheet', 'weightSheet'];
+let lastFocused = null;
+SHEET_IDS.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('keydown', (e) => trapFocus(e, el));
+});
+function openGenericSheet(sheetId, scrimId) {
+  lastFocused = document.activeElement;
+  document.getElementById(scrimId).classList.add('open');
+  const sheet = document.getElementById(sheetId);
+  sheet.classList.add('open');
+  sheet.removeAttribute('aria-hidden');
+  const closeBtn = sheet.querySelector('.sheet-close');
+  if (closeBtn) closeBtn.focus();
+}
+function closeGenericSheet(sheetId, scrimId) {
+  document.getElementById(scrimId).classList.remove('open');
+  const sheet = document.getElementById(sheetId);
+  sheet.classList.remove('open');
+  sheet.setAttribute('aria-hidden', 'true');
+  if (lastFocused) lastFocused.focus();
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if (document.getElementById('sheet').classList.contains('open')) closeSheet();
+  if (document.getElementById('historySheet').classList.contains('open')) closeHistorySheet();
+  if (document.getElementById('foodSheet').classList.contains('open')) closeFoodSheet();
+  if (document.getElementById('weightSheet').classList.contains('open')) closeWeightSheet();
+});
+
+function openSheet() {
+  openGenericSheet('sheet', 'sheetScrim');
+  recomputeReadouts();
+}
+function closeSheet() {
+  closeGenericSheet('sheet', 'sheetScrim');
+  clearRestTimer();
+}
+function openHistorySheet() { openGenericSheet('historySheet', 'historyScrim'); }
+function closeHistorySheet() { closeGenericSheet('historySheet', 'historyScrim'); }
+
+// ---- Epley 1RM estimate + RPE = 10 − RIR (pure math, no framework needed —
+// portable from the production-architecture report as-is). Weight/reps here
+// are read from exercise 01's fixed spec (80 кг × 8); a real build would pull
+// the actual logged weight/reps of the last completed set. ----
+let selectedRir = 2;
+function calculateEpley1RM(weight, reps) {
+  return weight * (1 + reps / 30);
+}
+function selectRir(val, btn) {
+  selectedRir = val;
+  document.querySelectorAll('#rirBtns .rir-btn').forEach(b => {
+    b.classList.remove('active');
+    b.setAttribute('aria-checked', 'false');
+  });
+  btn.classList.add('active');
+  btn.setAttribute('aria-checked', 'true');
+  recomputeReadouts();
+}
+function recomputeReadouts() {
+  const rpe = 10 - selectedRir;
+  document.getElementById('rpeVal').textContent = rpe.toFixed(1);
+  const oneRm = calculateEpley1RM(80, 8);
+  document.getElementById('oneRmVal').textContent = Math.round(oneRm);
+}
+
+// ---- Haptic feedback via the Vibration API. Feature-detected: works on some
+// Android browsers, silently no-ops on iOS Safari and desktop — this is the
+// real ceiling for haptics on the web, true native haptics need the RN build. ----
+function haptic(pattern) {
+  try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {}
+}
+
+let isDark = true;
+function toggleTheme() {
+  isDark = !isDark;
+  document.getElementById('themeLabel').textContent = isDark ? 'Включена' : 'Выключена';
+  document.getElementById('themeToggle').classList.toggle('on', isDark);
+  document.getElementById('themeSwitchRow').setAttribute('aria-checked', isDark ? 'true' : 'false');
+  showToast(isDark ? 'Тёмная тема включена' : 'Тёмная тема выключена');
+}
+
+// ---- Rest timer: real countdown + beep between sets (Web Audio API, no library) ----
+let restInterval = null;
+let audioCtx = null;
+function playBeep() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.2);
+  } catch (e) {}
+}
+function startRestTimer(seconds) {
+  clearRestTimer();
+  const box = document.getElementById('restTimer');
+  const val = document.getElementById('restTimerVal');
+  const cta = document.getElementById('sheetCta');
+  box.style.display = 'flex';
+  cta.disabled = true;
+  cta.style.opacity = '0.5';
+  let remaining = seconds;
+  val.textContent = remaining;
+  restInterval = setInterval(() => {
+    remaining -= 1;
+    if (remaining <= 0) {
+      clearInterval(restInterval);
+      restInterval = null;
+      playBeep();
+      box.style.display = 'none';
+      cta.disabled = false;
+      cta.style.opacity = '';
+      showToast('Отдых окончен — можно начинать подход');
+    } else {
+      val.textContent = remaining;
+    }
+  }, 1000);
+}
+function clearRestTimer() {
+  if (restInterval) { clearInterval(restInterval); restInterval = null; }
+  const box = document.getElementById('restTimer');
+  if (box) box.style.display = 'none';
+  const cta = document.getElementById('sheetCta');
+  if (cta && !cta.textContent.includes('завершено')) { cta.disabled = false; cta.style.opacity = ''; }
+}
+function skipRest() {
+  clearRestTimer();
+  showToast('Отдых пропущен');
+}
+
+// ---- Exercise sets: recording a set actually updates the sheet AND the exercise row in the list ----
+let nextSet = 3;
+const totalSets = 4;
+function recordNextSet() {
+  if (nextSet > totalSets) return;
+  const row = document.getElementById('setRow' + nextSet);
+  const status = row.querySelector('.sheet-set-status');
+  status.textContent = '✓ выполнен';
+  status.classList.remove('sheet-set-status');
+  status.classList.add('sheet-set-done');
+  status.style.color = '';
+
+  const logSub = document.getElementById('logRow1Sub');
+  const cta = document.getElementById('sheetCta');
+
+  if (nextSet === totalSets) {
+    haptic([30, 40, 30, 40, 30]); // success: three-pulse pattern per the report's spec
+    logSub.innerHTML = '<b>4/4</b> подходов · упражнение выполнено';
+    cta.textContent = 'Упражнение завершено';
+    cta.disabled = true;
+    cta.style.opacity = '0.5';
+    cta.style.cursor = 'default';
+    document.getElementById('logRow1Status').innerHTML = '<div class="log-pr" style="color:var(--lime)">✓</div><div class="log-pr-lbl">готово</div>';
+
+    // Sync up: finishing an exercise moves the day's exercise counter and the
+    // week's workout-completion count in the ticket. This is a simplified link —
+    // a real build would only bump "Выполнено на неделе" once ALL of the day's
+    // exercises (not just this one) are marked complete.
+    document.getElementById('exercisesDoneCount').textContent = '1/3 готово';
+    const weeklyEl = document.getElementById('weeklyDoneVal');
+    weeklyEl.textContent = '3/5';
+
+    showToast('Упражнение завершено — все подходы записаны');
+  } else {
+    haptic(35); // Impact Heavy on completing a set
+    logSub.innerHTML = `<b>${nextSet}/4</b> подходов · 80 кг`;
+    nextSet += 1;
+    cta.textContent = 'Записать подход ' + nextSet;
+    showToast('Подход ' + (nextSet - 1) + ' записан — отдых 90с');
+    startRestTimer(90);
+  }
+}
+
+// ---- wger sync: real loading → error → retry → success flow ----
+let wgerState = 'connected';
+function wgerSync() {
+  const desc = document.getElementById('wgerDesc');
+  if (wgerState === 'syncing') return;
+
+  if (wgerState === 'error') {
+    wgerState = 'syncing';
+    desc.textContent = 'Повтор синхронизации…';
+    desc.classList.remove('is-error');
+    setTimeout(() => {
+      wgerState = 'connected';
+      desc.textContent = 'Подключено · обновлено только что';
+      showToast('Синхронизация выполнена');
+    }, 1000);
+    return;
+  }
+
+  wgerState = 'syncing';
+  desc.textContent = 'Синхронизация…';
+  setTimeout(() => {
+    wgerState = 'error';
+    desc.innerHTML = 'Ошибка синхронизации · <span class="retry-action">повторить</span>';
+    desc.classList.add('is-error');
+    showToast('Не удалось синхронизировать wger', true);
+  }, 1000);
+}
+
+let toastTimeout;
+function showToast(text, isError) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toastText').textContent = text;
+  toast.classList.toggle('error', !!isError);
+  toast.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => toast.classList.remove('show'), 2200);
+}
+
+</script>
+
+</body>
+</html>
