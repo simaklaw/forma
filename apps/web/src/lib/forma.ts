@@ -1,3 +1,4 @@
+import { todayKey as coreTodayKey } from "@forma/core";
 import type {
   Equipment,
   Exercise,
@@ -21,11 +22,9 @@ export const WEEKDAYS = [
   { i: 0, label: "Вс" },
 ] as const;
 
+/** Calendar day key — delegated to @forma/core (same semantics as mobile). */
 export function todayKey(d = new Date()): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+  return coreTodayKey(d);
 }
 
 export function startOfWeek(d = new Date()): Date {
@@ -37,6 +36,10 @@ export function startOfWeek(d = new Date()): Date {
   return x;
 }
 
+/**
+ * Home-workout goal macros (web UX vocabulary: strength/tone/energy/recovery).
+ * Production metabolic path for FitPulse goals lives in @forma/core MetabolicEngine.
+ */
 export function calcGoals(input: {
   presentation: Presentation;
   weightKg: number;
