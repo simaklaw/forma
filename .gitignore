@@ -19,3 +19,11 @@ coverage
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# monorepo / turbo / pnpm
+.turbo
+.pnpm-store
+**/.expo
+**/android
+**/ios
+*.tsbuildinfo
