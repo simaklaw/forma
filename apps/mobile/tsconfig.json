@@ -4,7 +4,9 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@forma/core": ["../../packages/core/src"],
+      "@forma/core/*": ["../../packages/core/src/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"]
