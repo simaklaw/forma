@@ -4,12 +4,9 @@ import { useEffect, useState } from "react";
 import { EXERCISES, planById, planExercises } from "./catalog";
 import { calcGoals, todayKey } from "./forma";
 import type {
-  Equipment,
-  Goal,
   MealItem,
   MealType,
   MeasurementEntry,
-  Presentation,
   Profile,
   Session,
   ThemeMode,
@@ -35,6 +32,14 @@ const defaultProfile = (): Profile => ({
   theme: "system",
 });
 
+type CustomFoodInput = {
+  name: string;
+  kcal: number;
+  protein: number;
+  fat: number;
+  carbs: number;
+};
+
 type State = {
   profile: Profile;
   workouts: WorkoutLog[];
@@ -47,6 +52,7 @@ type State = {
   completeOnboarding: (p: Partial<Profile>) => void;
   logWorkout: (planId: string, regions: import("./types").MuscleRegion[]) => void;
   addMeal: (meal: MealType, foodId: string, grams: number) => void;
+  addMealFromFood: (meal: MealType, food: CustomFoodInput, grams: number) => void;
   removeMeal: (id: string) => void;
   addWeight: (kg: number) => void;
   addMeasurement: (waist: number) => void;
@@ -70,6 +76,10 @@ function applyGoals(profile: Profile): Profile {
     fatGoal: macros.fat,
     carbsGoal: macros.carbs,
   };
+}
+
+function newId() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
 export const useAppStore = create<State>()(
@@ -104,9 +114,28 @@ export const useAppStore = create<State>()(
       },
 
       addMeal: (meal, foodId, grams) => {
-        const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
         set((s) => ({
-          meals: [...s.meals, { id, date: todayKey(), meal, foodId, grams }],
+          meals: [...s.meals, { id: newId(), date: todayKey(), meal, foodId, grams }],
+        }));
+      },
+
+      addMealFromFood: (meal, food, grams) => {
+        set((s) => ({
+          meals: [
+            ...s.meals,
+            {
+              id: newId(),
+              date: todayKey(),
+              meal,
+              foodId: `custom:${food.name}`,
+              grams,
+              name: food.name,
+              kcal100: food.kcal,
+              protein100: food.protein,
+              fat100: food.fat,
+              carbs100: food.carbs,
+            },
+          ],
         }));
       },
 
@@ -206,9 +235,7 @@ export const useAppStore = create<State>()(
         if (!s.session) return;
         if (completed) {
           const plan = planById(s.session.planId);
-          const regions = plan
-            ? planExercises(plan).flatMap((e) => e.regions)
-            : [];
+          const regions = plan ? planExercises(plan).flatMap((e) => e.regions) : [];
           const unique = [...new Set(regions)];
           get().logWorkout(s.session.planId, unique);
         }
