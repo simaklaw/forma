@@ -45,7 +45,7 @@ function advise(ctx: UserContextSnapshot, userPrompt: string): string {
   }
 
   if (delta <= -400) {
-    return `Дефицит около ${Math.abs(delta)} ккал. Это уже не «лёгкий резим». Добавь приём с белком — творог, яйца, рыба или бобы.`;
+    return `Дефицит около ${Math.abs(delta)} ккал. Это уже не «лёгкий режим». Добавь приём с белком — творог, яйца, рыба или бобы.`;
   }
 
   if (burned === 0) {
