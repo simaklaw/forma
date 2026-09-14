@@ -1,5 +1,5 @@
 {
-  "name": "forma",
+  "name": "@forma/web",
   "private": true,
   "type": "module",
   "scripts": {
@@ -7,6 +7,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "type-check": "tsc --noEmit",
+    "lint": "echo \"@forma/web: add eslint later\"",
     "test": "node --experimental-strip-types --test src/lib/forma.test.ts"
   },
   "dependencies": {
