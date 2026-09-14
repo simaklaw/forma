@@ -7,9 +7,8 @@ import {
 
 /**
  * Web Edge-AI adapter (report §4).
- * Uses WebGPU when present. WebLLM (`@mlc-ai/web-llm`) is optional —
- * if the package is not installed, falls back to RulesLocalAITrainer.
- * Heavy inference belongs in a Worker; the fallback is sync and cheap.
+ * Detects WebGPU. When `@mlc-ai/web-llm` is added, wire it in initialize()
+ * and assign `this.llm`. Until then: RulesLocalAITrainer (offline, private).
  */
 export class WebLocalAITrainer implements ILocalAITrainer {
   private fallback = new RulesLocalAITrainer();
@@ -18,16 +17,9 @@ export class WebLocalAITrainer implements ILocalAITrainer {
 
   async initialize(onProgress?: (ratio: number) => void): Promise<void> {
     this.gpuAvailable =
-      typeof navigator !== "undefined" && "gpu" in navigator && Boolean((navigator as Navigator & { gpu?: unknown }).gpu);
-    try {
-      const mod = await import(/* @vite-ignore */ "@mlc-ai/web-llm");
-      if (mod && this.gpuAvailable) {
-        // Hook point: create MLC engine here when the dep is added to package.json.
-        void mod;
-      }
-    } catch {
-      /* optional dependency */
-    }
+      typeof navigator !== "undefined" &&
+      "gpu" in navigator &&
+      Boolean((navigator as Navigator & { gpu?: unknown }).gpu);
     await this.fallback.initialize(onProgress);
     onProgress?.(1);
   }

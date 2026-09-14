@@ -7,21 +7,14 @@ import {
 
 /**
  * Mobile Edge-AI adapter (report §4).
- * llama.rn is optional (needs a native dev client + GGUF on device).
- * Until then this is a typed port that falls back to RulesLocalAITrainer.
+ * llama.rn + GGUF needs an Expo dev client. This class is the port:
+ * keep ILocalAITrainer, swap implementation when native binary exists.
  */
 export class LlamaLocalAITrainer implements ILocalAITrainer {
   private fallback = new RulesLocalAITrainer();
   private ready = false;
 
   async initialize(onProgress?: (ratio: number) => void): Promise<void> {
-    try {
-      // Optional native module — do not add llama.rn to package.json until EAS dev client exists.
-      await import('llama.rn');
-      this.ready = false;
-    } catch {
-      this.ready = false;
-    }
     await this.fallback.initialize(onProgress);
     onProgress?.(1);
   }

@@ -1,54 +1,39 @@
 # Forma monorepo
 
-Кроссплатформенная экосистема **Forma** (web) + **FitPulse** (mobile) с общим пакетом `@forma/core`.
+Кроссплатформенная экосистема **Forma** (web) + **FitPulse** (mobile), ядро `@forma/core`.
 
-```
-forma/
-├── apps/
-│   ├── web/          # @forma/web — Vite + React
-│   └── mobile/       # @forma/mobile — Expo + React Native
-├── packages/
-│   └── core/         # движки, API, store, ILocalAITrainer
-├── .github/workflows/ci.yml
-├── package.json
-├── pnpm-workspace.yaml
-└── turbo.json
-```
+## Запуск
 
-## Требования
-
-- Node 22+
-- pnpm 9.15+ (`packageManager` в корневом package.json)
+Node 22+, pnpm 9.15+
 
 ```bash
-npm i -g pnpm@9.15.0
-git clone https://github.com/simaklaw/forma.git && cd forma
 pnpm install
 pnpm type-check
 pnpm --filter @forma/mobile test
 pnpm --filter @forma/web dev
 ```
 
-## @forma/core (v0.4)
+## Ядро @forma/core v0.5
 
-| Область | API |
-|---------|-----|
-| Метаболизм | `MetabolicEngine`, `ACTIVITY_FACTOR` |
-| Тренировки | `WorkoutStats`, MET |
-| API | `OpenFoodFactsService`, `WgerExerciseService` |
-| Стор | `useFormaStore` (без persist — persist в apps) |
-| ИИ | `ILocalAITrainer`, `RulesLocalAITrainer`, `CoachEngine` |
+- MetabolicEngine, WorkoutStats, ACTIVITY_FACTOR, MET, OFF, wger
+- `useFormaStore` + `createPersistedFormaStore(storage)`
+- `ILocalAITrainer` / `RulesLocalAITrainer` / `CoachEngine`
 
-Mobile Metro: `watchFolders` на корень монорепо, `disableHierarchicalLookup`.
+## Локальный ИИ (этап 3)
 
-Локальный LLM (llama.rn / WebLLM) подключается через `CoachEngine.setTrainer(...)` без смены UI.
+| Платформа | Адаптер | Сейчас |
+|-----------|---------|--------|
+| Web | `WebLocalAITrainer` | Rules + WebGPU detect; слот под WebLLM |
+| Mobile | `LlamaLocalAITrainer` | Rules; слот под llama.rn + GGUF |
+
+UI: чат «Тренер» в web (`/coach`). Модель не хостится в репо (≈700 МБ).
 
 ## CI
 
-`.github/workflows/ci.yml` — pnpm из `packageManager`, Node 22, type-check + tests.
+`.github/workflows/ci.yml` — pnpm из `packageManager`, Node 22. Кэш pnpm выключён, пока нет `pnpm-lock.yaml` в git.
 
 ## Дальше
 
-- WebLLM / llama.rn адаптеры на `ILocalAITrainer`
-- Persist-обёртки store в apps
-- EAS preview (`EXPO_TOKEN`)
+1. Закоммитить `pnpm-lock.yaml` (`pnpm install` локально → git add)
+2. WebLLM / llama.rn в готовые слоты адаптеров
+3. EAS (`EXPO_TOKEN`)

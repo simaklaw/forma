@@ -2,6 +2,7 @@ import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
 import { AppShell } from "@/components/shell";
+import { bootWebTrainer } from "@/lib/ai/boot";
 import { applyTheme, useAppStore, useHydrated } from "@/lib/store";
 import appCss from "../styles.css?url";
 
@@ -52,6 +53,7 @@ function Gate() {
   useEffect(() => {
     if (!ready) return;
     applyTheme(theme);
+    bootWebTrainer();
   }, [ready, theme]);
   return (
     <>
