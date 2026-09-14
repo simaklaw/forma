@@ -8,7 +8,8 @@ forma/
 │   ├── web/          # @forma/web — Vite + React
 │   └── mobile/       # @forma/mobile — Expo + React Native
 ├── packages/
-│   └── core/         # @forma/core — engines, MET, OFF, wger
+│   └── core/         # @forma/core — engines, MET, OFF, wger, CoachEngine
+├── .github/workflows/ci.yml
 ├── package.json
 ├── pnpm-workspace.yaml
 └── turbo.json
@@ -23,34 +24,30 @@ forma/
 npm i -g pnpm@9
 git clone https://github.com/simaklaw/forma.git && cd forma
 pnpm install
+pnpm type-check
+pnpm --filter @forma/mobile test
+pnpm --filter @forma/web dev
 ```
 
-## Скрипты
-
-| Команда | Описание |
-|---------|----------|
-| `pnpm --filter @forma/web dev` | веб → http://localhost:8080 |
-| `pnpm --filter @forma/mobile dev` | Expo |
-| `pnpm type-check` | типы |
-| `pnpm --filter @forma/mobile test` | jest (engines + wger mocks) |
-
-## @forma/core (v0.2)
+## @forma/core (v0.3)
 
 | Область | API |
 |---------|-----|
-| Метаболизм | `MetabolicEngine`, `calculateTargets`, BMR/TDEE, refeed |
-| Тренировки | `WorkoutStats` (стрики, объём, PR, `toDateKey`) |
-| MET | `EXERCISE_MET`, `metForExercise`, `calculateBurnedCalories` |
-| Питание API | `OpenFoodFactsService` (barcode + search) |
-| Упражнения API | `WgerExerciseService` (category + image search) |
+| Метаболизм | `MetabolicEngine`, BMR/TDEE, macros, refeed |
+| Тренировки | `WorkoutStats`, `toDateKey` |
+| MET | `metForExercise`, `calculateBurnedCalories` |
+| API | `OpenFoodFactsService`, `WgerExerciseService` |
+| Коуч | `CoachEngine` + `RulesCoach` (порт под on-device LLM) |
 
-Mobile: шимы в `src/engines/*` и `src/services/*` — старые импорты работают.  
-Web: `import { … } from '@forma/core'` — поиск OFF в «Питание», ~ккал в плеере.
+Mobile: шимы в `engines/*` и `services/*`.  
+Web: OFF-поиск в «Питание», ~ккал в плеере, `coachLine` → `CoachEngine`.
 
-`RestTimerEngine` остаётся в mobile (haptics / AppState).
+## CI
+
+Корень: `.github/workflows/ci.yml` — `pnpm install` → `type-check` → mobile jest → web domain tests.
 
 ## Дальше
 
-- Unified store API (опционально)
-- On-device AI adapters
-- EAS / Vercel CI
+- LLM-провайдер (`CoachProvider`) на llama.rn / WebLLM
+- Unified store (опционально)
+- EAS preview build (нужен `EXPO_TOKEN`)

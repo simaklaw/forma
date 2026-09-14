@@ -13,6 +13,8 @@ export {
   EXERCISE_MET,
   OpenFoodFactsService,
   WgerExerciseService,
+  CoachEngine,
+  RulesCoach,
   type Biometrics,
   type ProfileState,
   type Targets,
@@ -21,4 +23,7 @@ export {
   type NormalizedFood,
   type WgerExercise,
   type WgerExerciseReference,
+  type CoachContext,
+  type CoachMessage,
+  type CoachProvider,
 } from "@forma/core";

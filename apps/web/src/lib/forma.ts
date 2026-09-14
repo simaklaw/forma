@@ -1,4 +1,4 @@
-import { todayKey as coreTodayKey } from "@forma/core";
+import { CoachEngine, todayKey as coreTodayKey } from "@forma/core";
 import type {
   Equipment,
   Exercise,
@@ -85,6 +85,14 @@ export function pickTodayPlan(
   return exact ?? allowed[0];
 }
 
+export const GOAL_LABEL: Record<Goal, string> = {
+  strength: "Сила",
+  tone: "Тонус",
+  energy: "Энергия",
+  recovery: "Восстановление",
+};
+
+/** Coach copy — RulesCoach via @forma/core (swapable for on-device LLM later). */
 export function coachLine(args: {
   name: string;
   goal: Goal;
@@ -92,19 +100,13 @@ export function coachLine(args: {
   restDay: boolean;
   streak: number;
 }): string {
-  const first = args.name.trim().split(/\s+/)[0] || "друг";
-  if (args.doneToday) {
-    if (args.streak >= 5) return `${first}, уже ${args.streak} дней подряд. Тело запоминает.`;
-    return `${first}, готово. Сегодня достаточно.`;
-  }
-  if (args.restDay) return `${first}, сегодня отдых. Можно просто пройтись.`;
-  const byGoal: Record<Goal, string> = {
-    strength: `${first}, сила растёт от повторений, а не от героизма.`,
-    tone: `${first}, лёгкое движение сегодня важнее идеальной формы.`,
-    energy: `${first}, короткая сессия вернёт ясность.`,
-    recovery: `${first}, мягко и без давления — этого достаточно.`,
-  };
-  return byGoal[args.goal];
+  return CoachEngine.lineSync({
+    name: args.name,
+    goalLabel: GOAL_LABEL[args.goal],
+    doneToday: args.doneToday,
+    restDay: args.restDay,
+    streak: args.streak,
+  });
 }
 
 export function macrosFor(food: Food, grams: number): Macros {
@@ -170,13 +172,6 @@ export const MEAL_LABEL: Record<"breakfast" | "lunch" | "dinner" | "snack", stri
   lunch: "Обед",
   dinner: "Ужин",
   snack: "Перекус",
-};
-
-export const GOAL_LABEL: Record<Goal, string> = {
-  strength: "Сила",
-  tone: "Тонус",
-  energy: "Энергия",
-  recovery: "Восстановление",
 };
 
 export const EQUIP_LABEL: Record<Equipment, string> = {
