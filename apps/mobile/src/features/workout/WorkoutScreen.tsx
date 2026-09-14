@@ -4,20 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { colors, fonts, spacing } from '@/core/theme/tokens';
 import ExerciseSheet, { ExerciseDef } from './ExerciseSheet';
+import { WorkoutCoachCard } from './WorkoutCoachCard';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { DayProgress, lastNDays, ruDayWord, toDateKey } from '@/engines/WorkoutStats';
 
-/**
- * Local exercise catalog, expanded per the user's product decision to stay
- * off wger for now (see HANDOFF.md, "Единственный блокер" / NEXT-STEPS.md
- * §2 — WgerExerciseService stays wired only for reference photos, not as
- * the plan's source of truth). Previously this was a single fixed day
- * ("Ноги — сила", 3 exercises). Extended to a classic Push/Pull/Legs split
- * per the earlier nutrition/training science report's own weekly-split
- * table (День 1: Жим, День 2: Тяга, День 3: Ноги) — the existing leg day's
- * ids (1–3) are left untouched so any already-logged sets/personalRecords
- * for them stay valid; new days get their own id ranges.
- */
 interface WorkoutDay {
   id: string;
   name: string;
@@ -159,17 +149,6 @@ const WORKOUT_PLAN: WorkoutDay[] = [
 
 const WEEKDAY_RU_FULL = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 
-/**
- * Multi-day generalization of WorkoutStats.ts's single-plan helpers: "day
- * complete" now means "the user finished at least one of the plan's three
- * workout days that calendar day", not "finished every exercise across all
- * three days" (unrealistic for a split routine — you do one day's session
- * per day, rotating through the split, not all three at once). Kept local
- * to this screen rather than promoted into WorkoutStats.ts because that
- * file's existing single-plan functions are already unit-tested against
- * the old one-day contract; generalizing them properly deserves its own
- * tests rather than a same-day drive-by edit.
- */
 function isDayPlanComplete(dayProgress: DayProgress, dateKey: string, exercises: { id: number; totalSets: number }[]): boolean {
   const progress = dayProgress[dateKey];
   if (!progress) return false;
@@ -211,7 +190,7 @@ function selectPlanStreakDays(dayProgress: DayProgress, days = 7, now: Date = ne
 
 export default function WorkoutScreen() {
   const sheetRef = useRef<GorhomBottomSheet>(null);
-  const [selectedDayId, setSelectedDayId] = useState('legs'); // preserves the previous single-day default
+  const [selectedDayId, setSelectedDayId] = useState('legs');
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
 
   const dayProgress = useFitPulseStore((s) => s.dayProgress);
@@ -223,6 +202,10 @@ export default function WorkoutScreen() {
   const todayLabel = WEEKDAY_RU_FULL[new Date().getDay()];
 
   const todayDoneCount = activeDay.exercises.filter((ex) => completedSetsToday(ex.id) >= ex.totalSets).length;
+  const anyDoneToday = useMemo(
+    () => isAnyPlanComplete(dayProgress, toDateKey(new Date())),
+    [dayProgress]
+  );
   const weekDaysCompleted = useMemo(() => selectPlanWeekDaysCompleted(dayProgress), [dayProgress]);
   const overallPr = useMemo(() => {
     const values = Object.values(personalRecords);
@@ -316,6 +299,8 @@ export default function WorkoutScreen() {
             </View>
           </View>
         </View>
+
+        <WorkoutCoachCard dayName={activeDay.name} anyDoneToday={anyDoneToday} />
 
         <View style={styles.sectionHead}>
           <Text style={styles.sectionTitle}>Упражнения дня</Text>
@@ -412,4 +397,3 @@ const styles = StyleSheet.create({
   logPr: { color: colors.paper, fontSize: 17, fontFamily: fonts.mono },
   logPrLbl: { color: colors.paperFaint, fontSize: 9.5 }
 });
-
