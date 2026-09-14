@@ -1,4 +1,3 @@
-import { CoachEngine, todayKey as coreTodayKey } from "@forma/core";
 import type {
   Equipment,
   Exercise,
@@ -22,9 +21,12 @@ export const WEEKDAYS = [
   { i: 0, label: "Вс" },
 ] as const;
 
-/** Calendar day key — delegated to @forma/core (same semantics as mobile). */
+/** Calendar day key YYYY-MM-DD (local timezone). */
 export function todayKey(d = new Date()): string {
-  return coreTodayKey(d);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 export function startOfWeek(d = new Date()): Date {
@@ -37,8 +39,8 @@ export function startOfWeek(d = new Date()): Date {
 }
 
 /**
- * Home-workout goal macros (web UX vocabulary: strength/tone/energy/recovery).
- * Production metabolic path for FitPulse goals lives in @forma/core MetabolicEngine.
+ * Home-workout goal macros (web UX: strength/tone/energy/recovery).
+ * FitPulse goals live in @forma/core MetabolicEngine.
  */
 export function calcGoals(input: {
   presentation: Presentation;
@@ -92,7 +94,7 @@ export const GOAL_LABEL: Record<Goal, string> = {
   recovery: "Восстановление",
 };
 
-/** Coach copy — RulesCoach via @forma/core (swapable for on-device LLM later). */
+/** Coach one-liner — mirrors RulesCoach in @forma/core (no ESM core import for node tests). */
 export function coachLine(args: {
   name: string;
   goal: Goal;
@@ -100,13 +102,18 @@ export function coachLine(args: {
   restDay: boolean;
   streak: number;
 }): string {
-  return CoachEngine.lineSync({
-    name: args.name,
-    goalLabel: GOAL_LABEL[args.goal],
-    doneToday: args.doneToday,
-    restDay: args.restDay,
-    streak: args.streak,
-  });
+  const first = args.name.trim().split(/\s+/)[0] || "друг";
+  if (args.doneToday) {
+    if (args.streak >= 5) return `${first}, уже ${args.streak} дней подряд. Тело запоминает.`;
+    return `${first}, готово. Сегодня достаточно.`;
+  }
+  if (args.restDay) return `${first}, сегодня отдых. Можно просто пройтись.`;
+  const goal = GOAL_LABEL[args.goal].toLowerCase();
+  if (goal.includes("сил")) return `${first}, сила растёт от повторений, а не от героизма.`;
+  if (goal.includes("тонус")) return `${first}, лёгкое движение сегодня важнее идеальной формы.`;
+  if (goal.includes("восстанов")) return `${first}, мягко и без давления — этого достаточно.`;
+  if (goal.includes("энерг")) return `${first}, короткая сессия вернёт ясность.`;
+  return `${first}, маленький шаг сегодня важнее идеального плана.`;
 }
 
 export function macrosFor(food: Food, grams: number): Macros {
