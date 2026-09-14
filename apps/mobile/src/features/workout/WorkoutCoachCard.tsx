@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { CoachEngine } from '@forma/core';
+import { CoachEngine, estimateSessionBurnKcal, toDateKey } from '@forma/core';
 import { colors, fonts, spacing } from '@/core/theme/tokens';
 import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
@@ -14,8 +14,19 @@ type Props = {
 export function WorkoutCoachCard({ dayName, anyDoneToday }: Props) {
   const profile = useFitPulseStore((s) => s.profile);
   const todayMeals = useFitPulseStore((s) => s.todayMeals);
+  const dayProgress = useFitPulseStore((s) => s.dayProgress);
   const targets = useFitPulseStore((s) => s.calculateTargets());
   const [advice, setAdvice] = useState('');
+
+  const setsToday = useMemo(() => {
+    const today = dayProgress[toDateKey(new Date())] ?? {};
+    return Object.values(today).reduce((sum, n) => sum + n, 0);
+  }, [dayProgress]);
+
+  const burned = useMemo(
+    () => estimateSessionBurnKcal({ weightKg: profile.weight, setsCompleted: setsToday }),
+    [profile.weight, setsToday]
+  );
 
   const snapshot = useMemo(
     () =>
@@ -23,10 +34,11 @@ export function WorkoutCoachCard({ dayName, anyDoneToday }: Props) {
         profile,
         todayMeals,
         targetCalories: targets.target,
+        burnedCalories: burned,
         lastWorkoutName: anyDoneToday ? dayName : undefined,
         rpeScore: 7
       }),
-    [profile, todayMeals, targets.target, dayName, anyDoneToday]
+    [profile, todayMeals, targets.target, burned, dayName, anyDoneToday]
   );
 
   useEffect(() => {
@@ -46,7 +58,9 @@ export function WorkoutCoachCard({ dayName, anyDoneToday }: Props) {
 
   return (
     <View style={styles.card} accessibilityRole="text">
-      <Text style={styles.label}>Тренер · on-device</Text>
+      <Text style={styles.label}>
+        Тренер · on-device{burned > 0 ? ` · ~${burned} ккал` : ''}
+      </Text>
       <Text style={styles.body}>{advice}</Text>
     </View>
   );

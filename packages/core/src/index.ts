@@ -3,12 +3,13 @@
  * UI-agnostic: no React DOM, no React Native.
  */
 
-export const FORMA_CORE_VERSION = "0.5.0";
+export const FORMA_CORE_VERSION = "0.5.1";
 
 export * from "./engines/MetabolicEngine";
 export * from "./engines/WorkoutStats";
 export * from "./engines/activity";
 export * from "./met/exerciseMet";
+export * from "./met/sessionBurn";
 export * from "./services/OpenFoodFactsService";
 export * from "./services/WgerExerciseService";
 export * from "./ai/CoachEngine";

@@ -5,6 +5,8 @@ import { webUserContextSnapshot } from "@/lib/snapshot";
 
 type Msg = { role: "user" | "coach"; text: string };
 
+const CHIPS = ["Сколько белка?", "Калории сегодня", "Совет на тренировку", "Восстановление"];
+
 export function CoachScreen() {
   const [messages, setMessages] = useState<Msg[]>([
     {
@@ -20,15 +22,22 @@ export function CoachScreen() {
     bottom.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  async function send() {
-    const q = input.trim();
+  async function send(raw?: string) {
+    const q = (raw ?? input).trim();
     if (!q || busy) return;
     setInput("");
-    setMessages((m) => [...m, { role: "user", text: q }]);
+    setMessages((m) => [...m, { role: "user", text: q }, { role: "coach", text: "" }]);
     setBusy(true);
     try {
-      const text = await CoachEngine.getTrainer().generateAdvice(webUserContextSnapshot(), q);
-      setMessages((m) => [...m, { role: "coach", text }]);
+      let acc = "";
+      await CoachEngine.getTrainer().streamAdvice(webUserContextSnapshot(), q, (token) => {
+        acc += token;
+        setMessages((m) => {
+          const next = [...m];
+          next[next.length - 1] = { role: "coach", text: acc };
+          return next;
+        });
+      });
     } finally {
       setBusy(false);
     }
@@ -39,19 +48,35 @@ export function CoachScreen() {
       <h1 className="font-display text-2xl tracking-tight">Тренер</h1>
       <p className="mt-1 text-sm text-muted">On-device · без облака</p>
 
-      <div className="mt-4 flex-1 space-y-3 overflow-y-auto">
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className={
-              m.role === "user"
-                ? "ml-8 rounded-2xl bg-accent px-3 py-2 text-sm text-accent-fg"
-                : "mr-8 rounded-2xl bg-surface px-3 py-2 text-sm shadow-card"
-            }
+      <div className="mt-3 flex flex-wrap gap-2">
+        {CHIPS.map((c) => (
+          <button
+            key={c}
+            type="button"
+            disabled={busy}
+            onClick={() => void send(c)}
+            className="rounded-full bg-surface-2 px-3 py-1.5 text-xs font-medium text-muted disabled:opacity-50"
           >
-            {m.text}
-          </div>
+            {c}
+          </button>
         ))}
+      </div>
+
+      <div className="mt-4 flex-1 space-y-3 overflow-y-auto">
+        {messages.map((m, i) =>
+          m.text ? (
+            <div
+              key={i}
+              className={
+                m.role === "user"
+                  ? "ml-8 rounded-2xl bg-accent px-3 py-2 text-sm text-accent-fg"
+                  : "mr-8 rounded-2xl bg-surface px-3 py-2 text-sm shadow-card"
+              }
+            >
+              {m.text}
+            </div>
+          ) : null,
+        )}
         {busy && <p className="text-xs text-muted">Думаю…</p>}
         <div ref={bottom} />
       </div>
