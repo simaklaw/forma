@@ -1,9 +1,10 @@
 /**
  * Unified Zustand store (report §5 step 3).
- * No persist here — web uses localStorage, mobile uses AsyncStorage in the app layer.
+ * Persist is opt-in via createPersistedFormaStore (web: localStorage, mobile: AsyncStorage).
  */
 
 import { create } from "zustand";
+import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
 import { MetabolicEngine, type Biometrics } from "../engines/MetabolicEngine";
 import { ACTIVITY_FACTOR } from "../engines/activity";
 import type { UserContextSnapshot } from "../ai/ILocalAITrainer";
@@ -28,7 +29,7 @@ export interface WorkoutSession {
   rpeScore?: number;
 }
 
-interface UnifiedFormaState {
+export interface UnifiedFormaState {
   biometrics: Biometrics;
   foodLogs: FoodItem[];
   workoutLogs: WorkoutSession[];
@@ -53,80 +54,97 @@ function startOfLocalDay(now = Date.now()): number {
   return d.getTime();
 }
 
-export const useFormaStore = create<UnifiedFormaState>((set, get) => ({
-  biometrics: {
-    weightKg: 70,
-    heightCm: 175,
-    age: 25,
-    gender: "male",
-    activityFactor: ACTIVITY_FACTOR.light,
-  },
-  foodLogs: [],
-  workoutLogs: [],
+const initialBiometrics: Biometrics = {
+  weightKg: 70,
+  heightCm: 175,
+  age: 25,
+  gender: "male",
+  activityFactor: ACTIVITY_FACTOR.light,
+};
 
-  updateBiometrics: (newBio) =>
-    set((state) => ({
-      biometrics: { ...state.biometrics, ...newBio },
-    })),
+export function createFormaSlice(
+  set: (fn: (state: UnifiedFormaState) => Partial<UnifiedFormaState> | UnifiedFormaState) => void,
+  get: () => UnifiedFormaState,
+): UnifiedFormaState {
+  return {
+    biometrics: initialBiometrics,
+    foodLogs: [],
+    workoutLogs: [],
 
-  addFoodLog: (food) =>
-    set((state) => ({
-      foodLogs: [
-        ...state.foodLogs,
-        { ...food, id: newId(), loggedAt: Date.now() },
-      ],
-    })),
+    updateBiometrics: (newBio) =>
+      set((state) => ({
+        biometrics: { ...state.biometrics, ...newBio },
+      })),
 
-  addWorkoutLog: (workout) =>
-    set((state) => ({
-      workoutLogs: [
-        ...state.workoutLogs,
-        {
-          ...workout,
-          id: newId(),
-          completedAt: new Date().toISOString(),
+    addFoodLog: (food) =>
+      set((state) => ({
+        foodLogs: [...state.foodLogs, { ...food, id: newId(), loggedAt: Date.now() }],
+      })),
+
+    addWorkoutLog: (workout) =>
+      set((state) => ({
+        workoutLogs: [
+          ...state.workoutLogs,
+          { ...workout, id: newId(), completedAt: new Date().toISOString() },
+        ],
+      })),
+
+    getTDEE: () => MetabolicEngine.calculateTDEE(get().biometrics),
+
+    getTodayConsumedCalories: () => {
+      const start = startOfLocalDay();
+      return get()
+        .foodLogs.filter((item) => item.loggedAt >= start)
+        .reduce((sum, item) => sum + item.calories, 0);
+    },
+
+    getTodayBurnedCalories: () => {
+      const startIso = new Date(startOfLocalDay()).toISOString().slice(0, 10);
+      return get()
+        .workoutLogs.filter((item) => item.completedAt.startsWith(startIso))
+        .reduce((sum, item) => sum + item.caloriesBurned, 0);
+    },
+
+    getUserContextSnapshot: () => {
+      const s = get();
+      const last = s.workoutLogs.at(-1);
+      return {
+        userProfile: {
+          weightKg: s.biometrics.weightKg,
+          heightCm: s.biometrics.heightCm,
+          age: s.biometrics.age,
+          gender: s.biometrics.gender,
         },
-      ],
-    })),
+        dailyMetrics: {
+          consumedCalories: s.getTodayConsumedCalories(),
+          targetCalories: s.getTDEE(),
+          burnedCalories: s.getTodayBurnedCalories(),
+        },
+        lastWorkout: last
+          ? {
+              name: last.name ?? last.exerciseId,
+              completedAt: last.completedAt,
+              rpeScore: last.rpeScore ?? 7,
+            }
+          : undefined,
+      };
+    },
+  };
+}
 
-  getTDEE: () => MetabolicEngine.calculateTDEE(get().biometrics),
+export const useFormaStore = create<UnifiedFormaState>((set, get) => createFormaSlice(set, get));
 
-  getTodayConsumedCalories: () => {
-    const start = startOfLocalDay();
-    return get()
-      .foodLogs.filter((item) => item.loggedAt >= start)
-      .reduce((sum, item) => sum + item.calories, 0);
-  },
-
-  getTodayBurnedCalories: () => {
-    const startIso = new Date(startOfLocalDay()).toISOString().slice(0, 10);
-    return get()
-      .workoutLogs.filter((item) => item.completedAt.startsWith(startIso))
-      .reduce((sum, item) => sum + item.caloriesBurned, 0);
-  },
-
-  getUserContextSnapshot: () => {
-    const s = get();
-    const last = s.workoutLogs.at(-1);
-    return {
-      userProfile: {
-        weightKg: s.biometrics.weightKg,
-        heightCm: s.biometrics.heightCm,
-        age: s.biometrics.age,
-        gender: s.biometrics.gender,
-      },
-      dailyMetrics: {
-        consumedCalories: s.getTodayConsumedCalories(),
-        targetCalories: s.getTDEE(),
-        burnedCalories: s.getTodayBurnedCalories(),
-      },
-      lastWorkout: last
-        ? {
-            name: last.name ?? last.exerciseId,
-            completedAt: last.completedAt,
-            rpeScore: last.rpeScore ?? 7,
-          }
-        : undefined,
-    };
-  },
-}));
+/** Platform persist: pass localStorage or AsyncStorage wrapper. */
+export function createPersistedFormaStore(storage: StateStorage, name = "forma-core") {
+  return create<UnifiedFormaState>()(
+    persist((set, get) => createFormaSlice(set, get), {
+      name,
+      storage: createJSONStorage(() => storage),
+      partialize: (s) => ({
+        biometrics: s.biometrics,
+        foodLogs: s.foodLogs,
+        workoutLogs: s.workoutLogs,
+      }),
+    }),
+  );
+}

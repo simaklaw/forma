@@ -3,7 +3,7 @@
  * UI-agnostic: no React DOM, no React Native.
  */
 
-export const FORMA_CORE_VERSION = "0.4.0";
+export const FORMA_CORE_VERSION = "0.5.0";
 
 export * from "./engines/MetabolicEngine";
 export * from "./engines/WorkoutStats";
