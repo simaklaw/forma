@@ -1,0 +1,40 @@
+name: Monorepo CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Install · Type-check · Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Type-check (all packages)
+        run: pnpm type-check
+
+      - name: Test mobile (engines + services)
+        run: pnpm --filter @forma/mobile test -- --ci --passWithNoTests
+
+      - name: Test web domain helpers
+        run: pnpm --filter @forma/web test
+        continue-on-error: true

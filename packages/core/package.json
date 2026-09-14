@@ -1,6 +1,6 @@
 {
   "name": "@forma/core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
@@ -9,13 +9,14 @@
     ".": "./src/index.ts",
     "./engines": "./src/engines/index.ts",
     "./met": "./src/met/exerciseMet.ts",
-    "./services": "./src/services/index.ts"
+    "./services": "./src/services/index.ts",
+    "./ai": "./src/ai/index.ts"
   },
   "scripts": {
     "type-check": "tsc --noEmit",
     "build": "tsc --noEmit",
     "lint": "echo \"@forma/core: no lint yet\"",
-    "test": "echo \"@forma/core: run tests from apps/mobile for now\""
+    "test": "echo \"@forma/core: tests run via apps/mobile\""
   },
   "dependencies": {
     "zustand": "^5.0.0"
