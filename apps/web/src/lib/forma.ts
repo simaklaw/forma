@@ -133,6 +133,16 @@ export function dayMacros(items: MealItem[], foods: Food[]): Macros {
   const byId = new Map(foods.map((f) => [f.id, f]));
   const parts: Macros[] = [];
   for (const it of items) {
+    if (it.kcal100 != null) {
+      const k = it.grams / 100;
+      parts.push({
+        kcal: Math.round((it.kcal100 ?? 0) * k),
+        protein: Math.round((it.protein100 ?? 0) * k),
+        fat: Math.round((it.fat100 ?? 0) * k),
+        carbs: Math.round((it.carbs100 ?? 0) * k),
+      });
+      continue;
+    }
     const f = byId.get(it.foodId);
     if (f) parts.push(macrosFor(f, it.grams));
   }

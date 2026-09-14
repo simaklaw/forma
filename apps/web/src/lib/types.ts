@@ -81,6 +81,12 @@ export type MealItem = {
   meal: MealType;
   foodId: string;
   grams: number;
+  /** Snapshot for Open Food Facts / custom items (per 100g when scaled by grams). */
+  name?: string;
+  kcal100?: number;
+  protein100?: number;
+  fat100?: number;
+  carbs100?: number;
 };
 
 export type WeightEntry = { date: string; kg: number };
