@@ -31,7 +31,8 @@ function advise(ctx: UserContextSnapshot, userPrompt: string): string {
   const burned = ctx.dailyMetrics.burnedCalories;
   const q = userPrompt.trim().toLowerCase();
 
-  if (q.includes("белок") || q.includes("protein")) {
+  // "белок" / "белка" / "белки"
+  if (q.includes("белк") || q.includes("protein")) {
     const g = Math.round(ctx.userProfile.weightKg * 2);
     return `Ориентир — около ${g} г белка в сутки (≈ 2 г/кг). Размажь по приёмам, не в один ужин.`;
   }
