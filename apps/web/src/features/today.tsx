@@ -1,21 +1,22 @@
 import { Link } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import {
+  CoachEngine,
+  calculateBurnedCalories,
+  metForExercise,
+  type UserContextSnapshot,
+} from "@forma/core";
 import { Button } from "@/components/ui/button";
 import { ExerciseCard } from "@/components/exercise-card";
 import { WeekDots } from "@/components/week-dots";
-import { PLANS, planExercises } from "@/lib/catalog";
-import {
-  coachLine,
-  greeting,
-  pickTodayPlan,
-  todayKey,
-  weekKeys,
-} from "@/lib/forma";
-import { EXERCISES } from "@/lib/catalog";
+import { FOODS, PLANS, planById, planExercises, EXERCISES } from "@/lib/catalog";
+import { coachLine, dayMacros, greeting, pickTodayPlan, todayKey } from "@/lib/forma";
 import { useAppStore } from "@/lib/store";
 
 export function TodayScreen() {
   const profile = useAppStore((s) => s.profile);
   const workouts = useAppStore((s) => s.workouts);
+  const meals = useAppStore((s) => s.meals);
   const session = useAppStore((s) => s.session);
 
   const today = todayKey();
@@ -45,6 +46,49 @@ export function TodayScreen() {
 
   const preview = plan ? planExercises(plan).slice(0, 3) : [];
 
+  const snapshot = useMemo((): UserContextSnapshot => {
+    const todayMeals = meals.filter((m) => m.date === today);
+    const macros = dayMacros(todayMeals, FOODS);
+    const last = [...workouts].reverse().find((w) => w.completed);
+    const lastPlan = last ? planById(last.planId) : undefined;
+    let burned = 0;
+    if (doneToday && plan) {
+      burned = planExercises(plan).reduce((sum, ex) => {
+        const workSec = ex.unit === "sec" ? ex.reps * ex.sets : ex.reps * ex.sets * 3;
+        return sum + calculateBurnedCalories(metForExercise(ex.id), profile.weightKg, workSec / 60);
+      }, 0);
+    }
+    return {
+      userProfile: {
+        weightKg: profile.weightKg,
+        heightCm: profile.heightCm,
+        age: profile.age,
+        gender: profile.presentation === "woman" ? "female" : "male",
+      },
+      dailyMetrics: {
+        consumedCalories: macros.kcal,
+        targetCalories: profile.calorieGoal,
+        burnedCalories: burned,
+      },
+      lastWorkout: lastPlan
+        ? { name: lastPlan.title, completedAt: last!.date, rpeScore: 7 }
+        : undefined,
+    };
+  }, [meals, workouts, today, doneToday, plan, profile]);
+
+  const [advice, setAdvice] = useState("");
+  useEffect(() => {
+    let cancelled = false;
+    CoachEngine.getTrainer()
+      .generateAdvice(snapshot, doneToday ? "тренировка" : "совет на день")
+      .then((text) => {
+        if (!cancelled) setAdvice(text);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [snapshot, doneToday]);
+
   return (
     <div className="px-5 pb-8 pt-10">
       <header className="mb-6">
@@ -57,6 +101,11 @@ export function TodayScreen() {
         <div className="mt-4">
           <WeekDots doneDates={doneDates} />
         </div>
+        {advice && (
+          <p className="mt-4 border-t border-surface-2 pt-3 text-sm leading-relaxed text-muted">
+            {advice}
+          </p>
+        )}
       </div>
 
       {session && (

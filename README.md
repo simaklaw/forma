@@ -8,7 +8,7 @@ forma/
 │   ├── web/          # @forma/web — Vite + React
 │   └── mobile/       # @forma/mobile — Expo + React Native
 ├── packages/
-│   └── core/         # @forma/core — engines, MET, OFF, wger, CoachEngine
+│   └── core/         # движки, API, store, ILocalAITrainer
 ├── .github/workflows/ci.yml
 ├── package.json
 ├── pnpm-workspace.yaml
@@ -17,11 +17,11 @@ forma/
 
 ## Требования
 
-- Node 20+
-- [pnpm](https://pnpm.io) 9+
+- Node 22+
+- pnpm 9.15+ (`packageManager` в корневом package.json)
 
 ```bash
-npm i -g pnpm@9
+npm i -g pnpm@9.15.0
 git clone https://github.com/simaklaw/forma.git && cd forma
 pnpm install
 pnpm type-check
@@ -29,25 +29,26 @@ pnpm --filter @forma/mobile test
 pnpm --filter @forma/web dev
 ```
 
-## @forma/core (v0.3)
+## @forma/core (v0.4)
 
 | Область | API |
 |---------|-----|
-| Метаболизм | `MetabolicEngine`, BMR/TDEE, macros, refeed |
-| Тренировки | `WorkoutStats`, `toDateKey` |
-| MET | `metForExercise`, `calculateBurnedCalories` |
+| Метаболизм | `MetabolicEngine`, `ACTIVITY_FACTOR` |
+| Тренировки | `WorkoutStats`, MET |
 | API | `OpenFoodFactsService`, `WgerExerciseService` |
-| Коуч | `CoachEngine` + `RulesCoach` (порт под on-device LLM) |
+| Стор | `useFormaStore` (без persist — persist в apps) |
+| ИИ | `ILocalAITrainer`, `RulesLocalAITrainer`, `CoachEngine` |
 
-Mobile: шимы в `engines/*` и `services/*`.  
-Web: OFF-поиск в «Питание», ~ккал в плеере, `coachLine` → `CoachEngine`.
+Mobile Metro: `watchFolders` на корень монорепо, `disableHierarchicalLookup`.
+
+Локальный LLM (llama.rn / WebLLM) подключается через `CoachEngine.setTrainer(...)` без смены UI.
 
 ## CI
 
-Корень: `.github/workflows/ci.yml` — `pnpm install` → `type-check` → mobile jest → web domain tests.
+`.github/workflows/ci.yml` — pnpm из `packageManager`, Node 22, type-check + tests.
 
 ## Дальше
 
-- LLM-провайдер (`CoachProvider`) на llama.rn / WebLLM
-- Unified store (опционально)
-- EAS preview build (нужен `EXPO_TOKEN`)
+- WebLLM / llama.rn адаптеры на `ILocalAITrainer`
+- Persist-обёртки store в apps
+- EAS preview (`EXPO_TOKEN`)
