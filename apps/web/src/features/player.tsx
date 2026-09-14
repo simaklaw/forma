@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { calculateBurnedCalories, metForExercise } from "@forma/core";
 import { Button } from "@/components/ui/button";
 import { planById, planExercises } from "@/lib/catalog";
 import { useAppStore } from "@/lib/store";
@@ -8,6 +9,7 @@ import { cn } from "@/lib/utils";
 
 export function PlayerScreen({ planId }: { planId: string }) {
   const navigate = useNavigate();
+  const profile = useAppStore((s) => s.profile);
   const session = useAppStore((s) => s.session);
   const startSession = useAppStore((s) => s.startSession);
   const toggleSet = useAppStore((s) => s.toggleSet);
@@ -39,6 +41,13 @@ export function PlayerScreen({ planId }: { planId: string }) {
   const sets = session?.setsDone[ex.id] ?? Array(ex.sets).fill(false);
   const allDone = sets.every(Boolean);
   const restEndsAt = session?.restEndsAt ?? null;
+
+  const estKcal = useMemo(() => {
+    const met = metForExercise(ex.id);
+    const workSec = ex.unit === "sec" ? ex.reps * ex.sets : ex.reps * ex.sets * 3;
+    const minutes = Math.max(0.5, workSec / 60);
+    return calculateBurnedCalories(met, profile.weightKg, minutes);
+  }, [ex, profile.weightKg]);
 
   return (
     <div className="flex min-h-dvh flex-col bg-bg">
@@ -87,6 +96,8 @@ export function PlayerScreen({ planId }: { planId: string }) {
         <h1 className="font-display text-xl">{ex.name}</h1>
         <p className="mt-1 text-sm text-muted">
           {ex.sets} × {ex.reps} {ex.unit === "sec" ? "сек" : "повт"} · отдых {ex.restSec} с
+          {" · ~"}
+          {estKcal} ккал
         </p>
         <ul className="mt-3 space-y-1 text-sm text-muted">
           {ex.cues.map((c) => (
@@ -129,7 +140,11 @@ export function PlayerScreen({ planId }: { planId: string }) {
             }
           }}
         >
-          {idx >= exercises.length - 1 ? (allDone ? "Завершить" : "Пропустить и завершить") : "Следующее"}
+          {idx >= exercises.length - 1
+            ? allDone
+              ? "Завершить"
+              : "Пропустить и завершить"
+            : "Следующее"}
         </Button>
         <Button
           variant="secondary"
