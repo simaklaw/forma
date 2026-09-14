@@ -1,21 +1,33 @@
 import { RulesCoach, coachLine } from "./RulesCoach";
+import { RulesLocalAITrainer } from "./RulesLocalAITrainer";
+import type { ILocalAITrainer } from "./ILocalAITrainer";
 import type { CoachContext, CoachMessage, CoachProvider } from "./types";
 
 /**
- * Facade for coach copy. Default provider is RulesCoach.
- * Apps can register an LLM provider later (llama.rn / WebLLM) without
- * changing UI call sites.
+ * Facade for coach copy + local-AI trainer.
+ * Default: RulesCoach / RulesLocalAITrainer.
+ * Apps register llama.rn or WebLLM without changing UI call sites.
  */
 export class CoachEngine {
   private static provider: CoachProvider = new RulesCoach();
   private static readonly fallback = new RulesCoach();
+  private static trainer: ILocalAITrainer = new RulesLocalAITrainer();
 
   static setProvider(provider: CoachProvider): void {
     this.provider = provider;
   }
 
+  static setTrainer(trainer: ILocalAITrainer): void {
+    this.trainer = trainer;
+  }
+
+  static getTrainer(): ILocalAITrainer {
+    return this.trainer;
+  }
+
   static resetProvider(): void {
     this.provider = this.fallback;
+    this.trainer = new RulesLocalAITrainer();
   }
 
   static getProviderId(): string {
@@ -41,3 +53,10 @@ export class CoachEngine {
 
 export type { CoachContext, CoachMessage, CoachProvider, CoachTone } from "./types";
 export { RulesCoach, coachLine } from "./RulesCoach";
+export { RulesLocalAITrainer } from "./RulesLocalAITrainer";
+export {
+  type ILocalAITrainer,
+  type UserContextSnapshot,
+  buildTrainerSystemPrompt,
+  calorieDelta,
+} from "./ILocalAITrainer";
