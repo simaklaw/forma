@@ -64,17 +64,26 @@ function assertFinitePositive(value: number, name: string): void {
   }
 }
 
+function assertFinite(value: number, name: string): void {
+  if (!Number.isFinite(value)) {
+    throw new RangeError(`${name} must be finite`);
+  }
+}
+
 export function isProtocolActive(metabolic: MetabolicStatus, now: number = Date.now()): boolean {
-  return metabolic.type !== null && metabolic.endsAt !== null && now < metabolic.endsAt;
+  assertFinite(now, "now");
+  if (metabolic.type === null || metabolic.endsAt === null) return false;
+  assertFinite(metabolic.endsAt, "endsAt");
+  return now < metabolic.endsAt;
 }
 
 export function startRefeed(now: number = Date.now()): MetabolicStatus {
-  assertFinitePositive(now + 1, "now");
+  assertFinite(now, "now");
   return { type: "refeed", endsAt: now + REFEED_DURATION_MS };
 }
 
 export function startDietBreak(now: number = Date.now()): MetabolicStatus {
-  assertFinitePositive(now + 1, "now");
+  assertFinite(now, "now");
   return { type: "dietbreak", endsAt: now + DIET_BREAK_DURATION_MS };
 }
 
@@ -147,7 +156,9 @@ export function calculateBMR(bio: Biometrics): number {
 }
 
 export function calculateTDEE(bio: Biometrics): number {
-  assertFinitePositive(bio.activityFactor, "activityFactor");
+  if (!Number.isFinite(bio.activityFactor) || bio.activityFactor < 1.2 || bio.activityFactor > 1.725) {
+    throw new RangeError("activityFactor must be between 1.2 and 1.725");
+  }
   return Math.round(calculateBMR(bio) * bio.activityFactor);
 }
 
@@ -155,7 +166,7 @@ export function calculateTDEE(bio: Biometrics): number {
 export function calculateBurnedCalories(met: number, weightKg: number, durationMinutes: number): number {
   assertFinitePositive(met, "met");
   assertFinitePositive(weightKg, "weightKg");
-  assertFinitePositive(durationMinutes, "durationMinutes");
+  if (!Number.isFinite(durationMinutes) || durationMinutes < 0) throw new RangeError("durationMinutes must be finite and >= 0");
   return Math.round(((met * 3.5 * weightKg) / 200) * durationMinutes);
 }
 
@@ -165,10 +176,10 @@ export function detectWeightPlateau(
   sampleSize = 4,
   thresholdKg = 0.3,
 ): boolean {
-  if (goal !== "recomp" || weightHistory.length < sampleSize) return false;
   if (!Number.isInteger(sampleSize) || sampleSize < 2) throw new RangeError("sampleSize must be an integer >= 2");
   if (!Number.isFinite(thresholdKg) || thresholdKg < 0) throw new RangeError("thresholdKg must be >= 0");
   if (weightHistory.some((weight) => !Number.isFinite(weight) || weight <= 0)) throw new RangeError("weightHistory contains an invalid weight");
+  if (goal !== "recomp" || weightHistory.length < sampleSize) return false;
   const recent = weightHistory.slice(-sampleSize);
   const range = Math.max(...recent) - Math.min(...recent);
   return range <= thresholdKg;
