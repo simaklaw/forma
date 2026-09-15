@@ -17,7 +17,7 @@
     "type-check": "tsc --noEmit",
     "build": "tsc --noEmit",
     "lint": "echo \"@forma/core: no lint yet\"",
-    "test": "echo \"@forma/core: tests run via apps/mobile\""
+    "test": "node --experimental-strip-types --test src/**/*.test.ts"
   },
   "peerDependencies": {
     "zustand": ">=4.5.0"
