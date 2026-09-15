@@ -17,7 +17,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Version from package.json "packageManager". Do not set with.version.
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
@@ -29,13 +28,16 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Generate and build web routes
+      - name: Build web
         run: pnpm --filter @forma/web build
 
-      - name: Type-check (all packages)
+      - name: Type-check all packages
         run: pnpm type-check
 
-      - name: Test mobile (engines + services)
+      - name: Test shared core
+        run: pnpm --filter @forma/core test
+
+      - name: Test mobile
         run: pnpm --filter @forma/mobile test -- --ci --passWithNoTests
 
       - name: Test web domain helpers
