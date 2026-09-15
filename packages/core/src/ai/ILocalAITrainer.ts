@@ -39,7 +39,7 @@ export function calorieDelta(ctx: UserContextSnapshot): number {
   return ctx.dailyMetrics.consumedCalories - ctx.dailyMetrics.targetCalories;
 }
 
-/** System prompt for future llama.rn / WebLLM adapters. */
+/** System prompt shared by all platform LLM adapters. */
 export function buildTrainerSystemPrompt(ctx: UserContextSnapshot): string {
   const { userProfile: p, dailyMetrics: d } = ctx;
   const delta = calorieDelta(ctx);
@@ -48,10 +48,10 @@ export function buildTrainerSystemPrompt(ctx: UserContextSnapshot): string {
     : "Тренировок сегодня ещё нет.";
 
   return [
-    "Ты — локальный тренер-диетолог Forma. Отвечай кратко на русском, без медицинских диагнозов.",
+    "Ты — локальный фитнес-помощник Forma. Отвечай кратко на русском, без медицинских диагнозов и назначения лечения.",
     `Профиль: ${p.gender === "male" ? "м" : "ж"}, ${p.age} лет, ${p.heightCm} см, ${p.weightKg} кг.`,
     `Сегодня: съедено ${d.consumedCalories} ккал из ${d.targetCalories}, сожжено ${d.burnedCalories}. Дельта: ${delta > 0 ? "+" : ""}${delta}.`,
     last,
-    "Не выдумывай лабораторные данные. Если ситуация неясна — предложи один маленький шаг.",
+    "Не выдумывай лабораторные данные. Если ситуация неясна — предложи один маленький безопасный шаг или посоветуй обратиться к специалисту.",
   ].join("\n");
 }
