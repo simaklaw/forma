@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "FitPulse",
-    "slug": "fitpulse-native",
+    "slug": "fitpulse",
     "version": "0.1.0",
     "newArchEnabled": false,
     "orientation": "portrait",
