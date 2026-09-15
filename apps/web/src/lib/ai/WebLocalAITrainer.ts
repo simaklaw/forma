@@ -87,6 +87,7 @@ export class WebLocalAITrainer implements ILocalAITrainer {
   ): Promise<void> {
     if (!this.engine) return this.fallback.streamAdvice(context, userPrompt, onToken);
 
+    let emitted = false;
     try {
       const stream = await this.engine.chat.completions.create({
         messages: [
@@ -99,10 +100,15 @@ export class WebLocalAITrainer implements ILocalAITrainer {
       });
       for await (const chunk of stream) {
         const token = chunk.choices[0]?.delta.content;
-        if (token) onToken(token);
+        if (token) {
+          emitted = true;
+          onToken(token);
+        }
       }
     } catch {
-      await this.fallback.streamAdvice(context, userPrompt, onToken);
+      // If the stream already emitted tokens, replaying the whole rules answer
+      // would duplicate content in the UI. Fall back only before first output.
+      if (!emitted) await this.fallback.streamAdvice(context, userPrompt, onToken);
     }
   }
 }
