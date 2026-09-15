@@ -25,9 +25,9 @@ pnpm --filter @forma/web dev
 | Платформа | Адаптер | UI |
 |-----------|---------|-----|
 | Web | `WebLocalAITrainer` → WebLLM (WebGPU) | `/coach` + совет на «Сегодня» |
-| Mobile | `LlamaLocalAITrainer` → rules fallback | `WorkoutCoachCard` на экране тренировки |
+| Mobile | `LlamaLocalAITrainer` → llama.rn 0.9 / rules fallback | `WorkoutCoachCard` на экране тренировки |
 
-Web-адаптер лениво загружает `Llama-3.2-1B-Instruct-q4f16_1-MLC` только при наличии WebGPU; после первой загрузки WebLLM использует браузерный кэш. При отсутствии WebGPU, сбое загрузки или в SSR/test окружении используется приватный `RulesLocalAITrainer` без сети. Мобильный адаптер пока работает через тот же fallback: для `llama.rn` нужен Expo dev client и GGUF-вес, поэтому нативный модуль не включается в стандартный CI. Веса модели **не** хранятся в репозитории.
+Web-адаптер лениво загружает `Llama-3.2-1B-Instruct-q4f16_1-MLC` только при наличии WebGPU; после первой загрузки WebLLM использует браузерный кэш. При отсутствии WebGPU, сбое загрузки или в SSR/test окружении используется приватный `RulesLocalAITrainer` без сети. Мобильный адаптер подключает `llama.rn@0.9.7` через lazy GGUF download в Expo document storage и работает на rules fallback без `EXPO_PUBLIC_LLAMA_MODEL_URL`. GGUF-веса **не** хранятся в репозитории; настройка URL описана в `apps/mobile/.env.example`.
 
 ## CI
 
@@ -37,7 +37,5 @@ CI использует `pnpm install --frozen-lockfile` и кэш pnpm по `pn
 
 ## Дальше
 
-1. Подключить `llama.rn` и GGUF-вес через Expo dev client / EAS Build (`EXPO_TOKEN`)
-2. Вынести WebLLM engine в Web Worker, чтобы модель не блокировала UI thread
-3. Сгенерировать `routeTree.gen.ts` в CI для полного web type-check routes
-4. Профилировать память и скорость на мобильных устройствах с 4 ГБ ОЗУ
+1. Подготовить native Expo dev client / EAS Build (`EXPO_TOKEN`) и проверить GGUF на устройствах
+2. Профилировать память и скорость на мобильных устройствах с 4 ГБ ОЗУ
