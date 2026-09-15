@@ -1,3 +1,4 @@
+import { calculatePresentationTargets } from "@forma/core";
 import type {
   Equipment,
   Exercise,
@@ -39,8 +40,8 @@ export function startOfWeek(d = new Date()): Date {
 }
 
 /**
- * Home-workout goal macros (web UX: strength/tone/energy/recovery).
- * FitPulse goals live in @forma/core MetabolicEngine.
+ * Home-workout goal macros. Calculation lives in @forma/core so web and
+ * mobile do not silently drift apart.
  */
 export function calcGoals(input: {
   presentation: Presentation;
@@ -49,16 +50,7 @@ export function calcGoals(input: {
   age: number;
   goal: Goal;
 }): Macros {
-  const s = input.presentation === "man" ? 5 : input.presentation === "woman" ? -161 : -78;
-  const bmr = 10 * input.weightKg + 6.25 * input.heightCm - 5 * input.age + s;
-  const tdee = bmr * 1.375;
-  const delta = { strength: 200, tone: -300, energy: 0, recovery: 100 }[input.goal];
-  const kcal = Math.max(1200, Math.round(tdee + delta));
-  const pPerKg = { strength: 2, tone: 1.8, energy: 1.6, recovery: 1.6 }[input.goal];
-  const protein = Math.round(pPerKg * input.weightKg);
-  const fat = Math.round((kcal * 0.28) / 9);
-  const carbs = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4));
-  return { kcal, protein, fat, carbs };
+  return calculatePresentationTargets(input);
 }
 
 export function exerciseAllowed(ex: Pick<Exercise, "equipment">, owned: Equipment[]): boolean {
