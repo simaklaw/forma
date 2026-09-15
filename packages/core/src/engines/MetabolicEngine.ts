@@ -8,6 +8,8 @@ export type MetabolicGoal = "recomp" | "maintain" | "gain";
 /** @deprecated use MetabolicGoal — alias kept for mobile import compatibility */
 export type Goal = MetabolicGoal;
 export type MetabolicProtocolType = "refeed" | "dietbreak" | null;
+export type Presentation = "man" | "woman" | "neutral";
+export type FitnessGoal = "strength" | "tone" | "energy" | "recovery";
 
 export interface ProfileState {
   sex: Sex;
@@ -38,6 +40,23 @@ export interface TargetPolicy {
   gainFactor: number;
   proteinGramsPerKg: number;
   fatGramsPerKg: number;
+}
+
+export interface PresentationTargetInput {
+  presentation: Presentation;
+  weightKg: number;
+  heightCm: number;
+  age: number;
+  goal: FitnessGoal;
+}
+
+export interface PresentationTargets {
+  kcal: number;
+  protein: number;
+  fat: number;
+  carbs: number;
+  bmr: number;
+  tdee: number;
 }
 
 /** Report-style biometrics (Mifflin + activity factor). */
@@ -129,6 +148,37 @@ export function calculateTargets(
   };
 }
 
+/**
+ * Shared target calculation for the web/mobile presentation goals.
+ * The neutral presentation uses the existing product coefficient (-78), which is
+ * a product convention rather than a validated sex-specific physiological model.
+ */
+export function calculatePresentationTargets(input: PresentationTargetInput): PresentationTargets {
+  assertFinitePositive(input.weightKg, "weightKg");
+  assertFinitePositive(input.heightCm, "heightCm");
+  if (!Number.isInteger(input.age) || input.age < 13 || input.age > 120) {
+    throw new RangeError("age must be an integer from 13 to 120");
+  }
+  if (!["man", "woman", "neutral"].includes(input.presentation)) {
+    throw new RangeError("presentation is invalid");
+  }
+  if (!["strength", "tone", "energy", "recovery"].includes(input.goal)) {
+    throw new RangeError("goal is invalid");
+  }
+
+  const sexCoefficient = input.presentation === "man" ? 5 : input.presentation === "woman" ? -161 : -78;
+  const bmr = Math.round(10 * input.weightKg + 6.25 * input.heightCm - 5 * input.age + sexCoefficient);
+  const tdee = Math.round(bmr * 1.375);
+  const delta = { strength: 200, tone: -300, energy: 0, recovery: 100 }[input.goal];
+  const kcal = Math.max(1200, Math.round(tdee + delta));
+  const pPerKg = { strength: 2, tone: 1.8, energy: 1.6, recovery: 1.6 }[input.goal];
+  const protein = Math.round(pPerKg * input.weightKg);
+  const fat = Math.round((kcal * 0.28) / 9);
+  const carbs = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4));
+
+  return { kcal, protein, fat, carbs, bmr, tdee };
+}
+
 function validateProfile(profile: ProfileState): void {
   if (profile.sex !== "male" && profile.sex !== "female") throw new RangeError("sex is invalid");
   if (!Number.isInteger(profile.age) || profile.age < 13 || profile.age > 120) throw new RangeError("age must be an integer from 13 to 120");
@@ -209,5 +259,8 @@ export class MetabolicEngine {
   }
   static calculateTargets(profile: ProfileState, metabolic: MetabolicStatus, now?: number, policy?: TargetPolicy): Targets {
     return calculateTargets(profile, metabolic, now, policy);
+  }
+  static calculatePresentationTargets(input: PresentationTargetInput): PresentationTargets {
+    return calculatePresentationTargets(input);
   }
 }
