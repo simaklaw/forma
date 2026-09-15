@@ -128,7 +128,7 @@ export default function CoachScreen() {
           onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
           renderItem={({ item }) => (
             <View style={[styles.bubble, item.role === 'user' ? styles.userBubble : styles.coachBubble]}>
-              <Text style={styles.bubbleText}>{item.text}</Text>
+              <Text style={item.role === 'user' ? styles.userBubbleText : styles.bubbleText}>{item.text}</Text>
             </View>
           )}
           ListFooterComponent={busy ? <Text style={styles.thinking}>Думаю…</Text> : null}
@@ -189,8 +189,14 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: spacing.xxl, paddingBottom: spacing.md, gap: spacing.sm },
   bubble: { maxWidth: '88%', paddingHorizontal: 12, paddingVertical: 10, marginBottom: spacing.sm },
   userBubble: { alignSelf: 'flex-end', backgroundColor: colors.lime },
-  coachBubble: { alignSelf: 'flex-start', backgroundColor: colors.panel, borderWidth: 1, borderColor: colors.lineStrong },
+  coachBubble: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.panel,
+    borderWidth: 1,
+    borderColor: colors.lineStrong
+  },
   bubbleText: { color: colors.paper, fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
+  userBubbleText: { color: colors.ink, fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
   thinking: { color: colors.paperFaint, fontSize: 12, fontFamily: fonts.body, marginTop: 4 },
   composer: {
     flexDirection: 'row',

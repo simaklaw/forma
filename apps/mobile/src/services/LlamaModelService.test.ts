@@ -1,3 +1,9 @@
+jest.mock('expo-file-system', () => ({
+  documentDirectory: 'file:///tmp/',
+  getInfoAsync: jest.fn(async () => ({ exists: false })),
+  createDownloadResumable: jest.fn()
+}));
+
 import { getConfiguredLlamaModelUrl, LLAMA_MODEL_FILENAME } from './LlamaModelService';
 
 describe('LlamaModelService', () => {
