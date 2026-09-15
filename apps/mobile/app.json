@@ -2,6 +2,7 @@
   "expo": {
     "name": "FitPulse",
     "slug": "fitpulse-native",
+    "owner": "simaklaw",
     "version": "0.1.0",
     "newArchEnabled": false,
     "orientation": "portrait",
@@ -23,6 +24,7 @@
       ]
     },
     "plugins": [
+      "expo-dev-client",
       "expo-document-picker",
       [
         "expo-build-properties",
