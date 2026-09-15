@@ -78,6 +78,7 @@ export class LlamaLocalAITrainer implements ILocalAITrainer {
   ): Promise<void> {
     if (!this.context) return this.fallback.streamAdvice(context, userPrompt, onToken);
 
+    let emitted = false;
     try {
       await this.context.completion(
         {
@@ -89,10 +90,15 @@ export class LlamaLocalAITrainer implements ILocalAITrainer {
           temperature: 0.3,
           stop: STOP_WORDS,
         },
-        (data) => onToken(data.token),
+        (data) => {
+          if (data.token) emitted = true;
+          onToken(data.token);
+        },
       );
     } catch {
-      await this.fallback.streamAdvice(context, userPrompt, onToken);
+      // Replaying the full rules response after partial LLM output would
+      // duplicate text in the UI. Fall back only before first output.
+      if (!emitted) await this.fallback.streamAdvice(context, userPrompt, onToken);
     }
   }
 
