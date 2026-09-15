@@ -31,6 +31,8 @@ export interface ILocalAITrainer {
     userPrompt: string,
     onToken: (token: string) => void,
   ): Promise<void>;
+  /** True when a real LLM context/engine is loaded (not rules fallback). */
+  isLlmReady?(): boolean;
 }
 
 export function calorieDelta(ctx: UserContextSnapshot): number {

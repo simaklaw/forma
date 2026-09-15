@@ -18,26 +18,27 @@ pnpm --filter @forma/web dev
 - MetabolicEngine, WorkoutStats (`todayKey` / `toDateKey`), ACTIVITY_FACTOR, MET
 - Open Food Facts + wger clients
 - `useFormaStore` + `createPersistedFormaStore(storage)`
-- `ILocalAITrainer` / `RulesLocalAITrainer` / `CoachEngine`
+- `ILocalAITrainer` / `RulesLocalAITrainer` / `CoachEngine` (`isLlmReady`)
 
 ## Локальный ИИ (этап 3)
 
 | Платформа | Адаптер | UI |
 |-----------|---------|-----|
-| Web | `WebLocalAITrainer` → WebLLM (WebGPU) | `/coach` + совет на «Сегодня» |
-| Mobile | `LlamaLocalAITrainer` → llama.rn 0.9 / rules fallback | `WorkoutCoachCard` на экране тренировки |
+| Web | `WebLocalAITrainer` → WebLLM (WebGPU) | `/coach` + статус WebLLM/Rules + progress |
+| Mobile | `LlamaLocalAITrainer` → llama.rn 0.9 / rules fallback | вкладка **Тренер** + `WorkoutCoachCard` |
 
-Web-адаптер лениво загружает `Llama-3.2-1B-Instruct-q4f16_1-MLC` только при наличии WebGPU; после первой загрузки WebLLM использует браузерный кэш. При отсутствии WebGPU, сбое загрузки или в SSR/test окружении используется приватный `RulesLocalAITrainer` без сети. Мобильный адаптер подключает `llama.rn@0.9.7` через lazy GGUF download в Expo document storage и работает на rules fallback без `EXPO_PUBLIC_LLAMA_MODEL_URL`. GGUF-веса **не** хранятся в репозитории; настройка URL описана в `apps/mobile/.env.example`.
+Адаптеры регистрируются в `CoachEngine` **сразу** при boot; модель догружается в фоне. Пока LLM не готов — тот же adapter отвечает через rules fallback. GGUF **не** в репозитории; URL — `EXPO_PUBLIC_LLAMA_MODEL_URL` (`apps/mobile/.env.example`).
 
 ## CI
 
-[Monorepo CI](https://github.com/simaklaw/forma/actions) — type-check + mobile jest (node) + web domain tests. Зелёный на main.
+[Monorepo CI](https://github.com/simaklaw/forma/actions) — type-check + mobile jest + web tests. Зелёный на main.
 
-CI использует `pnpm install --frozen-lockfile` и кэш pnpm по `pnpm-lock.yaml`.
+`pnpm install --frozen-lockfile` + cache по `pnpm-lock.yaml`.
 
-Для нативного dev client или preview APK используйте ручной workflow [EAS Build](https://github.com/simaklaw/forma/actions/workflows/eas-build.yml): в GitHub Actions выберите `Run workflow`, platform и EAS profile. Workflow намеренно не запускается на каждый push или pull request, поскольку EAS Build потребляет ресурсы и требует нативной сборки. Перед запуском добавьте `EXPO_TOKEN` в secrets репозитория; GGUF URL задаётся отдельно через `EXPO_PUBLIC_LLAMA_MODEL_URL` в EAS environment.
+Native: [EAS Build](https://github.com/simaklaw/forma/actions/workflows/eas-build.yml) (manual). Нужен secret `EXPO_TOKEN`.
 
 ## Дальше
 
-1. Запустить ручной EAS dev client / preview build (`EXPO_TOKEN`) и проверить GGUF на устройствах
-2. Профилировать память и скорость на мобильных устройствах с 4 ГБ ОЗУ
+1. EAS development build + проверка GGUF на устройстве
+2. Профилирование RAM / tokens/s на 4 ГБ устройствах
+3. История чата тренера (persist) при необходимости

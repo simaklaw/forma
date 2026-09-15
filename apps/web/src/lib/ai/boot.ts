@@ -2,10 +2,20 @@ import { CoachEngine } from "@forma/core";
 import { WebLocalAITrainer } from "./WebLocalAITrainer";
 
 let booted = false;
+let loadProgress = 0;
 
-export function bootWebTrainer() {
+export function getWebTrainerProgress(): number {
+  return loadProgress;
+}
+
+/** Register WebLLM adapter immediately; initialize model in the background. */
+export function bootWebTrainer(onProgress?: (ratio: number) => void) {
   if (booted) return;
   booted = true;
   const trainer = new WebLocalAITrainer();
-  void trainer.initialize().then(() => CoachEngine.setTrainer(trainer));
+  CoachEngine.setTrainer(trainer);
+  void trainer.initialize((ratio) => {
+    loadProgress = ratio;
+    onProgress?.(ratio);
+  });
 }

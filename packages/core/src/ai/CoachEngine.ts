@@ -25,6 +25,11 @@ export class CoachEngine {
     return this.trainer;
   }
 
+  /** True when the active adapter reports a loaded on-device model. */
+  static isLlmReady(): boolean {
+    return typeof this.trainer.isLlmReady === "function" ? Boolean(this.trainer.isLlmReady()) : false;
+  }
+
   static resetProvider(): void {
     this.provider = this.fallback;
     this.trainer = new RulesLocalAITrainer();

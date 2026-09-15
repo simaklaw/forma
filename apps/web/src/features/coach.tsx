@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { CoachEngine } from "@forma/core";
 import { Button } from "@/components/ui/button";
+import { getWebTrainerProgress } from "@/lib/ai/boot";
 import { webUserContextSnapshot } from "@/lib/snapshot";
 
 type Msg = { role: "user" | "coach"; text: string };
@@ -16,11 +17,21 @@ export function CoachScreen() {
   ]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [llmReady, setLlmReady] = useState(false);
+  const [progress, setProgress] = useState(0);
   const bottom = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setLlmReady(CoachEngine.isLlmReady());
+      setProgress(getWebTrainerProgress());
+    }, 400);
+    return () => window.clearInterval(id);
+  }, []);
 
   async function send(raw?: string) {
     const q = (raw ?? input).trim();
@@ -43,10 +54,16 @@ export function CoachScreen() {
     }
   }
 
+  const status = llmReady
+    ? "WebLLM · on-device"
+    : progress > 0 && progress < 1
+      ? `Загрузка модели · ${Math.round(progress * 100)}%`
+      : "Rules · offline";
+
   return (
     <div className="flex min-h-[calc(100dvh-6rem)] flex-col px-5 pb-4 pt-10">
       <h1 className="font-display text-2xl tracking-tight">Тренер</h1>
-      <p className="mt-1 text-sm text-muted">On-device · без облака</p>
+      <p className="mt-1 text-sm text-muted">{status}</p>
 
       <div className="mt-3 flex flex-wrap gap-2">
         {CHIPS.map((c) => (

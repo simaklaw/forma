@@ -1,0 +1,223 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { CoachEngine, estimateSessionBurnKcal, toDateKey } from '@forma/core';
+import { getMobileTrainerProgress } from '@/ai/trainerProgress';
+import { colors, fonts, spacing } from '@/core/theme/tokens';
+import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
+import { useFitPulseStore } from '@/state/useFitPulseStore';
+
+type Msg = { id: string; role: 'user' | 'coach'; text: string };
+
+const CHIPS = ['Сколько белка?', 'Калории сегодня', 'Совет на тренировку', 'Восстановление'];
+
+export default function CoachScreen() {
+  const profile = useFitPulseStore((s) => s.profile);
+  const todayMeals = useFitPulseStore((s) => s.todayMeals);
+  const dayProgress = useFitPulseStore((s) => s.dayProgress);
+  const targets = useFitPulseStore((s) => s.calculateTargets());
+
+  const [messages, setMessages] = useState<Msg[]>([
+    {
+      id: 'welcome',
+      role: 'coach',
+      text: 'Я локальный тренер. Данные не уходят в облако. Спроси про белок, калории или тренировку.'
+    }
+  ]);
+  const [input, setInput] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [llmReady, setLlmReady] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const listRef = useRef<FlatList<Msg>>(null);
+
+  const setsToday = useMemo(() => {
+    const today = dayProgress[toDateKey(new Date())] ?? {};
+    return Object.values(today).reduce((sum, n) => sum + n, 0);
+  }, [dayProgress]);
+
+  const snapshot = useMemo(
+    () =>
+      mobileCoachSnapshot({
+        profile,
+        todayMeals,
+        targetCalories: targets.target,
+        burnedCalories: estimateSessionBurnKcal({
+          weightKg: profile.weight,
+          setsCompleted: setsToday
+        })
+      }),
+    [profile, todayMeals, targets.target, setsToday]
+  );
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setLlmReady(CoachEngine.isLlmReady());
+      setProgress(getMobileTrainerProgress());
+    }, 500);
+    return () => clearInterval(id);
+  }, []);
+
+  async function send(raw?: string) {
+    const q = (raw ?? input).trim();
+    if (!q || busy) return;
+    setInput('');
+    const userId = `u-${Date.now()}`;
+    const coachId = `c-${Date.now()}`;
+    setMessages((m) => [
+      ...m,
+      { id: userId, role: 'user', text: q },
+      { id: coachId, role: 'coach', text: '' }
+    ]);
+    setBusy(true);
+    try {
+      let acc = '';
+      await CoachEngine.getTrainer().streamAdvice(snapshot, q, (token) => {
+        acc += token;
+        setMessages((m) => m.map((row) => (row.id === coachId ? { ...row, text: acc } : row)));
+      });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const status = llmReady
+    ? 'llama.rn · on-device'
+    : progress > 0 && progress < 1
+      ? `Загрузка · ${Math.round(progress * 100)}%`
+      : 'Rules · offline';
+
+  return (
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={8}
+      >
+        <View style={styles.header}>
+          <Text style={styles.title}>Тренер</Text>
+          <Text style={styles.sub}>{status}</Text>
+        </View>
+
+        <View style={styles.chips}>
+          {CHIPS.map((c) => (
+            <Pressable
+              key={c}
+              disabled={busy}
+              onPress={() => void send(c)}
+              style={[styles.chip, busy && styles.chipDisabled]}
+            >
+              <Text style={styles.chipText}>{c}</Text>
+            </Pressable>
+          ))}
+        </View>
+
+        <FlatList
+          ref={listRef}
+          data={messages.filter((m) => m.text.length > 0)}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
+          renderItem={({ item }) => (
+            <View style={[styles.bubble, item.role === 'user' ? styles.userBubble : styles.coachBubble]}>
+              <Text style={styles.bubbleText}>{item.text}</Text>
+            </View>
+          )}
+          ListFooterComponent={busy ? <Text style={styles.thinking}>Думаю…</Text> : null}
+        />
+
+        <View style={styles.composer}>
+          <TextInput
+            value={input}
+            onChangeText={setInput}
+            placeholder="Спроси про день, белок…"
+            placeholderTextColor={colors.paperFaint}
+            style={styles.input}
+            editable={!busy}
+            onSubmitEditing={() => void send()}
+            returnKeyType="send"
+          />
+          <Pressable
+            onPress={() => void send()}
+            disabled={busy || !input.trim()}
+            style={[styles.send, (busy || !input.trim()) && styles.sendDisabled]}
+          >
+            <Text style={styles.sendText}>Ок</Text>
+          </Pressable>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.ink },
+  flex: { flex: 1 },
+  header: { paddingHorizontal: spacing.xxl, paddingTop: spacing.lg, paddingBottom: spacing.sm },
+  title: {
+    color: colors.paper,
+    fontSize: 28,
+    fontFamily: fonts.mono,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5
+  },
+  sub: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.body, marginTop: 4 },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xxl,
+    marginBottom: spacing.sm
+  },
+  chip: {
+    borderWidth: 1,
+    borderColor: colors.lineStrong,
+    backgroundColor: colors.panel,
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  },
+  chipDisabled: { opacity: 0.5 },
+  chipText: { color: colors.paperDim, fontSize: 12, fontFamily: fonts.bodySemi },
+  list: { paddingHorizontal: spacing.xxl, paddingBottom: spacing.md, gap: spacing.sm },
+  bubble: { maxWidth: '88%', paddingHorizontal: 12, paddingVertical: 10, marginBottom: spacing.sm },
+  userBubble: { alignSelf: 'flex-end', backgroundColor: colors.lime },
+  coachBubble: { alignSelf: 'flex-start', backgroundColor: colors.panel, borderWidth: 1, borderColor: colors.lineStrong },
+  bubbleText: { color: colors.paper, fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
+  thinking: { color: colors.paperFaint, fontSize: 12, fontFamily: fonts.body, marginTop: 4 },
+  composer: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xxl,
+    paddingVertical: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.line
+  },
+  input: {
+    flex: 1,
+    minHeight: 44,
+    borderWidth: 1,
+    borderColor: colors.lineStrong,
+    backgroundColor: colors.panel,
+    color: colors.paper,
+    paddingHorizontal: 12,
+    fontFamily: fonts.body,
+    fontSize: 14
+  },
+  send: {
+    minWidth: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.lime,
+    paddingHorizontal: 14
+  },
+  sendDisabled: { opacity: 0.4 },
+  sendText: { color: colors.ink, fontFamily: fonts.bodySemi, fontSize: 14 }
+});

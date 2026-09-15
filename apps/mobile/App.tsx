@@ -9,6 +9,7 @@ import { CoachEngine } from '@forma/core';
 import { colors } from '@/core/theme/tokens';
 import RootNavigator from '@/navigation/RootNavigator';
 import { LlamaLocalAITrainer } from '@/ai/LlamaLocalAITrainer';
+import { setMobileTrainerProgress } from '@/ai/trainerProgress';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -20,7 +21,8 @@ export default function App() {
 
   useEffect(() => {
     const trainer = new LlamaLocalAITrainer();
-    void trainer.initialize().then(() => CoachEngine.setTrainer(trainer));
+    CoachEngine.setTrainer(trainer);
+    void trainer.initialize((ratio) => setMobileTrainerProgress(ratio));
   }, []);
 
   if (!fontsLoaded) {

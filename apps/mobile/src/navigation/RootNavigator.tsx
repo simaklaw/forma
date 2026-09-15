@@ -7,6 +7,7 @@ import { RestTimerEngine } from '@/engines/RestTimerEngine';
 
 import WorkoutScreen from '@/features/workout/WorkoutScreen';
 import NutritionScreen from '@/features/nutrition/NutritionScreen';
+import CoachScreen from '@/features/coach/CoachScreen';
 import ProgressScreen from '@/features/analytics/ProgressScreen';
 import ProfileScreen from '@/features/profile/ProfileScreen';
 
@@ -24,7 +25,6 @@ const navTheme = {
   }
 };
 
-// Impact Light on every tab switch, per the report's micro-interaction spec.
 function tabIcon(label: string) {
   return () => <Text style={{ fontSize: 10, color: colors.paperFaint }}>{label}</Text>;
 }
@@ -46,6 +46,7 @@ export default function RootNavigator() {
       >
         <Tab.Screen name="Тренировки" component={WorkoutScreen} options={{ tabBarIcon: tabIcon('●') }} />
         <Tab.Screen name="Питание" component={NutritionScreen} options={{ tabBarIcon: tabIcon('●') }} />
+        <Tab.Screen name="Тренер" component={CoachScreen} options={{ tabBarIcon: tabIcon('●') }} />
         <Tab.Screen name="Прогресс" component={ProgressScreen} options={{ tabBarIcon: tabIcon('●') }} />
         <Tab.Screen name="Профиль" component={ProfileScreen} options={{ tabBarIcon: tabIcon('●') }} />
       </Tab.Navigator>
