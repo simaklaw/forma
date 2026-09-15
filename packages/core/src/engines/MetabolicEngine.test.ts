@@ -13,7 +13,8 @@ import {
 
 test("calculateBMR uses Mifflin-St Jeor", () => {
   assert.equal(calculateBMR({ weightKg: 80, heightCm: 180, age: 30, gender: "male", activityFactor: 1.5 }), 1780);
-  assert.equal(calculateBMR({ weightKg: 65, heightCm: 165, age: 30, gender: "female", activityFactor: 1.5 }), 1350);
+  assert.equal(calculateBMR({ weightKg: 65, heightCm: 165, age: 30, gender: "female", activityFactor: 1.5 }), 1370);
+  assert.throws(() => calculateBMR({ weightKg: 80, heightCm: 180, age: 12, gender: "male", activityFactor: 1.5 }), RangeError);
 });
 
 test("calculateTargets applies goal policy and protocol", () => {
@@ -55,8 +56,15 @@ test("protocol boundaries are deterministic", () => {
   assert.equal(dietBreak.endsAt, 1_000 + 14 * 24 * 60 * 60 * 1000);
 });
 
+test("protocol timestamps accept epoch zero and reject non-finite values", () => {
+  assert.equal(startRefeed(0).endsAt, 24 * 60 * 60 * 1000);
+  assert.throws(() => startRefeed(Number.NaN), RangeError);
+  assert.throws(() => startDietBreak(Number.POSITIVE_INFINITY), RangeError);
+});
+
 test("exercise calculations validate inputs", () => {
   assert.equal(calculateBurnedCalories(8, 80, 60), 672);
+  assert.equal(calculateBurnedCalories(8, 80, 0), 0);
   assert.equal(Math.round(estimateOneRepMax(100, 5)), 117);
   assert.equal(rpeFromRir(2), 8);
   assert.throws(() => estimateOneRepMax(100, 0), RangeError);
@@ -68,4 +76,5 @@ test("plateau detection validates and evaluates the recent sample", () => {
   assert.equal(detectWeightPlateau([80, 79, 78, 77], "recomp"), false);
   assert.equal(detectWeightPlateau([80, 80, 80, 80], "maintain"), false);
   assert.throws(() => detectWeightPlateau([80, 80], "recomp", 1), RangeError);
+  assert.throws(() => detectWeightPlateau([], "recomp", 4, -0.1), RangeError);
 });
