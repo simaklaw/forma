@@ -60,12 +60,6 @@ function assertFiniteNonNegative(value: number, name: string): void {
   }
 }
 
-function assertValidWorkoutDate(value: string): void {
-  if (!Number.isFinite(Date.parse(value))) {
-    throw new RangeError("completedAt must be a valid ISO date");
-  }
-}
-
 const initialBiometrics: Biometrics = {
   weightKg: 70,
   heightCm: 175,
@@ -86,7 +80,6 @@ export function createFormaSlice(
     updateBiometrics: (newBio) =>
       set((state) => {
         const next = { ...state.biometrics, ...newBio };
-        // Reuse the engine's domain validation instead of allowing invalid state to persist.
         MetabolicEngine.calculateBMR(next);
         MetabolicEngine.calculateTDEE(next);
         return { biometrics: next };
