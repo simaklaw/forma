@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   calculateBMR,
   calculateBurnedCalories,
+  calculatePresentationTargets,
   calculateTargets,
   detectWeightPlateau,
   estimateOneRepMax,
@@ -38,6 +39,31 @@ test("target policy is configurable", () => {
   assert.equal(targets.target, Math.round(targets.tdee * 1.05));
   assert.equal(targets.proteinTarget, 117);
   assert.equal(targets.fatTarget, 52);
+});
+
+test("shared presentation targets preserve web goal behavior", () => {
+  const input = { presentation: "man" as const, weightKg: 80, heightCm: 180, age: 30 };
+  const energy = calculatePresentationTargets({ ...input, goal: "energy" });
+  const strength = calculatePresentationTargets({ ...input, goal: "strength" });
+  const tone = calculatePresentationTargets({ ...input, goal: "tone" });
+  const recovery = calculatePresentationTargets({ ...input, goal: "recovery" });
+  assert.equal(energy.kcal, 2670);
+  assert.equal(strength.kcal, 2870);
+  assert.equal(tone.kcal, 2370);
+  assert.equal(recovery.kcal, 2770);
+  assert.ok(strength.protein > tone.protein);
+});
+
+test("neutral presentation uses the documented product coefficient", () => {
+  const targets = calculatePresentationTargets({
+    presentation: "neutral",
+    weightKg: 80,
+    heightCm: 180,
+    age: 30,
+    goal: "energy",
+  });
+  assert.equal(targets.bmr, 1697);
+  assert.equal(targets.tdee, 2333);
 });
 
 test("macro calculation never creates calories from thin air", () => {
