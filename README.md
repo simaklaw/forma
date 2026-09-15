@@ -20,25 +20,27 @@ pnpm --filter @forma/web dev
 - `useFormaStore` + `createPersistedFormaStore(storage)`
 - `ILocalAITrainer` / `RulesLocalAITrainer` / `CoachEngine` (`isLlmReady`)
 
-## Локальный ИИ (этап 3)
+## Локальный ИИ
 
 | Платформа | Адаптер | UI |
 |-----------|---------|-----|
-| Web | `WebLocalAITrainer` → WebLLM (WebGPU) | `/coach` + статус WebLLM/Rules + progress |
-| Mobile | `LlamaLocalAITrainer` → llama.rn 0.9 / rules fallback | вкладка **Тренер** + `WorkoutCoachCard` |
+| Web | `WebLocalAITrainer` → WebLLM (WebGPU) | `/coach` + статус WebLLM/Rules |
+| Mobile | `LlamaLocalAITrainer` → llama.rn 0.9 / rules | вкладка **Тренер** + `WorkoutCoachCard` |
 
-Адаптеры регистрируются в `CoachEngine` **сразу** при boot; модель догружается в фоне. Пока LLM не готов — тот же adapter отвечает через rules fallback. GGUF **не** в репозитории; URL — `EXPO_PUBLIC_LLAMA_MODEL_URL` (`apps/mobile/.env.example`).
+GGUF не в репозитории; URL — `EXPO_PUBLIC_LLAMA_MODEL_URL` (`apps/mobile/.env.example`).
 
-## CI
+## CI & EAS
 
-[Monorepo CI](https://github.com/simaklaw/forma/actions) — type-check + mobile jest + web tests. Зелёный на main.
+[Monorepo CI](https://github.com/simaklaw/forma/actions) — frozen lockfile, type-check, tests.
 
-`pnpm install --frozen-lockfile` + cache по `pnpm-lock.yaml`.
+Native development client:
 
-Native: [EAS Build](https://github.com/simaklaw/forma/actions/workflows/eas-build.yml) (manual). Нужен secret `EXPO_TOKEN`.
+1. `pnpm install` (после добавления `expo-dev-client` обновите и закоммитьте `pnpm-lock.yaml`).
+2. Один раз: `cd apps/mobile && npx eas-cli@latest init` → реальный `extra.eas.projectId` в `app.json` (см. `apps/mobile/EAS-SETUP.md`).
+3. Secret `EXPO_TOKEN` → workflow [EAS Build](https://github.com/simaklaw/forma/actions/workflows/eas-build.yml), profile **development**.
 
 ## Дальше
 
-1. EAS development build + проверка GGUF на устройстве
-2. Профилирование RAM / tokens/s на 4 ГБ устройствах
-3. История чата тренера (persist) при необходимости
+1. EAS Android development build + dev client на устройстве
+2. GGUF download / RAM / tokens/s
+3. Persist истории чата тренера при необходимости
