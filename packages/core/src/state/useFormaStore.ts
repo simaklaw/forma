@@ -54,6 +54,18 @@ function startOfLocalDay(now = Date.now()): number {
   return d.getTime();
 }
 
+function assertFiniteNonNegative(value: number, name: string): void {
+  if (!Number.isFinite(value) || value < 0) {
+    throw new RangeError(`${name} must be a finite number >= 0`);
+  }
+}
+
+function assertValidWorkoutDate(value: string): void {
+  if (!Number.isFinite(Date.parse(value))) {
+    throw new RangeError("completedAt must be a valid ISO date");
+  }
+}
+
 const initialBiometrics: Biometrics = {
   weightKg: 70,
   heightCm: 175,
@@ -72,22 +84,39 @@ export function createFormaSlice(
     workoutLogs: [],
 
     updateBiometrics: (newBio) =>
-      set((state) => ({
-        biometrics: { ...state.biometrics, ...newBio },
-      })),
+      set((state) => {
+        const next = { ...state.biometrics, ...newBio };
+        // Reuse the engine's domain validation instead of allowing invalid state to persist.
+        MetabolicEngine.calculateBMR(next);
+        MetabolicEngine.calculateTDEE(next);
+        return { biometrics: next };
+      }),
 
-    addFoodLog: (food) =>
+    addFoodLog: (food) => {
+      assertFiniteNonNegative(food.calories, "calories");
+      assertFiniteNonNegative(food.protein, "protein");
+      assertFiniteNonNegative(food.carbs, "carbs");
+      assertFiniteNonNegative(food.fat, "fat");
+      if (!food.name.trim()) throw new RangeError("name must not be empty");
       set((state) => ({
         foodLogs: [...state.foodLogs, { ...food, id: newId(), loggedAt: Date.now() }],
-      })),
+      }));
+    },
 
-    addWorkoutLog: (workout) =>
+    addWorkoutLog: (workout) => {
+      assertFiniteNonNegative(workout.durationMinutes, "durationMinutes");
+      assertFiniteNonNegative(workout.caloriesBurned, "caloriesBurned");
+      if (workout.rpeScore !== undefined && (!Number.isFinite(workout.rpeScore) || workout.rpeScore < 0 || workout.rpeScore > 10)) {
+        throw new RangeError("rpeScore must be between 0 and 10");
+      }
+      if (!workout.exerciseId.trim()) throw new RangeError("exerciseId must not be empty");
       set((state) => ({
         workoutLogs: [
           ...state.workoutLogs,
           { ...workout, id: newId(), completedAt: new Date().toISOString() },
         ],
-      })),
+      }));
+    },
 
     getTDEE: () => MetabolicEngine.calculateTDEE(get().biometrics),
 
@@ -99,9 +128,9 @@ export function createFormaSlice(
     },
 
     getTodayBurnedCalories: () => {
-      const startIso = new Date(startOfLocalDay()).toISOString().slice(0, 10);
+      const start = startOfLocalDay();
       return get()
-        .workoutLogs.filter((item) => item.completedAt.startsWith(startIso))
+        .workoutLogs.filter((item) => Date.parse(item.completedAt) >= start)
         .reduce((sum, item) => sum + item.caloriesBurned, 0);
     },
 
