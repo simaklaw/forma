@@ -35,7 +35,9 @@ Web-адаптер лениво загружает `Llama-3.2-1B-Instruct-q4f16_
 
 CI использует `pnpm install --frozen-lockfile` и кэш pnpm по `pnpm-lock.yaml`.
 
+Для нативного dev client или preview APK используйте ручной workflow [EAS Build](https://github.com/simaklaw/forma/actions/workflows/eas-build.yml): в GitHub Actions выберите `Run workflow`, platform и EAS profile. Workflow намеренно не запускается на каждый push или pull request, поскольку EAS Build потребляет ресурсы и требует нативной сборки. Перед запуском добавьте `EXPO_TOKEN` в secrets репозитория; GGUF URL задаётся отдельно через `EXPO_PUBLIC_LLAMA_MODEL_URL` в EAS environment.
+
 ## Дальше
 
-1. Подготовить native Expo dev client / EAS Build (`EXPO_TOKEN`) и проверить GGUF на устройствах
+1. Запустить ручной EAS dev client / preview build (`EXPO_TOKEN`) и проверить GGUF на устройствах
 2. Профилировать память и скорость на мобильных устройствах с 4 ГБ ОЗУ
