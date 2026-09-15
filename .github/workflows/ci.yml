@@ -23,10 +23,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          # cache: pnpm requires pnpm-lock.yaml. Enable after committing the lockfile.
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install
-        run: pnpm install --frozen-lockfile=false
+        run: pnpm install --frozen-lockfile
 
       - name: Type-check (all packages)
         run: pnpm type-check
