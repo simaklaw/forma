@@ -29,6 +29,9 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Generate and build web routes
+        run: pnpm --filter @forma/web build
+
       - name: Type-check (all packages)
         run: pnpm type-check
 
