@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createFormaSlice, type UnifiedFormaState } from "./useFormaStore.ts";
+import {
+  createFormaSlice,
+  migrateFormaState,
+  FORMA_PERSIST_VERSION,
+  type UnifiedFormaState,
+} from "./useFormaStore.ts";
 
 function createTestStore() {
   let state!: UnifiedFormaState;
@@ -59,4 +64,40 @@ test("store accepts zero-duration workouts and validates RPE", () => {
     () => store.addWorkoutLog({ exerciseId: "bench", durationMinutes: 10, caloriesBurned: 50, rpeScore: 11 }),
     RangeError,
   );
+});
+
+test("persisted state migration upgrades the unversioned format", () => {
+  const migrated = migrateFormaState(
+    {
+      biometrics: { weightKg: 80, heightCm: 180, age: 30, gender: "male", activityFactor: 1.55 },
+      foodLogs: [{ id: "food-1", name: "Oats", calories: 300, protein: 10, carbs: 50, fat: 7, loggedAt: 123 }],
+      workoutLogs: [],
+    },
+    0,
+  );
+
+  assert.equal(FORMA_PERSIST_VERSION, 1);
+  assert.equal(migrated.biometrics.weightKg, 80);
+  assert.equal(migrated.foodLogs.length, 1);
+});
+
+test("persisted state migration drops malformed records and invalid biometrics", () => {
+  const migrated = migrateFormaState(
+    {
+      biometrics: { weightKg: -5, heightCm: 180, age: 30, gender: "male", activityFactor: 1.55 },
+      foodLogs: [
+        { id: "valid", name: "Rice", calories: 200, protein: 4, carbs: 45, fat: 1, loggedAt: 123 },
+        { id: "invalid", name: "", calories: -1, protein: 0, carbs: 0, fat: 0, loggedAt: 123 },
+      ],
+      workoutLogs: [
+        { id: "valid", exerciseId: "squat", durationMinutes: 30, caloriesBurned: 250, completedAt: new Date().toISOString() },
+        { id: "invalid", exerciseId: "", durationMinutes: 30, caloriesBurned: 250, completedAt: "not-a-date" },
+      ],
+    },
+    0,
+  );
+
+  assert.equal(migrated.biometrics.weightKg, 70);
+  assert.equal(migrated.foodLogs.length, 1);
+  assert.equal(migrated.workoutLogs.length, 1);
 });
