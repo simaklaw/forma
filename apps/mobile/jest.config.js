@@ -3,7 +3,7 @@ module.exports = {
   testEnvironment: "node",
   roots: ["<rootDir>/src"],
   testMatch: ["**/*.test.ts"],
-  moduleFileExtensions: ["ts", "tsx", "js"],
+  moduleFileExtensions: ["ts", "tsx", "js", "json"],
   transform: {
     "^.+\\.tsx?$": [
       "babel-jest",
@@ -15,11 +15,13 @@ module.exports = {
       },
     ],
   },
+  // Workspace packages use ESM-style "./file.ts" imports; strip for Node/Jest.
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
     "^@forma/core$": "<rootDir>/../../packages/core/src/index.ts",
     "^@forma/core/(.*)$": "<rootDir>/../../packages/core/src/$1",
     "^@forma/workout-domain$": "<rootDir>/../../packages/workout-domain/src/index.ts",
     "^@forma/workout-domain/(.*)$": "<rootDir>/../../packages/workout-domain/src/$1",
+    "^(\\.{1,2}/.*)\\.ts$": "$1",
   },
 };
