@@ -1,12 +1,6 @@
 /**
- * CalorieRing.tsx
- *
- * The report specifies React Native Skia for 120Hz hardware-accelerated
- * chart rendering. This scaffold uses react-native-svg instead — it needs no
- * extra Expo config-plugin setup and renders identically to the HTML
- * prototype's SVG ring, so it's a safe default a developer can upgrade to
- * Skia later purely as a performance pass (see HANDOFF.md) without changing
- * the visual result or the component's public API.
+ * CalorieRing — SVG ring matching FitPulse nutrition hero.
+ * Skia upgrade is optional later; API stays the same.
  */
 
 import React from 'react';
@@ -20,8 +14,8 @@ interface Props {
   size?: number;
 }
 
-export default function CalorieRing({ eaten, target, size = 92 }: Props) {
-  const strokeWidth = 6;
+export default function CalorieRing({ eaten, target, size = 108 }: Props) {
+  const strokeWidth = 8;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const pct = Math.min(100, Math.round((eaten / Math.max(1, target)) * 100));
@@ -42,12 +36,12 @@ export default function CalorieRing({ eaten, target, size = 92 }: Props) {
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={colors.cyan}
+          stroke={colors.lime}
           strokeWidth={strokeWidth}
           fill="none"
           strokeDasharray={`${circumference} ${circumference}`}
           strokeDashoffset={dashOffset}
-          strokeLinecap="square"
+          strokeLinecap="round"
           rotation="-90"
           origin={`${size / 2}, ${size / 2}`}
         />
@@ -55,7 +49,8 @@ export default function CalorieRing({ eaten, target, size = 92 }: Props) {
       <View style={StyleSheet.absoluteFillObject}>
         <View style={styles.center}>
           <Text style={styles.value}>{eaten.toLocaleString('ru-RU')}</Text>
-          <Text style={styles.label}>из {target.toLocaleString('ru-RU')} ккал</Text>
+          <Text style={styles.label}>ккал</Text>
+          <Text style={styles.sub}>из {target.toLocaleString('ru-RU')}</Text>
         </View>
       </View>
     </View>
@@ -64,6 +59,7 @@ export default function CalorieRing({ eaten, target, size = 92 }: Props) {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  value: { color: colors.paper, fontSize: 22, fontFamily: fonts.mono },
-  label: { color: colors.paperFaint, fontSize: 10, marginTop: 2, fontFamily: fonts.body }
+  value: { color: colors.paper, fontSize: 26, fontFamily: fonts.mono, lineHeight: 28 },
+  label: { color: colors.paperDim, fontSize: 11, fontFamily: fonts.body, marginTop: 2 },
+  sub: { color: colors.paperFaint, fontSize: 10, fontFamily: fonts.body, marginTop: 1 }
 });
