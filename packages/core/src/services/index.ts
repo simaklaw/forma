@@ -1,2 +1,2 @@
-export * from "./OpenFoodFactsService";
-export * from "./WgerExerciseService";
+export * from "./OpenFoodFactsService.ts";
+export * from "./WgerExerciseService.ts";
