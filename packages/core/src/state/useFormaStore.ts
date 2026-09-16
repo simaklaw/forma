@@ -99,7 +99,7 @@ function isValidBiometrics(value: unknown): value is Biometrics {
     !isFiniteNonNegative(value.weightKg) ||
     !isFiniteNonNegative(value.heightCm) ||
     !isFiniteNonNegative(value.age) ||
-    (gender !== "male" && gender !== "female" && gender !== "neutral") ||
+    (gender !== "male" && gender !== "female") ||
     !isFiniteNonNegative(activityFactor)
   ) {
     return false;
