@@ -68,10 +68,15 @@ export interface WorkoutSession {
 }
 
 export interface CommandContext {
-  /** Client-generated stable id for this command (UUIDv7 preferred). */
+  /** Client-generated stable id for this command (UUIDv7). */
   operationId: string;
-  /** Domain event id (UUIDv7). */
+  /** Domain event id (UUIDv7) for the primary event. */
   eventId: string;
+  /**
+   * Optional second event id when one command emits two events
+   * (e.g. set_completed + rest_started). Must be a full UUIDv7 — never a suffix.
+   */
+  eventId2?: string;
   /** Wall-clock ms at command time — injected, never Date.now() inside reducer. */
   nowMs: number;
   deviceId?: string;

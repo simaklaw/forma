@@ -13,6 +13,7 @@ export interface DispatchContext {
   nowMs?: number;
   operationId?: string;
   eventId?: string;
+  eventId2?: string;
   deviceId?: string;
   expectedVersion?: number;
 }
@@ -48,10 +49,12 @@ export class SessionCommandService {
       throw new Error(`Session not found: ${sessionId}`);
     }
 
+    const nowMs = dispatchCtx.nowMs ?? Date.now();
     const ctx: CommandContext = {
-      operationId: dispatchCtx.operationId ?? newOperationId(),
-      eventId: dispatchCtx.eventId ?? newEventId(),
-      nowMs: dispatchCtx.nowMs ?? Date.now(),
+      operationId: dispatchCtx.operationId ?? newOperationId(nowMs),
+      eventId: dispatchCtx.eventId ?? newEventId(nowMs),
+      eventId2: dispatchCtx.eventId2 ?? newEventId(nowMs),
+      nowMs,
       deviceId: dispatchCtx.deviceId
     };
 
