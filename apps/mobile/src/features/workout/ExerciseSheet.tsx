@@ -12,6 +12,7 @@ import { toDateKey, roundToStep } from '@/engines/WorkoutStats';
 import { useExerciseReference } from './useExerciseReference';
 import { ActiveSessionController } from './session/ActiveSessionController';
 import { mergeSessionProjection } from './data/sessionProjections';
+import { getSessionService } from './data';
 
 const beepSource = require('../../../assets/sfx/beep.wav');
 
@@ -158,11 +159,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       setRestRemaining(null);
       const sessionId = ActiveSessionController.getSessionId();
       if (sessionId) {
-        void import('@/features/workout/data').then(({ getSessionService }) =>
-          getSessionService()
-            .dispatch(sessionId, { type: 'skip_rest' })
-            .catch(() => {})
-        );
+        void getSessionService()
+          .dispatch(sessionId, { type: 'skip_rest' })
+          .catch(() => {});
       }
     }
 
