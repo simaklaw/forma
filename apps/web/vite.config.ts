@@ -12,6 +12,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@forma/core": path.resolve(__dirname, "../../packages/core/src"),
+      "@forma/workout-domain": path.resolve(
+        __dirname,
+        "../../packages/workout-domain/src/index.ts",
+      ),
       "@": path.resolve(__dirname, "./src"),
       "~": path.resolve(__dirname, "./src"),
     },
