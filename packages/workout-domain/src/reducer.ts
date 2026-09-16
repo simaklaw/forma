@@ -113,7 +113,6 @@ export function applyCommand(
         timezone: command.timezone
       }
     };
-    // ordinal on first event should be 1
     event.ordinal = 1;
     const withEvent: WorkoutSession = {
       ...prepared,
@@ -213,12 +212,10 @@ export function applyCommand(
       const stepDone = completedSets.length >= step.snapshot.targetSets;
       const moreSteps = stepIndex + 1 < session.steps.length;
 
-      // Advance to next step when current targets met
       if (stepDone && moreSteps) {
         next = { ...next, currentStepIndex: stepIndex + 1 };
       }
 
-      // Optional rest after set when more work remains on same or later steps
       const stillWorkOnStep = completedSets.length < step.snapshot.targetSets;
       const shouldRest =
         command.autoStartRest !== false &&
@@ -227,9 +224,15 @@ export function applyCommand(
         !allRequiredDone({ ...next, steps });
 
       if (shouldRest && stillWorkOnStep) {
+        if (!ctx.eventId2) {
+          throw new DomainError(
+            'invalid_transition',
+            'complete_set with rest requires CommandContext.eventId2 (UUIDv7)'
+          );
+        }
         const endsAtMs = ctx.nowMs + step.snapshot.restSeconds * 1000;
         const restEvent: SessionEvent = {
-          eventId: ctx.eventId + ':rest',
+          eventId: ctx.eventId2,
           sessionId: session.sessionId,
           ordinal: setEvent.ordinal + 1,
           occurredAtMs: ctx.nowMs,
@@ -243,10 +246,9 @@ export function applyCommand(
           }
         };
         events.push(restEvent);
-        next = { ...next, restEndsAtMs: endsAtMs, lastEventOrdinal: restEvent.ordinal, rowVersion: session.rowVersion + 1 };
-        // lastEventOrdinal/rowVersion adjusted below via final event
         next = {
           ...next,
+          restEndsAtMs: endsAtMs,
           lastEventOrdinal: restEvent.ordinal,
           rowVersion: session.rowVersion + events.length
         };
@@ -375,7 +377,7 @@ export function applyCommand(
     case 'abandon_session': {
       assertNotTerminal(session);
       if (session.status === 'prepared') {
-        // Allow abandon from prepared without start
+        // ok
       } else if (session.status !== 'active' && session.status !== 'paused') {
         throw new DomainError('invalid_transition', 'abandon_session invalid status');
       }
@@ -419,9 +421,7 @@ export function replayEvents(
   }
 ): WorkoutSession {
   let session: WorkoutSession | null = null;
-  let op = 0;
   for (const ev of events) {
-    op += 1;
     const ctx: CommandContext = {
       operationId: ev.operationId,
       eventId: ev.eventId,
@@ -446,9 +446,6 @@ export function replayEvents(
       continue;
     }
     if (!session) throw new DomainError('invalid_transition', 'replay missing prepare');
-    // Map event → command for remaining types is intentionally limited;
-    // full event-sourced rebuild can expand later. For P0 we verify reducer paths via commands.
-    void op;
     break;
   }
   if (!session) throw new DomainError('invalid_transition', 'no events to replay');
