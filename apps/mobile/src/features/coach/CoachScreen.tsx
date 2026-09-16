@@ -14,9 +14,7 @@ import { CoachEngine, estimateBurnFromSetLogs, toDateKey } from '@forma/core';
 import { getMobileTrainerProgress } from '@/ai/trainerProgress';
 import { colors, fonts, spacing } from '@/core/theme/tokens';
 import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
-import { useFitPulseStore } from '@/state/useFitPulseStore';
-
-type Msg = { id: string; role: 'user' | 'coach'; text: string };
+import { COACH_WELCOME, useFitPulseStore } from '@/state/useFitPulseStore';
 
 const CHIPS = ['Сколько белка?', 'Калории сегодня', 'Совет на тренировку', 'Восстановление'];
 
@@ -25,19 +23,15 @@ export default function CoachScreen() {
   const todayMeals = useFitPulseStore((s) => s.todayMeals);
   const setLogs = useFitPulseStore((s) => s.setLogs);
   const targets = useFitPulseStore((s) => s.calculateTargets());
+  const messages = useFitPulseStore((s) => s.coachMessages);
+  const setCoachMessages = useFitPulseStore((s) => s.setCoachMessages);
+  const clearCoachMessages = useFitPulseStore((s) => s.clearCoachMessages);
 
-  const [messages, setMessages] = useState<Msg[]>([
-    {
-      id: 'welcome',
-      role: 'coach',
-      text: 'Я локальный тренер. Данные не уходят в облако. Спроси про белок, калории или тренировку.'
-    }
-  ]);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [llmReady, setLlmReady] = useState(false);
   const [progress, setProgress] = useState(0);
-  const listRef = useRef<FlatList<Msg>>(null);
+  const listRef = useRef<FlatList<(typeof messages)[number]>>(null);
 
   const snapshot = useMemo(
     () =>
@@ -68,8 +62,8 @@ export default function CoachScreen() {
     setInput('');
     const userId = `u-${Date.now()}`;
     const coachId = `c-${Date.now()}`;
-    setMessages((m) => [
-      ...m,
+    setCoachMessages([
+      ...messages,
       { id: userId, role: 'user', text: q },
       { id: coachId, role: 'coach', text: '' }
     ]);
@@ -78,7 +72,8 @@ export default function CoachScreen() {
       let acc = '';
       await CoachEngine.getTrainer().streamAdvice(snapshot, q, (token) => {
         acc += token;
-        setMessages((m) => m.map((row) => (row.id === coachId ? { ...row, text: acc } : row)));
+        const current = useFitPulseStore.getState().coachMessages;
+        setCoachMessages(current.map((row) => (row.id === coachId ? { ...row, text: acc } : row)));
       });
     } finally {
       setBusy(false);
@@ -91,6 +86,9 @@ export default function CoachScreen() {
       ? `Загрузка · ${Math.round(progress * 100)}%`
       : 'Rules · offline';
 
+  const visible = messages.filter((m) => m.text.length > 0);
+  const canClear = messages.some((m) => m.id !== 'welcome' && m.text.length > 0);
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <KeyboardAvoidingView
@@ -99,8 +97,17 @@ export default function CoachScreen() {
         keyboardVerticalOffset={8}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Тренер</Text>
-          <Text style={styles.sub}>{status}</Text>
+          <View style={styles.headerRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.title}>Тренер</Text>
+              <Text style={styles.sub}>{status}</Text>
+            </View>
+            {canClear && (
+              <Pressable onPress={clearCoachMessages} accessibilityRole="button" accessibilityLabel="Очистить чат">
+                <Text style={styles.clear}>Очистить</Text>
+              </Pressable>
+            )}
+          </View>
         </View>
 
         <View style={styles.chips}>
@@ -118,7 +125,7 @@ export default function CoachScreen() {
 
         <FlatList
           ref={listRef}
-          data={messages.filter((m) => m.text.length > 0)}
+          data={visible.length ? visible : [{ id: 'welcome', role: 'coach' as const, text: COACH_WELCOME }]}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
@@ -158,6 +165,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.ink },
   flex: { flex: 1 },
   header: { paddingHorizontal: spacing.xxl, paddingTop: spacing.lg, paddingBottom: spacing.sm },
+  headerRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   title: {
     color: colors.paper,
     fontSize: 28,
@@ -166,6 +174,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5
   },
   sub: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.body, marginTop: 4 },
+  clear: { color: colors.paperFaint, fontSize: 12, fontFamily: fonts.body, textDecorationLine: 'underline', marginTop: 6 },
   chips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
