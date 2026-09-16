@@ -92,11 +92,30 @@ function isFiniteNonNegative(value: unknown): value is number {
 
 function isValidBiometrics(value: unknown): value is Biometrics {
   if (!isRecord(value)) return false;
+
+  const gender = value.gender;
+  const activityFactor = value.activityFactor;
+  if (
+    !isFiniteNonNegative(value.weightKg) ||
+    !isFiniteNonNegative(value.heightCm) ||
+    !isFiniteNonNegative(value.age) ||
+    (gender !== "male" && gender !== "female" && gender !== "neutral") ||
+    !isFiniteNonNegative(activityFactor)
+  ) {
+    return false;
+  }
+
+  const biometrics: Biometrics = {
+    weightKg: value.weightKg,
+    heightCm: value.heightCm,
+    age: value.age,
+    gender,
+    activityFactor,
+  };
+
   try {
-    // The runtime validator in MetabolicEngine is the source of truth here.
-    // Keep the unknown intermediate explicit so TypeScript does not mistake
-    // a persisted Record<string, unknown> for a structurally compatible model.
-    const biometrics = value as unknown as Biometrics;
+    // MetabolicEngine remains the source of truth for domain constraints
+    // such as supported age, height, weight, and activity-factor ranges.
     MetabolicEngine.calculateBMR(biometrics);
     MetabolicEngine.calculateTDEE(biometrics);
     return true;
