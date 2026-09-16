@@ -8,6 +8,7 @@ import ExerciseSheet, { ExerciseDef } from './ExerciseSheet';
 import { WorkoutCoachCard } from './WorkoutCoachCard';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { DayProgress, lastNDays, ruDayWord, toDateKey } from '@/engines/WorkoutStats';
+import { ActiveSessionController } from './session/ActiveSessionController';
 
 interface WorkoutDay {
   id: string;
@@ -280,8 +281,10 @@ export default function WorkoutScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Начать тренировку"
                 onPress={() => {
-                  const first = activeDay.exercises[0];
-                  if (first) openExercise(first.id);
+                  void ActiveSessionController.ensureDaySession(activeDay.id, activeDay.exercises).then(() => {
+                    const first = activeDay.exercises[0];
+                    if (first) openExercise(first.id);
+                  });
                 }}
               >
                 <Text style={styles.startPillText}>▶  Начать тренировку</Text>
@@ -380,7 +383,12 @@ export default function WorkoutScreen() {
         })}
       </ScrollView>
 
-      <ExerciseSheet ref={sheetRef} exercise={selectedExercise} />
+      <ExerciseSheet
+        ref={sheetRef}
+        exercise={selectedExercise}
+        dayId={activeDay.id}
+        dayExercises={activeDay.exercises}
+      />
     </SafeAreaView>
   );
 }
