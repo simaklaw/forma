@@ -57,7 +57,6 @@ describe('ActiveSessionController', () => {
       reps: 8
     });
 
-    // Simulate process death: clear in-memory pointers only; Memory repo keeps data
     ActiveSessionController.resetForTests();
     expect(ActiveSessionController.getSessionId()).toBeNull();
 
@@ -94,6 +93,28 @@ describe('ActiveSessionController', () => {
 
     const previous = await getSessionService().getSession(legs.sessionId);
     expect(previous?.status).toBe('abandoned');
+  });
+
+  it('restartDaySession abandons with user_restarted and starts fresh', async () => {
+    const first = await ActiveSessionController.ensureDaySession('legs', exercises);
+    await ActiveSessionController.recordSetForExercise({
+      dayId: 'legs',
+      exercises,
+      exerciseId: 1,
+      weightKg: 80,
+      reps: 8
+    });
+
+    ActiveSessionController.resetForTests();
+
+    const next = await ActiveSessionController.restartDaySession('legs', exercises);
+    expect(next.sessionId).not.toBe(first.sessionId);
+    expect(next.status).toBe('active');
+    expect(next.steps[0]?.completedSets).toHaveLength(0);
+
+    const old = await getSessionService().getSession(first.sessionId);
+    expect(old?.status).toBe('abandoned');
+    expect(old?.terminalReason).toBe('user_restarted');
   });
 
   it('recordSetForExercise dual-writes sequential sets', async () => {

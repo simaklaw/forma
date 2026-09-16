@@ -9,7 +9,8 @@ export type TerminalReason =
   | 'all_sets_done'
   | 'user_finished_partial'
   | 'user_left'
-  | 'replaced_by_new_session';
+  | 'replaced_by_new_session'
+  | 'user_restarted';
 
 export type SkipReason = 'pain' | 'equipment' | 'time' | 'too_hard' | 'other';
 

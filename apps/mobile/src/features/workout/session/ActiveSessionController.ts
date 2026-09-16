@@ -7,8 +7,12 @@ import type { ExerciseDef } from '../ExerciseSheet';
 import { contentHashForExercises, exercisesToSnapshots } from './planToSnapshots';
 import { LOCAL_USER_ID } from './currentUser';
 
-function dayTemplateId(dayId: string): string {
+export function dayTemplateId(dayId: string): string {
   return `day-${dayId}`;
+}
+
+export function dayIdFromTemplate(templateRevisionId: string): string | null {
+  return templateRevisionId.startsWith('day-') ? templateRevisionId.slice(4) : null;
 }
 
 function isResumable(s: WorkoutSession): boolean {
@@ -18,10 +22,8 @@ function isResumable(s: WorkoutSession): boolean {
 /**
  * Thin imperative controller: keeps the active day-plan session id
  * and dual-writes set completion into the domain aggregate.
- * UI may keep using Zustand for counters; this builds durable history.
  *
- * After process death, in-memory sessionId/dayId are null; resume is driven
- * by SessionRepository.getResumable + templateRevisionId === day-${dayId}.
+ * After process death, resume is driven by getResumable + templateRevisionId.
  */
 class ActiveSessionControllerImpl {
   private sessionId: string | null = null;
@@ -61,7 +63,7 @@ class ActiveSessionControllerImpl {
 
   /**
    * Single-active: abandon only when the resumable session belongs to a *different* day.
-   * Same-day match is decided by templateRevisionId, not in-memory this.dayId.
+   * Same-day match via templateRevisionId (survives process death).
    */
   private async abandonIfDifferentDay(nextDayId: string): Promise<WorkoutSession | null> {
     const svc = getSessionService();
@@ -87,7 +89,6 @@ class ActiveSessionControllerImpl {
     const svc = getSessionService();
     const templateId = dayTemplateId(dayId);
 
-    // Fast path: in-memory pointer still valid for this day
     if (this.sessionId && this.dayId === dayId) {
       const existing = await svc.getSession(this.sessionId);
       if (existing && isResumable(existing)) {
@@ -95,18 +96,9 @@ class ActiveSessionControllerImpl {
       }
     }
 
-    // Cold start / lost pointer: resume same-day from durable store, or abandon other day
     const sameDayOrNull = await this.abandonIfDifferentDay(dayId);
     if (sameDayOrNull) {
       return this.bind(sameDayOrNull, dayId);
-    }
-
-    // Optional: still try load by in-memory id after abandon path (no-op usually)
-    if (this.sessionId) {
-      const existing = await svc.getSession(this.sessionId);
-      if (existing && isResumable(existing) && existing.templateRevisionId === templateId) {
-        return this.bind(existing, dayId);
-      }
     }
 
     const sessionId = newSessionId();
@@ -130,9 +122,27 @@ class ActiveSessionControllerImpl {
   }
 
   /**
-   * Record a set into the domain session when the exercise matches current step.
-   * Returns updated session or null if session not aligned (Zustand still records).
+   * Explicit "start over": abandon current resumable with user_restarted, then prepare fresh.
+   * Does not use replaced_by_new_session (different analytics semantics).
    */
+  async restartDaySession(dayId: string, exercises: ExerciseDef[]): Promise<WorkoutSession> {
+    const svc = getSessionService();
+    const previous = await svc.getResumable(LOCAL_USER_ID);
+    if (previous && isResumable(previous)) {
+      try {
+        await svc.dispatch(previous.sessionId, {
+          type: 'abandon_session',
+          reason: 'user_restarted'
+        });
+      } catch {
+        // ignore
+      }
+    }
+    this.sessionId = null;
+    this.dayId = null;
+    return this.ensureDaySession(dayId, exercises);
+  }
+
   async recordSetForExercise(input: {
     dayId: string;
     exercises: ExerciseDef[];
@@ -191,9 +201,7 @@ class ActiveSessionControllerImpl {
     if (!this.sessionId) {
       const resumable = await getSessionService().getResumable(LOCAL_USER_ID);
       if (resumable && isResumable(resumable)) {
-        const dayId = resumable.templateRevisionId.startsWith('day-')
-          ? resumable.templateRevisionId.slice(4)
-          : null;
+        const dayId = dayIdFromTemplate(resumable.templateRevisionId);
         if (dayId) this.bind(resumable, dayId);
         return resumable;
       }
