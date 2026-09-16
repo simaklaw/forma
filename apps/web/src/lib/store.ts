@@ -264,6 +264,11 @@ export const useAppStore = create<State>()(
         photos: s.photos,
       }),
       skipHydration: true,
+      onRehydrateStorage: () => (state) => {
+        // Older persisted profiles may contain stale derived macro targets.
+        // Recompute them after hydration so UI and coach always see one policy.
+        if (state) useAppStore.setState({ profile: applyGoals(state.profile) });
+      },
     },
   ),
 );
