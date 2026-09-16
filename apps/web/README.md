@@ -1,59 +1,45 @@
-# FORMA
+# FitPulse (web)
 
-Домашний тренер и диетолог. Спокойный интерфейс, видео-упражнения, дневники тренировок и питания, прогресс.
-
-## Стек (веб-прототип)
-
-- TanStack Start (React + Vite)
-- Tailwind CSS v4
-- Zustand (persist)
-- Recharts, Vaul, Lucide
-
-Это **интерактивный веб-прототип** будущего Flutter-приложения. Логика, экраны и UX совпадают с целевым Android-клиентом.
+Веб-часть монорепозитория Forma / FitPulse: SPA на Vite + React + TanStack Router.
 
 ## Запуск
 
+Из корня монорепо:
+
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm --filter @forma/web dev
 ```
 
-Открой http://localhost:8080
+Или из `apps/web`:
+
+```bash
+pnpm install
+pnpm dev
+```
+
+## FitPulse HTML-прототип (design handoff)
+
+Статичный кликабельный прототип с **теми же токенами**, что mobile (`#00E5A8`, `#0B0F14`, soft cards):
+
+- Файл: [`public/fitpulse-prototype.html`](./public/fitpulse-prototype.html)
+- После `pnpm dev`: http://localhost:5173/fitpulse-prototype.html (порт смотри в выводе Vite)
+- Можно открыть файл напрямую в браузере без сборки
+
+Экраны: Тренировка · Питание · Тренер · Прогресс · Профиль.  
+Это **UI-reference**, не production-логика (streaming coach / store — в native и React SPA).
+
+## Тема
+
+CSS-токены: `src/styles.css` (dark mint aligned with `apps/mobile/src/core/theme/tokens.ts`).
 
 ## Медиа упражнений
 
-В репозитории уже лежат **постеры SVG** (`public/exercises/*.svg`) в фирменной sage-палитре.
-
-Короткие **mp4-петли** (zoom) и JPG сгенерированы локально. Чтобы добавить видео:
-
-1. Скачай архив `forma-media.zip` (из чата с Grok или сгенерируй скриптом ниже).
-2. Распакуй в `public/exercises/`:
-   ```bash
-   unzip forma-media.zip -d public/exercises
-   ```
-3. Перезапусти `npm run dev`.
-
-Скрипт перегенерации (ImageMagick + ffmpeg):
-
-```bash
-# см. public/exercises — SVG уже в репо
-# PNG/JPG/MP4 собираются из SVG тем же pipeline, что использовался при разработке
-```
-
-Пока mp4 нет, плеер показывает poster (SVG) — карточки и UI уже рабочие.
+`public/exercises/` — jpg / mp4 / svg для каталога.
 
 ## Структура
 
-- `src/features/` — экраны (onboarding, today, nutrition, progress, profile, player)
-- `src/lib/` — домен (forma.ts), каталог упражнений, Zustand store, типы
-- `src/components/` — UI: macro-ring, exercise-card, week-dots, muscle-map, compare-slider, shell
+- `src/features/` — экраны SPA
+- `src/lib/` — store, каталог
 - `src/routes/` — TanStack Router
-- `public/exercises/` — постеры и видео
-
-## Дизайн
-
-Sage-палитра, Material 3 + Cupertino-гибрид, breathing rest ring, coach lines, photo compare.
-
-## Дальше
-
-Перенос в Flutter (Riverpod, go_router, media_kit, drift) + wger backend + GitHub Actions APK.
+- `public/` — статика + HTML-прототип
