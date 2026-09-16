@@ -30,6 +30,7 @@ function ctx(n: number): CommandContext {
   return {
     operationId: `op-${n}`,
     eventId: `ev-${n}`,
+    eventId2: `ev2-${n}`,
     nowMs: 1_700_000_000_000 + n * 1000
   };
 }
@@ -106,6 +107,7 @@ describe('workout-domain applyCommand', () => {
     assert.equal(afterSet.session.steps[0]?.completedSets.length, 1);
     assert.ok(afterSet.session.restEndsAtMs !== null);
     assert.equal(afterSet.events.map((e) => e.type).join(','), 'set_completed,rest_started');
+    assert.equal(afterSet.events[1]?.eventId, 'ev2-3');
 
     assert.throws(
       () =>
