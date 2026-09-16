@@ -19,5 +19,7 @@ module.exports = {
     "^@/(.*)$": "<rootDir>/src/$1",
     "^@forma/core$": "<rootDir>/../../packages/core/src/index.ts",
     "^@forma/core/(.*)$": "<rootDir>/../../packages/core/src/$1",
+    "^@forma/workout-domain$": "<rootDir>/../../packages/workout-domain/src/index.ts",
+    "^@forma/workout-domain/(.*)$": "<rootDir>/../../packages/workout-domain/src/$1",
   },
 };
