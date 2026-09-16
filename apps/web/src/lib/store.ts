@@ -14,6 +14,13 @@ import type {
   WorkoutLog,
 } from "./types";
 
+export const COACH_WELCOME =
+  "Я локальный тренер. Данные не уходят в облако. Спроси про белок, калории или тренировку.";
+
+export type CoachMessage = { role: "user" | "coach"; text: string };
+
+const COACH_MESSAGE_CAP = 40;
+
 const defaultProfile = (): Profile =>
   applyGoals({
     name: "",
@@ -33,6 +40,23 @@ const defaultProfile = (): Profile =>
     theme: "system",
   });
 
+function defaultCoachMessages(): CoachMessage[] {
+  return [{ role: "coach", text: COACH_WELCOME }];
+}
+
+function sanitizeCoachMessages(value: unknown): CoachMessage[] {
+  if (!Array.isArray(value)) return defaultCoachMessages();
+  const cleaned = value.filter(
+    (m): m is CoachMessage =>
+      !!m &&
+      typeof m === "object" &&
+      ((m as CoachMessage).role === "user" || (m as CoachMessage).role === "coach") &&
+      typeof (m as CoachMessage).text === "string",
+  );
+  if (cleaned.length === 0) return defaultCoachMessages();
+  return cleaned.slice(-COACH_MESSAGE_CAP);
+}
+
 type CustomFoodInput = {
   name: string;
   kcal: number;
@@ -49,6 +73,7 @@ type State = {
   measurements: MeasurementEntry[];
   photos: { before: string | null; after: string | null };
   session: Session | null;
+  coachMessages: CoachMessage[];
   setProfile: (p: Partial<Profile>) => void;
   completeOnboarding: (p: Partial<Profile>) => void;
   logWorkout: (planId: string, regions: import("./types").MuscleRegion[]) => void;
@@ -65,6 +90,8 @@ type State = {
   startRest: (sec: number) => void;
   clearRest: () => void;
   endSession: (completed: boolean) => void;
+  setCoachMessages: (messages: CoachMessage[]) => void;
+  clearCoachMessages: () => void;
   resetAll: () => void;
 };
 
@@ -93,6 +120,7 @@ export const useAppStore = create<State>()(
       measurements: [],
       photos: { before: null, after: null },
       session: null,
+      coachMessages: defaultCoachMessages(),
 
       setProfile: (p) =>
         set((s) => ({
@@ -243,6 +271,13 @@ export const useAppStore = create<State>()(
         set({ session: null });
       },
 
+      setCoachMessages: (messages) =>
+        set({
+          coachMessages: messages.slice(-COACH_MESSAGE_CAP),
+        }),
+
+      clearCoachMessages: () => set({ coachMessages: defaultCoachMessages() }),
+
       resetAll: () =>
         set({
           profile: defaultProfile(),
@@ -252,6 +287,7 @@ export const useAppStore = create<State>()(
           measurements: [],
           photos: { before: null, after: null },
           session: null,
+          coachMessages: defaultCoachMessages(),
         }),
     }),
     {
@@ -263,17 +299,21 @@ export const useAppStore = create<State>()(
         weights: s.weights,
         measurements: s.measurements,
         photos: s.photos,
+        coachMessages: s.coachMessages,
       }),
       skipHydration: true,
       onRehydrateStorage: () => (state) => {
         if (!state) return;
-        // Older persisted profiles may contain stale derived macro targets.
-        // Recompute them after hydration so UI and coach always see one policy.
         try {
-          useAppStore.setState({ profile: applyGoals(state.profile) });
+          useAppStore.setState({
+            profile: applyGoals(state.profile),
+            coachMessages: sanitizeCoachMessages(state.coachMessages),
+          });
         } catch {
-          // Corrupt/legacy profile data must not brick app hydration.
-          useAppStore.setState({ profile: defaultProfile() });
+          useAppStore.setState({
+            profile: defaultProfile(),
+            coachMessages: defaultCoachMessages(),
+          });
         }
       },
     },
@@ -283,7 +323,6 @@ export const useAppStore = create<State>()(
 export function useHydrated(): boolean {
   const [ready, setReady] = useState(false);
   useEffect(() => {
-    // rehydrate() may return void | Promise depending on zustand version
     void Promise.resolve(useAppStore.persist.rehydrate()).finally(() => setReady(true));
   }, []);
   return ready;
