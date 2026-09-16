@@ -11,6 +11,7 @@ import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { toDateKey, roundToStep } from '@/engines/WorkoutStats';
 import { useExerciseReference } from './useExerciseReference';
 import { ActiveSessionController } from './session/ActiveSessionController';
+import { mergeSessionProjection } from './data/sessionProjections';
 
 const beepSource = require('../../../assets/sfx/beep.wav');
 
@@ -45,7 +46,6 @@ function remainingRestSeconds(restEndsAtMs: number | null | undefined, nowMs = D
 
 const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
   ({ exercise, dayId, dayExercises, onFinished }, ref) => {
-    const recordSet = useFitPulseStore((s) => s.recordSet);
     const completedSetsToday = useFitPulseStore((s) => s.completedSetsToday);
     const setLogs = useFitPulseStore((s) => s.setLogs);
     const reference = useExerciseReference(exercise?.wgerSearchTerm ?? null);
@@ -107,9 +107,6 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
     function recordNextSet() {
       if (!exercise || completedSets >= exercise.totalSets) return;
-      const next = recordSet(exercise.id, weight, reps, rir);
-      setCompletedSets(next);
-
       if (dayId && dayExercises?.length) {
         void ActiveSessionController.recordSetForExercise({
           dayId,
@@ -119,27 +116,33 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           reps,
           rir
         }).then(async (session) => {
+          if (!session) return;
+          const projection = await ActiveSessionController.getLegacyProjection(session.sessionId);
+          if (!projection) return;
+          const current = useFitPulseStore.getState();
+          const merged = mergeSessionProjection(
+            { setLogs: current.setLogs, dayProgress: current.dayProgress },
+            projection
+          );
+          current.hydrate({ setLogs: merged.setLogs, dayProgress: merged.dayProgress });
+          const next = merged.dayProgress[toDateKey(new Date())]?.[exercise.id] ?? 0;
+          setCompletedSets(next);
           await ActiveSessionController.completeDayIfDone();
-          // Prefer domain rest deadline over local exercise.restSeconds only.
-          if (session?.restEndsAtMs != null) {
-            startRestFromDeadline(session.restEndsAtMs);
-          } else if (next < exercise.totalSets) {
-            RestTimerEngine.startTimer(
-              exercise.restSeconds,
-              (remaining) => setRestRemaining(remaining),
-              () => setRestRemaining(null),
-              beepSource
-            );
+          if (next >= exercise.totalSets) {
+            RestTimerEngine.hapticDayComplete();
+            onFinished?.(exercise.id);
+            return;
           }
+          RestTimerEngine.hapticSetComplete();
+          if (session.restEndsAtMs != null) startRestFromDeadline(session.restEndsAtMs);
         });
-      } else if (next < exercise.totalSets) {
-        RestTimerEngine.startTimer(
-          exercise.restSeconds,
-          (remaining) => setRestRemaining(remaining),
-          () => setRestRemaining(null),
-          beepSource
-        );
+        return;
       }
+
+      // Compatibility fallback for callers that have not supplied a session plan.
+      const current = useFitPulseStore.getState();
+      const next = current.recordSet(exercise.id, weight, reps, rir);
+      setCompletedSets(next);
 
       if (next >= exercise.totalSets) {
         RestTimerEngine.hapticDayComplete();

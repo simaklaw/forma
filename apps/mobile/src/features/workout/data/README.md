@@ -51,8 +51,16 @@ configureSessionPersistence(
 
 Each accepted event is written to `outbox` with `status=pending` for future P1 sync. No network yet.
 
+## Legacy read-model projection
+
+Accepted `set_completed` events are projected by `sessionProjections.ts` into the
+legacy Zustand `setLogs` and `dayProgress` shapes used by workout, analytics and
+coach screens. Projection is idempotent by event ID and uses the session's
+`localStartDate` as the local day key. New workout writes go through the durable
+session command first; the legacy store is updated only from the accepted event
+journal. Existing legacy logs remain supported for backwards-compatible reads.
+
 ## Not in this layer
 
-- Migration of legacy Zustand `setLogs` → session projections
 - Server push/pull
 - Full event-sourced rebuild from journal
