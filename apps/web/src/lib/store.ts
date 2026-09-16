@@ -13,6 +13,11 @@ import type {
   WeightEntry,
   WorkoutLog,
 } from "./types";
+import {
+  domainCompleteSet,
+  domainEndSession,
+  domainStartPlan,
+} from "./workout-session/dualWrite.ts";
 
 export const COACH_WELCOME =
   "Я локальный тренер. Данные не уходят в облако. Спроси про белок, калории или тренировку.";
@@ -205,20 +210,30 @@ export const useAppStore = create<State>()(
             startedAt: Date.now(),
           },
         });
+        void domainStartPlan(planId);
       },
 
-      toggleSet: (exerciseId, setIndex) =>
-        set((s) => {
-          if (!s.session) return s;
-          const arr = [...(s.session.setsDone[exerciseId] ?? [])];
-          arr[setIndex] = !arr[setIndex];
-          return {
-            session: {
-              ...s.session,
-              setsDone: { ...s.session.setsDone, [exerciseId]: arr },
-            },
-          };
-        }),
+      toggleSet: (exerciseId, setIndex) => {
+        const s = get();
+        if (!s.session) return;
+        const arr = [...(s.session.setsDone[exerciseId] ?? [])];
+        const wasDone = Boolean(arr[setIndex]);
+        arr[setIndex] = !wasDone;
+        set({
+          session: {
+            ...s.session,
+            setsDone: { ...s.session.setsDone, [exerciseId]: arr },
+          },
+        });
+        if (!wasDone) {
+          const ex = EXERCISES.find((e) => e.id === exerciseId);
+          void domainCompleteSet({
+            exerciseId,
+            reps: ex?.reps ?? 0,
+            restSec: ex?.restSec ?? 0,
+          });
+        }
+      },
 
       nextExercise: () =>
         set((s) => {
@@ -268,6 +283,7 @@ export const useAppStore = create<State>()(
           const unique = [...new Set(regions)];
           get().logWorkout(s.session.planId, unique);
         }
+        void domainEndSession(completed);
         set({ session: null });
       },
 
