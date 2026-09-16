@@ -1,26 +1,6 @@
 /**
- * useFitPulseStore.ts
- *
- * This is the report's MetabolicEngine.ts store, adapted for React Native:
- *   - createJSONStorage(() => localStorage) doesn't work on native — there is
- *     no localStorage. Swapped for @react-native-async-storage/async-storage.
- *   - calculateTargets()/detectWeightPlateau() delegate to the pure functions
- *     in src/engines/MetabolicEngine.ts instead of reimplementing the math
- *     inline, so the formulas have exactly one source of truth.
- *   - Food items get a stable id (crypto.randomUUID isn't available in RN's
- *     JS engine by default) via a small local id generator instead.
- *
- * Обновление: `setLogs` used to grow forever (every set, every session,
- * re-serialized to AsyncStorage in full on every write — see
- * pruneOldSetLogs's doc in WorkoutStats.ts). `recordSet` now prunes to
- * SET_LOG_RETENTION_DAYS on every write, and `personalRecords` is a
- * separate, never-pruned running max per exercise so no all-time record is
- * ever lost to that rotation. A debounced/batched AsyncStorage write was
- * considered too (to coalesce rapid writes) and skipped for now: with
- * setLogs bounded, the persisted payload stays small (a few hundred
- * entries at most) and writes only happen once per completed
- * set/food/weight entry, not per render or per keystroke — premature until
- * real usage shows otherwise.
+ * useFitPulseStore — React Native Zustand store for FitPulse.
+ * Metabolic math lives in @forma/core; this file is persistence + UI state.
  */
 
 import { create } from 'zustand';
@@ -41,6 +21,16 @@ import { SetLogEntry, DayProgress, toDateKey, pruneOldSetLogs } from '@/engines/
 export type { SetLogEntry, DayProgress } from '@/engines/WorkoutStats';
 
 const SET_LOG_RETENTION_DAYS = 180;
+const COACH_MESSAGE_CAP = 40;
+
+export const COACH_WELCOME =
+  'Я локальный тренер. Данные не уходят в облако. Спроси про белок, калории или тренировку.';
+
+export interface CoachMessage {
+  id: string;
+  role: 'user' | 'coach';
+  text: string;
+}
 
 export interface FoodItem {
   id: string;
@@ -49,10 +39,6 @@ export interface FoodItem {
   protein: number;
   fat: number;
   carbs: number;
-  /** When this item was actually added — powers the real per-item time
-   *  shown in NutritionScreen. Optional so backups/imports from before this
-   *  field existed still validate and load (see hydrate() below); items
-   *  missing it just show no time instead of a fake one. */
   loggedAt?: number;
 }
 
@@ -63,19 +49,26 @@ export interface DayMeals {
   dinner: FoodItem[];
 }
 
-/**
- * One completed set, written by ExerciseSheet.recordNextSet() for whichever
- * exercise the set belongs to. This is what used to only exist for exercise
- * №1 (see HANDOFF.md) — now every exercise across every day in
- * WorkoutScreen's WORKOUT_PLAN
- * array writes here, which is what makes a real weekly-volume chart
- * (ProgressScreen) and a real "выполнено на неделе" count (WorkoutScreen's
- * ticket) possible instead of fixed demo arrays. Type + the pure
- * date/aggregation helpers live in engines/WorkoutStats.ts, not here — see
- * that file's header for why (testability without mocking AsyncStorage).
- */
 function generateId(): string {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+}
+
+function defaultCoachMessages(): CoachMessage[] {
+  return [{ id: 'welcome', role: 'coach', text: COACH_WELCOME }];
+}
+
+function sanitizeCoachMessages(value: unknown): CoachMessage[] {
+  if (!Array.isArray(value)) return defaultCoachMessages();
+  const cleaned = value.filter(
+    (m): m is CoachMessage =>
+      !!m &&
+      typeof m === 'object' &&
+      typeof (m as CoachMessage).id === 'string' &&
+      ((m as CoachMessage).role === 'user' || (m as CoachMessage).role === 'coach') &&
+      typeof (m as CoachMessage).text === 'string'
+  );
+  if (cleaned.length === 0) return defaultCoachMessages();
+  return cleaned.slice(-COACH_MESSAGE_CAP);
 }
 
 interface AppStore {
@@ -86,10 +79,8 @@ interface AppStore {
   weightHistory: number[];
   setLogs: SetLogEntry[];
   dayProgress: DayProgress;
-  /** exerciseId -> heaviest weight ever logged for it. Never pruned — see
-   *  the header comment above and pruneOldSetLogs's doc in WorkoutStats.ts
-   *  for why this, not setLogs, is the all-time source of truth. */
   personalRecords: Record<number, number>;
+  coachMessages: CoachMessage[];
 
   updateProfile: (newProfile: Partial<ProfileState>) => void;
   triggerRefeed: () => void;
@@ -99,13 +90,11 @@ interface AppStore {
   setWater: (count: number) => void;
   logWeight: (weight: number) => void;
 
-  /** Records one completed set for an exercise "today" and returns the new
-   *  completed-set count for that exercise today (so the caller — ExerciseSheet
-   *  — can decide locally whether the exercise is now finished, without a
-   *  second store read). */
   recordSet: (exerciseId: number, weight: number, reps: number, rir: number) => number;
-  /** Completed-set count for an exercise today (0 if nothing logged yet). */
   completedSetsToday: (exerciseId: number) => number;
+
+  setCoachMessages: (messages: CoachMessage[]) => void;
+  clearCoachMessages: () => void;
 
   calculateTargets: () => Targets;
   isPlateauSuspected: () => boolean;
@@ -113,7 +102,15 @@ interface AppStore {
     data: Partial<
       Pick<
         AppStore,
-        'profile' | 'metabolic' | 'todayMeals' | 'waterGlasses' | 'weightHistory' | 'setLogs' | 'dayProgress' | 'personalRecords'
+        | 'profile'
+        | 'metabolic'
+        | 'todayMeals'
+        | 'waterGlasses'
+        | 'weightHistory'
+        | 'setLogs'
+        | 'dayProgress'
+        | 'personalRecords'
+        | 'coachMessages'
       >
     >
   ) => void;
@@ -141,15 +138,11 @@ export const useFitPulseStore = create<AppStore>()(
         dinner: []
       },
       waterGlasses: 0,
-      // Обновление: was seeded with a fake demo trend ([78.0, 77.5, 76.8,
-      // 76.0]) that a brand-new user would see as if it were their own
-      // history. Starts empty and honest now — WeightChart already renders
-      // nothing for <2 points, and detectWeightPlateau already requires a
-      // minimum sample size, so both handle this correctly with no changes.
       weightHistory: [],
       setLogs: [],
       dayProgress: {},
       personalRecords: {},
+      coachMessages: defaultCoachMessages(),
 
       updateProfile: (newProfile) => set((state) => ({ profile: { ...state.profile, ...newProfile } })),
 
@@ -209,6 +202,13 @@ export const useFitPulseStore = create<AppStore>()(
         return get().dayProgress[todayKey]?.[exerciseId] ?? 0;
       },
 
+      setCoachMessages: (messages) =>
+        set({
+          coachMessages: messages.slice(-COACH_MESSAGE_CAP)
+        }),
+
+      clearCoachMessages: () => set({ coachMessages: defaultCoachMessages() }),
+
       calculateTargets: () => {
         const { profile, metabolic } = get();
         return calcTargets(profile, metabolic);
@@ -219,13 +219,6 @@ export const useFitPulseStore = create<AppStore>()(
         return detectPlateau(weightHistory, profile.goal);
       },
 
-      /**
-       * Restores state from an exported backup (see ProfileScreen.tsx's
-       * exportData/importData). Previously import only restored `profile`
-       * (see HANDOFF.md item 1) — this now covers every persisted field,
-       * with shape checks so a malformed/foreign JSON file fails loudly
-       * instead of silently corrupting the store with `undefined`s.
-       */
       hydrate: (data) => {
         const current = get();
         const next: Partial<AppStore> = {};
@@ -236,8 +229,8 @@ export const useFitPulseStore = create<AppStore>()(
         if (
           data.metabolic &&
           typeof data.metabolic === 'object' &&
-          ('type' in data.metabolic) &&
-          ('endsAt' in data.metabolic)
+          'type' in data.metabolic &&
+          'endsAt' in data.metabolic
         ) {
           next.metabolic = data.metabolic;
         }
@@ -254,7 +247,9 @@ export const useFitPulseStore = create<AppStore>()(
         }
         if (
           Array.isArray(data.setLogs) &&
-          data.setLogs.every((e) => e && typeof e === 'object' && typeof e.exerciseId === 'number' && typeof e.dateKey === 'string')
+          data.setLogs.every(
+            (e) => e && typeof e === 'object' && typeof e.exerciseId === 'number' && typeof e.dateKey === 'string'
+          )
         ) {
           next.setLogs = data.setLogs;
         }
@@ -268,10 +263,13 @@ export const useFitPulseStore = create<AppStore>()(
         ) {
           next.personalRecords = data.personalRecords;
         }
+        if (data.coachMessages !== undefined) {
+          next.coachMessages = sanitizeCoachMessages(data.coachMessages);
+        }
 
         if (Object.keys(next).length === 0) {
           throw new Error(
-            'Backup file has none of the expected fields (profile/metabolic/todayMeals/waterGlasses/weightHistory/setLogs/dayProgress/personalRecords)'
+            'Backup file has none of the expected fields (profile/metabolic/todayMeals/waterGlasses/weightHistory/setLogs/dayProgress/personalRecords/coachMessages)'
           );
         }
         set(next);
@@ -279,7 +277,15 @@ export const useFitPulseStore = create<AppStore>()(
     }),
     {
       name: 'fitpulse_production_state',
-      storage: createJSONStorage(() => AsyncStorage)
+      storage: createJSONStorage(() => AsyncStorage),
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<AppStore>;
+        return {
+          ...current,
+          ...p,
+          coachMessages: sanitizeCoachMessages(p.coachMessages ?? current.coachMessages)
+        };
+      }
     }
   )
 );
