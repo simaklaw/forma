@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { CoachEngine, estimateSessionBurnKcal, toDateKey } from '@forma/core';
+import { CoachEngine, estimateBurnFromSetLogs, toDateKey } from '@forma/core';
 import { colors, fonts, spacing } from '@/core/theme/tokens';
 import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
@@ -8,24 +8,27 @@ import { useFitPulseStore } from '@/state/useFitPulseStore';
 type Props = {
   dayName: string;
   anyDoneToday: boolean;
+  /** Optional map exerciseId → display name for MET lookup. */
+  exerciseNames?: Record<number, string>;
 };
 
 /** On-device coach strip — RulesLocalAITrainer until llama.rn is wired. */
-export function WorkoutCoachCard({ dayName, anyDoneToday }: Props) {
+export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames }: Props) {
   const profile = useFitPulseStore((s) => s.profile);
   const todayMeals = useFitPulseStore((s) => s.todayMeals);
-  const dayProgress = useFitPulseStore((s) => s.dayProgress);
+  const setLogs = useFitPulseStore((s) => s.setLogs);
   const targets = useFitPulseStore((s) => s.calculateTargets());
   const [advice, setAdvice] = useState('');
 
-  const setsToday = useMemo(() => {
-    const today = dayProgress[toDateKey(new Date())] ?? {};
-    return Object.values(today).reduce((sum, n) => sum + n, 0);
-  }, [dayProgress]);
-
   const burned = useMemo(
-    () => estimateSessionBurnKcal({ weightKg: profile.weight, setsCompleted: setsToday }),
-    [profile.weight, setsToday]
+    () =>
+      estimateBurnFromSetLogs({
+        weightKg: profile.weight,
+        setLogs,
+        dateKey: toDateKey(new Date()),
+        exerciseNames
+      }),
+    [profile.weight, setLogs, exerciseNames]
   );
 
   const snapshot = useMemo(
