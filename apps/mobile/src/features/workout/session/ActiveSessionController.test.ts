@@ -3,6 +3,8 @@ import {
   getSessionService,
   resetSessionServiceForTests
 } from '@/features/workout/data';
+import { mergeSessionProjection } from '@/features/workout/data/sessionProjections';
+import { useFitPulseStore } from '@/state/useFitPulseStore';
 import type { ExerciseDef } from '../ExerciseSheet';
 import { ActiveSessionController } from './ActiveSessionController';
 
@@ -31,11 +33,23 @@ const exercises: ExerciseDef[] = [
   }
 ];
 
+async function projectIntoStore(sessionId: string): Promise<void> {
+  const projection = await ActiveSessionController.getLegacyProjection(sessionId);
+  if (!projection) return;
+  const current = useFitPulseStore.getState();
+  const merged = mergeSessionProjection(
+    { setLogs: current.setLogs, dayProgress: current.dayProgress },
+    projection
+  );
+  current.hydrate({ setLogs: merged.setLogs, dayProgress: merged.dayProgress });
+}
+
 describe('ActiveSessionController', () => {
   beforeEach(() => {
     resetSessionServiceForTests();
     configureSessionPersistence('memory');
     ActiveSessionController.resetForTests();
+    useFitPulseStore.setState({ setLogs: [], dayProgress: {} });
   });
 
   it('ensureDaySession prepares and starts once per day', async () => {
@@ -115,6 +129,41 @@ describe('ActiveSessionController', () => {
     const old = await getSessionService().getSession(first.sessionId);
     expect(old?.status).toBe('abandoned');
     expect(old?.terminalReason).toBe('user_restarted');
+  });
+
+  it('restartDaySession clears dayProgress so merge cannot stick abandoned counts', async () => {
+    const first = await ActiveSessionController.ensureDaySession('legs', exercises);
+    await ActiveSessionController.recordSetForExercise({
+      dayId: 'legs',
+      exercises,
+      exerciseId: 1,
+      weightKg: 80,
+      reps: 8
+    });
+    await ActiveSessionController.recordSetForExercise({
+      dayId: 'legs',
+      exercises,
+      exerciseId: 1,
+      weightKg: 80,
+      reps: 7
+    });
+    await projectIntoStore(first.sessionId);
+    expect(useFitPulseStore.getState().completedSetsToday(1)).toBe(2);
+
+    const next = await ActiveSessionController.restartDaySession('legs', exercises);
+    expect(useFitPulseStore.getState().completedSetsToday(1)).toBe(0);
+
+    await ActiveSessionController.recordSetForExercise({
+      dayId: 'legs',
+      exercises,
+      exerciseId: 1,
+      weightKg: 82,
+      reps: 8
+    });
+    await projectIntoStore(next.sessionId);
+
+    expect(useFitPulseStore.getState().completedSetsToday(1)).toBe(1);
+    expect(next.sessionId).not.toBe(first.sessionId);
   });
 
   it('recordSetForExercise dual-writes sequential sets', async () => {

@@ -7,6 +7,7 @@ import type { ExerciseDef } from '../ExerciseSheet';
 import { contentHashForExercises, exercisesToSnapshots } from './planToSnapshots';
 import { LOCAL_USER_ID } from './currentUser';
 import { projectSessionEvents } from '@/features/workout/data/sessionProjections';
+import { clearDayReadModel } from './clearDayReadModel';
 
 export function dayTemplateId(dayId: string): string {
   return `day-${dayId}`;
@@ -123,13 +124,17 @@ class ActiveSessionControllerImpl {
   }
 
   /**
-   * Explicit "start over": abandon current resumable with user_restarted, then prepare fresh.
-   * Does not use replaced_by_new_session (different analytics semantics).
+   * Explicit "start over": abandon with user_restarted, clear legacy day projection
+   * for that localStartDate (so merge Math.max cannot keep abandoned counts),
+   * then prepare a fresh session.
    */
   async restartDaySession(dayId: string, exercises: ExerciseDef[]): Promise<WorkoutSession> {
     const svc = getSessionService();
     const previous = await svc.getResumable(LOCAL_USER_ID);
+    let dateKeyToClear: string | null = null;
+
     if (previous && isResumable(previous)) {
+      dateKeyToClear = previous.localStartDate;
       try {
         await svc.dispatch(previous.sessionId, {
           type: 'abandon_session',
@@ -138,7 +143,14 @@ class ActiveSessionControllerImpl {
       } catch {
         // ignore
       }
+    } else {
+      dateKeyToClear = new Date().toISOString().slice(0, 10);
     }
+
+    if (dateKeyToClear) {
+      clearDayReadModel(dateKeyToClear);
+    }
+
     this.sessionId = null;
     this.dayId = null;
     return this.ensureDaySession(dayId, exercises);
