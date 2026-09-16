@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { estimateBurnFromSetLogs, toDateKey as coreToDateKey } from '@forma/core';
-import { colors, fonts, spacing } from '@/core/theme/tokens';
+import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
 import ExerciseSheet, { ExerciseDef } from './ExerciseSheet';
 import { WorkoutCoachCard } from './WorkoutCoachCard';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
@@ -268,30 +268,38 @@ export default function WorkoutScreen() {
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.ticket}>
           <View style={styles.ticketMain}>
-            <View>
+            <View style={{ flex: 1, paddingRight: 12 }}>
               <Text style={styles.ticketLabel}>План дня</Text>
               <Text style={styles.ticketName}>{activeDay.name}</Text>
               <Text style={styles.ticketMeta}>
                 {activeDay.exercises.length} упражнения · {activeDay.meta}
                 {burnedToday > 0 ? ` · ~${burnedToday} ккал` : ''}
               </Text>
+              <TouchableOpacity
+                style={styles.startPill}
+                accessibilityRole="button"
+                accessibilityLabel="Начать тренировку"
+                onPress={() => {
+                  const first = activeDay.exercises[0];
+                  if (first) openExercise(first.id);
+                }}
+              >
+                <Text style={styles.startPillText}>▶  Начать тренировку</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.startBtn} accessibilityRole="button" accessibilityLabel="Начать тренировку">
-              <Text style={styles.startBtnText}>▶</Text>
-            </TouchableOpacity>
           </View>
           <View style={styles.ticketPerf}>
             <View style={styles.perfCell}>
               <Text style={styles.perfVal}>{weekDaysCompleted}/7</Text>
-              <Text style={styles.perfLbl}>Дней выполнено на неделе</Text>
+              <Text style={styles.perfLbl}>Дней на неделе</Text>
             </View>
             <View style={styles.perfCell}>
               <Text style={styles.perfVal}>{burnedToday > 0 ? `~${burnedToday}` : '—'}</Text>
-              <Text style={styles.perfLbl}>Сожжено сегодня, ккал</Text>
+              <Text style={styles.perfLbl}>Сожжено, ккал</Text>
             </View>
             <View style={[styles.perfCell, { borderRightWidth: 0 }]}>
-              <Text style={styles.perfVal}>{overallPr !== null ? `${overallPr} кг` : '—'}</Text>
-              <Text style={styles.perfLbl}>Личный рекорд</Text>
+              <Text style={styles.perfVal}>{overallPr !== null ? `${overallPr}` : '—'}</Text>
+              <Text style={styles.perfLbl}>Рекорд, кг</Text>
             </View>
           </View>
         </View>
@@ -315,7 +323,14 @@ export default function WorkoutScreen() {
               {streakDays.map((status, i) => (
                 <View
                   key={i}
-                  style={[styles.tick, status === 'done' ? styles.tickDone : status === 'today-in-progress' ? styles.tickToday : styles.tickMissed]}
+                  style={[
+                    styles.tick,
+                    status === 'done'
+                      ? styles.tickDone
+                      : status === 'today-in-progress'
+                        ? styles.tickToday
+                        : styles.tickMissed
+                  ]}
                 />
               ))}
             </View>
@@ -355,7 +370,7 @@ export default function WorkoutScreen() {
                 </Text>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
-                <Text style={styles.logPr}>{exPr !== null ? exPr : '—'}</Text>
+                <Text style={[styles.logPr, done && { color: colors.lime }]}>{exPr !== null ? exPr : '—'}</Text>
                 <Text style={styles.logPrLbl}>
                   {done ? 'готово ✓' : inProgress ? 'в процессе' : exPr !== null ? 'рекорд, кг' : 'пока нет данных'}
                 </Text>
@@ -372,37 +387,86 @@ export default function WorkoutScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.ink },
-  header: { paddingHorizontal: spacing.xxl, paddingBottom: spacing.lg, borderBottomWidth: 1, borderColor: colors.line },
+  header: {
+    paddingHorizontal: spacing.xxl,
+    paddingBottom: spacing.lg,
+    borderBottomWidth: 1,
+    borderColor: colors.line
+  },
   eyebrow: { color: colors.paperFaint, fontSize: 11, fontFamily: fonts.body },
   title: { color: colors.paper, fontSize: 30, fontFamily: fonts.mono },
-  dayTabs: { flexDirection: 'row', marginHorizontal: spacing.xxl, marginTop: spacing.md, gap: 8 },
-  dayTab: { flex: 1, paddingVertical: 10, borderWidth: 1, borderColor: colors.lineStrong, alignItems: 'center' },
+  dayTabs: { flexDirection: 'row', marginHorizontal: spacing.xl, marginTop: spacing.md, gap: 8 },
+  dayTab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: colors.lineStrong,
+    borderRadius: radius.control,
+    alignItems: 'center',
+    backgroundColor: colors.panel
+  },
   dayTabActive: { borderColor: colors.lime, backgroundColor: colors.limeDim },
   dayTabText: { color: colors.paperDim, fontSize: 12.5, fontFamily: fonts.bodySemi },
   dayTabTextActive: { color: colors.lime },
   body: { paddingBottom: 120 },
-  ticket: { margin: spacing.xxl, borderWidth: 1, borderColor: colors.lineStrong, backgroundColor: colors.panel },
+  ticket: {
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.panel,
+    borderRadius: radius.card,
+    overflow: 'hidden'
+  },
   ticketMain: { flexDirection: 'row', justifyContent: 'space-between', padding: 18 },
   ticketLabel: { color: colors.paperFaint, fontSize: 11, marginBottom: 6 },
-  ticketName: { color: colors.paper, fontSize: 24, fontFamily: fonts.mono },
+  ticketName: { color: colors.paper, fontSize: 22, fontFamily: fonts.mono, lineHeight: 26 },
   ticketMeta: { color: colors.paperDim, fontSize: 12.5, marginTop: 6, fontFamily: fonts.body },
-  startBtn: { width: 46, height: 46, backgroundColor: colors.lime, alignItems: 'center', justifyContent: 'center' },
-  startBtnText: { color: colors.ink, fontSize: 16 },
-  ticketPerf: { flexDirection: 'row', borderTopWidth: 1, borderColor: colors.lineStrong, borderStyle: 'dashed' },
-  perfCell: { flex: 1, padding: 14, borderRightWidth: 1, borderColor: colors.lineStrong, borderStyle: 'dashed' },
+  startPill: {
+    marginTop: 14,
+    alignSelf: 'flex-start',
+    backgroundColor: colors.lime,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: radius.control
+  },
+  startPillText: { color: colors.ink, fontSize: 14, fontFamily: fonts.bodySemi },
+  ticketPerf: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderColor: colors.line
+  },
+  perfCell: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRightWidth: 1,
+    borderColor: colors.line
+  },
   perfVal: { color: colors.paper, fontSize: 18, fontFamily: fonts.mono },
-  perfLbl: { color: colors.paperFaint, fontSize: 10.5, marginTop: 1 },
-  streakRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: spacing.xxl, paddingVertical: 12 },
+  perfLbl: { color: colors.paperFaint, fontSize: 10.5, marginTop: 2 },
+  streakRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.md,
+    padding: spacing.md,
+    backgroundColor: colors.panel,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.line
+  },
   streakText: { color: colors.paper, fontSize: 13, fontFamily: fonts.body },
   ticks: { flexDirection: 'row', gap: 4, marginTop: 8 },
-  tick: { width: 22, height: 4 },
+  tick: { flex: 1, height: 4, borderRadius: 2 },
   tickDone: { backgroundColor: colors.ember },
   tickToday: { borderWidth: 1, borderColor: colors.ember },
   tickMissed: { backgroundColor: colors.lineStrong },
   sectionHead: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginHorizontal: spacing.xxl,
+    marginHorizontal: spacing.xl,
     marginTop: spacing.lg,
     marginBottom: 10
   },
@@ -412,9 +476,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    marginHorizontal: spacing.xxl,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
+    marginHorizontal: spacing.xl,
+    marginBottom: 8,
+    padding: 14,
+    backgroundColor: colors.panel,
+    borderRadius: radius.card,
+    borderWidth: 1,
     borderColor: colors.line
   },
   logIndex: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 15, width: 20 },
