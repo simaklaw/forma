@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
-import { colors, fonts, spacing } from '@/core/theme/tokens';
+import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
 import { useFitPulseStore, selectDailyTotals, DayMeals } from '@/state/useFitPulseStore';
 import CalorieRing from '@/components/CalorieRing';
 import MacroBar from '@/components/MacroBar';
@@ -15,11 +15,8 @@ const MEAL_LABELS: Record<keyof DayMeals, string> = {
   dinner: 'Ужин'
 };
 
-/** Real HH:MM for a food item's loggedAt, or a dash for items imported/added
- *  before that field existed. Replaces the fixed MEAL_TIMES constant, which
- *  labelled every item in a meal group with the same constant clock time
- *  (e.g. every "Обед" item said "13:20") regardless of when it was actually
- *  added — see HANDOFF.md. */
+const WATER_MAX = 8;
+
 function formatClockTime(ms?: number): string {
   if (!ms) return '--:--';
   const d = new Date(ms);
@@ -32,12 +29,20 @@ export default function NutritionScreen() {
 
   const meals = useFitPulseStore((s) => s.todayMeals);
   const removeFoodItem = useFitPulseStore((s) => s.removeFoodItem);
+  const waterGlasses = useFitPulseStore((s) => s.waterGlasses);
+  const setWater = useFitPulseStore((s) => s.setWater);
   const targets = useFitPulseStore((s) => s.calculateTargets());
   const totals = selectDailyTotals(meals);
 
   function openAddFood(mealKey: keyof DayMeals) {
     setActiveMeal(mealKey);
     sheetRef.current?.expand();
+  }
+
+  function toggleWater(idx: number) {
+    // Same semantics as HTML prototype: tap sets fill up to idx inclusive.
+    const next = waterGlasses === idx + 1 ? idx : idx + 1;
+    setWater(Math.max(0, Math.min(WATER_MAX, next)));
   }
 
   return (
@@ -48,12 +53,41 @@ export default function NutritionScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.body}>
-        <View style={styles.calBlock}>
+        <View style={styles.heroCard}>
           <CalorieRing eaten={totals.kcal} target={targets.target} />
-          <View style={{ flex: 1 }}>
-            <MacroBar label="Б" value={totals.protein} target={targets.proteinTarget} color={colors.cyan} />
-            <MacroBar label="Ж" value={totals.fat} target={targets.fatTarget} color={colors.cyan} />
-            <MacroBar label="У" value={totals.carbs} target={targets.carbTarget} color={colors.cyan} />
+          <View style={styles.macroCol}>
+            <MacroBar
+              label="Б"
+              value={totals.protein}
+              target={targets.proteinTarget}
+              color={colors.macroProtein}
+            />
+            <MacroBar label="Ж" value={totals.fat} target={targets.fatTarget} color={colors.macroFat} />
+            <MacroBar label="У" value={totals.carbs} target={targets.carbTarget} color={colors.macroCarb} />
+          </View>
+        </View>
+
+        <View style={styles.waterCard}>
+          <View style={styles.waterHead}>
+            <Text style={styles.waterTitle}>Вода</Text>
+            <Text style={styles.waterCount}>
+              <Text style={{ color: colors.cyan }}>{waterGlasses}</Text> / {WATER_MAX} стаканов
+            </Text>
+          </View>
+          <View style={styles.waterCells} accessibilityRole="adjustable" accessibilityLabel={`Вода ${waterGlasses} из ${WATER_MAX}`}>
+            {Array.from({ length: WATER_MAX }).map((_, i) => {
+              const filled = i < waterGlasses;
+              return (
+                <TouchableOpacity
+                  key={i}
+                  style={[styles.waterCell, filled && styles.waterCellFilled]}
+                  onPress={() => toggleWater(i)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: filled }}
+                  accessibilityLabel={`Стакан ${i + 1}`}
+                />
+              );
+            })}
           </View>
         </View>
 
@@ -69,7 +103,11 @@ export default function NutritionScreen() {
               <Text style={styles.mealKcal}>
                 {meals[key].reduce((sum, i) => sum + i.kcal, 0)} ккал
               </Text>
-              <TouchableOpacity style={styles.addBtn} onPress={() => openAddFood(key)} accessibilityLabel={`Добавить в ${MEAL_LABELS[key]}`}>
+              <TouchableOpacity
+                style={styles.addBtn}
+                onPress={() => openAddFood(key)}
+                accessibilityLabel={`Добавить в ${MEAL_LABELS[key]}`}
+              >
                 <Text style={styles.addBtnText}>+</Text>
               </TouchableOpacity>
             </View>
@@ -86,7 +124,10 @@ export default function NutritionScreen() {
                     Б{item.protein} Ж{item.fat} У{item.carbs}
                   </Text>
                   <Text style={styles.foodKcal}>{item.kcal}</Text>
-                  <TouchableOpacity onPress={() => removeFoodItem(key, item.id)} accessibilityLabel={`Удалить ${item.name}`}>
+                  <TouchableOpacity
+                    onPress={() => removeFoodItem(key, item.id)}
+                    accessibilityLabel={`Удалить ${item.name}`}
+                  >
                     <Text style={styles.foodDel}>×</Text>
                   </TouchableOpacity>
                 </View>
@@ -96,46 +137,108 @@ export default function NutritionScreen() {
         ))}
       </ScrollView>
 
-      <AddFoodSheet ref={sheetRef} mealKey={activeMeal} mealLabel={MEAL_LABELS[activeMeal]} onClose={() => sheetRef.current?.close()} />
+      <AddFoodSheet
+        ref={sheetRef}
+        mealKey={activeMeal}
+        mealLabel={MEAL_LABELS[activeMeal]}
+        onClose={() => sheetRef.current?.close()}
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.ink },
-  header: { paddingHorizontal: spacing.xxl, paddingBottom: spacing.lg, borderBottomWidth: 1, borderColor: colors.line },
+  header: {
+    paddingHorizontal: spacing.xxl,
+    paddingBottom: spacing.lg,
+    borderBottomWidth: 1,
+    borderColor: colors.line
+  },
   eyebrow: { color: colors.paperFaint, fontSize: 11, fontFamily: fonts.body },
   title: { color: colors.paper, fontSize: 30, fontFamily: fonts.mono },
   body: { paddingBottom: 120 },
-  calBlock: {
+  heroCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 20,
-    margin: spacing.xxl,
-    paddingBottom: 18,
-    borderBottomWidth: 1,
+    gap: 16,
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.lg,
+    padding: spacing.lg,
+    backgroundColor: colors.panel,
+    borderRadius: radius.card,
+    borderWidth: 1,
     borderColor: colors.line
+  },
+  macroCol: { flex: 1 },
+  waterCard: {
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.md,
+    padding: spacing.lg,
+    backgroundColor: colors.panel,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.line
+  },
+  waterHead: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
+  waterTitle: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.bodySemi },
+  waterCount: { color: colors.paperDim, fontFamily: fonts.mono, fontSize: 13 },
+  waterCells: { flexDirection: 'row', gap: 6 },
+  waterCell: {
+    flex: 1,
+    height: 32,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    borderColor: colors.lineStrong,
+    backgroundColor: colors.ink
+  },
+  waterCellFilled: {
+    backgroundColor: 'rgba(45,212,191,0.35)',
+    borderColor: colors.cyan
   },
   sectionHead: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginHorizontal: spacing.xxl,
-    marginTop: spacing.md,
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.lg,
     marginBottom: 10
   },
   sectionTitle: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.bodySemi },
   sectionCount: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 13 },
-  mealGroup: { marginHorizontal: spacing.xxl, paddingVertical: 14, borderBottomWidth: 1, borderColor: colors.line },
+  mealGroup: {
+    marginHorizontal: spacing.xl,
+    marginBottom: spacing.sm,
+    padding: spacing.md,
+    backgroundColor: colors.panel,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.line
+  },
   mealHead: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
-  mealName: { flex: 1, color: colors.paper, fontSize: 14.5, fontFamily: fonts.bodySemi },
+  mealName: { flex: 1, color: colors.paper, fontSize: 15, fontFamily: fonts.bodySemi },
   mealKcal: { color: colors.paperDim, fontFamily: fonts.mono, fontSize: 14 },
-  addBtn: { width: 24, height: 24, borderWidth: 1, borderColor: colors.lineStrong, alignItems: 'center', justifyContent: 'center' },
-  addBtnText: { color: colors.paperDim, fontSize: 15, lineHeight: 15 },
-  empty: { color: colors.paperFaint, fontSize: 11.5, fontStyle: 'italic', paddingVertical: 4 },
-  foodRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6 },
+  addBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    borderColor: colors.lineStrong,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.limeDim
+  },
+  addBtnText: { color: colors.lime, fontSize: 16, lineHeight: 18, fontFamily: fonts.bodySemi },
+  empty: { color: colors.paperFaint, fontSize: 12, fontStyle: 'italic', paddingVertical: 4 },
+  foodRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
   foodTime: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 11, width: 34 },
-  foodName: { flex: 1, color: colors.paper, fontSize: 12.5 },
-  foodMacro: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 11.5 },
-  foodKcal: { width: 44, textAlign: 'right', color: colors.cyan, fontFamily: fonts.mono, fontWeight: '700' },
-  foodDel: { width: 20, textAlign: 'center', color: colors.paperFaint, fontSize: 16 }
+  foodName: { flex: 1, color: colors.paper, fontSize: 13 },
+  foodMacro: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 11 },
+  foodKcal: {
+    width: 40,
+    textAlign: 'right',
+    color: colors.lime,
+    fontFamily: fonts.mono,
+    fontWeight: '700'
+  },
+  foodDel: { width: 22, textAlign: 'center', color: colors.paperFaint, fontSize: 16 }
 });
