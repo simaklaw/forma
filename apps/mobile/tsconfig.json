@@ -11,6 +11,8 @@
       "@/*": ["src/*"],
       "@forma/core": ["../../packages/core/src"],
       "@forma/core/*": ["../../packages/core/src/*"],
+      "@forma/workout-domain": ["../../packages/workout-domain/src"],
+      "@forma/workout-domain/*": ["../../packages/workout-domain/src/*"],
       "react": ["./node_modules/@types/react"]
     }
   },
