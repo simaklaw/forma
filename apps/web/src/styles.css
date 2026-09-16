@@ -2,49 +2,53 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * FitPulse brand tokens — parity with apps/mobile/src/core/theme/tokens.ts
+ * Primary mint #00E5A8 · ink #0B0F14 · soft radius 16
+ */
 @theme {
-  --color-bg: #f4f1ea;
-  --color-surface: #fffdf8;
-  --color-surface-2: #ebe6dc;
-  --color-fg: #1a1916;
-  --color-muted: #6f6a62;
-  --color-border: rgb(26 25 22 / 0.08);
-  --color-accent: #2f6f5e;
-  --color-accent-fg: #f4f1ea;
-  --color-accent-soft: rgb(47 111 94 / 0.12);
-  --color-warn: #b4532a;
-  --color-danger: #a33b32;
-  --color-scrim: rgb(18 17 15 / 0.55);
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-2: #f1f5f9;
+  --color-fg: #0b0f14;
+  --color-muted: #6b7280;
+  --color-border: rgb(11 15 20 / 0.08);
+  --color-accent: #00b894;
+  --color-accent-fg: #f8fafc;
+  --color-accent-soft: rgb(0 184 148 / 0.12);
+  --color-warn: #f59e0b;
+  --color-danger: #ef4444;
+  --color-scrim: rgb(11 15 20 / 0.55);
 
-  --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Barlow Condensed", "Sora", ui-sans-serif, system-ui, sans-serif;
 
   --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
-  --radius-xl: 24px;
+  --radius-xl: 22px;
   --radius-2xl: 28px;
 
-  --shadow-card: 0 0 0 1px rgb(26 25 22 / 0.06), 0 1px 2px rgb(26 25 22 / 0.04);
+  --shadow-card: 0 0 0 1px rgb(11 15 20 / 0.06), 0 1px 2px rgb(11 15 20 / 0.04);
   --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @layer base {
   .dark {
-    --color-bg: #12110f;
-    --color-surface: #1c1b18;
-    --color-surface-2: #26241f;
-    --color-fg: #f3efe6;
-    --color-muted: #a39e94;
-    --color-border: rgb(243 239 230 / 0.08);
-    --color-accent: #7eb8a4;
-    --color-accent-fg: #12110f;
-    --color-accent-soft: rgb(126 184 164 / 0.16);
-    --color-warn: #d08a5a;
-    --color-danger: #d46a62;
+    --color-bg: #0b0f14;
+    --color-surface: #121820;
+    --color-surface-2: #182028;
+    --color-fg: #f8fafc;
+    --color-muted: #94a3b8;
+    --color-border: rgb(248 250 252 / 0.08);
+    --color-accent: #00e5a8;
+    --color-accent-fg: #0b0f14;
+    --color-accent-soft: rgb(0 229 168 / 0.14);
+    --color-warn: #ff6a39;
+    --color-danger: #f87171;
     --color-scrim: rgb(0 0 0 / 0.62);
-    --shadow-card: 0 0 0 1px rgb(243 239 230 / 0.08);
+    --shadow-card: 0 0 0 1px rgb(248 250 252 / 0.08);
   }
 
   html {
