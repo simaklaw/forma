@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { estimateBurnFromSetLogs, estimateDailyBurns, toDateKey } from '@forma/core';
-import { colors, fonts, spacing } from '@/core/theme/tokens';
+import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { lastNDays, selectWeeklyVolume, weekdayRuShort } from '@/engines/WorkoutStats';
 import WeightChart from '@/components/WeightChart';
@@ -66,7 +66,7 @@ export default function ProgressScreen() {
                       styles.bar,
                       {
                         height: `${Math.max(v.pct, 2)}%`,
-                        backgroundColor: i % 2 === 0 ? colors.ember : colors.lineStrong
+                        backgroundColor: i % 2 === 0 ? colors.lime : colors.mint
                       }
                     ]}
                   />
@@ -107,7 +107,7 @@ export default function ProgressScreen() {
           )}
         </View>
 
-        <View style={[styles.chartBlock, { borderBottomWidth: 0 }]}>
+        <View style={styles.chartBlock}>
           <Text style={styles.chartTitle}>Динамика веса</Text>
           {weightHistory.length >= 2 ? (
             <WeightChart history={weightHistory} />
@@ -136,31 +136,33 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     gap: 10,
-    marginHorizontal: spacing.xxl,
+    marginHorizontal: spacing.xl,
     marginTop: spacing.lg
   },
   statCard: {
     flex: 1,
     borderWidth: 1,
-    borderColor: colors.lineStrong,
+    borderColor: colors.line,
     backgroundColor: colors.panel,
-    padding: 14
+    borderRadius: radius.card,
+    padding: 16
   },
   statVal: { color: colors.paper, fontSize: 22, fontFamily: fonts.mono },
   statLbl: { color: colors.paperFaint, fontSize: 11, marginTop: 4, fontFamily: fonts.body },
   chartBlock: {
-    margin: spacing.xxl,
-    marginBottom: 0,
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderColor: colors.line,
-    paddingTop: 20
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.md,
+    padding: spacing.lg,
+    backgroundColor: colors.panel,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.line
   },
   chartTitle: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.bodySemi, marginBottom: 14 },
   bars: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, height: 100 },
   barCol: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', height: '100%', gap: 4 },
   barTop: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 9, minHeight: 12 },
-  bar: { width: '100%', minHeight: 3 },
+  bar: { width: '100%', minHeight: 3, borderRadius: 3 },
   barLabel: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 11 },
   emptyState: { color: colors.paperFaint, fontFamily: fonts.body, fontSize: 12.5, lineHeight: 18 }
 });
