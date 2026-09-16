@@ -44,3 +44,7 @@ Native development client:
 1. EAS Android development build + dev client на устройстве
 2. GGUF download / RAM / tokens/s
 3. Persist истории чата тренера при необходимости
+
+## Architecture
+
+See [the workout architecture comparison](docs/architecture/WORKOUT_ARCHITECTURE_COMPARISON.md) for the reference analysis, target workout database model, player state machine, UX integration plan, and roadmap.
