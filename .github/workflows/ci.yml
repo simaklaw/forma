@@ -37,6 +37,9 @@ jobs:
       - name: Test shared core
         run: pnpm --filter @forma/core test
 
+      - name: Test workout domain
+        run: pnpm --filter @forma/workout-domain test
+
       - name: Test mobile
         run: pnpm --filter @forma/mobile test -- --ci --passWithNoTests
 
