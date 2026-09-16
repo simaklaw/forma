@@ -1,19 +1,39 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { estimateBurnFromSetLogs, estimateDailyBurns, toDateKey } from '@forma/core';
 import { colors, fonts, spacing } from '@/core/theme/tokens';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
-import { selectWeeklyVolume } from '@/engines/WorkoutStats';
+import { lastNDays, selectWeeklyVolume, weekdayRuShort } from '@/engines/WorkoutStats';
 import WeightChart from '@/components/WeightChart';
 
 export default function ProgressScreen() {
   const weightHistory = useFitPulseStore((s) => s.weightHistory);
-  // Real replacement for the old fixed `VOLUME` demo array (HANDOFF.md item 4)
-  // — sums actual logged sets (weight × reps) per day now that all three
-  // workout-screen exercises write to the store, not just exercise №1.
   const setLogs = useFitPulseStore((s) => s.setLogs);
+  const weightKg = useFitPulseStore((s) => s.profile.weight);
+
   const volume = selectWeeklyVolume(setLogs);
   const hasAnyVolume = volume.some((v) => v.volumeKg > 0);
+
+  const burnSeries = useMemo(() => {
+    const days = lastNDays(7);
+    const keys = days.map((d) => toDateKey(d));
+    const burns = estimateDailyBurns({ weightKg, setLogs, dateKeys: keys });
+    const max = Math.max(1, ...burns.map((b) => b.kcal));
+    return burns.map((b, i) => ({
+      ...b,
+      label: weekdayRuShort(days[i]),
+      pct: Math.round((b.kcal / max) * 100)
+    }));
+  }, [weightKg, setLogs]);
+
+  const burnedToday = estimateBurnFromSetLogs({
+    weightKg,
+    setLogs,
+    dateKey: toDateKey(new Date())
+  });
+  const burnedWeek = burnSeries.reduce((sum, b) => sum + b.kcal, 0);
+  const hasAnyBurn = burnSeries.some((b) => b.kcal > 0);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
@@ -23,6 +43,44 @@ export default function ProgressScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.body}>
+        <View style={styles.statsRow}>
+          <View style={styles.statCard}>
+            <Text style={styles.statVal}>{burnedToday > 0 ? `~${burnedToday}` : '—'}</Text>
+            <Text style={styles.statLbl}>ккал сегодня</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statVal}>{burnedWeek > 0 ? `~${burnedWeek}` : '—'}</Text>
+            <Text style={styles.statLbl}>ккал за 7 дней</Text>
+          </View>
+        </View>
+
+        <View style={styles.chartBlock}>
+          <Text style={styles.chartTitle}>Сожжено по дням (оценка MET)</Text>
+          {hasAnyBurn ? (
+            <View style={styles.bars}>
+              {burnSeries.map((v, i) => (
+                <View key={v.dateKey} style={styles.barCol}>
+                  <Text style={styles.barTop}>{v.kcal > 0 ? v.kcal : ''}</Text>
+                  <View
+                    style={[
+                      styles.bar,
+                      {
+                        height: `${Math.max(v.pct, 2)}%`,
+                        backgroundColor: i % 2 === 0 ? colors.ember : colors.lineStrong
+                      }
+                    ]}
+                  />
+                  <Text style={styles.barLabel}>{v.label}</Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={styles.emptyState}>
+              Пока нет подходов — оценка калорий появится после первой тренировки.
+            </Text>
+          )}
+        </View>
+
         <View style={styles.chartBlock}>
           <Text style={styles.chartTitle}>Объём тренировок по дням</Text>
           {hasAnyVolume ? (
@@ -30,14 +88,22 @@ export default function ProgressScreen() {
               {volume.map((v, i) => (
                 <View key={v.dateKey} style={styles.barCol}>
                   <View
-                    style={[styles.bar, { height: `${Math.max(v.pct, 2)}%`, backgroundColor: i % 2 === 0 ? colors.lime : colors.lineStrong }]}
+                    style={[
+                      styles.bar,
+                      {
+                        height: `${Math.max(v.pct, 2)}%`,
+                        backgroundColor: i % 2 === 0 ? colors.lime : colors.lineStrong
+                      }
+                    ]}
                   />
                   <Text style={styles.barLabel}>{v.label}</Text>
                 </View>
               ))}
             </View>
           ) : (
-            <Text style={styles.emptyState}>Пока нет записанных подходов — данные появятся после первой тренировки.</Text>
+            <Text style={styles.emptyState}>
+              Пока нет записанных подходов — данные появятся после первой тренировки.
+            </Text>
           )}
         </View>
 
@@ -46,7 +112,9 @@ export default function ProgressScreen() {
           {weightHistory.length >= 2 ? (
             <WeightChart history={weightHistory} />
           ) : (
-            <Text style={styles.emptyState}>Пока меньше двух записей веса — обновите вес в профиле, и здесь появится график.</Text>
+            <Text style={styles.emptyState}>
+              Пока меньше двух записей веса — обновите вес в профиле, и здесь появится график.
+            </Text>
           )}
         </View>
       </ScrollView>
@@ -56,14 +124,42 @@ export default function ProgressScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.ink },
-  header: { paddingHorizontal: spacing.xxl, paddingBottom: spacing.lg, borderBottomWidth: 1, borderColor: colors.line },
+  header: {
+    paddingHorizontal: spacing.xxl,
+    paddingBottom: spacing.lg,
+    borderBottomWidth: 1,
+    borderColor: colors.line
+  },
   eyebrow: { color: colors.paperFaint, fontSize: 11, fontFamily: fonts.body },
   title: { color: colors.paper, fontSize: 30, fontFamily: fonts.mono },
   body: { paddingBottom: 120 },
-  chartBlock: { margin: spacing.xxl, marginBottom: 0, paddingBottom: 20, borderBottomWidth: 1, borderColor: colors.line, paddingTop: 20 },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginHorizontal: spacing.xxl,
+    marginTop: spacing.lg
+  },
+  statCard: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: colors.lineStrong,
+    backgroundColor: colors.panel,
+    padding: 14
+  },
+  statVal: { color: colors.paper, fontSize: 22, fontFamily: fonts.mono },
+  statLbl: { color: colors.paperFaint, fontSize: 11, marginTop: 4, fontFamily: fonts.body },
+  chartBlock: {
+    margin: spacing.xxl,
+    marginBottom: 0,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderColor: colors.line,
+    paddingTop: 20
+  },
   chartTitle: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.bodySemi, marginBottom: 14 },
-  bars: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, height: 90 },
-  barCol: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', height: '100%', gap: 6 },
+  bars: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, height: 100 },
+  barCol: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', height: '100%', gap: 4 },
+  barTop: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 9, minHeight: 12 },
   bar: { width: '100%', minHeight: 3 },
   barLabel: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 11 },
   emptyState: { color: colors.paperFaint, fontFamily: fonts.body, fontSize: 12.5, lineHeight: 18 }
