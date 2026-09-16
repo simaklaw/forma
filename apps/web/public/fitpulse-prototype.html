@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FitPulse — UI prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --ink: #0B0F14;
+  --panel: #121820;
+  --panel-raised: #182028;
+  --line: rgba(248,250,252,0.08);
+  --line-strong: rgba(248,250,252,0.16);
+  --paper: #F8FAFC;
+  --paper-dim: rgba(248,250,252,0.62);
+  --paper-faint: rgba(248,250,252,0.38);
+  --lime: #00E5A8;
+  --lime-dim: rgba(0,229,168,0.14);
+  --mint: #00B894;
+  --ember: #FF6A39;
+  --cyan: #2DD4BF;
+  --macro-p: #00E5A8;
+  --macro-f: #F59E0B;
+  --macro-c: #38BDF8;
+  --radius-card: 16px;
+  --radius-control: 12px;
+  --radius-sheet: 22px;
+  --mono: 'Barlow Condensed', sans-serif;
+  --body: 'Inter', system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--body);
+  background: #05080c;
+  color: var(--paper);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+.phone {
+  width: 390px;
+  height: 844px;
+  max-height: 95vh;
+  background: var(--ink);
+  border-radius: 34px;
+  border: 1px solid rgba(0,229,168,0.12);
+  box-shadow: 0 36px 110px rgba(0,0,0,0.68);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.status {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 22px 6px;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 600;
+}
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 88px;
+}
+.scroll::-webkit-scrollbar { width: 0; }
+.screen { display: none; padding: 0 18px 24px; }
+.screen.active { display: block; }
+.header { padding: 8px 4px 14px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+.eyebrow { font-size: 11px; color: var(--paper-faint); }
+.title { font-family: var(--mono); font-size: 30px; font-weight: 700; line-height: 1.1; }
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  margin-bottom: 10px;
+}
+.hero-row { display: flex; gap: 14px; align-items: center; }
+.ring {
+  width: 100px; height: 100px; border-radius: 50%;
+  background: conic-gradient(var(--lime) calc(var(--pct, 72) * 1%), var(--line-strong) 0);
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.ring-inner {
+  width: 78px; height: 78px; border-radius: 50%; background: var(--panel);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.ring-val { font-family: var(--mono); font-size: 22px; font-weight: 700; }
+.ring-lbl { font-size: 10px; color: var(--paper-faint); }
+.macro { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.macro-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.dot { width: 7px; height: 7px; border-radius: 999px; }
+.track { flex: 1; height: 6px; background: var(--line-strong); border-radius: 999px; overflow: hidden; }
+.fill { height: 100%; border-radius: 999px; }
+.val { min-width: 64px; text-align: right; font-family: var(--mono); color: var(--paper-dim); }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--lime); color: var(--ink); border: none;
+  border-radius: var(--radius-control); padding: 12px 16px;
+  font-family: var(--body); font-weight: 600; font-size: 14px; cursor: pointer;
+}
+.btn:active { transform: scale(0.98); }
+.btn-ghost {
+  background: transparent; color: var(--paper-dim);
+  border: 1px solid var(--line-strong);
+}
+.ticket-name { font-family: var(--mono); font-size: 22px; font-weight: 700; margin: 4px 0 6px; }
+.meta { font-size: 12.5px; color: var(--paper-dim); }
+.perf { display: flex; border-top: 1px solid var(--line); margin: 14px -16px -16px; }
+.perf-cell { flex: 1; padding: 12px; border-right: 1px solid var(--line); }
+.perf-cell:last-child { border-right: none; }
+.perf-val { font-family: var(--mono); font-size: 18px; font-weight: 700; }
+.perf-lbl { font-size: 10px; color: var(--paper-faint); margin-top: 2px; }
+.row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px; background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius-card); margin-bottom: 8px; cursor: pointer;
+}
+.row:hover { border-color: var(--line-strong); }
+.idx { font-family: var(--mono); color: var(--paper-faint); width: 22px; }
+.row-name { font-weight: 600; font-size: 14px; }
+.row-sub { font-size: 12px; color: var(--paper-faint); margin-top: 2px; }
+.section { font-size: 13px; color: var(--paper-dim); font-weight: 600; margin: 16px 0 8px; display: flex; justify-content: space-between; }
+.water { display: flex; gap: 6px; }
+.glass {
+  flex: 1; height: 32px; border-radius: var(--radius-control);
+  border: 1px solid var(--line-strong); background: var(--ink); cursor: pointer;
+}
+.glass.on { background: rgba(45,212,191,0.35); border-color: var(--cyan); }
+.nav {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 72px;
+  background: rgba(11,15,20,0.96); border-top: 1px solid var(--line);
+  display: flex; backdrop-filter: blur(12px);
+}
+.nav button {
+  flex: 1; border: none; background: none; color: var(--paper-faint);
+  font-size: 10px; font-weight: 600; font-family: var(--body);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  cursor: pointer;
+}
+.nav button.active { color: var(--lime); }
+.nav .ico { font-size: 16px; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.chip {
+  border: 1px solid var(--line-strong); background: var(--panel);
+  border-radius: 999px; padding: 8px 14px; font-size: 12px; color: var(--paper-dim); cursor: pointer;
+}
+.bubble {
+  max-width: 88%; padding: 12px 14px; border-radius: var(--radius-card); margin-bottom: 8px;
+  font-size: 14px; line-height: 1.4;
+}
+.bubble.coach { background: var(--panel); border: 1px solid var(--line); }
+.bubble.user { background: var(--lime); color: var(--ink); margin-left: auto; }
+.composer { display: flex; gap: 8px; margin-top: 12px; }
+.composer input {
+  flex: 1; min-height: 44px; border-radius: var(--radius-control);
+  border: 1px solid var(--line-strong); background: var(--panel); color: var(--paper);
+  padding: 0 14px; font-family: var(--body);
+}
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat-val { font-family: var(--mono); font-size: 22px; font-weight: 700; }
+.stat-lbl { font-size: 11px; color: var(--paper-faint); margin-top: 4px; }
+.bars { display: flex; align-items: flex-end; gap: 8px; height: 90px; margin-top: 10px; }
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%; }
+.bar { width: 100%; border-radius: 3px; min-height: 4px; background: var(--lime); }
+.bar-lbl { font-family: var(--mono); font-size: 11px; color: var(--paper-faint); }
+.identity { display: flex; gap: 14px; align-items: center; }
+.avatar {
+  width: 52px; height: 52px; border-radius: var(--radius-control);
+  border: 1px solid var(--lime); background: var(--lime-dim);
+  display: grid; place-items: center; font-family: var(--mono); color: var(--lime); font-size: 20px;
+}
+.note { font-size: 11px; color: var(--paper-faint); line-height: 1.45; margin-top: 8px; }
+@media (max-width: 420px) {
+  body { padding: 0; }
+  .phone { width: 100%; height: 100vh; max-height: none; border-radius: 0; border: none; }
+}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="status"><span id="clock">9:41</span><span>●●● Wi‑Fi</span></div>
+  <div class="scroll">
+
+    <!-- WORKOUT -->
+    <div class="screen active" id="s-workout">
+      <div class="header">
+        <div class="eyebrow">Тренировочный день</div>
+        <div class="title">Тренировка</div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">План дня</div>
+        <div class="ticket-name">Ноги — сила</div>
+        <div class="meta">3 упражнения · ≈45 мин · ~180 ккал</div>
+        <button class="btn" style="margin-top:14px" type="button">▶  Начать тренировку</button>
+        <div class="perf">
+          <div class="perf-cell"><div class="perf-val">3/7</div><div class="perf-lbl">Дней на неделе</div></div>
+          <div class="perf-cell"><div class="perf-val">~180</div><div class="perf-lbl">Сожжено, ккал</div></div>
+          <div class="perf-cell"><div class="perf-val">100</div><div class="perf-lbl">Рекорд, кг</div></div>
+        </div>
+      </div>
+      <div class="card" style="border-color: rgba(0,229,168,0.25)">
+        <div style="color:var(--lime);font-size:11px;font-weight:600;margin-bottom:6px">Тренер · offline</div>
+        <div style="font-size:13px;color:var(--paper-dim);line-height:1.45">Сфокусируйся на глубине приседа и контролируемом негативе. После серии — 7–8 часов сна.</div>
+      </div>
+      <div class="section"><span>Упражнения дня</span><span style="font-family:var(--mono);color:var(--paper-faint)">0/3</span></div>
+      <div class="row"><div class="idx">01</div><div style="flex:1"><div class="row-name">Приседания со штангой</div><div class="row-sub">4×8 · 80 кг · отдых 90с</div></div></div>
+      <div class="row"><div class="idx">02</div><div style="flex:1"><div class="row-name">Становая тяга</div><div class="row-sub">3×5 · 100 кг · отдых 120с</div></div></div>
+      <div class="row"><div class="idx">03</div><div style="flex:1"><div class="row-name">Выпады с гантелями</div><div class="row-sub">3×12 · 14 кг · отдых 60с</div></div></div>
+    </div>
+
+    <!-- NUTRITION -->
+    <div class="screen" id="s-nutrition">
+      <div class="header">
+        <div class="eyebrow">Сегодня</div>
+        <div class="title">Питание</div>
+      </div>
+      <div class="card">
+        <div class="hero-row">
+          <div class="ring" style="--pct:72"><div class="ring-inner"><div class="ring-val">1842</div><div class="ring-lbl">ккал</div></div></div>
+          <div class="macro">
+            <div class="macro-row"><span class="dot" style="background:var(--macro-p)"></span><span>Б</span><div class="track"><div class="fill" style="width:72%;background:var(--macro-p)"></div></div><span class="val">122/170</span></div>
+            <div class="macro-row"><span class="dot" style="background:var(--macro-f)"></span><span>Ж</span><div class="track"><div class="fill" style="width:97%;background:var(--macro-f)"></div></div><span class="val">68/70</span></div>
+            <div class="macro-row"><span class="dot" style="background:var(--macro-c)"></span><span>У</span><div class="track"><div class="fill" style="width:72%;background:var(--macro-c)"></div></div><span class="val">180/250</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section" style="margin:0 0 10px"><span>Вода</span><span style="font-family:var(--mono)"><b style="color:var(--cyan)">5</b> / 8</span></div>
+        <div class="water" id="water">
+          <div class="glass on"></div><div class="glass on"></div><div class="glass on"></div><div class="glass on"></div><div class="glass on"></div>
+          <div class="glass"></div><div class="glass"></div><div class="glass"></div>
+        </div>
+      </div>
+      <div class="section"><span>Приёмы пищи</span><span style="font-family:var(--mono);color:var(--paper-faint)">1842 ккал</span></div>
+      <div class="card"><div class="row-name">Завтрак</div><div class="row-sub">Овсянка, яйцо · 482 ккал</div></div>
+      <div class="card"><div class="row-name">Обед</div><div class="row-sub">Курица, гречка · 612 ккал</div></div>
+      <div class="card"><div class="row-name">Ужин</div><div class="row-sub">Творог, яблоко · 748 ккал</div></div>
+    </div>
+
+    <!-- COACH -->
+    <div class="screen" id="s-coach">
+      <div class="header">
+        <div class="eyebrow">Локальный AI</div>
+        <div class="title">Тренер</div>
+        <div class="meta" style="margin-top:4px">Rules · offline</div>
+      </div>
+      <div class="chip-row">
+        <button class="chip" type="button">Сколько белка?</button>
+        <button class="chip" type="button">Калории сегодня</button>
+        <button class="chip" type="button">Совет на тренировку</button>
+      </div>
+      <div class="bubble coach">Я локальный тренер FitPulse. Спроси про белок, калории дня или восстановление — отвечу по твоим данным профиля.</div>
+      <div class="composer">
+        <input type="text" placeholder="Спроси про день, белок…" readonly />
+        <button class="btn" type="button">Ок</button>
+      </div>
+      <p class="note">Прототип UI. Реальный streaming — в native CoachScreen / web /coach.</p>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="screen" id="s-progress">
+      <div class="header">
+        <div class="eyebrow">Последние 7 дней</div>
+        <div class="title">Прогресс</div>
+      </div>
+      <div class="stat-grid">
+        <div class="card"><div class="stat-val">~180</div><div class="stat-lbl">ккал сегодня</div></div>
+        <div class="card"><div class="stat-val">~920</div><div class="stat-lbl">ккал за 7 дней</div></div>
+      </div>
+      <div class="card" style="margin-top:10px">
+        <div class="section" style="margin:0 0 4px"><span>Сожжено по дням</span></div>
+        <div class="bars">
+          <div class="bar-col"><div class="bar" style="height:40%"></div><span class="bar-lbl">Пн</span></div>
+          <div class="bar-col"><div class="bar" style="height:70%;background:var(--mint)"></div><span class="bar-lbl">Вт</span></div>
+          <div class="bar-col"><div class="bar" style="height:25%"></div><span class="bar-lbl">Ср</span></div>
+          <div class="bar-col"><div class="bar" style="height:85%;background:var(--mint)"></div><span class="bar-lbl">Чт</span></div>
+          <div class="bar-col"><div class="bar" style="height:55%"></div><span class="bar-lbl">Пт</span></div>
+          <div class="bar-col"><div class="bar" style="height:95%;background:var(--mint)"></div><span class="bar-lbl">Сб</span></div>
+          <div class="bar-col"><div class="bar" style="height:20%"></div><span class="bar-lbl">Вс</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section" style="margin:0 0 8px"><span>Динамика веса</span></div>
+        <div class="meta">−1.2 кг за неделю · последняя точка 84.2 кг</div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="screen" id="s-profile">
+      <div class="header">
+        <div class="eyebrow">Аккаунт</div>
+        <div class="title">Профиль</div>
+      </div>
+      <div class="card identity">
+        <div class="avatar">М</div>
+        <div>
+          <div class="row-name">26 лет · 178 см · 76 кг</div>
+          <div class="row-sub">Цель 2039 ккал · BMR 1742</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section" style="margin:0 0 10px"><span>КБЖУ</span><span style="font-family:var(--mono)">Миффлин</span></div>
+        <div class="perf" style="margin:0;border-top:none">
+          <div class="perf-cell" style="padding-left:0"><div class="perf-val">1742</div><div class="perf-lbl">BMR</div></div>
+          <div class="perf-cell"><div class="perf-val">2330</div><div class="perf-lbl">TDEE</div></div>
+          <div class="perf-cell" style="padding-right:0"><div class="perf-val" style="color:var(--lime)">2039</div><div class="perf-lbl">Цель</div></div>
+        </div>
+        <p class="note">Белки / жиры / углеводы по ISSN. Редактирование — в native ProfileScreen.</p>
+      </div>
+      <div class="card"><div class="row-name">Экспорт данных</div><div class="row-sub">JSON backup</div></div>
+      <div class="card"><div class="row-name">Импорт данных</div><div class="row-sub">Восстановление из файла</div></div>
+    </div>
+
+  </div>
+
+  <nav class="nav" aria-label="Навигация">
+    <button type="button" class="active" data-screen="workout"><span class="ico">🏋️</span>Тренировки</button>
+    <button type="button" data-screen="nutrition"><span class="ico">🍽</span>Питание</button>
+    <button type="button" data-screen="coach"><span class="ico">💬</span>Тренер</button>
+    <button type="button" data-screen="progress"><span class="ico">📊</span>Прогресс</button>
+    <button type="button" data-screen="profile"><span class="ico">👤</span>Профиль</button>
+  </nav>
+</div>
+<script>
+(function () {
+  const clock = document.getElementById('clock');
+  function tick() {
+    const d = new Date();
+    clock.textContent = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 30000);
+
+  document.querySelectorAll('.nav button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav button').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      const id = 's-' + btn.dataset.screen;
+      document.querySelectorAll('.screen').forEach((s) => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelector('.scroll').scrollTop = 0;
+    });
+  });
+
+  const glasses = document.querySelectorAll('#water .glass');
+  glasses.forEach((g, idx) => {
+    g.addEventListener('click', () => {
+      const filled = g.classList.contains('on') && (idx === glasses.length - 1 || !glasses[idx + 1]?.classList.contains('on'));
+      glasses.forEach((el, i) => {
+        el.classList.toggle('on', filled ? i < idx : i <= idx);
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
