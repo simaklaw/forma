@@ -1,29 +1,48 @@
 /**
- * Design tokens ported 1:1 from fitpulse-redesign.html's CSS custom properties.
- * Keep this file as the single source of truth for color/spacing/type so the
- * native app doesn't drift from the "sports protocol / scoreboard" identity
- * established in the prototype (see that file's <style> :root block).
+ * FitPulse design tokens.
+ *
+ * Brand direction (logo sheet):
+ *   primary mint  #00E5A8
+ *   secondary     #00B894
+ *   ink           #0B0F14
+ *   panel         #121820
+ *   muted         #6B7280
+ *   paper         #F8FAFC
+ *
+ * `lime` is kept as the primary action accent alias so existing screens
+ * keep working while the visual language shifts from protocol-neon to
+ * premium fitness mint. No feature changes — colors / radius only.
  */
 
 export const colors = {
-  ink: '#0B0E10',
-  panel: '#14181B',
-  panelRaised: '#191E22',
-  line: 'rgba(244,241,234,0.09)',
-  lineStrong: 'rgba(244,241,234,0.18)',
+  ink: '#0B0F14',
+  panel: '#121820',
+  panelRaised: '#182028',
+  line: 'rgba(248,250,252,0.08)',
+  lineStrong: 'rgba(248,250,252,0.16)',
 
-  paper: '#F4F1EA',
-  paperDim: 'rgba(244,241,234,0.56)',
-  paperFaint: 'rgba(244,241,234,0.28)',
+  paper: '#F8FAFC',
+  paperDim: 'rgba(248,250,252,0.62)',
+  paperFaint: 'rgba(248,250,252,0.38)',
 
-  lime: '#D6FF3F',
-  limeDim: 'rgba(214,255,63,0.16)',
+  /** Primary CTA / active nav — brand mint */
+  lime: '#00E5A8',
+  limeDim: 'rgba(0,229,168,0.14)',
+  /** Secondary mint */
+  mint: '#00B894',
   ember: '#FF6A39',
-  cyan: '#6FE7D3'
+  cyan: '#2DD4BF',
+  /** Macro legend dots (concept) */
+  macroProtein: '#00E5A8',
+  macroFat: '#F59E0B',
+  macroCarb: '#38BDF8'
 } as const;
 
 export const radius = {
-  card: 4
+  card: 16,
+  pill: 999,
+  control: 12,
+  sheet: 22
 } as const;
 
 export const spacing = {
@@ -36,11 +55,8 @@ export const spacing = {
 } as const;
 
 /**
- * Barlow Condensed is used for all numeric/headline type in the prototype
- * (scoreboard feel). Load it via expo-font in App.tsx:
- *   BarlowCondensed_700Bold, BarlowCondensed_600SemiBold
- * from the @expo-google-fonts/barlow-condensed package (add to package.json
- * if not already present).
+ * Barlow Condensed for numeric/headline type (scoreboard feel).
+ * Inter for body. Loaded via expo-font in App.tsx.
  */
 export const fonts = {
   mono: 'BarlowCondensed_700Bold',
