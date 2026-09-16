@@ -26,6 +26,13 @@ class ActiveSessionControllerImpl {
     return this.dayId;
   }
 
+  /** Test-only */
+  resetForTests(): void {
+    this.sessionId = null;
+    this.dayId = null;
+    this.listeners.clear();
+  }
+
   subscribe(fn: () => void): () => void {
     this.listeners.add(fn);
     return () => this.listeners.delete(fn);
@@ -83,13 +90,11 @@ class ActiveSessionControllerImpl {
     const session = await this.ensureDaySession(input.dayId, input.exercises);
     const step = session.steps[session.currentStepIndex];
     if (!step || step.snapshot.exerciseId !== String(input.exerciseId)) {
-      // Out-of-order vs sequential aggregate — skip domain write, keep Zustand path.
       return null;
     }
 
     const svc = getSessionService();
 
-    // Clear domain rest if UI already allowed the next set (user waited or skipped).
     if (session.restEndsAtMs !== null) {
       try {
         await svc.dispatch(session.sessionId, { type: 'skip_rest' });
@@ -110,7 +115,7 @@ class ActiveSessionControllerImpl {
     return result.session;
   }
 
-  async completeDayIfDone(exercises: ExerciseDef[]): Promise<void> {
+  async completeDayIfDone(): Promise<void> {
     if (!this.sessionId) return;
     const svc = getSessionService();
     const session = await svc.getSession(this.sessionId);
