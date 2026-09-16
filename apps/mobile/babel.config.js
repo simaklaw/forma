@@ -9,12 +9,14 @@ module.exports = function (api) {
         'module-resolver',
         {
           root: ['.'],
+          extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
           alias: {
             '@': './src',
-            '@forma/core': path.resolve(__dirname, '../../packages/core/src'),
+            // Point at entry files, not package directories (avoids "Could not resolve …/src").
+            '@forma/core': path.resolve(__dirname, '../../packages/core/src/index.ts'),
             '@forma/workout-domain': path.resolve(
               __dirname,
-              '../../packages/workout-domain/src'
+              '../../packages/workout-domain/src/index.ts'
             ),
           },
         },

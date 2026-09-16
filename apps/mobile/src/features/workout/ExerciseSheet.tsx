@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import AppBottomSheet from '@/components/BottomSheet';
@@ -37,6 +37,12 @@ interface Props {
   onFinished?: (exerciseId: number) => void;
 }
 
+function remainingRestSeconds(restEndsAtMs: number | null | undefined, nowMs = Date.now()): number | null {
+  if (restEndsAtMs == null) return null;
+  const sec = Math.ceil((restEndsAtMs - nowMs) / 1000);
+  return sec > 0 ? sec : null;
+}
+
 const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
   ({ exercise, dayId, dayExercises, onFinished }, ref) => {
     const recordSet = useFitPulseStore((s) => s.recordSet);
@@ -50,13 +56,44 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const [rir, setRir] = useState(2);
     const [restRemaining, setRestRemaining] = useState<number | null>(null);
 
+    const startRestFromDeadline = useCallback((restEndsAtMs: number) => {
+      const sec = remainingRestSeconds(restEndsAtMs);
+      if (sec == null) {
+        setRestRemaining(null);
+        return;
+      }
+      RestTimerEngine.startTimer(
+        sec,
+        (remaining) => setRestRemaining(remaining),
+        () => setRestRemaining(null),
+        beepSource
+      );
+    }, []);
+
+    /** Hydrate rest UI from durable session (survives process death / re-open sheet). */
     useEffect(() => {
       if (!exercise) return;
       setCompletedSets(completedSetsToday(exercise.id));
       setWeight(exercise.workingWeight);
       setReps(exercise.workingReps);
       setRestRemaining(null);
-    }, [exercise?.id]);
+      RestTimerEngine.stopTimer();
+
+      let cancelled = false;
+      void (async () => {
+        const session = await ActiveSessionController.load();
+        if (cancelled || !session) return;
+        const step = session.steps[session.currentStepIndex];
+        if (!step || step.snapshot.exerciseId !== String(exercise.id)) return;
+        if (session.restEndsAtMs != null) {
+          startRestFromDeadline(session.restEndsAtMs);
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+      };
+    }, [exercise?.id, startRestFromDeadline]);
 
     if (!exercise) return null;
 
@@ -73,7 +110,6 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       const next = recordSet(exercise.id, weight, reps, rir);
       setCompletedSets(next);
 
-      // Durable session journal (sequential). Zustand remains source for UI counters.
       if (dayId && dayExercises?.length) {
         void ActiveSessionController.recordSetForExercise({
           dayId,
@@ -82,7 +118,27 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           weightKg: weight,
           reps,
           rir
-        }).then(() => ActiveSessionController.completeDayIfDone());
+        }).then(async (session) => {
+          await ActiveSessionController.completeDayIfDone();
+          // Prefer domain rest deadline over local exercise.restSeconds only.
+          if (session?.restEndsAtMs != null) {
+            startRestFromDeadline(session.restEndsAtMs);
+          } else if (next < exercise.totalSets) {
+            RestTimerEngine.startTimer(
+              exercise.restSeconds,
+              (remaining) => setRestRemaining(remaining),
+              () => setRestRemaining(null),
+              beepSource
+            );
+          }
+        });
+      } else if (next < exercise.totalSets) {
+        RestTimerEngine.startTimer(
+          exercise.restSeconds,
+          (remaining) => setRestRemaining(remaining),
+          () => setRestRemaining(null),
+          beepSource
+        );
       }
 
       if (next >= exercise.totalSets) {
@@ -92,17 +148,19 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       }
 
       RestTimerEngine.hapticSetComplete();
-      RestTimerEngine.startTimer(
-        exercise.restSeconds,
-        (remaining) => setRestRemaining(remaining),
-        () => setRestRemaining(null),
-        beepSource
-      );
     }
 
     function skipRest() {
       RestTimerEngine.stopTimer();
       setRestRemaining(null);
+      const sessionId = ActiveSessionController.getSessionId();
+      if (sessionId) {
+        void import('@/features/workout/data').then(({ getSessionService }) =>
+          getSessionService()
+            .dispatch(sessionId, { type: 'skip_rest' })
+            .catch(() => {})
+        );
+      }
     }
 
     return (
