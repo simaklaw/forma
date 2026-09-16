@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "scheme": "fitpulse",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#0B0E10",
+    "backgroundColor": "#0B0F14",
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": false,
@@ -16,7 +16,7 @@
     "android": {
       "package": "app.fitpulse.native",
       "adaptiveIcon": {
-        "backgroundColor": "#0B0E10"
+        "backgroundColor": "#0B0F14"
       },
       "permissions": [
         "android.permission.VIBRATE"
