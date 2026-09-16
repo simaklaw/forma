@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CoachEngine, estimateBurnFromSetLogs, toDateKey } from '@forma/core';
 import { getMobileTrainerProgress } from '@/ai/trainerProgress';
-import { colors, fonts, spacing } from '@/core/theme/tokens';
+import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
 import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
 import { COACH_WELCOME, useFitPulseStore } from '@/state/useFitPulseStore';
 
@@ -99,11 +99,17 @@ export default function CoachScreen() {
         <View style={styles.header}>
           <View style={styles.headerRow}>
             <View style={{ flex: 1 }}>
+              <Text style={styles.eyebrow}>Локальный AI</Text>
               <Text style={styles.title}>Тренер</Text>
               <Text style={styles.sub}>{status}</Text>
             </View>
             {canClear && (
-              <Pressable onPress={clearCoachMessages} accessibilityRole="button" accessibilityLabel="Очистить чат">
+              <Pressable
+                onPress={clearCoachMessages}
+                accessibilityRole="button"
+                accessibilityLabel="Очистить чат"
+                style={styles.clearBtn}
+              >
                 <Text style={styles.clear}>Очистить</Text>
               </Pressable>
             )}
@@ -164,61 +170,92 @@ export default function CoachScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.ink },
   flex: { flex: 1 },
-  header: { paddingHorizontal: spacing.xxl, paddingTop: spacing.lg, paddingBottom: spacing.sm },
+  header: {
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line
+  },
   headerRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  eyebrow: { color: colors.paperFaint, fontSize: 11, fontFamily: fonts.body },
   title: {
     color: colors.paper,
-    fontSize: 28,
+    fontSize: 30,
     fontFamily: fonts.mono,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5
+    marginTop: 2
   },
   sub: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.body, marginTop: 4 },
-  clear: { color: colors.paperFaint, fontSize: 12, fontFamily: fonts.body, textDecorationLine: 'underline', marginTop: 6 },
+  clearBtn: {
+    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    borderColor: colors.lineStrong,
+    backgroundColor: colors.panel
+  },
+  clear: { color: colors.paperDim, fontSize: 12, fontFamily: fonts.bodySemi },
   chips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
-    paddingHorizontal: spacing.xxl,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
     marginBottom: spacing.sm
   },
   chip: {
     borderWidth: 1,
     borderColor: colors.lineStrong,
     backgroundColor: colors.panel,
-    paddingHorizontal: 12,
+    borderRadius: radius.pill,
+    paddingHorizontal: 14,
     paddingVertical: 8
   },
   chipDisabled: { opacity: 0.5 },
   chipText: { color: colors.paperDim, fontSize: 12, fontFamily: fonts.bodySemi },
-  list: { paddingHorizontal: spacing.xxl, paddingBottom: spacing.md, gap: spacing.sm },
-  bubble: { maxWidth: '88%', paddingHorizontal: 12, paddingVertical: 10, marginBottom: spacing.sm },
+  list: { paddingHorizontal: spacing.xl, paddingBottom: spacing.md, paddingTop: spacing.sm },
+  bubble: {
+    maxWidth: '88%',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: spacing.sm,
+    borderRadius: radius.card
+  },
   userBubble: { alignSelf: 'flex-end', backgroundColor: colors.lime },
   coachBubble: {
     alignSelf: 'flex-start',
     backgroundColor: colors.panel,
     borderWidth: 1,
-    borderColor: colors.lineStrong
+    borderColor: colors.line
   },
   bubbleText: { color: colors.paper, fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
   userBubbleText: { color: colors.ink, fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
-  thinking: { color: colors.paperFaint, fontSize: 12, fontFamily: fonts.body, marginTop: 4 },
+  thinking: {
+    color: colors.paperFaint,
+    fontSize: 12,
+    fontFamily: fonts.body,
+    marginTop: 4,
+    marginLeft: 4
+  },
   composer: {
     flexDirection: 'row',
     gap: spacing.sm,
-    paddingHorizontal: spacing.xxl,
+    paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.line
+    borderTopColor: colors.line,
+    backgroundColor: colors.ink
   },
   input: {
     flex: 1,
     minHeight: 44,
     borderWidth: 1,
     borderColor: colors.lineStrong,
+    borderRadius: radius.control,
     backgroundColor: colors.panel,
     color: colors.paper,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     fontFamily: fonts.body,
     fontSize: 14
   },
@@ -227,6 +264,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.lime,
+    borderRadius: radius.control,
     paddingHorizontal: 14
   },
   sendDisabled: { opacity: 0.4 },
