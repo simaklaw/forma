@@ -1,4 +1,4 @@
-import { calculateBurnedCalories } from "../engines/MetabolicEngine";
+import { calculateBurnedCalories } from "../engines/MetabolicEngine.ts";
 
 /**
  * Rough session burn from logged sets.
