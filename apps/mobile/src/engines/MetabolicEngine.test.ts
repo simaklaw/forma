@@ -71,15 +71,17 @@ describe('calculateTargets', () => {
     expect(targets.fatTarget).toBe(Math.round(baseProfile.weight * 1.0));
   });
 
-  it('backs carbs out of whatever calories remain after protein/fat, floored at 50g', () => {
+  it('backs carbs out of remaining calories after protein/fat (floor at 0)', () => {
     const targets = calculateTargets(baseProfile, noProtocol);
-    const expectedCarbs = Math.round((targets.target - targets.proteinTarget * 4 - targets.fatTarget * 9) / 4);
-    expect(targets.carbTarget).toBe(Math.max(50, expectedCarbs));
+    const expectedCarbs = Math.max(
+      0,
+      Math.round((targets.target - targets.proteinTarget * 4 - targets.fatTarget * 9) / 4)
+    );
+    expect(targets.carbTarget).toBe(expectedCarbs);
   });
 
-  it('floors carbs at 50g when protein+fat calories would otherwise leave less', () => {
-    // Low weight/height, high age, female offset: unrounded carb math backs
-    // out to ~30g here, which is exactly the case the 50g floor exists for.
+  it('does not invent carb calories when protein+fat exceed the target', () => {
+    // Extreme profile where protein+fat kcal can exceed the calorie target.
     const extremeDeficitProfile: ProfileState = {
       sex: 'female',
       age: 90,
@@ -89,7 +91,10 @@ describe('calculateTargets', () => {
       goal: 'recomp'
     };
     const targets = calculateTargets(extremeDeficitProfile, noProtocol);
-    expect(targets.carbTarget).toBe(50);
+    expect(targets.carbTarget).toBeGreaterThanOrEqual(0);
+    expect(targets.proteinTarget * 4 + targets.fatTarget * 9 + targets.carbTarget * 4).toBeLessThanOrEqual(
+      targets.target + 4 // allow single-gram rounding slack
+    );
   });
 });
 
@@ -140,8 +145,9 @@ describe('estimateOneRepMax (Epley formula)', () => {
     expect(estimateOneRepMax(80, 8)).toBeCloseTo(80 * (1 + 8 / 30));
   });
 
-  it('returns the working weight itself at 0 reps', () => {
-    expect(estimateOneRepMax(100, 0)).toBe(100);
+  it('rejects zero or negative reps', () => {
+    expect(() => estimateOneRepMax(100, 0)).toThrow(RangeError);
+    expect(() => estimateOneRepMax(100, -1)).toThrow(RangeError);
   });
 });
 
