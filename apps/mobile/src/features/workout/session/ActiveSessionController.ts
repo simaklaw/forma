@@ -5,8 +5,7 @@ import {
 } from '@/features/workout/data';
 import type { ExerciseDef } from '../ExerciseSheet';
 import { contentHashForExercises, exercisesToSnapshots } from './planToSnapshots';
-
-const USER_ID = 'local-user';
+import { LOCAL_USER_ID } from './currentUser';
 
 /**
  * Thin imperative controller: keeps the active day-plan session id
@@ -60,7 +59,7 @@ class ActiveSessionControllerImpl {
     await svc.dispatch(null, {
       type: 'prepare_session',
       sessionId,
-      userId: USER_ID,
+      userId: LOCAL_USER_ID,
       templateRevisionId: `day-${dayId}`,
       contentHash: contentHashForExercises(exercises),
       steps,

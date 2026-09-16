@@ -40,7 +40,10 @@ function baseEvent(
   session: WorkoutSession,
   ctx: CommandContext,
   type: SessionEvent['type']
-): Pick<SessionEvent, 'eventId' | 'sessionId' | 'ordinal' | 'occurredAtMs' | 'payloadSchemaVersion' | 'operationId' | 'type'> {
+): Pick<
+  SessionEvent,
+  'eventId' | 'sessionId' | 'ordinal' | 'occurredAtMs' | 'payloadSchemaVersion' | 'operationId' | 'type'
+> {
   return {
     eventId: ctx.eventId,
     sessionId: session.sessionId,
@@ -411,43 +414,13 @@ export function applyCommand(
   }
 }
 
-/** Replay ordered events onto null → session (for recovery tests). */
-export function replayEvents(
-  events: SessionEvent[],
-  seed: {
-    sessionId: string;
-    userId: string;
-    steps: SessionStepState['snapshot'][];
-  }
-): WorkoutSession {
-  let session: WorkoutSession | null = null;
-  for (const ev of events) {
-    const ctx: CommandContext = {
-      operationId: ev.operationId,
-      eventId: ev.eventId,
-      nowMs: ev.occurredAtMs
-    };
-    if (ev.type === 'session_prepared') {
-      const result = applyCommand(
-        null,
-        {
-          type: 'prepare_session',
-          sessionId: seed.sessionId,
-          userId: seed.userId,
-          templateRevisionId: ev.payload.templateRevisionId,
-          contentHash: ev.payload.contentHash,
-          steps: seed.steps,
-          localStartDate: ev.payload.localStartDate,
-          timezone: ev.payload.timezone
-        },
-        ctx
-      );
-      session = result.session;
-      continue;
-    }
-    if (!session) throw new DomainError('invalid_transition', 'replay missing prepare');
-    break;
-  }
-  if (!session) throw new DomainError('invalid_transition', 'no events to replay');
-  return session;
+/**
+ * TODO(P1): full event → command mapping for aggregate rebuild from journal.
+ * P0 stores materialised `aggregate_json` in SQLite; recovery does not use this.
+ * Not exported from package index — do not call.
+ */
+export function replayEventsNotImplemented(): never {
+  throw new Error(
+    'replayEvents is not implemented in P0. Restore from materialised aggregate_json; full journal replay is P1.'
+  );
 }

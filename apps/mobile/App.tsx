@@ -18,9 +18,9 @@ import {
 } from '@/features/workout/data';
 
 /**
- * Native (iOS/Android) requires SQLite for durable sessions.
- * In __DEV__, failure to open expo-sqlite is loud (no silent memory fallback).
- * Memory is only for Jest / explicit configureSessionPersistence('memory').
+ * Native (iOS/Android): prefer SQLite for durable sessions.
+ * On failure: explicit console warning + non-blocking memory fallback
+ * (not hard fail-fast — app still boots; sessions will not survive kill).
  */
 function enableSqliteSessions(): void {
   const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
@@ -34,21 +34,16 @@ function enableSqliteSessions(): void {
     }
     configureSessionPersistence('sqlite', SQLite.openDatabaseSync(WORKOUT_DB_NAME));
   } catch (err) {
-    if (isNative && typeof __DEV__ !== 'undefined' && __DEV__) {
-      // Fail fast in development so missing native module / lockfile is visible.
+    if (isNative) {
       console.error(
         '[FitPulse] SQLite session store failed to initialize. ' +
-          'Install expo-sqlite and rebuild the dev client. Falling back to memory only for this process.',
+          'Install expo-sqlite, run pnpm install, rebuild the dev client. ' +
+          'Using non-blocking memory fallback for this process.',
         err
       );
-      // Still allow UI to boot, but mode stays memory unless configure was called.
       if (getSessionPersistenceMode() !== 'sqlite') {
         configureSessionPersistence('memory');
       }
-    }
-    // Production native: leave default memory only if configure never ran — still log.
-    if (isNative) {
-      console.warn('[FitPulse] workout persistence is memory-only; sessions will not survive process death');
     }
   }
 }

@@ -30,5 +30,6 @@ export type {
 
 export type { WorkoutCommand, ApplyOptions } from './commands.ts';
 
-export { applyCommand, replayEvents } from './reducer.ts';
+/** Pure command application. Event-log replay is not a public API in P0. */
+export { applyCommand } from './reducer.ts';
 export type { ApplyResult } from './reducer.ts';
