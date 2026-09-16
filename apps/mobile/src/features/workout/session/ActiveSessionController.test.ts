@@ -1,14 +1,6 @@
-import { MemorySessionRepository } from '@/features/workout/data/MemorySessionRepository';
-import { SessionCommandService } from '@/features/workout/data/SessionCommandService';
-import {
-  configureSessionPersistence,
-  resetSessionServiceForTests
-} from '@/features/workout/data/createSessionService';
+import { configureSessionPersistence, resetSessionServiceForTests } from '@/features/workout/data';
 import type { ExerciseDef } from '../ExerciseSheet';
 import { ActiveSessionController } from './ActiveSessionController';
-
-// Re-bind singleton to a fresh memory repo per test by resetting module state.
-// ActiveSessionController holds sessionId; we only assert domain commits via service.
 
 const exercises: ExerciseDef[] = [
   {
@@ -38,12 +30,8 @@ const exercises: ExerciseDef[] = [
 describe('ActiveSessionController', () => {
   beforeEach(() => {
     resetSessionServiceForTests();
-    const repo = new MemorySessionRepository();
-    // force memory service
-    const svc = new SessionCommandService(repo);
-    // monkey-patch via configure memory
     configureSessionPersistence('memory');
-    void svc;
+    ActiveSessionController.resetForTests();
   });
 
   it('ensureDaySession prepares and starts once per day', async () => {
