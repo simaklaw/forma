@@ -3,18 +3,14 @@ import { CoachEngine } from "@forma/core";
 import { Button } from "@/components/ui/button";
 import { getWebTrainerProgress } from "@/lib/ai/boot";
 import { webUserContextSnapshot } from "@/lib/snapshot";
-
-type Msg = { role: "user" | "coach"; text: string };
+import { COACH_WELCOME, useAppStore } from "@/lib/store";
 
 const CHIPS = ["Сколько белка?", "Калории сегодня", "Совет на тренировку", "Восстановление"];
 
 export function CoachScreen() {
-  const [messages, setMessages] = useState<Msg[]>([
-    {
-      role: "coach",
-      text: "Я локальный тренер. Данные не уходят в облако. Спроси про белок, калории или тренировку.",
-    },
-  ]);
+  const messages = useAppStore((s) => s.coachMessages);
+  const setCoachMessages = useAppStore((s) => s.setCoachMessages);
+  const clearCoachMessages = useAppStore((s) => s.clearCoachMessages);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [llmReady, setLlmReady] = useState(false);
@@ -37,17 +33,17 @@ export function CoachScreen() {
     const q = (raw ?? input).trim();
     if (!q || busy) return;
     setInput("");
-    setMessages((m) => [...m, { role: "user", text: q }, { role: "coach", text: "" }]);
+    const base = useAppStore.getState().coachMessages;
+    setCoachMessages([...base, { role: "user", text: q }, { role: "coach", text: "" }]);
     setBusy(true);
     try {
       let acc = "";
       await CoachEngine.getTrainer().streamAdvice(webUserContextSnapshot(), q, (token) => {
         acc += token;
-        setMessages((m) => {
-          const next = [...m];
-          next[next.length - 1] = { role: "coach", text: acc };
-          return next;
-        });
+        const cur = useAppStore.getState().coachMessages;
+        const next = [...cur];
+        next[next.length - 1] = { role: "coach", text: acc };
+        setCoachMessages(next);
       });
     } finally {
       setBusy(false);
@@ -60,10 +56,26 @@ export function CoachScreen() {
       ? `Загрузка модели · ${Math.round(progress * 100)}%`
       : "Rules · offline";
 
+  const visible = messages.filter((m) => m.text.length > 0);
+  const canClear = messages.some((m) => m.text !== COACH_WELCOME && m.text.length > 0);
+
   return (
     <div className="flex min-h-[calc(100dvh-6rem)] flex-col px-5 pb-4 pt-10">
-      <h1 className="font-display text-2xl tracking-tight">Тренер</h1>
-      <p className="mt-1 text-sm text-muted">{status}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl tracking-tight">Тренер</h1>
+          <p className="mt-1 text-sm text-muted">{status}</p>
+        </div>
+        {canClear && (
+          <button
+            type="button"
+            onClick={clearCoachMessages}
+            className="text-xs text-muted underline"
+          >
+            Очистить
+          </button>
+        )}
+      </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
         {CHIPS.map((c) => (
@@ -80,7 +92,7 @@ export function CoachScreen() {
       </div>
 
       <div className="mt-4 flex-1 space-y-3 overflow-y-auto">
-        {messages.map((m, i) =>
+        {(visible.length ? visible : [{ role: "coach" as const, text: COACH_WELCOME }]).map((m, i) =>
           m.text ? (
             <div
               key={i}
