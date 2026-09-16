@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -8,11 +8,23 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { calculateBurnedCalories, metForExercise } from "@forma/core";
 import { Button } from "@/components/ui/button";
 import { CompareSlider } from "@/components/compare-slider";
 import { MuscleWeek } from "@/components/muscle-map";
+import { planById, planExercises } from "@/lib/catalog";
+import { todayKey } from "@/lib/forma";
 import { useAppStore } from "@/lib/store";
 import type { MuscleRegion } from "@/lib/types";
+
+function planBurnKcal(planId: string, weightKg: number): number {
+  const plan = planById(planId);
+  if (!plan) return 0;
+  return planExercises(plan).reduce((sum, ex) => {
+    const workSec = ex.unit === "sec" ? ex.reps * ex.sets : ex.reps * ex.sets * 3;
+    return sum + calculateBurnedCalories(metForExercise(ex.id), weightKg, workSec / 60);
+  }, 0);
+}
 
 export function ProgressScreen() {
   const weights = useAppStore((s) => s.weights);
@@ -35,6 +47,22 @@ export function ProgressScreen() {
   const recent = workouts.slice(-7);
   for (const w of recent) for (const r of w.regions) if (!regionsHit.includes(r)) regionsHit.push(r);
 
+  const burnStats = useMemo(() => {
+    const today = todayKey();
+    let todayKcal = 0;
+    let weekKcal = 0;
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 6);
+    const cutoffKey = cutoff.toISOString().slice(0, 10);
+    for (const w of workouts) {
+      if (!w.completed) continue;
+      const kcal = planBurnKcal(w.planId, profile.weightKg);
+      if (w.date >= cutoffKey) weekKcal += kcal;
+      if (w.date === today) todayKcal += kcal;
+    }
+    return { todayKcal: Math.round(todayKcal), weekKcal: Math.round(weekKcal) };
+  }, [workouts, profile.weightKg]);
+
   const onPick = (slot: "before" | "after", file: File) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -47,7 +75,24 @@ export function ProgressScreen() {
     <div className="px-5 pb-8 pt-10">
       <h1 className="font-display text-2xl tracking-tight">Прогресс</h1>
 
-      <section className="mt-6 rounded-2xl bg-surface p-4 shadow-card">
+      <section className="mt-6 grid grid-cols-2 gap-3">
+        <div className="rounded-2xl bg-surface p-4 shadow-card">
+          <p className="text-xs text-muted">Сожжено сегодня</p>
+          <p className="mt-1 text-2xl tabular-nums">
+            {burnStats.todayKcal > 0 ? `~${burnStats.todayKcal}` : "—"}
+          </p>
+          <p className="text-xs text-muted">ккал · MET</p>
+        </div>
+        <div className="rounded-2xl bg-surface p-4 shadow-card">
+          <p className="text-xs text-muted">За 7 дней</p>
+          <p className="mt-1 text-2xl tabular-nums">
+            {burnStats.weekKcal > 0 ? `~${burnStats.weekKcal}` : "—"}
+          </p>
+          <p className="text-xs text-muted">ккал · MET</p>
+        </div>
+      </section>
+
+      <section className="mt-4 rounded-2xl bg-surface p-4 shadow-card">
         <h2 className="text-sm font-medium text-muted">Вес</h2>
         {weightData.length > 1 ? (
           <div className="mt-2 h-40">
