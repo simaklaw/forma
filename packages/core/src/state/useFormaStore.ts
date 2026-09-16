@@ -44,6 +44,14 @@ export interface UnifiedFormaState {
   getUserContextSnapshot: () => UserContextSnapshot;
 }
 
+export const FORMA_PERSIST_VERSION = 1;
+
+interface PersistedFormaState {
+  biometrics?: unknown;
+  foodLogs?: unknown;
+  workoutLogs?: unknown;
+}
+
 function newId(): string {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
@@ -67,6 +75,79 @@ const initialBiometrics: Biometrics = {
   gender: "male",
   activityFactor: ACTIVITY_FACTOR.light,
 };
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isFiniteNonNegative(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0;
+}
+
+function isValidBiometrics(value: unknown): value is Biometrics {
+  if (!isRecord(value)) return false;
+  try {
+    MetabolicEngine.calculateBMR(value as Biometrics);
+    MetabolicEngine.calculateTDEE(value as Biometrics);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function sanitizeFoodLogs(value: unknown): FoodItem[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (item): item is FoodItem =>
+      isRecord(item) &&
+      typeof item.id === "string" &&
+      typeof item.name === "string" &&
+      item.name.trim().length > 0 &&
+      isFiniteNonNegative(item.calories) &&
+      isFiniteNonNegative(item.protein) &&
+      isFiniteNonNegative(item.carbs) &&
+      isFiniteNonNegative(item.fat) &&
+      typeof item.loggedAt === "number" &&
+      Number.isFinite(item.loggedAt),
+  );
+}
+
+function sanitizeWorkoutLogs(value: unknown): WorkoutSession[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (item): item is WorkoutSession =>
+      isRecord(item) &&
+      typeof item.id === "string" &&
+      typeof item.exerciseId === "string" &&
+      item.exerciseId.trim().length > 0 &&
+      isFiniteNonNegative(item.durationMinutes) &&
+      isFiniteNonNegative(item.caloriesBurned) &&
+      typeof item.completedAt === "string" &&
+      Number.isFinite(Date.parse(item.completedAt)) &&
+      (item.name === undefined || typeof item.name === "string") &&
+      (item.rpeScore === undefined || (typeof item.rpeScore === "number" && Number.isFinite(item.rpeScore) && item.rpeScore >= 0 && item.rpeScore <= 10)),
+  );
+}
+
+export function sanitizePersistedFormaState(value: unknown): Pick<UnifiedFormaState, "biometrics" | "foodLogs" | "workoutLogs"> {
+  const persisted = isRecord(value) ? (value as PersistedFormaState) : {};
+  return {
+    biometrics: isValidBiometrics(persisted.biometrics) ? persisted.biometrics : initialBiometrics,
+    foodLogs: sanitizeFoodLogs(persisted.foodLogs),
+    workoutLogs: sanitizeWorkoutLogs(persisted.workoutLogs),
+  };
+}
+
+export function migrateFormaState(
+  persistedState: unknown,
+  version: number,
+): Pick<UnifiedFormaState, "biometrics" | "foodLogs" | "workoutLogs"> {
+  // Version 0 was the unversioned persist format. It already used the same
+  // three data fields, so migration is normalization rather than reshaping.
+  if (version <= 0) return sanitizePersistedFormaState(persistedState);
+  if (version === FORMA_PERSIST_VERSION) return sanitizePersistedFormaState(persistedState);
+  return sanitizePersistedFormaState(persistedState);
+}
 
 export function createFormaSlice(
   set: (fn: (state: UnifiedFormaState) => Partial<UnifiedFormaState> | UnifiedFormaState) => void,
@@ -161,7 +242,13 @@ export function createPersistedFormaStore(storage: StateStorage, name = "forma-c
   return create<UnifiedFormaState>()(
     persist((set, get) => createFormaSlice(set, get), {
       name,
+      version: FORMA_PERSIST_VERSION,
       storage: createJSONStorage(() => storage),
+      migrate: (persistedState, version) => migrateFormaState(persistedState, version),
+      merge: (persistedState, currentState) => ({
+        ...currentState,
+        ...sanitizePersistedFormaState(persistedState),
+      }),
       partialize: (s) => ({
         biometrics: s.biometrics,
         foodLogs: s.foodLogs,
