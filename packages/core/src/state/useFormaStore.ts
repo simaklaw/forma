@@ -41,7 +41,7 @@ export interface UnifiedFormaState {
   getTDEE: () => number;
   getTodayConsumedCalories: () => number;
   getTodayBurnedCalories: () => number;
-  getUserContextSnapshot: () => UserContextSnapshot;
+  getUserContextSnapshot: (targetCalories?: number) => UserContextSnapshot;
 }
 
 export const FORMA_PERSIST_VERSION = 1;
@@ -65,6 +65,12 @@ function startOfLocalDay(now = Date.now()): number {
 function assertFiniteNonNegative(value: number, name: string): void {
   if (!Number.isFinite(value) || value < 0) {
     throw new RangeError(`${name} must be a finite number >= 0`);
+  }
+}
+
+function assertOptionalTargetCalories(value: number | undefined): void {
+  if (value !== undefined && (!Number.isFinite(value) || value < 0)) {
+    throw new RangeError("targetCalories must be a finite number >= 0");
   }
 }
 
@@ -146,7 +152,7 @@ export function migrateFormaState(
   // three data fields, so migration is normalization rather than reshaping.
   if (version <= 0) return sanitizePersistedFormaState(persistedState);
   if (version === FORMA_PERSIST_VERSION) return sanitizePersistedFormaState(persistedState);
-  return sanitizePersistedFormaState(persistedState);
+  throw new Error(`Unsupported Forma persistence version: ${version}`);
 }
 
 export function createFormaSlice(
@@ -208,7 +214,8 @@ export function createFormaSlice(
         .reduce((sum, item) => sum + item.caloriesBurned, 0);
     },
 
-    getUserContextSnapshot: () => {
+    getUserContextSnapshot: (targetCalories) => {
+      assertOptionalTargetCalories(targetCalories);
       const s = get();
       const last = s.workoutLogs.at(-1);
       return {
@@ -220,7 +227,7 @@ export function createFormaSlice(
         },
         dailyMetrics: {
           consumedCalories: s.getTodayConsumedCalories(),
-          targetCalories: s.getTDEE(),
+          targetCalories: targetCalories ?? s.getTDEE(),
           burnedCalories: s.getTodayBurnedCalories(),
         },
         lastWorkout: last
