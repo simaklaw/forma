@@ -1,14 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { CoachEngine, estimateBurnFromSetLogs, toDateKey } from '@forma/core';
-import { colors, fonts, spacing } from '@/core/theme/tokens';
+import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
 import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 
 type Props = {
   dayName: string;
   anyDoneToday: boolean;
-  /** Optional map exerciseId → display name for MET lookup. */
   exerciseNames?: Record<number, string>;
 };
 
@@ -71,11 +70,13 @@ export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames }: Props
 
 const styles = StyleSheet.create({
   card: {
-    marginHorizontal: spacing.xxl,
+    marginHorizontal: spacing.xl,
     marginBottom: spacing.md,
+    marginTop: spacing.sm,
     padding: 14,
     borderWidth: 1,
-    borderColor: colors.lineStrong,
+    borderColor: colors.line,
+    borderRadius: radius.card,
     backgroundColor: colors.panel
   },
   label: {
@@ -83,8 +84,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: fonts.bodySemi,
     marginBottom: 6,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6
+    letterSpacing: 0.4
   },
   body: {
     color: colors.paperDim,
