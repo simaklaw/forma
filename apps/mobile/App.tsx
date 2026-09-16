@@ -16,6 +16,7 @@ import {
   WORKOUT_DB_NAME,
   type SqliteDatabase
 } from '@/features/workout/data';
+import { hydrateSessionReadModel } from '@/features/workout/session/hydrateSessionReadModel';
 
 /**
  * Native (iOS/Android): prefer SQLite for durable sessions.
@@ -58,6 +59,7 @@ export default function App() {
 
   useEffect(() => {
     enableSqliteSessions();
+    void hydrateSessionReadModel();
     const trainer = new LlamaLocalAITrainer();
     CoachEngine.setTrainer(trainer);
     void trainer.initialize((ratio) => setMobileTrainerProgress(ratio));
