@@ -1,6 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
+import type { WorkoutSession } from '@forma/workout-domain';
 import AppBottomSheet from '@/components/BottomSheet';
 import ExerciseVideo from '@/components/ExerciseVideo';
 import MuscleMap, { MuscleKey } from '@/components/MuscleMap';
@@ -11,6 +12,7 @@ import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { toDateKey, roundToStep } from '@/engines/WorkoutStats';
 import { useExerciseReference } from './useExerciseReference';
 import { ActiveSessionController } from './session/ActiveSessionController';
+import { sequentialStepInfo } from './session/sequentialStep';
 import { mergeSessionProjection } from './data/sessionProjections';
 import { getSessionService } from './data';
 
@@ -37,6 +39,8 @@ interface Props {
   /** Full ordered exercise list for the day (session steps). */
   dayExercises?: ExerciseDef[];
   onFinished?: (exerciseId: number) => void;
+  /** Open the exercise that is currently next in the session sequence. */
+  onGoToExpected?: (exerciseId: number) => void;
 }
 
 function remainingRestSeconds(restEndsAtMs: number | null | undefined, nowMs = Date.now()): number | null {
@@ -46,7 +50,7 @@ function remainingRestSeconds(restEndsAtMs: number | null | undefined, nowMs = D
 }
 
 const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
-  ({ exercise, dayId, dayExercises, onFinished }, ref) => {
+  ({ exercise, dayId, dayExercises, onFinished, onGoToExpected }, ref) => {
     const completedSetsToday = useFitPulseStore((s) => s.completedSetsToday);
     const setLogs = useFitPulseStore((s) => s.setLogs);
     const reference = useExerciseReference(exercise?.wgerSearchTerm ?? null);
@@ -56,6 +60,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const [reps, setReps] = useState(0);
     const [rir, setRir] = useState(2);
     const [restRemaining, setRestRemaining] = useState<number | null>(null);
+    const [sessionSnap, setSessionSnap] = useState<WorkoutSession | null>(null);
 
     const startRestFromDeadline = useCallback((restEndsAtMs: number) => {
       const sec = remainingRestSeconds(restEndsAtMs);
@@ -71,7 +76,12 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       );
     }, []);
 
-    /** Hydrate rest UI from durable session (survives process death / re-open sheet). */
+    const nameById = useCallback(
+      (id: number) => dayExercises?.find((e) => e.id === id)?.name,
+      [dayExercises]
+    );
+
+    /** Hydrate rest + sequential gate from durable session. */
     useEffect(() => {
       if (!exercise) return;
       setCompletedSets(completedSetsToday(exercise.id));
@@ -83,7 +93,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       let cancelled = false;
       void (async () => {
         const session = await ActiveSessionController.load();
-        if (cancelled || !session) return;
+        if (cancelled) return;
+        setSessionSnap(session);
+        if (!session) return;
         const step = session.steps[session.currentStepIndex];
         if (!step || step.snapshot.exerciseId !== String(exercise.id)) return;
         if (session.restEndsAtMs != null) {
@@ -98,16 +110,22 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
     if (!exercise) return null;
 
+    const seq =
+      dayId && dayExercises?.length
+        ? sequentialStepInfo(sessionSnap, exercise.id, nameById)
+        : { isCurrent: true, expectedName: null, expectedExerciseId: null, currentStepIndex: 0, totalSteps: 0 };
+
     const weightStep = exercise.weightStep ?? 2.5;
     const oneRm = Math.round(estimateOneRepMax(weight, reps));
     const rpe = rpeFromRir(rir);
     const finished = completedSets >= exercise.totalSets;
+    const blockedBySequence = !seq.isCurrent && !finished;
 
     const todayKey = toDateKey(new Date());
     const loggedToday = setLogs.filter((e) => e.exerciseId === exercise.id && e.dateKey === todayKey);
 
     function recordNextSet() {
-      if (!exercise || completedSets >= exercise.totalSets) return;
+      if (!exercise || completedSets >= exercise.totalSets || blockedBySequence) return;
       if (dayId && dayExercises?.length) {
         void ActiveSessionController.recordSetForExercise({
           dayId,
@@ -117,7 +135,11 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           reps,
           rir
         }).then(async (session) => {
-          if (!session) return;
+          if (!session) {
+            setSessionSnap(await ActiveSessionController.load());
+            return;
+          }
+          setSessionSnap(session);
           const projection = await ActiveSessionController.getLegacyProjection(session.sessionId);
           if (!projection) return;
           const current = useFitPulseStore.getState();
@@ -140,7 +162,6 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         return;
       }
 
-      // Compatibility fallback for callers that have not supplied a session plan.
       const current = useFitPulseStore.getState();
       const next = current.recordSet(exercise.id, weight, reps, rir);
       setCompletedSets(next);
@@ -161,12 +182,37 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       if (sessionId) {
         void getSessionService()
           .dispatch(sessionId, { type: 'skip_rest' })
+          .then(async () => {
+            setSessionSnap(await ActiveSessionController.load());
+          })
           .catch(() => {});
       }
     }
 
+    const ctaDisabled = finished || restRemaining !== null || blockedBySequence;
+
     return (
       <AppBottomSheet ref={ref} eyebrow={`Упражнение ${String(exercise.index).padStart(2, '0')}`} title={exercise.name}>
+        {blockedBySequence && (
+          <View style={styles.seqBanner} accessibilityRole="text">
+            <Text style={styles.seqBannerTitle}>Сначала другое упражнение</Text>
+            <Text style={styles.seqBannerBody}>
+              По плану сейчас: {seq.expectedName ?? 'предыдущее'} · шаг {seq.currentStepIndex + 1}/
+              {seq.totalSteps}
+            </Text>
+            {seq.expectedExerciseId != null && onGoToExpected && (
+              <TouchableOpacity
+                style={styles.seqBannerCta}
+                onPress={() => onGoToExpected(seq.expectedExerciseId!)}
+                accessibilityRole="button"
+                accessibilityLabel="Перейти к текущему упражнению"
+              >
+                <Text style={styles.seqBannerCtaText}>Перейти к нему</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
         <ExerciseVideo />
 
         {reference && (
@@ -212,6 +258,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
               onPress={() => setWeight((w) => Math.max(0, roundToStep(w - weightStep, weightStep)))}
               accessibilityRole="button"
               accessibilityLabel="Уменьшить вес"
+              disabled={blockedBySequence}
             >
               <Text style={styles.stepperBtnText}>−</Text>
             </TouchableOpacity>
@@ -224,6 +271,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
               onPress={() => setWeight((w) => roundToStep(w + weightStep, weightStep))}
               accessibilityRole="button"
               accessibilityLabel="Увеличить вес"
+              disabled={blockedBySequence}
             >
               <Text style={styles.stepperBtnText}>+</Text>
             </TouchableOpacity>
@@ -235,6 +283,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
               onPress={() => setReps((r) => Math.max(1, r - 1))}
               accessibilityRole="button"
               accessibilityLabel="Уменьшить повторы"
+              disabled={blockedBySequence}
             >
               <Text style={styles.stepperBtnText}>−</Text>
             </TouchableOpacity>
@@ -247,6 +296,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
               onPress={() => setReps((r) => r + 1)}
               accessibilityRole="button"
               accessibilityLabel="Увеличить повторы"
+              disabled={blockedBySequence}
             >
               <Text style={styles.stepperBtnText}>+</Text>
             </TouchableOpacity>
@@ -262,6 +312,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
               onPress={() => setRir(val)}
               accessibilityRole="radio"
               accessibilityState={{ checked: rir === val }}
+              disabled={blockedBySequence}
             >
               <Text style={[styles.rirBtnText, rir === val && styles.rirBtnTextActive]}>{val}</Text>
             </TouchableOpacity>
@@ -294,7 +345,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
             const setNum = i + 1;
             const logged = loggedToday[i];
             const done = Boolean(logged);
-            const isNext = !done && setNum === completedSets + 1;
+            const isNext = !done && setNum === completedSets + 1 && !blockedBySequence;
             return (
               <View key={setNum} style={styles.setRow}>
                 <Text style={styles.setNum}>{setNum}</Text>
@@ -314,13 +365,17 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         </View>
 
         <TouchableOpacity
-          style={[styles.cta, (finished || restRemaining !== null) && styles.ctaDisabled]}
-          disabled={finished || restRemaining !== null}
+          style={[styles.cta, ctaDisabled && styles.ctaDisabled]}
+          disabled={ctaDisabled}
           onPress={recordNextSet}
           accessibilityRole="button"
         >
           <Text style={styles.ctaText}>
-            {finished ? 'Упражнение завершено' : `Записать подход ${completedSets + 1}`}
+            {finished
+              ? 'Упражнение завершено'
+              : blockedBySequence
+                ? 'Сначала предыдущее'
+                : `Записать подход ${completedSets + 1}`}
           </Text>
         </TouchableOpacity>
       </AppBottomSheet>
@@ -332,6 +387,33 @@ ExerciseSheet.displayName = 'ExerciseSheet';
 export default ExerciseSheet;
 
 const styles = StyleSheet.create({
+  seqBanner: {
+    marginBottom: spacing.md,
+    padding: 12,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    borderColor: colors.ember,
+    backgroundColor: 'rgba(255,107,74,0.1)'
+  },
+  seqBannerTitle: {
+    color: colors.ember,
+    fontFamily: fonts.mono,
+    fontSize: 13,
+    marginBottom: 4
+  },
+  seqBannerBody: {
+    color: colors.paperDim,
+    fontFamily: fonts.body,
+    fontSize: 12,
+    lineHeight: 17
+  },
+  seqBannerCta: { marginTop: 10 },
+  seqBannerCtaText: {
+    color: colors.lime,
+    fontFamily: fonts.mono,
+    fontSize: 13,
+    textDecorationLine: 'underline'
+  },
   grid: {
     flexDirection: 'row',
     borderRadius: radius.control,
