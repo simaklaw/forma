@@ -14,23 +14,24 @@ import type {
   WorkoutLog,
 } from "./types";
 
-const defaultProfile = (): Profile => ({
-  name: "",
-  presentation: "neutral",
-  goal: "energy",
-  equipment: [],
-  minutes: 25,
-  days: [1, 3, 5],
-  heightCm: 170,
-  weightKg: 70,
-  age: 30,
-  calorieGoal: 2000,
-  proteinGoal: 120,
-  fatGoal: 60,
-  carbsGoal: 200,
-  onboarded: false,
-  theme: "system",
-});
+const defaultProfile = (): Profile =>
+  applyGoals({
+    name: "",
+    presentation: "neutral",
+    goal: "energy",
+    equipment: [],
+    minutes: 25,
+    days: [1, 3, 5],
+    heightCm: 170,
+    weightKg: 70,
+    age: 30,
+    calorieGoal: 0,
+    proteinGoal: 0,
+    fatGoal: 0,
+    carbsGoal: 0,
+    onboarded: false,
+    theme: "system",
+  });
 
 type CustomFoodInput = {
   name: string;
@@ -265,9 +266,15 @@ export const useAppStore = create<State>()(
       }),
       skipHydration: true,
       onRehydrateStorage: () => (state) => {
+        if (!state) return;
         // Older persisted profiles may contain stale derived macro targets.
         // Recompute them after hydration so UI and coach always see one policy.
-        if (state) useAppStore.setState({ profile: applyGoals(state.profile) });
+        try {
+          useAppStore.setState({ profile: applyGoals(state.profile) });
+        } catch {
+          // Corrupt/legacy profile data must not brick app hydration.
+          useAppStore.setState({ profile: defaultProfile() });
+        }
       },
     },
   ),
