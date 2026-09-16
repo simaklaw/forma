@@ -1,4 +1,8 @@
-import { configureSessionPersistence, resetSessionServiceForTests } from '@/features/workout/data';
+import {
+  configureSessionPersistence,
+  getSessionService,
+  resetSessionServiceForTests
+} from '@/features/workout/data';
 import type { ExerciseDef } from '../ExerciseSheet';
 import { ActiveSessionController } from './ActiveSessionController';
 
@@ -41,6 +45,21 @@ describe('ActiveSessionController', () => {
 
     const b = await ActiveSessionController.ensureDaySession('legs', exercises);
     expect(b.sessionId).toBe(a.sessionId);
+  });
+
+  it('switching day abandons previous session (single-active)', async () => {
+    const legs = await ActiveSessionController.ensureDaySession('legs', exercises);
+    const push = await ActiveSessionController.ensureDaySession('push', exercises);
+
+    expect(push.sessionId).not.toBe(legs.sessionId);
+    expect(push.status).toBe('active');
+
+    const previous = await getSessionService().getSession(legs.sessionId);
+    expect(previous?.status).toBe('abandoned');
+    expect(previous?.terminalReason).toBe('replaced_by_new_session');
+
+    const resumable = await getSessionService().getResumable('local-user');
+    expect(resumable?.sessionId).toBe(push.sessionId);
   });
 
   it('recordSetForExercise dual-writes sequential sets', async () => {

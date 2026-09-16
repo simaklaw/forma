@@ -41,6 +41,31 @@ class ActiveSessionControllerImpl {
     this.listeners.forEach((fn) => fn());
   }
 
+  /**
+   * Single-active constraint: at most one prepared|active|paused session per user.
+   * Before preparing a new day, terminalise any other resumable session.
+   */
+  private async abandonPreviousIfNeeded(nextDayId: string): Promise<void> {
+    const svc = getSessionService();
+    const previous = await svc.getResumable(LOCAL_USER_ID);
+    if (!previous) return;
+
+    // Same day, same in-memory session — keep it (handled by caller).
+    if (this.sessionId === previous.sessionId && this.dayId === nextDayId) {
+      return;
+    }
+
+    // Different day or stale controller pointer → replace.
+    try {
+      await svc.dispatch(previous.sessionId, {
+        type: 'abandon_session',
+        reason: 'replaced_by_new_session'
+      });
+    } catch {
+      // Already terminal or race — ignore
+    }
+  }
+
   async ensureDaySession(dayId: string, exercises: ExerciseDef[]): Promise<WorkoutSession> {
     const svc = getSessionService();
 
@@ -50,6 +75,8 @@ class ActiveSessionControllerImpl {
         return existing;
       }
     }
+
+    await this.abandonPreviousIfNeeded(dayId);
 
     const sessionId = newSessionId();
     const steps = exercisesToSnapshots(exercises);
