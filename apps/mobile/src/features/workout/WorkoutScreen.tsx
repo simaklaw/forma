@@ -2,6 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
+import { estimateBurnFromSetLogs, toDateKey as coreToDateKey } from '@forma/core';
 import { colors, fonts, spacing } from '@/core/theme/tokens';
 import ExerciseSheet, { ExerciseDef } from './ExerciseSheet';
 import { WorkoutCoachCard } from './WorkoutCoachCard';
@@ -147,6 +148,10 @@ const WORKOUT_PLAN: WorkoutDay[] = [
   }
 ];
 
+const EXERCISE_NAMES: Record<number, string> = Object.fromEntries(
+  WORKOUT_PLAN.flatMap((day) => day.exercises.map((ex) => [ex.id, ex.name]))
+);
+
 const WEEKDAY_RU_FULL = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 
 function isDayPlanComplete(dayProgress: DayProgress, dateKey: string, exercises: { id: number; totalSets: number }[]): boolean {
@@ -196,6 +201,8 @@ export default function WorkoutScreen() {
   const dayProgress = useFitPulseStore((s) => s.dayProgress);
   const completedSetsToday = useFitPulseStore((s) => s.completedSetsToday);
   const personalRecords = useFitPulseStore((s) => s.personalRecords);
+  const setLogs = useFitPulseStore((s) => s.setLogs);
+  const profileWeight = useFitPulseStore((s) => s.profile.weight);
 
   const activeDay = WORKOUT_PLAN.find((d) => d.id === selectedDayId) ?? WORKOUT_PLAN[0];
   const selectedExercise = activeDay.exercises.find((e) => e.id === selectedExerciseId) ?? null;
@@ -213,6 +220,16 @@ export default function WorkoutScreen() {
   }, [personalRecords]);
   const currentStreak = useMemo(() => selectPlanCurrentStreak(dayProgress), [dayProgress]);
   const streakDays = useMemo(() => selectPlanStreakDays(dayProgress), [dayProgress]);
+  const burnedToday = useMemo(
+    () =>
+      estimateBurnFromSetLogs({
+        weightKg: profileWeight,
+        setLogs,
+        dateKey: coreToDateKey(new Date()),
+        exerciseNames: EXERCISE_NAMES
+      }),
+    [profileWeight, setLogs]
+  );
 
   function openExercise(id: number) {
     setSelectedExerciseId(id);
@@ -256,6 +273,7 @@ export default function WorkoutScreen() {
               <Text style={styles.ticketName}>{activeDay.name}</Text>
               <Text style={styles.ticketMeta}>
                 {activeDay.exercises.length} упражнения · {activeDay.meta}
+                {burnedToday > 0 ? ` · ~${burnedToday} ккал` : ''}
               </Text>
             </View>
             <TouchableOpacity style={styles.startBtn} accessibilityRole="button" accessibilityLabel="Начать тренировку">
@@ -266,6 +284,10 @@ export default function WorkoutScreen() {
             <View style={styles.perfCell}>
               <Text style={styles.perfVal}>{weekDaysCompleted}/7</Text>
               <Text style={styles.perfLbl}>Дней выполнено на неделе</Text>
+            </View>
+            <View style={styles.perfCell}>
+              <Text style={styles.perfVal}>{burnedToday > 0 ? `~${burnedToday}` : '—'}</Text>
+              <Text style={styles.perfLbl}>Сожжено сегодня, ккал</Text>
             </View>
             <View style={[styles.perfCell, { borderRightWidth: 0 }]}>
               <Text style={styles.perfVal}>{overallPr !== null ? `${overallPr} кг` : '—'}</Text>
@@ -300,7 +322,11 @@ export default function WorkoutScreen() {
           </View>
         </View>
 
-        <WorkoutCoachCard dayName={activeDay.name} anyDoneToday={anyDoneToday} />
+        <WorkoutCoachCard
+          dayName={activeDay.name}
+          anyDoneToday={anyDoneToday}
+          exerciseNames={EXERCISE_NAMES}
+        />
 
         <View style={styles.sectionHead}>
           <Text style={styles.sectionTitle}>Упражнения дня</Text>
@@ -364,7 +390,7 @@ const styles = StyleSheet.create({
   startBtnText: { color: colors.ink, fontSize: 16 },
   ticketPerf: { flexDirection: 'row', borderTopWidth: 1, borderColor: colors.lineStrong, borderStyle: 'dashed' },
   perfCell: { flex: 1, padding: 14, borderRightWidth: 1, borderColor: colors.lineStrong, borderStyle: 'dashed' },
-  perfVal: { color: colors.paper, fontSize: 20, fontFamily: fonts.mono },
+  perfVal: { color: colors.paper, fontSize: 18, fontFamily: fonts.mono },
   perfLbl: { color: colors.paperFaint, fontSize: 10.5, marginTop: 1 },
   streakRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: spacing.xxl, paddingVertical: 12 },
   streakText: { color: colors.paper, fontSize: 13, fontFamily: fonts.body },
