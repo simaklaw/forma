@@ -6,7 +6,12 @@ import {
   type WorkoutSession
 } from '@forma/workout-domain';
 import { newEventId, newOperationId } from './ids';
-import { hashPayload, type SessionRepository } from './SessionRepository';
+import {
+  hashPayload,
+  type OutboxRow,
+  type OutboxStatus,
+  type SessionRepository
+} from './SessionRepository';
 
 export interface DispatchContext {
   /** Injected wall clock; defaults to Date.now() at the adapter edge only. */
@@ -35,6 +40,15 @@ export class SessionCommandService {
 
   async listEvents(sessionId: string) {
     return this.repo.listEvents(sessionId);
+  }
+
+  /** Pending outbox rows (local queue; no network in P1 skeleton). */
+  async listPendingOutbox(limit?: number): Promise<OutboxRow[]> {
+    return this.repo.listPendingOutbox(limit);
+  }
+
+  async markOutbox(operationId: string, status: OutboxStatus): Promise<void> {
+    return this.repo.markOutbox(operationId, status);
   }
 
   async dispatch(

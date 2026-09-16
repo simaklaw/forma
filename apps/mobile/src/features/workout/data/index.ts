@@ -16,3 +16,7 @@ export {
 export type { SessionPersistenceMode } from './createSessionService';
 export { mergeSessionProjection, projectSessionEvents } from './sessionProjections';
 export type { SessionProjection } from './sessionProjections';
+export { OutboxDrainService, outboxDrain, noopOutboxTransport } from './OutboxDrainService';
+export type { OutboxTransport } from './OutboxDrainService';
+export { personalRecordsFromSetLogs, mergePersonalRecords } from './personalRecords';
+export { applySessionProjection } from './applySessionProjection';

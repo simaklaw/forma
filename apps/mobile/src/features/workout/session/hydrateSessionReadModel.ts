@@ -1,11 +1,10 @@
-import { useFitPulseStore } from '@/state/useFitPulseStore';
-import { mergeSessionProjection } from '@/features/workout/data/sessionProjections';
+import { applySessionProjection } from '@/features/workout/data/applySessionProjection';
 import { ActiveSessionController } from './ActiveSessionController';
 
 /**
  * After SQLite (or memory) is ready: bind resumable session and merge its
- * journal into Zustand setLogs/dayProgress so Home/Progress match player
- * without opening WorkoutScreen first.
+ * journal into Zustand setLogs/dayProgress/personalRecords so Home/Progress
+ * match player without opening WorkoutScreen first.
  */
 export async function hydrateSessionReadModel(): Promise<void> {
   try {
@@ -15,15 +14,7 @@ export async function hydrateSessionReadModel(): Promise<void> {
     const projection = await ActiveSessionController.getLegacyProjection(session.sessionId);
     if (!projection) return;
 
-    const current = useFitPulseStore.getState();
-    const merged = mergeSessionProjection(
-      { setLogs: current.setLogs, dayProgress: current.dayProgress },
-      projection
-    );
-    current.hydrate({
-      setLogs: merged.setLogs,
-      dayProgress: merged.dayProgress
-    });
+    applySessionProjection(projection);
   } catch (err) {
     console.warn('[FitPulse] session read-model hydrate failed', err);
   }
