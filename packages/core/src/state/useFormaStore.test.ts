@@ -66,6 +66,15 @@ test("store accepts zero-duration workouts and validates RPE", () => {
   );
 });
 
+test("AI context uses TDEE by default and accepts an explicit product target", () => {
+  const store = createTestStore();
+  const tdee = store.getTDEE();
+  assert.equal(store.getUserContextSnapshot().dailyMetrics.targetCalories, tdee);
+  assert.equal(store.getUserContextSnapshot(2370).dailyMetrics.targetCalories, 2370);
+  assert.throws(() => store.getUserContextSnapshot(-1), RangeError);
+  assert.throws(() => store.getUserContextSnapshot(Number.NaN), RangeError);
+});
+
 test("persisted state migration upgrades the unversioned format", () => {
   const migrated = migrateFormaState(
     {
@@ -100,4 +109,11 @@ test("persisted state migration drops malformed records and invalid biometrics",
   assert.equal(migrated.biometrics.weightKg, 70);
   assert.equal(migrated.foodLogs.length, 1);
   assert.equal(migrated.workoutLogs.length, 1);
+});
+
+test("persisted state migration rejects versions newer than the app schema", () => {
+  assert.throws(
+    () => migrateFormaState({}, FORMA_PERSIST_VERSION + 1),
+    /Unsupported Forma persistence version/,
+  );
 });
