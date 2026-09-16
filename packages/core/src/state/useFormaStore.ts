@@ -93,8 +93,12 @@ function isFiniteNonNegative(value: unknown): value is number {
 function isValidBiometrics(value: unknown): value is Biometrics {
   if (!isRecord(value)) return false;
   try {
-    MetabolicEngine.calculateBMR(value as Biometrics);
-    MetabolicEngine.calculateTDEE(value as Biometrics);
+    // The runtime validator in MetabolicEngine is the source of truth here.
+    // Keep the unknown intermediate explicit so TypeScript does not mistake
+    // a persisted Record<string, unknown> for a structurally compatible model.
+    const biometrics = value as unknown as Biometrics;
+    MetabolicEngine.calculateBMR(biometrics);
+    MetabolicEngine.calculateTDEE(biometrics);
     return true;
   } catch {
     return false;
