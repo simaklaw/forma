@@ -112,7 +112,6 @@ describe('workout-domain applyCommand', () => {
         applyCommand(
           afterSet.session,
           { type: 'complete_set', weightKg: 80, reps: 8 },
-          // still before rest ends
           { ...ctx(3), nowMs: ctx(3).nowMs + 1000 }
         ),
       (e: unknown) => e instanceof DomainError && e.code === 'still_resting'
@@ -194,5 +193,49 @@ describe('workout-domain applyCommand', () => {
     for (let i = 1; i < ordinals.length; i++) {
       assert.ok(ordinals[i]! > ordinals[i - 1]!);
     }
+  });
+
+  it('trace-replay: fixed timestamps yield identical final state', () => {
+    const run = () => {
+      let s = prepare().session;
+      s = applyCommand(s, { type: 'start_session' }, ctx(2)).session;
+      s = applyCommand(
+        s,
+        { type: 'complete_set', weightKg: 80, reps: 8, autoStartRest: false },
+        ctx(3)
+      ).session;
+      s = applyCommand(
+        s,
+        { type: 'complete_set', weightKg: 80, reps: 7, autoStartRest: false },
+        ctx(4)
+      ).session;
+      s = applyCommand(s, { type: 'complete_session', reason: 'all_sets_done' }, ctx(5)).session;
+      return s;
+    };
+    const a = run();
+    const b = run();
+    assert.equal(a.status, 'completed');
+    assert.deepEqual(
+      {
+        status: a.status,
+        rowVersion: a.rowVersion,
+        lastEventOrdinal: a.lastEventOrdinal,
+        currentStepIndex: a.currentStepIndex,
+        startedAtMs: a.startedAtMs,
+        completedAtMs: a.completedAtMs,
+        sets0: a.steps[0]?.completedSets.map((x) => ({ reps: x.reps, w: x.weightKg })),
+        sets1: a.steps[1]?.completedSets.length
+      },
+      {
+        status: b.status,
+        rowVersion: b.rowVersion,
+        lastEventOrdinal: b.lastEventOrdinal,
+        currentStepIndex: b.currentStepIndex,
+        startedAtMs: b.startedAtMs,
+        completedAtMs: b.completedAtMs,
+        sets0: b.steps[0]?.completedSets.map((x) => ({ reps: x.reps, w: x.weightKg })),
+        sets1: b.steps[1]?.completedSets.length
+      }
+    );
   });
 });

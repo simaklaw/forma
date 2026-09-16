@@ -14,7 +14,7 @@ export interface OutboxRow {
 
 /**
  * Persistence port for the workout aggregate.
- * Implementations must make appendSession + outbox atomic with the session write.
+ * commitSessionChange MUST be atomic: session upsert + events + outbox.
  */
 export interface SessionRepository {
   getSession(sessionId: string): Promise<WorkoutSession | null>;
@@ -26,9 +26,10 @@ export interface SessionRepository {
 
   /**
    * Atomically:
-   * 1) upsert session aggregate
-   * 2) append events (reject duplicate ordinal)
-   * 3) enqueue outbox rows for each event
+   * 1) enforce single resumable session per user when status is prepared|active|paused
+   * 2) upsert session aggregate
+   * 3) append events (reject duplicate ordinal)
+   * 4) enqueue outbox rows for each event
    */
   commitSessionChange(input: {
     session: WorkoutSession;
@@ -42,7 +43,6 @@ export interface SessionRepository {
 }
 
 export function hashPayload(payload: unknown): string {
-  // Stable enough for local dedupe in P0; replace with SHA-256 when crypto is available.
   const s = JSON.stringify(payload);
   let h = 2166136261;
   for (let i = 0; i < s.length; i++) {
@@ -50,4 +50,8 @@ export function hashPayload(payload: unknown): string {
     h = Math.imul(h, 16777619);
   }
   return (h >>> 0).toString(16).padStart(8, '0');
+}
+
+export function isResumableStatus(status: WorkoutSession['status']): boolean {
+  return status === 'prepared' || status === 'active' || status === 'paused';
 }

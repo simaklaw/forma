@@ -2,6 +2,11 @@
 
 export const WORKOUT_DB_NAME = 'forma_workout_v1.db';
 
+/**
+ * DDL invariants:
+ * - session_event UNIQUE (session_id, ordinal) → append-only sequence
+ * - partial unique index: at most one prepared|active|paused session per user_id
+ */
 export const SCHEMA_SQL = `
 PRAGMA journal_mode = WAL;
 
@@ -17,6 +22,11 @@ CREATE TABLE IF NOT EXISTS workout_session (
 
 CREATE INDEX IF NOT EXISTS idx_workout_session_user_status
   ON workout_session (user_id, status);
+
+-- Single resumable session per user (SQLite partial unique index).
+CREATE UNIQUE INDEX IF NOT EXISTS idx_one_resumable_session_per_user
+  ON workout_session (user_id)
+  WHERE status IN ('prepared', 'active', 'paused');
 
 CREATE TABLE IF NOT EXISTS session_event (
   event_id TEXT PRIMARY KEY NOT NULL,

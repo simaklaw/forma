@@ -1,10 +1,15 @@
 import type { SessionEvent, WorkoutSession } from '@forma/workout-domain';
-import type { OutboxRow, OutboxStatus, SessionRepository } from '../SessionRepository';
+import {
+  isResumableStatus,
+  type OutboxRow,
+  type OutboxStatus,
+  type SessionRepository
+} from '../SessionRepository';
 import { SCHEMA_SQL, WORKOUT_DB_NAME } from './schema';
 
 /**
- * Minimal surface of expo-sqlite Database so we can inject a mock in tests later.
- * Real open: `import * as SQLite from 'expo-sqlite'; SQLite.openDatabaseSync(WORKOUT_DB_NAME)`
+ * Minimal surface of expo-sqlite sync API.
+ * Real open: `SQLite.openDatabaseSync(WORKOUT_DB_NAME)`
  */
 export interface SqliteDatabase {
   execSync(sql: string): void;
@@ -52,6 +57,21 @@ export class SqliteSessionRepository implements SessionRepository {
     if (this.ready) return;
     this.db.execSync(SCHEMA_SQL);
     this.ready = true;
+  }
+
+  private withTransaction(fn: () => void): void {
+    this.db.execSync('BEGIN IMMEDIATE');
+    try {
+      fn();
+      this.db.execSync('COMMIT');
+    } catch (e) {
+      try {
+        this.db.execSync('ROLLBACK');
+      } catch {
+        // ignore rollback errors
+      }
+      throw e;
+    }
   }
 
   async getSession(sessionId: string): Promise<WorkoutSession | null> {
@@ -109,59 +129,74 @@ export class SqliteSessionRepository implements SessionRepository {
     const now = Date.now();
     const json = JSON.stringify(session);
 
-    // expo-sqlite sync API has no multi-statement transaction helper on all versions;
-    // we still order writes deterministically and rely on UNIQUE constraints.
-    this.db.runSync(
-      `INSERT INTO workout_session (
-         session_id, user_id, status, row_version, last_event_ordinal, aggregate_json, updated_at_ms
-       ) VALUES (?, ?, ?, ?, ?, ?, ?)
-       ON CONFLICT(session_id) DO UPDATE SET
-         status = excluded.status,
-         row_version = excluded.row_version,
-         last_event_ordinal = excluded.last_event_ordinal,
-         aggregate_json = excluded.aggregate_json,
-         updated_at_ms = excluded.updated_at_ms`,
-      [
-        session.sessionId,
-        session.userId,
-        session.status,
-        session.rowVersion,
-        session.lastEventOrdinal,
-        json,
-        now
-      ]
-    );
+    this.withTransaction(() => {
+      if (isResumableStatus(session.status)) {
+        const conflict = this.db.getFirstSync<{ session_id: string }>(
+          `SELECT session_id FROM workout_session
+           WHERE user_id = ? AND status IN ('prepared', 'active', 'paused')
+             AND session_id != ?
+           LIMIT 1`,
+          [session.userId, session.sessionId]
+        );
+        if (conflict) {
+          throw new Error(
+            `single-active violation: user ${session.userId} already has resumable session ${conflict.session_id}`
+          );
+        }
+      }
 
-    for (let i = 0; i < events.length; i++) {
-      const ev = events[i]!;
       this.db.runSync(
-        `INSERT INTO session_event (
-           event_id, session_id, ordinal, type, payload_json, occurred_at_ms, operation_id
-         ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO workout_session (
+           session_id, user_id, status, row_version, last_event_ordinal, aggregate_json, updated_at_ms
+         ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(session_id) DO UPDATE SET
+           status = excluded.status,
+           row_version = excluded.row_version,
+           last_event_ordinal = excluded.last_event_ordinal,
+           aggregate_json = excluded.aggregate_json,
+           updated_at_ms = excluded.updated_at_ms`,
         [
-          ev.eventId,
           session.sessionId,
-          ev.ordinal,
-          ev.type,
-          JSON.stringify(ev.payload),
-          ev.occurredAtMs,
-          ev.operationId
-        ]
-      );
-      this.db.runSync(
-        `INSERT INTO outbox (
-           operation_id, session_id, event_id, aggregate_version, payload_hash, status, created_at_ms
-         ) VALUES (?, ?, ?, ?, ?, 'pending', ?)`,
-        [
-          ev.operationId,
-          session.sessionId,
-          ev.eventId,
+          session.userId,
+          session.status,
           session.rowVersion,
-          payloadHashes[i]!,
+          session.lastEventOrdinal,
+          json,
           now
         ]
       );
-    }
+
+      for (let i = 0; i < events.length; i++) {
+        const ev = events[i]!;
+        this.db.runSync(
+          `INSERT INTO session_event (
+             event_id, session_id, ordinal, type, payload_json, occurred_at_ms, operation_id
+           ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [
+            ev.eventId,
+            session.sessionId,
+            ev.ordinal,
+            ev.type,
+            JSON.stringify(ev.payload),
+            ev.occurredAtMs,
+            ev.operationId
+          ]
+        );
+        this.db.runSync(
+          `INSERT INTO outbox (
+             operation_id, session_id, event_id, aggregate_version, payload_hash, status, created_at_ms
+           ) VALUES (?, ?, ?, ?, ?, 'pending', ?)`,
+          [
+            ev.operationId,
+            session.sessionId,
+            ev.eventId,
+            session.rowVersion,
+            payloadHashes[i]!,
+            now
+          ]
+        );
+      }
+    });
   }
 
   async listPendingOutbox(limit = 50): Promise<OutboxRow[]> {

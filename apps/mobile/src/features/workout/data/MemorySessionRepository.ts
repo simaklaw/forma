@@ -1,9 +1,14 @@
 import type { SessionEvent, WorkoutSession } from '@forma/workout-domain';
-import type { OutboxRow, OutboxStatus, SessionRepository } from './SessionRepository';
+import {
+  isResumableStatus,
+  type OutboxRow,
+  type OutboxStatus,
+  type SessionRepository
+} from './SessionRepository';
 
 /**
- * In-memory repository for unit tests and web/dev without native SQLite.
- * Mirrors the transactional contract of SqliteSessionRepository.
+ * In-memory repository — same contract as SqliteSessionRepository.
+ * Single-writer: commit is synchronous mutation (atomic in-process).
  */
 export class MemorySessionRepository implements SessionRepository {
   private sessions = new Map<string, WorkoutSession>();
@@ -19,7 +24,7 @@ export class MemorySessionRepository implements SessionRepository {
     let best: WorkoutSession | null = null;
     for (const s of this.sessions.values()) {
       if (s.userId !== userId) continue;
-      if (s.status === 'completed' || s.status === 'abandoned') continue;
+      if (!isResumableStatus(s.status)) continue;
       if (!best || (s.startedAtMs ?? 0) > (best.startedAtMs ?? 0)) {
         best = s;
       }
@@ -41,28 +46,53 @@ export class MemorySessionRepository implements SessionRepository {
       throw new Error('payloadHashes length must match events');
     }
 
-    const existing = this.events.get(session.sessionId) ?? [];
-    for (const ev of events) {
-      if (existing.some((e) => e.ordinal === ev.ordinal || e.eventId === ev.eventId)) {
-        throw new Error(`duplicate event ordinal/id ${ev.ordinal}/${ev.eventId}`);
+    // Snapshot for rollback semantics within this commit.
+    const prevSession = this.sessions.get(session.sessionId);
+    const prevEvents = this.events.get(session.sessionId);
+    const outboxLen = this.outbox.length;
+
+    try {
+      if (isResumableStatus(session.status)) {
+        for (const [id, s] of this.sessions) {
+          if (id === session.sessionId) continue;
+          if (s.userId === session.userId && isResumableStatus(s.status)) {
+            throw new Error(
+              `single-active violation: user ${session.userId} already has resumable session ${id}`
+            );
+          }
+        }
       }
-    }
 
-    this.sessions.set(session.sessionId, structuredClone(session));
-    this.events.set(session.sessionId, [...existing, ...structuredClone(events)]);
+      const existing = this.events.get(session.sessionId) ?? [];
+      for (const ev of events) {
+        if (existing.some((e) => e.ordinal === ev.ordinal || e.eventId === ev.eventId)) {
+          throw new Error(`duplicate event ordinal/id ${ev.ordinal}/${ev.eventId}`);
+        }
+      }
 
-    const now = Date.now();
-    events.forEach((ev, i) => {
-      this.outbox.push({
-        operationId: ev.operationId,
-        sessionId: session.sessionId,
-        eventId: ev.eventId,
-        aggregateVersion: session.rowVersion,
-        payloadHash: payloadHashes[i]!,
-        status: 'pending',
-        createdAtMs: now
+      this.sessions.set(session.sessionId, structuredClone(session));
+      this.events.set(session.sessionId, [...existing, ...structuredClone(events)]);
+
+      const now = Date.now();
+      events.forEach((ev, i) => {
+        this.outbox.push({
+          operationId: ev.operationId,
+          sessionId: session.sessionId,
+          eventId: ev.eventId,
+          aggregateVersion: session.rowVersion,
+          payloadHash: payloadHashes[i]!,
+          status: 'pending',
+          createdAtMs: now
+        });
       });
-    });
+    } catch (e) {
+      if (prevSession) this.sessions.set(session.sessionId, prevSession);
+      else this.sessions.delete(session.sessionId);
+      if (prevEvents) this.events.set(session.sessionId, prevEvents);
+      else this.events.delete(session.sessionId);
+      this.outbox.length = outboxLen;
+      throw e;
+    }
   }
 
   async listPendingOutbox(limit = 50): Promise<OutboxRow[]> {
@@ -74,7 +104,6 @@ export class MemorySessionRepository implements SessionRepository {
     if (row) row.status = status;
   }
 
-  /** Test helper */
   dump() {
     return {
       sessions: [...this.sessions.values()],
