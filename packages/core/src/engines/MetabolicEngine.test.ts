@@ -41,16 +41,16 @@ test("target policy is configurable", () => {
   assert.equal(targets.fatTarget, 52);
 });
 
-test("shared presentation targets preserve web goal behavior", () => {
+test("shared presentation targets preserve the documented web goal policy", () => {
   const input = { presentation: "man" as const, weightKg: 80, heightCm: 180, age: 30 };
   const energy = calculatePresentationTargets({ ...input, goal: "energy" });
   const strength = calculatePresentationTargets({ ...input, goal: "strength" });
   const tone = calculatePresentationTargets({ ...input, goal: "tone" });
   const recovery = calculatePresentationTargets({ ...input, goal: "recovery" });
-  assert.equal(energy.kcal, 2670);
-  assert.equal(strength.kcal, 2870);
-  assert.equal(tone.kcal, 2370);
-  assert.equal(recovery.kcal, 2770);
+  assert.equal(energy.kcal, 2448);
+  assert.equal(strength.kcal, 2648);
+  assert.equal(tone.kcal, 2148);
+  assert.equal(recovery.kcal, 2548);
   assert.ok(strength.protein > tone.protein);
 });
 
