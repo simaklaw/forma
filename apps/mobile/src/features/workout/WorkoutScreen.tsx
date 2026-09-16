@@ -13,7 +13,7 @@ import {
   ActiveSessionController,
   dayIdFromTemplate
 } from './session/ActiveSessionController';
-import { mergeSessionProjection } from './data/sessionProjections';
+import { applySessionProjection } from './data/applySessionProjection';
 
 interface WorkoutDay {
   id: string;
@@ -220,14 +220,7 @@ export default function WorkoutScreen() {
       return;
     }
     const projection = await ActiveSessionController.getLegacyProjection(session.sessionId);
-    if (projection) {
-      const current = useFitPulseStore.getState();
-      const merged = mergeSessionProjection(
-        { setLogs: current.setLogs, dayProgress: current.dayProgress },
-        projection
-      );
-      current.hydrate({ setLogs: merged.setLogs, dayProgress: merged.dayProgress });
-    }
+    if (projection) applySessionProjection(projection);
     setResumable(session);
   }, [planDayIds]);
 
