@@ -1,6 +1,6 @@
 import { describe, expect, it } from "node:test";
-import { RulesLocalAITrainer } from "./RulesLocalAITrainer";
-import { buildTrainerSystemPrompt, type UserContextSnapshot } from "./ILocalAITrainer";
+import { RulesLocalAITrainer } from "./RulesLocalAITrainer.ts";
+import { buildTrainerSystemPrompt, type UserContextSnapshot } from "./ILocalAITrainer.ts";
 
 const context: UserContextSnapshot = {
   userProfile: { weightKg: 80, heightCm: 180, age: 30, gender: "male" },
