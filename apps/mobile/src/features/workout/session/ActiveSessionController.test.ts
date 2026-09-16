@@ -47,6 +47,29 @@ describe('ActiveSessionController', () => {
     expect(b.sessionId).toBe(a.sessionId);
   });
 
+  it('cold start resumes same day without abandon (simulates process restart)', async () => {
+    const first = await ActiveSessionController.ensureDaySession('legs', exercises);
+    await ActiveSessionController.recordSetForExercise({
+      dayId: 'legs',
+      exercises,
+      exerciseId: 1,
+      weightKg: 80,
+      reps: 8
+    });
+
+    // Simulate process death: clear in-memory pointers only; Memory repo keeps data
+    ActiveSessionController.resetForTests();
+    expect(ActiveSessionController.getSessionId()).toBeNull();
+
+    const resumed = await ActiveSessionController.ensureDaySession('legs', exercises);
+    expect(resumed.sessionId).toBe(first.sessionId);
+    expect(resumed.status).toBe('active');
+    expect(resumed.steps[0]?.completedSets.length).toBeGreaterThanOrEqual(1);
+
+    const stored = await getSessionService().getSession(first.sessionId);
+    expect(stored?.status).not.toBe('abandoned');
+  });
+
   it('switching day abandons previous session (single-active)', async () => {
     const legs = await ActiveSessionController.ensureDaySession('legs', exercises);
     const push = await ActiveSessionController.ensureDaySession('push', exercises);
@@ -60,6 +83,17 @@ describe('ActiveSessionController', () => {
 
     const resumable = await getSessionService().getResumable('local-user');
     expect(resumable?.sessionId).toBe(push.sessionId);
+  });
+
+  it('cold start then switch day still abandons previous day', async () => {
+    const legs = await ActiveSessionController.ensureDaySession('legs', exercises);
+    ActiveSessionController.resetForTests();
+
+    const push = await ActiveSessionController.ensureDaySession('push', exercises);
+    expect(push.sessionId).not.toBe(legs.sessionId);
+
+    const previous = await getSessionService().getSession(legs.sessionId);
+    expect(previous?.status).toBe('abandoned');
   });
 
   it('recordSetForExercise dual-writes sequential sets', async () => {

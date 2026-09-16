@@ -7,10 +7,21 @@ import type { ExerciseDef } from '../ExerciseSheet';
 import { contentHashForExercises, exercisesToSnapshots } from './planToSnapshots';
 import { LOCAL_USER_ID } from './currentUser';
 
+function dayTemplateId(dayId: string): string {
+  return `day-${dayId}`;
+}
+
+function isResumable(s: WorkoutSession): boolean {
+  return s.status === 'prepared' || s.status === 'active' || s.status === 'paused';
+}
+
 /**
  * Thin imperative controller: keeps the active day-plan session id
  * and dual-writes set completion into the domain aggregate.
  * UI may keep using Zustand for counters; this builds durable history.
+ *
+ * After process death, in-memory sessionId/dayId are null; resume is driven
+ * by SessionRepository.getResumable + templateRevisionId === day-${dayId}.
  */
 class ActiveSessionControllerImpl {
   private sessionId: string | null = null;
@@ -25,7 +36,7 @@ class ActiveSessionControllerImpl {
     return this.dayId;
   }
 
-  /** Test-only */
+  /** Test-only — clears in-memory pointers only (does not touch repository). */
   resetForTests(): void {
     this.sessionId = null;
     this.dayId = null;
@@ -41,42 +52,62 @@ class ActiveSessionControllerImpl {
     this.listeners.forEach((fn) => fn());
   }
 
+  private bind(session: WorkoutSession, dayId: string): WorkoutSession {
+    this.sessionId = session.sessionId;
+    this.dayId = dayId;
+    this.emit();
+    return session;
+  }
+
   /**
-   * Single-active constraint: at most one prepared|active|paused session per user.
-   * Before preparing a new day, terminalise any other resumable session.
+   * Single-active: abandon only when the resumable session belongs to a *different* day.
+   * Same-day match is decided by templateRevisionId, not in-memory this.dayId.
    */
-  private async abandonPreviousIfNeeded(nextDayId: string): Promise<void> {
+  private async abandonIfDifferentDay(nextDayId: string): Promise<WorkoutSession | null> {
     const svc = getSessionService();
     const previous = await svc.getResumable(LOCAL_USER_ID);
-    if (!previous) return;
+    if (!previous || !isResumable(previous)) return null;
 
-    // Same day, same in-memory session — keep it (handled by caller).
-    if (this.sessionId === previous.sessionId && this.dayId === nextDayId) {
-      return;
+    if (previous.templateRevisionId === dayTemplateId(nextDayId)) {
+      return previous;
     }
 
-    // Different day or stale controller pointer → replace.
     try {
       await svc.dispatch(previous.sessionId, {
         type: 'abandon_session',
         reason: 'replaced_by_new_session'
       });
     } catch {
-      // Already terminal or race — ignore
+      // already terminal or race
     }
+    return null;
   }
 
   async ensureDaySession(dayId: string, exercises: ExerciseDef[]): Promise<WorkoutSession> {
     const svc = getSessionService();
+    const templateId = dayTemplateId(dayId);
 
+    // Fast path: in-memory pointer still valid for this day
     if (this.sessionId && this.dayId === dayId) {
       const existing = await svc.getSession(this.sessionId);
-      if (existing && existing.status !== 'completed' && existing.status !== 'abandoned') {
+      if (existing && isResumable(existing)) {
         return existing;
       }
     }
 
-    await this.abandonPreviousIfNeeded(dayId);
+    // Cold start / lost pointer: resume same-day from durable store, or abandon other day
+    const sameDayOrNull = await this.abandonIfDifferentDay(dayId);
+    if (sameDayOrNull) {
+      return this.bind(sameDayOrNull, dayId);
+    }
+
+    // Optional: still try load by in-memory id after abandon path (no-op usually)
+    if (this.sessionId) {
+      const existing = await svc.getSession(this.sessionId);
+      if (existing && isResumable(existing) && existing.templateRevisionId === templateId) {
+        return this.bind(existing, dayId);
+      }
+    }
 
     const sessionId = newSessionId();
     const steps = exercisesToSnapshots(exercises);
@@ -87,7 +118,7 @@ class ActiveSessionControllerImpl {
       type: 'prepare_session',
       sessionId,
       userId: LOCAL_USER_ID,
-      templateRevisionId: `day-${dayId}`,
+      templateRevisionId: templateId,
       contentHash: contentHashForExercises(exercises),
       steps,
       localStartDate,
@@ -95,10 +126,7 @@ class ActiveSessionControllerImpl {
     });
 
     const started = await svc.dispatch(sessionId, { type: 'start_session' });
-    this.sessionId = sessionId;
-    this.dayId = dayId;
-    this.emit();
-    return started.session;
+    return this.bind(started.session, dayId);
   }
 
   /**
@@ -160,7 +188,17 @@ class ActiveSessionControllerImpl {
   }
 
   async load(): Promise<WorkoutSession | null> {
-    if (!this.sessionId) return null;
+    if (!this.sessionId) {
+      const resumable = await getSessionService().getResumable(LOCAL_USER_ID);
+      if (resumable && isResumable(resumable)) {
+        const dayId = resumable.templateRevisionId.startsWith('day-')
+          ? resumable.templateRevisionId.slice(4)
+          : null;
+        if (dayId) this.bind(resumable, dayId);
+        return resumable;
+      }
+      return null;
+    }
     return getSessionService().getSession(this.sessionId);
   }
 }
