@@ -5,12 +5,12 @@
 
 export const FORMA_CORE_VERSION = "0.5.1";
 
-export * from "./engines/MetabolicEngine";
-export * from "./engines/WorkoutStats";
-export * from "./engines/activity";
-export * from "./met/exerciseMet";
-export * from "./met/sessionBurn";
-export * from "./services/OpenFoodFactsService";
-export * from "./services/WgerExerciseService";
-export * from "./ai/CoachEngine";
-export * from "./state/useFormaStore";
+export * from "./engines/MetabolicEngine.ts";
+export * from "./engines/WorkoutStats.ts";
+export * from "./engines/activity.ts";
+export * from "./met/exerciseMet.ts";
+export * from "./met/sessionBurn.ts";
+export * from "./services/OpenFoodFactsService.ts";
+export * from "./services/WgerExerciseService.ts";
+export * from "./ai/CoachEngine.ts";
+export * from "./state/useFormaStore.ts";

@@ -1,4 +1,4 @@
-import { calorieDelta, type ILocalAITrainer, type UserContextSnapshot } from "./ILocalAITrainer";
+import { calorieDelta, type ILocalAITrainer, type UserContextSnapshot } from "./ILocalAITrainer.ts";
 
 /**
  * Always-on fallback trainer. No weights, no network.
@@ -31,7 +31,6 @@ function advise(ctx: UserContextSnapshot, userPrompt: string): string {
   const burned = ctx.dailyMetrics.burnedCalories;
   const q = userPrompt.trim().toLowerCase();
 
-  // "белок" / "белка" / "белки"
   if (q.includes("белк") || q.includes("protein")) {
     const g = Math.round(ctx.userProfile.weightKg * 2);
     return `Ориентир — около ${g} г белка в сутки (≈ 2 г/кг). Размажь по приёмам, не в один ужин.`;

@@ -1,3 +1,3 @@
-export * from "./MetabolicEngine";
-export * from "./WorkoutStats";
-export * from "./activity";
+export * from "./MetabolicEngine.ts";
+export * from "./WorkoutStats.ts";
+export * from "./activity.ts";

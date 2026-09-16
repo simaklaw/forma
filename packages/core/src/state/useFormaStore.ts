@@ -5,9 +5,9 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
-import { MetabolicEngine, type Biometrics } from "../engines/MetabolicEngine";
-import { ACTIVITY_FACTOR } from "../engines/activity";
-import type { UserContextSnapshot } from "../ai/ILocalAITrainer";
+import { MetabolicEngine, type Biometrics } from "../engines/MetabolicEngine.ts";
+import { ACTIVITY_FACTOR } from "../engines/activity.ts";
+import type { UserContextSnapshot } from "../ai/ILocalAITrainer.ts";
 
 export interface FoodItem {
   id: string;
@@ -114,8 +114,6 @@ function isValidBiometrics(value: unknown): value is Biometrics {
   };
 
   try {
-    // MetabolicEngine remains the source of truth for domain constraints
-    // such as supported age, height, weight, and activity-factor ranges.
     MetabolicEngine.calculateBMR(biometrics);
     MetabolicEngine.calculateTDEE(biometrics);
     return true;
@@ -154,11 +152,17 @@ function sanitizeWorkoutLogs(value: unknown): WorkoutSession[] {
       typeof item.completedAt === "string" &&
       Number.isFinite(Date.parse(item.completedAt)) &&
       (item.name === undefined || typeof item.name === "string") &&
-      (item.rpeScore === undefined || (typeof item.rpeScore === "number" && Number.isFinite(item.rpeScore) && item.rpeScore >= 0 && item.rpeScore <= 10)),
+      (item.rpeScore === undefined ||
+        (typeof item.rpeScore === "number" &&
+          Number.isFinite(item.rpeScore) &&
+          item.rpeScore >= 0 &&
+          item.rpeScore <= 10)),
   );
 }
 
-export function sanitizePersistedFormaState(value: unknown): Pick<UnifiedFormaState, "biometrics" | "foodLogs" | "workoutLogs"> {
+export function sanitizePersistedFormaState(
+  value: unknown,
+): Pick<UnifiedFormaState, "biometrics" | "foodLogs" | "workoutLogs"> {
   const persisted = isRecord(value) ? (value as PersistedFormaState) : {};
   return {
     biometrics: isValidBiometrics(persisted.biometrics) ? persisted.biometrics : initialBiometrics,
@@ -171,8 +175,6 @@ export function migrateFormaState(
   persistedState: unknown,
   version: number,
 ): Pick<UnifiedFormaState, "biometrics" | "foodLogs" | "workoutLogs"> {
-  // Version 0 was the unversioned persist format. It already used the same
-  // three data fields, so migration is normalization rather than reshaping.
   if (version <= 0) return sanitizePersistedFormaState(persistedState);
   if (version === FORMA_PERSIST_VERSION) return sanitizePersistedFormaState(persistedState);
   throw new Error(`Unsupported Forma persistence version: ${version}`);
@@ -209,7 +211,10 @@ export function createFormaSlice(
     addWorkoutLog: (workout) => {
       assertFiniteNonNegative(workout.durationMinutes, "durationMinutes");
       assertFiniteNonNegative(workout.caloriesBurned, "caloriesBurned");
-      if (workout.rpeScore !== undefined && (!Number.isFinite(workout.rpeScore) || workout.rpeScore < 0 || workout.rpeScore > 10)) {
+      if (
+        workout.rpeScore !== undefined &&
+        (!Number.isFinite(workout.rpeScore) || workout.rpeScore < 0 || workout.rpeScore > 10)
+      ) {
         throw new RangeError("rpeScore must be between 0 and 10");
       }
       if (!workout.exerciseId.trim()) throw new RangeError("exerciseId must not be empty");

@@ -1,3 +1,3 @@
-export * from "./CoachEngine";
-export * from "./ILocalAITrainer";
-export * from "./RulesLocalAITrainer";
+export * from "./CoachEngine.ts";
+export * from "./ILocalAITrainer.ts";
+export * from "./RulesLocalAITrainer.ts";

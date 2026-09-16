@@ -1,4 +1,5 @@
-import { describe, expect, it } from "node:test";
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
 import { RulesLocalAITrainer } from "./RulesLocalAITrainer.ts";
 import { buildTrainerSystemPrompt, type UserContextSnapshot } from "./ILocalAITrainer.ts";
 
@@ -14,8 +15,8 @@ describe("RulesLocalAITrainer", () => {
     const first = await trainer.generateAdvice(context, "что с белком?");
     const second = await trainer.generateAdvice(context, "что с белком?");
 
-    expect(first).toBe(second);
-    expect(first).toContain("160 г белка");
+    assert.equal(first, second);
+    assert.match(first, /160 г белка/);
   });
 
   it("streams exactly the same content as generateAdvice", async () => {
@@ -27,7 +28,7 @@ describe("RulesLocalAITrainer", () => {
       streamed += token;
     });
 
-    expect(streamed).toBe(expected);
+    assert.equal(streamed, expected);
   });
 
   it("initializes the rules fallback as ready without an LLM", async () => {
@@ -38,8 +39,8 @@ describe("RulesLocalAITrainer", () => {
       progress = ratio;
     });
 
-    expect(progress).toBe(1);
-    expect(trainer.isLlmReady?.() ?? false).toBe(false);
+    assert.equal(progress, 1);
+    assert.equal(trainer.isLlmReady?.() ?? false, false);
   });
 });
 
@@ -47,9 +48,9 @@ describe("buildTrainerSystemPrompt", () => {
   it("uses a non-clinical role and explicit safety boundary", () => {
     const prompt = buildTrainerSystemPrompt(context);
 
-    expect(prompt).toContain("локальный фитнес-помощник Forma");
-    expect(prompt).not.toContain("тренер-диетолог");
-    expect(prompt).toContain("без медицинских диагнозов и назначения лечения");
-    expect(prompt).toContain("обратиться к специалисту");
+    assert.match(prompt, /локальный фитнес-помощник Forma/);
+    assert.equal(prompt.includes("тренер-диетолог"), false);
+    assert.match(prompt, /без медицинских диагнозов и назначения лечения/);
+    assert.match(prompt, /обратиться к специалисту/);
   });
 });

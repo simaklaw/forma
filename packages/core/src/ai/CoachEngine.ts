@@ -1,7 +1,7 @@
-import { RulesCoach, coachLine } from "./RulesCoach";
-import { RulesLocalAITrainer } from "./RulesLocalAITrainer";
-import type { ILocalAITrainer } from "./ILocalAITrainer";
-import type { CoachContext, CoachMessage, CoachProvider } from "./types";
+import { RulesCoach, coachLine } from "./RulesCoach.ts";
+import { RulesLocalAITrainer } from "./RulesLocalAITrainer.ts";
+import type { ILocalAITrainer } from "./ILocalAITrainer.ts";
+import type { CoachContext, CoachMessage, CoachProvider } from "./types.ts";
 
 /**
  * Facade for coach copy + local-AI trainer.
@@ -56,12 +56,12 @@ export class CoachEngine {
   }
 }
 
-export type { CoachContext, CoachMessage, CoachProvider, CoachTone } from "./types";
-export { RulesCoach, coachLine } from "./RulesCoach";
-export { RulesLocalAITrainer } from "./RulesLocalAITrainer";
+export type { CoachContext, CoachMessage, CoachProvider, CoachTone } from "./types.ts";
+export { RulesCoach, coachLine } from "./RulesCoach.ts";
+export { RulesLocalAITrainer } from "./RulesLocalAITrainer.ts";
 export {
   type ILocalAITrainer,
   type UserContextSnapshot,
   buildTrainerSystemPrompt,
   calorieDelta,
-} from "./ILocalAITrainer";
+} from "./ILocalAITrainer.ts";
