@@ -5,7 +5,7 @@ import { Picker } from '@react-native-picker/picker';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
-import { colors, fonts, spacing } from '@/core/theme/tokens';
+import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { Goal, Sex } from '@/engines/MetabolicEngine';
 import ProtocolBanner from '@/components/ProtocolBanner';
@@ -22,14 +22,6 @@ export default function ProfileScreen() {
   const [heightInput, setHeightInput] = useState(String(profile.height));
   const [weightInput, setWeightInput] = useState(String(profile.weight));
 
-  /**
-   * Обновление: this used to call updateProfile({ weight }) for the weight
-   * field too, same as age/height. That silently meant weightHistory could
-   * never grow from anything the user actually did — the only place it was
-   * ever populated was the demo seed removed in useFitPulseStore.ts. Now a
-   * committed weight edit also calls logWeight(), which is the one function
-   * that both updates profile.weight and appends to weightHistory.
-   */
   function commitNumber(field: 'age' | 'height' | 'weight', value: string) {
     const num = parseFloat(value);
     if (isNaN(num) || num <= 0) return;
@@ -70,6 +62,9 @@ export default function ProfileScreen() {
     }
   }
 
+  const initials =
+    profile.sex === 'female' ? 'Ж' : 'М';
+
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <View style={styles.header}>
@@ -78,91 +73,119 @@ export default function ProfileScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.body}>
+        <View style={styles.identityCard}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{initials}</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.identityTitle}>
+              {profile.age} лет · {profile.height} см · {profile.weight} кг
+            </Text>
+            <Text style={styles.identitySub}>
+              Цель {targets.target.toLocaleString('ru-RU')} ккал · BMR {targets.bmr}
+            </Text>
+          </View>
+        </View>
+
         <View style={styles.sectionHead}>
           <Text style={styles.sectionTitle}>Параметры и КБЖУ</Text>
           <Text style={styles.sectionCount}>Миффлин-Сан Жеор</Text>
         </View>
 
-        <View style={styles.calcGrid}>
-          <View style={styles.calcField}>
-            <Text style={styles.label}>Пол</Text>
-            <View style={styles.pickerWrap}>
-              <Picker selectedValue={profile.sex} onValueChange={(v: Sex) => updateProfile({ sex: v })} dropdownIconColor={colors.paper}>
-                <Picker.Item label="Мужской" value="male" />
-                <Picker.Item label="Женский" value="female" />
-              </Picker>
+        <View style={styles.card}>
+          <View style={styles.calcGrid}>
+            <View style={styles.calcField}>
+              <Text style={styles.label}>Пол</Text>
+              <View style={styles.pickerWrap}>
+                <Picker
+                  selectedValue={profile.sex}
+                  onValueChange={(v: Sex) => updateProfile({ sex: v })}
+                  dropdownIconColor={colors.paper}
+                >
+                  <Picker.Item label="Мужской" value="male" />
+                  <Picker.Item label="Женский" value="female" />
+                </Picker>
+              </View>
+            </View>
+            <View style={styles.calcField}>
+              <Text style={styles.label}>Возраст</Text>
+              <TextInput
+                style={styles.input}
+                value={ageInput}
+                keyboardType="numeric"
+                onChangeText={setAgeInput}
+                onEndEditing={() => commitNumber('age', ageInput)}
+              />
+            </View>
+            <View style={styles.calcField}>
+              <Text style={styles.label}>Рост, см</Text>
+              <TextInput
+                style={styles.input}
+                value={heightInput}
+                keyboardType="numeric"
+                onChangeText={setHeightInput}
+                onEndEditing={() => commitNumber('height', heightInput)}
+              />
+            </View>
+            <View style={styles.calcField}>
+              <Text style={styles.label}>Вес, кг</Text>
+              <TextInput
+                style={styles.input}
+                value={weightInput}
+                keyboardType="numeric"
+                onChangeText={setWeightInput}
+                onEndEditing={() => commitNumber('weight', weightInput)}
+              />
+            </View>
+            <View style={styles.calcField}>
+              <Text style={styles.label}>Активность (PAL)</Text>
+              <View style={styles.pickerWrap}>
+                <Picker
+                  selectedValue={profile.pal}
+                  onValueChange={(v: number) => updateProfile({ pal: v })}
+                  dropdownIconColor={colors.paper}
+                >
+                  <Picker.Item label="1.2 — низкая" value={1.2} />
+                  <Picker.Item label="1.375 — умеренная" value={1.375} />
+                  <Picker.Item label="1.55 — высокая" value={1.55} />
+                </Picker>
+              </View>
+            </View>
+            <View style={styles.calcField}>
+              <Text style={styles.label}>Бюджет калорий</Text>
+              <View style={styles.pickerWrap}>
+                <Picker
+                  selectedValue={profile.goal}
+                  onValueChange={(v: Goal) => updateProfile({ goal: v })}
+                  dropdownIconColor={colors.paper}
+                >
+                  <Picker.Item label="Дефицит −12%" value="recomp" />
+                  <Picker.Item label="Поддержание" value="maintain" />
+                  <Picker.Item label="Профицит +10%" value="gain" />
+                </Picker>
+              </View>
             </View>
           </View>
-          <View style={styles.calcField}>
-            <Text style={styles.label}>Возраст</Text>
-            <TextInput
-              style={styles.input}
-              value={ageInput}
-              keyboardType="numeric"
-              onChangeText={setAgeInput}
-              onEndEditing={() => commitNumber('age', ageInput)}
-            />
-          </View>
-          <View style={styles.calcField}>
-            <Text style={styles.label}>Рост, см</Text>
-            <TextInput
-              style={styles.input}
-              value={heightInput}
-              keyboardType="numeric"
-              onChangeText={setHeightInput}
-              onEndEditing={() => commitNumber('height', heightInput)}
-            />
-          </View>
-          <View style={styles.calcField}>
-            <Text style={styles.label}>Вес, кг</Text>
-            <TextInput
-              style={styles.input}
-              value={weightInput}
-              keyboardType="numeric"
-              onChangeText={setWeightInput}
-              onEndEditing={() => commitNumber('weight', weightInput)}
-            />
-          </View>
-          <View style={styles.calcField}>
-            <Text style={styles.label}>Активность (PAL)</Text>
-            <View style={styles.pickerWrap}>
-              <Picker selectedValue={profile.pal} onValueChange={(v: number) => updateProfile({ pal: v })} dropdownIconColor={colors.paper}>
-                <Picker.Item label="1.2 — низкая" value={1.2} />
-                <Picker.Item label="1.375 — умеренная" value={1.375} />
-                <Picker.Item label="1.55 — высокая" value={1.55} />
-              </Picker>
-            </View>
-          </View>
-          <View style={styles.calcField}>
-            <Text style={styles.label}>Бюджет калорий</Text>
-            <View style={styles.pickerWrap}>
-              <Picker selectedValue={profile.goal} onValueChange={(v: Goal) => updateProfile({ goal: v })} dropdownIconColor={colors.paper}>
-                <Picker.Item label="Дефицит −12%" value="recomp" />
-                <Picker.Item label="Поддержание" value="maintain" />
-                <Picker.Item label="Профицит +10%" value="gain" />
-              </Picker>
-            </View>
-          </View>
-        </View>
 
-        <View style={styles.calcResult}>
-          <View style={styles.resultCell}>
-            <Text style={styles.resultVal}>{targets.bmr}</Text>
-            <Text style={styles.resultLbl}>BMR, ккал</Text>
+          <View style={styles.calcResult}>
+            <View style={styles.resultCell}>
+              <Text style={styles.resultVal}>{targets.bmr}</Text>
+              <Text style={styles.resultLbl}>BMR</Text>
+            </View>
+            <View style={styles.resultCell}>
+              <Text style={styles.resultVal}>{targets.tdee}</Text>
+              <Text style={styles.resultLbl}>TDEE</Text>
+            </View>
+            <View style={[styles.resultCell, { borderRightWidth: 0 }]}>
+              <Text style={[styles.resultVal, { color: colors.lime }]}>{targets.target}</Text>
+              <Text style={styles.resultLbl}>Цель</Text>
+            </View>
           </View>
-          <View style={styles.resultCell}>
-            <Text style={styles.resultVal}>{targets.tdee}</Text>
-            <Text style={styles.resultLbl}>TDEE, ккал</Text>
-          </View>
-          <View style={[styles.resultCell, { borderRightWidth: 0 }]}>
-            <Text style={[styles.resultVal, { color: colors.lime }]}>{targets.target}</Text>
-            <Text style={styles.resultLbl}>Цель, ккал</Text>
-          </View>
+          <Text style={styles.macroNote}>
+            Белки {targets.proteinTarget} г · жиры {targets.fatTarget} г · углеводы {targets.carbTarget} г
+            (ISSN 2.0 / 1.0 г на кг).
+          </Text>
         </View>
-        <Text style={styles.macroNote}>
-          Белки {targets.proteinTarget} г и жиры {targets.fatTarget} г — по протоколу ISSN (2.0 и 1.0 г на кг массы
-          тела), углеводы {targets.carbTarget} г добираются из остатка калорий.
-        </Text>
 
         <View style={styles.sectionHead}>
           <Text style={styles.sectionTitle}>Метаболическое плато</Text>
@@ -188,24 +211,105 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.ink },
-  header: { paddingHorizontal: spacing.xxl, paddingBottom: spacing.lg, borderBottomWidth: 1, borderColor: colors.line },
+  header: {
+    paddingHorizontal: spacing.xxl,
+    paddingBottom: spacing.lg,
+    borderBottomWidth: 1,
+    borderColor: colors.line
+  },
   eyebrow: { color: colors.paperFaint, fontSize: 11, fontFamily: fonts.body },
   title: { color: colors.paper, fontSize: 30, fontFamily: fonts.mono },
-  body: { paddingHorizontal: spacing.xxl, paddingBottom: 120, paddingTop: spacing.lg },
-  sectionHead: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.lg, marginBottom: 10 },
+  body: { paddingHorizontal: spacing.xl, paddingBottom: 120, paddingTop: spacing.lg },
+  identityCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    padding: spacing.lg,
+    backgroundColor: colors.panel,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.line,
+    marginBottom: spacing.md
+  },
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    borderColor: colors.lime,
+    backgroundColor: colors.limeDim,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  avatarText: { color: colors.lime, fontFamily: fonts.mono, fontSize: 20 },
+  identityTitle: { color: colors.paper, fontSize: 15, fontFamily: fonts.bodySemi },
+  identitySub: { color: colors.paperFaint, fontSize: 12, marginTop: 4, fontFamily: fonts.body },
+  sectionHead: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.lg,
+    marginBottom: 10
+  },
   sectionTitle: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.bodySemi },
   sectionCount: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 13 },
+  card: {
+    backgroundColor: colors.panel,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.line,
+    padding: spacing.md
+  },
   calcGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 14 },
   calcField: { width: '47%' },
   label: { fontSize: 10.5, color: colors.paperFaint, marginBottom: 4 },
-  input: { backgroundColor: colors.panel, borderWidth: 1, borderColor: colors.lineStrong, color: colors.paper, padding: 8, fontFamily: fonts.mono, fontSize: 13.5 },
-  pickerWrap: { backgroundColor: colors.panel, borderWidth: 1, borderColor: colors.lineStrong },
-  calcResult: { flexDirection: 'row', borderWidth: 1, borderColor: colors.line, marginBottom: 8 },
-  macroNote: { color: colors.paperFaint, fontSize: 11, lineHeight: 16, marginBottom: 20, fontFamily: fonts.body },
-  resultCell: { flex: 1, padding: 12, alignItems: 'center', borderRightWidth: 1, borderColor: colors.line },
+  input: {
+    backgroundColor: colors.ink,
+    borderWidth: 1,
+    borderColor: colors.lineStrong,
+    borderRadius: radius.control,
+    color: colors.paper,
+    padding: 10,
+    fontFamily: fonts.mono,
+    fontSize: 13.5
+  },
+  pickerWrap: {
+    backgroundColor: colors.ink,
+    borderWidth: 1,
+    borderColor: colors.lineStrong,
+    borderRadius: radius.control,
+    overflow: 'hidden'
+  },
+  calcResult: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: colors.line,
+    borderRadius: radius.control,
+    overflow: 'hidden',
+    marginBottom: 8
+  },
+  macroNote: {
+    color: colors.paperFaint,
+    fontSize: 11,
+    lineHeight: 16,
+    fontFamily: fonts.body
+  },
+  resultCell: {
+    flex: 1,
+    padding: 12,
+    alignItems: 'center',
+    borderRightWidth: 1,
+    borderColor: colors.line
+  },
   resultVal: { color: colors.paper, fontSize: 19, fontFamily: fonts.mono },
   resultLbl: { color: colors.paperFaint, fontSize: 9.5, marginTop: 2 },
-  settingRow: { paddingVertical: 14, borderBottomWidth: 1, borderColor: colors.line },
+  settingRow: {
+    padding: 14,
+    marginBottom: 8,
+    backgroundColor: colors.panel,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.line
+  },
   settingName: { color: colors.paper, fontSize: 14, fontFamily: fonts.bodySemi },
-  settingDesc: { color: colors.paperFaint, fontSize: 11.5, marginTop: 1 }
+  settingDesc: { color: colors.paperFaint, fontSize: 11.5, marginTop: 2 }
 });
