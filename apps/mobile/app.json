@@ -3,11 +3,17 @@
     "name": "FitPulse",
     "slug": "fitpulse",
     "version": "0.1.0",
+    "icon": "./assets/branding/fitpulse-icon.png",
     "newArchEnabled": false,
     "orientation": "portrait",
     "scheme": "fitpulse",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0B0F14",
+    "splash": {
+      "image": "./assets/branding/fitpulse-splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B0F14"
+    },
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": false,
@@ -16,6 +22,7 @@
     "android": {
       "package": "app.fitpulse.native",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/branding/fitpulse-adaptive-foreground.png",
         "backgroundColor": "#0B0F14"
       },
       "permissions": [
