@@ -11,7 +11,8 @@ test("estimateSessionBurnKcal scales with sets", () => {
   const one = estimateSessionBurnKcal({ weightKg: 80, setsCompleted: 1, met: 5 });
   const three = estimateSessionBurnKcal({ weightKg: 80, setsCompleted: 3, met: 5 });
   assert.ok(one > 0);
-  assert.equal(three, one * 3);
+  // Math.round per call can differ by ±1 from exact linear scale
+  assert.ok(Math.abs(three - one * 3) <= 2);
 });
 
 test("estimateBurnFromSetLogs uses exercise MET map", () => {
@@ -29,7 +30,6 @@ test("estimateBurnFromSetLogs uses exercise MET map", () => {
     exerciseNames: { 1: "Приседания со штангой", 2: "Становая тяга" },
   });
   assert.ok(burned > 0);
-  // three sets today only (other date ignored)
   const baseline = estimateSessionBurnKcal({ weightKg: 76, setsCompleted: 3, met: 6 });
   assert.ok(Math.abs(burned - baseline) < baseline * 0.4);
 });
