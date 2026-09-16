@@ -7,13 +7,19 @@ import {
   type UnifiedFormaState,
 } from "./useFormaStore.ts";
 
-function createTestStore() {
-  let state!: UnifiedFormaState;
+/** Mutable holder so set() reassignment is visible on the returned API. */
+function createTestStore(): UnifiedFormaState {
+  const holder: { current: UnifiedFormaState } = { current: null! };
   const set = (fn: (current: UnifiedFormaState) => Partial<UnifiedFormaState> | UnifiedFormaState) => {
-    state = { ...state, ...fn(state) };
+    holder.current = { ...holder.current, ...fn(holder.current) };
   };
-  state = createFormaSlice(set, () => state);
-  return state;
+  holder.current = createFormaSlice(set, () => holder.current);
+  return new Proxy({} as UnifiedFormaState, {
+    get(_target, prop) {
+      const value = (holder.current as Record<string | symbol, unknown>)[prop];
+      return typeof value === "function" ? (value as (...args: unknown[]) => unknown).bind(holder.current) : value;
+    },
+  });
 }
 
 test("today burned calories uses the same local-day boundary as food logs", () => {
