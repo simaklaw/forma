@@ -10,7 +10,7 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CoachEngine, estimateSessionBurnKcal, toDateKey } from '@forma/core';
+import { CoachEngine, estimateBurnFromSetLogs, toDateKey } from '@forma/core';
 import { getMobileTrainerProgress } from '@/ai/trainerProgress';
 import { colors, fonts, spacing } from '@/core/theme/tokens';
 import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
@@ -23,7 +23,7 @@ const CHIPS = ['Сколько белка?', 'Калории сегодня', '�
 export default function CoachScreen() {
   const profile = useFitPulseStore((s) => s.profile);
   const todayMeals = useFitPulseStore((s) => s.todayMeals);
-  const dayProgress = useFitPulseStore((s) => s.dayProgress);
+  const setLogs = useFitPulseStore((s) => s.setLogs);
   const targets = useFitPulseStore((s) => s.calculateTargets());
 
   const [messages, setMessages] = useState<Msg[]>([
@@ -39,23 +39,19 @@ export default function CoachScreen() {
   const [progress, setProgress] = useState(0);
   const listRef = useRef<FlatList<Msg>>(null);
 
-  const setsToday = useMemo(() => {
-    const today = dayProgress[toDateKey(new Date())] ?? {};
-    return Object.values(today).reduce((sum, n) => sum + n, 0);
-  }, [dayProgress]);
-
   const snapshot = useMemo(
     () =>
       mobileCoachSnapshot({
         profile,
         todayMeals,
         targetCalories: targets.target,
-        burnedCalories: estimateSessionBurnKcal({
+        burnedCalories: estimateBurnFromSetLogs({
           weightKg: profile.weight,
-          setsCompleted: setsToday
+          setLogs,
+          dateKey: toDateKey(new Date())
         })
       }),
-    [profile, todayMeals, targets.target, setsToday]
+    [profile, todayMeals, targets.target, setLogs]
   );
 
   useEffect(() => {
