@@ -13,7 +13,7 @@ import { toDateKey, roundToStep } from '@/engines/WorkoutStats';
 import { useExerciseReference } from './useExerciseReference';
 import { ActiveSessionController } from './session/ActiveSessionController';
 import { sequentialStepInfo } from './session/sequentialStep';
-import { mergeSessionProjection } from './data/sessionProjections';
+import { applySessionProjection } from './data/applySessionProjection';
 import { getSessionService } from './data';
 
 const beepSource = require('../../../assets/sfx/beep.wav');
@@ -34,12 +34,9 @@ export interface ExerciseDef {
 
 interface Props {
   exercise: ExerciseDef | null;
-  /** Active plan day id (push/pull/legs) for session aggregate. */
   dayId?: string;
-  /** Full ordered exercise list for the day (session steps). */
   dayExercises?: ExerciseDef[];
   onFinished?: (exerciseId: number) => void;
-  /** Open the exercise that is currently next in the session sequence. */
   onGoToExpected?: (exerciseId: number) => void;
 }
 
@@ -81,7 +78,6 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       [dayExercises]
     );
 
-    /** Hydrate rest + sequential gate from durable session. */
     useEffect(() => {
       if (!exercise) return;
       setCompletedSets(completedSetsToday(exercise.id));
@@ -142,13 +138,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           setSessionSnap(session);
           const projection = await ActiveSessionController.getLegacyProjection(session.sessionId);
           if (!projection) return;
-          const current = useFitPulseStore.getState();
-          const merged = mergeSessionProjection(
-            { setLogs: current.setLogs, dayProgress: current.dayProgress },
-            projection
-          );
-          current.hydrate({ setLogs: merged.setLogs, dayProgress: merged.dayProgress });
-          const next = merged.dayProgress[toDateKey(new Date())]?.[exercise.id] ?? 0;
+          applySessionProjection(projection);
+          const next =
+            useFitPulseStore.getState().dayProgress[toDateKey(new Date())]?.[exercise.id] ?? 0;
           setCompletedSets(next);
           await ActiveSessionController.completeDayIfDone();
           if (next >= exercise.totalSets) {
