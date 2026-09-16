@@ -12,6 +12,10 @@ module.exports = function (api) {
           alias: {
             '@': './src',
             '@forma/core': path.resolve(__dirname, '../../packages/core/src'),
+            '@forma/workout-domain': path.resolve(
+              __dirname,
+              '../../packages/workout-domain/src'
+            ),
           },
         },
       ],
