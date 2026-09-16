@@ -1,6 +1,6 @@
 import { calculateBurnedCalories, metForExercise, type UserContextSnapshot } from "@forma/core";
 import { FOODS, planById, planExercises } from "./catalog";
-import { dayMacros, todayKey } from "./forma";
+import { calcGoals, dayMacros, todayKey } from "./forma";
 import { useAppStore } from "./store";
 
 export function webUserContextSnapshot(): UserContextSnapshot {
@@ -10,6 +10,7 @@ export function webUserContextSnapshot(): UserContextSnapshot {
     meals.filter((m) => m.date === today),
     FOODS,
   );
+  const goals = calcGoals(profile);
   const last = [...workouts].reverse().find((w) => w.completed);
   const lastPlan = last ? planById(last.planId) : undefined;
   const todayWorkout = workouts.find((w) => w.date === today && w.completed);
@@ -30,7 +31,7 @@ export function webUserContextSnapshot(): UserContextSnapshot {
     },
     dailyMetrics: {
       consumedCalories: macros.kcal,
-      targetCalories: profile.calorieGoal,
+      targetCalories: goals.kcal,
       burnedCalories: burned,
     },
     lastWorkout: lastPlan
