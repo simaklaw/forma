@@ -33,6 +33,10 @@ export class SessionCommandService {
     return this.repo.getResumableSession(userId);
   }
 
+  async listEvents(sessionId: string) {
+    return this.repo.listEvents(sessionId);
+  }
+
   async dispatch(
     sessionId: string | null,
     command: WorkoutCommand,

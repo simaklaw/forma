@@ -6,6 +6,7 @@ import {
 import type { ExerciseDef } from '../ExerciseSheet';
 import { contentHashForExercises, exercisesToSnapshots } from './planToSnapshots';
 import { LOCAL_USER_ID } from './currentUser';
+import { projectSessionEvents } from '@/features/workout/data/sessionProjections';
 
 export function dayTemplateId(dayId: string): string {
   return `day-${dayId}`;
@@ -20,8 +21,8 @@ function isResumable(s: WorkoutSession): boolean {
 }
 
 /**
- * Thin imperative controller: keeps the active day-plan session id
- * and dual-writes set completion into the domain aggregate.
+ * Thin imperative controller: keeps the active day-plan session id and
+ * projects accepted session events into the legacy workout read model.
  *
  * After process death, resume is driven by getResumable + templateRevisionId.
  */
@@ -195,6 +196,14 @@ class ActiveSessionControllerImpl {
       reason: 'all_sets_done'
     });
     this.emit();
+  }
+
+  async getLegacyProjection(sessionId: string) {
+    const svc = getSessionService();
+    const session = await svc.getSession(sessionId);
+    if (!session) return null;
+    const events = await svc.listEvents(sessionId);
+    return projectSessionEvents(session, events);
   }
 
   async load(): Promise<WorkoutSession | null> {

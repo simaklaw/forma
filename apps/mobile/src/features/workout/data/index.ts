@@ -14,3 +14,5 @@ export {
   resetSessionServiceForTests
 } from './createSessionService';
 export type { SessionPersistenceMode } from './createSessionService';
+export { mergeSessionProjection, projectSessionEvents } from './sessionProjections';
+export type { SessionProjection } from './sessionProjections';
