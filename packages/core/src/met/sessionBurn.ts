@@ -18,7 +18,7 @@ export function estimateSessionBurnKcal(args: {
 }
 
 /**
- * Aggregate burned kcal from today's set logs using exercise name → MET map.
+ * Aggregate burned kcal from set logs for a single dateKey using exercise name → MET.
  * Falls back to generic strength MET when name is unknown.
  */
 export function estimateBurnFromSetLogs(args: {
@@ -38,4 +38,29 @@ export function estimateBurnFromSetLogs(args: {
     total += calculateBurnedCalories(met, args.weightKg, minutesPerSet);
   }
   return Math.round(total);
+}
+
+export interface DayBurn {
+  dateKey: string;
+  kcal: number;
+}
+
+/** Burn per day over an ordered list of dateKeys (e.g. last 7 days). */
+export function estimateDailyBurns(args: {
+  weightKg: number;
+  setLogs: SetLogEntry[];
+  dateKeys: string[];
+  exerciseNames?: Record<number, string>;
+  minutesPerSet?: number;
+}): DayBurn[] {
+  return args.dateKeys.map((dateKey) => ({
+    dateKey,
+    kcal: estimateBurnFromSetLogs({
+      weightKg: args.weightKg,
+      setLogs: args.setLogs,
+      dateKey,
+      exerciseNames: args.exerciseNames,
+      minutesPerSet: args.minutesPerSet,
+    }),
+  }));
 }
