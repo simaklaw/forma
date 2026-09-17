@@ -58,3 +58,13 @@ export function expectedExerciseId(
   const i = currentStepIndex(planId, setsDone);
   return plan.exerciseIds[i] ?? null;
 }
+
+/**
+ * UI exerciseIndex to show after setsDone changes — same rule as sequential progress.
+ */
+export function exerciseIndexForProgress(
+  planId: string,
+  setsDone: Record<string, boolean[]>,
+): number {
+  return currentStepIndex(planId, setsDone);
+}

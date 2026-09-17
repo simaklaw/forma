@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   canMarkSet,
   currentStepIndex,
+  exerciseIndexForProgress,
   expectedExerciseId,
   nextOpenSetIndex,
 } from "./session-logic.ts";
@@ -16,6 +17,17 @@ test("currentStepIndex advances after all sets done", () => {
   };
   assert.equal(currentStepIndex("full-15", sets), 1);
   assert.equal(expectedExerciseId("full-15", sets), "pushup");
+  assert.equal(exerciseIndexForProgress("full-15", sets), 1);
+});
+
+test("exerciseIndexForProgress stays on last when plan complete", () => {
+  const sets = {
+    squat: [true, true, true],
+    pushup: [true, true, true],
+    "glute-bridge": [true, true, true],
+    plank: [true, true, true],
+  };
+  assert.equal(exerciseIndexForProgress("full-15", sets), 3);
 });
 
 test("canMarkSet only next open set on current exercise", () => {
