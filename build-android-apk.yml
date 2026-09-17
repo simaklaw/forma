@@ -1,0 +1,57 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:   # запуск вручную
+  push:
+    branches: [ main ]
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build Android APK (debug)
+        run: |
+          cd apps/mobile   # если папка называется иначе — поправь
+          # Вариант для React Native:
+          # pnpm android --mode=debug || npx react-native build-android --mode=debug
+          # Или если у вас Expo:
+          # npx expo prebuild --platform android
+          # cd android && ./gradlew assembleDebug
+          echo "Сюда нужно будет подставить точную команду сборки под ваш проект"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: forma-debug-apk
+          path: |
+            **/app-debug.apk
+            **/app-release.apk
+            **/outputs/apk/**/*.apk
+          retention-days: 7
