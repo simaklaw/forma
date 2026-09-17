@@ -22,22 +22,17 @@ jobs:
         with:
           node-version: 22
 
-      - name: Setup pnpm
-        run: npm install --global pnpm@9.15.0
-
-      - name: Verify toolchain
-        run: |
-          node --version
-          npm --version
-          pnpm --version
-          java -version
-
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
           cache: gradle
+
+      - name: Setup pnpm
+        run: |
+          npm install --global pnpm@9.15.0
+          pnpm --version
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
