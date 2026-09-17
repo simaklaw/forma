@@ -22,6 +22,12 @@ jobs:
         with:
           node-version: 22
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+          run_install: false
+
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
@@ -29,10 +35,12 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      - name: Setup pnpm
+      - name: Verify toolchain
         run: |
-          npm install --global pnpm@9.15.0
+          node --version
+          npm --version
           pnpm --version
+          java -version
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
