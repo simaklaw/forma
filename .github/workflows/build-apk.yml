@@ -21,7 +21,6 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 22
-          cache: npm
 
       - name: Setup pnpm
         run: npm install --global pnpm@9.15.0
