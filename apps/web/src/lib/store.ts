@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 import { useEffect, useState } from "react";
 import { EXERCISES, planById, planExercises } from "./catalog";
 import { calcGoals, todayKey } from "./forma";
-import { canMarkSet } from "./session-logic.ts";
+import { canMarkSet, exerciseIndexForProgress } from "./session-logic.ts";
 import type {
   MealItem,
   MealType,
@@ -291,15 +291,17 @@ export const useAppStore = create<State>()(
         const arr = [...(s.session.setsDone[exerciseId] ?? [])];
         const wasDone = Boolean(arr[setIndex]);
         arr[setIndex] = !wasDone;
+        const nextSets = { ...s.session.setsDone, [exerciseId]: arr };
+        const nextIndex = exerciseIndexForProgress(s.session.planId, nextSets);
         set({
           session: {
             ...s.session,
-            setsDone: { ...s.session.setsDone, [exerciseId]: arr },
+            setsDone: nextSets,
+            exerciseIndex: nextIndex,
           },
         });
         if (!wasDone) {
           const ex = EXERCISES.find((e) => e.id === exerciseId);
-          // Optimistic rest; domain wall-clock overwrites when journal accepts the set.
           if (ex) {
             set((st) => {
               if (!st.session) return st;
