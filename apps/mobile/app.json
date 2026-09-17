@@ -20,7 +20,7 @@
       "bundleIdentifier": "app.fitpulse.native"
     },
     "android": {
-      "package": "app.fitpulse.native",
+      "package": "app.fitpulse.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/branding/fitpulse-adaptive-foreground.png",
         "backgroundColor": "#0B0F14"
