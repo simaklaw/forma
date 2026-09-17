@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { test, beforeEach } from "node:test";
-import { domainCompleteSet, domainStartPlan } from "./dualWrite.ts";
+import {
+  domainCompleteSet,
+  domainRestartPlan,
+  domainStartPlan,
+  planIdFromTemplateRevision,
+  uiSetsFromDomain,
+} from "./dualWrite.ts";
 import {
   getBoundDomainSessionId,
   getWebSessionService,
@@ -22,10 +28,13 @@ test("same plan resumes without abandon", async () => {
   assert.ok(eventsBefore.length > 0);
 
   // Simulate tab reopen / second start of the same plan — no domainEndSession.
-  await domainStartPlan("full-15");
+  const result = await domainStartPlan("full-15");
 
   const secondId = getBoundDomainSessionId();
   assert.equal(secondId, firstId);
+  assert.equal(result.resumed, true);
+  assert.ok(result.session);
+  assert.equal(result.session!.sessionId, firstId);
 
   const session = await getWebSessionService().getSession(firstId!);
   assert.ok(session);
@@ -45,7 +54,8 @@ test("different plan abandons previous", async () => {
   const planAId = getBoundDomainSessionId();
   assert.ok(planAId);
 
-  await domainStartPlan("legs-25");
+  const result = await domainStartPlan("legs-25");
+  assert.equal(result.resumed, false);
 
   const planBId = getBoundDomainSessionId();
   assert.ok(planBId);
@@ -58,4 +68,43 @@ test("different plan abandons previous", async () => {
   assert.ok(next);
   assert.equal(next!.templateRevisionId, "plan-legs-25");
   assert.notEqual(next!.status, "abandoned");
+});
+
+test("uiSetsFromDomain mirrors completed set counts", async () => {
+  await domainStartPlan("full-15");
+  const id = getBoundDomainSessionId();
+  assert.ok(id);
+  await domainCompleteSet({ exerciseId: "squat", reps: 12, restSec: 45 });
+
+  const session = await getWebSessionService().getSession(id!);
+  assert.ok(session);
+  const sets = uiSetsFromDomain(session!);
+  const squat = sets["squat"];
+  assert.ok(squat);
+  assert.equal(squat.filter(Boolean).length, 1);
+  assert.ok(squat.length >= 1);
+  assert.equal(planIdFromTemplateRevision(session!.templateRevisionId), "full-15");
+});
+
+test("domainRestartPlan abandons with user_restarted and starts fresh", async () => {
+  await domainStartPlan("full-15");
+  const firstId = getBoundDomainSessionId();
+  assert.ok(firstId);
+  await domainCompleteSet({ exerciseId: "squat", reps: 12, restSec: 45 });
+
+  const result = await domainRestartPlan("full-15");
+  assert.equal(result.resumed, false);
+
+  const secondId = getBoundDomainSessionId();
+  assert.ok(secondId);
+  assert.notEqual(secondId, firstId);
+
+  const abandoned = await getWebSessionService().getSession(firstId!);
+  assert.equal(abandoned?.status, "abandoned");
+  assert.equal(abandoned?.terminalReason, "user_restarted");
+
+  const fresh = await getWebSessionService().getSession(secondId!);
+  assert.ok(fresh);
+  assert.notEqual(fresh!.status, "abandoned");
+  assert.equal(fresh!.steps[0]!.completedSets.length, 0);
 });

@@ -1,5 +1,6 @@
-import { planById, planExercises } from "../catalog";
-import { todayKey } from "../forma";
+import type { WorkoutSession } from "@forma/workout-domain";
+import { planById, planExercises } from "../catalog.ts";
+import { todayKey } from "../forma.ts";
 import { newSessionId } from "./ids.ts";
 import { catalogExercisesToSnapshots, contentHashForCatalog } from "./planToDomain.ts";
 import {
@@ -9,17 +10,39 @@ import {
   getWebSessionService,
 } from "./sessionService.ts";
 
+export type DomainStartResult = {
+  resumed: boolean;
+  session: WorkoutSession | null;
+};
+
+/** Map domain step logs → UI boolean setsDone (length = targetSets). */
+export function uiSetsFromDomain(session: WorkoutSession): Record<string, boolean[]> {
+  const setsDone: Record<string, boolean[]> = {};
+  for (const step of session.steps) {
+    const n = step.snapshot.targetSets;
+    const done = step.completedSets.length;
+    setsDone[step.snapshot.exerciseId] = Array.from({ length: n }, (_, i) => i < done);
+  }
+  return setsDone;
+}
+
+/** Plan id from templateRevisionId `plan-${planId}` (null if unknown shape). */
+export function planIdFromTemplateRevision(templateRevisionId: string): string | null {
+  if (!templateRevisionId.startsWith("plan-")) return null;
+  return templateRevisionId.slice("plan-".length) || null;
+}
+
 /**
  * Best-effort dual-write into @forma/workout-domain.
  * UI Zustand session remains primary for Forma web player in this step;
  * domain journal is the shared contract with FitPulse mobile.
  */
-export async function domainStartPlan(planId: string): Promise<void> {
+export async function domainStartPlan(planId: string): Promise<DomainStartResult> {
   try {
     const plan = planById(planId);
-    if (!plan) return;
+    if (!plan) return { resumed: false, session: null };
     const exercises = planExercises(plan);
-    if (!exercises.length) return;
+    if (!exercises.length) return { resumed: false, session: null };
 
     const svc = getWebSessionService();
     const userId = getLocalUserId();
@@ -32,7 +55,7 @@ export async function domainStartPlan(planId: string): Promise<void> {
       // discarding progress — mirrors ActiveSessionController.abandonIfDifferentDay
       // on mobile (apps/mobile/src/features/workout/session/ActiveSessionController.ts).
       bindDomainSessionId(previous.sessionId);
-      return;
+      return { resumed: true, session: previous };
     }
 
     if (previous) {
@@ -60,8 +83,46 @@ export async function domainStartPlan(planId: string): Promise<void> {
     });
     await svc.dispatch(sessionId, { type: "start_session" });
     bindDomainSessionId(sessionId);
+    const session = await svc.getSession(sessionId);
+    return { resumed: false, session };
   } catch (err) {
     console.warn("[forma web] domainStartPlan failed", err);
+    return { resumed: false, session: null };
+  }
+}
+
+/**
+ * Explicit restart: abandon resumable with user_restarted (not replaced_by_new_session),
+ * then start a fresh domain session for the plan.
+ */
+export async function domainRestartPlan(planId: string): Promise<DomainStartResult> {
+  try {
+    const svc = getWebSessionService();
+    const previous = await svc.getResumable(getLocalUserId());
+    if (previous) {
+      try {
+        await svc.dispatch(previous.sessionId, {
+          type: "abandon_session",
+          reason: "user_restarted",
+        });
+      } catch {
+        /* already terminal */
+      }
+    }
+    bindDomainSessionId(null);
+    return domainStartPlan(planId);
+  } catch (err) {
+    console.warn("[forma web] domainRestartPlan failed", err);
+    return { resumed: false, session: null };
+  }
+}
+
+/** Peek resumable domain session without starting a new one (Today card). */
+export async function peekDomainResumable(): Promise<WorkoutSession | null> {
+  try {
+    return await getWebSessionService().getResumable(getLocalUserId());
+  } catch {
+    return null;
   }
 }
 
@@ -75,7 +136,7 @@ export async function domainCompleteSet(input: {
     const sessionId = getBoundDomainSessionId();
     if (!sessionId) return;
     const svc = getWebSessionService();
-    let session = await svc.getSession(sessionId);
+    const session = await svc.getSession(sessionId);
     if (!session || session.status === "completed" || session.status === "abandoned") return;
 
     const step = session.steps[session.currentStepIndex];

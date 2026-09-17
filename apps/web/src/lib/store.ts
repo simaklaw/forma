@@ -16,7 +16,9 @@ import type {
 import {
   domainCompleteSet,
   domainEndSession,
+  domainRestartPlan,
   domainStartPlan,
+  uiSetsFromDomain,
 } from "./workout-session/dualWrite.ts";
 
 export const COACH_WELCOME =
@@ -89,6 +91,7 @@ type State = {
   addMeasurement: (waist: number) => void;
   setPhoto: (slot: "before" | "after", dataUrl: string) => void;
   startSession: (planId: string) => void;
+  restartSession: (planId: string) => void;
   toggleSet: (exerciseId: string, setIndex: number) => void;
   nextExercise: () => void;
   prevExercise: () => void;
@@ -113,6 +116,17 @@ function applyGoals(profile: Profile): Profile {
 
 function newId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function emptySetsForPlan(planId: string): Record<string, boolean[]> {
+  const plan = planById(planId);
+  const setsDone: Record<string, boolean[]> = {};
+  if (!plan) return setsDone;
+  for (const id of plan.exerciseIds) {
+    const ex = EXERCISES.find((e) => e.id === id);
+    setsDone[id] = Array(ex?.sets ?? 3).fill(false);
+  }
+  return setsDone;
 }
 
 export const useAppStore = create<State>()(
@@ -196,21 +210,67 @@ export const useAppStore = create<State>()(
       startSession: (planId) => {
         const plan = planById(planId);
         if (!plan) return;
-        const setsDone: Record<string, boolean[]> = {};
-        for (const id of plan.exerciseIds) {
-          const ex = EXERCISES.find((e) => e.id === id);
-          setsDone[id] = Array(ex?.sets ?? 3).fill(false);
+
+        // Soft resume: same plan already open in UI — keep progress.
+        const current = get().session;
+        if (current && current.planId === planId) {
+          void domainStartPlan(planId).then((result) => {
+            if (!result.resumed || !result.session) return;
+            const s = get().session;
+            if (!s || s.planId !== planId) return;
+            set({
+              session: {
+                ...s,
+                exerciseIndex: result.session.currentStepIndex,
+                setsDone: uiSetsFromDomain(result.session),
+                restEndsAt: result.session.restEndsAtMs,
+                startedAt: result.session.startedAtMs ?? s.startedAt,
+              },
+            });
+          });
+          return;
         }
+
+        // Optimistic empty UI; domain may hydrate after resume.
         set({
           session: {
             planId,
             exerciseIndex: 0,
-            setsDone,
+            setsDone: emptySetsForPlan(planId),
             restEndsAt: null,
             startedAt: Date.now(),
           },
         });
-        void domainStartPlan(planId);
+
+        void domainStartPlan(planId).then((result) => {
+          if (!result.resumed || !result.session) return;
+          const s = get().session;
+          if (!s || s.planId !== planId) return;
+          set({
+            session: {
+              planId,
+              exerciseIndex: result.session.currentStepIndex,
+              setsDone: uiSetsFromDomain(result.session),
+              restEndsAt: result.session.restEndsAtMs,
+              startedAt: result.session.startedAtMs ?? s.startedAt,
+            },
+          });
+        });
+      },
+
+      restartSession: (planId) => {
+        const plan = planById(planId);
+        if (!plan) return;
+        set({
+          session: {
+            planId,
+            exerciseIndex: 0,
+            setsDone: emptySetsForPlan(planId),
+            restEndsAt: null,
+            startedAt: Date.now(),
+          },
+        });
+        void domainRestartPlan(planId);
       },
 
       toggleSet: (exerciseId, setIndex) => {
@@ -316,6 +376,8 @@ export const useAppStore = create<State>()(
         measurements: s.measurements,
         photos: s.photos,
         coachMessages: s.coachMessages,
+        // Soft nav / refresh: keep UI progress; domain journal remains source of truth on cold start.
+        session: s.session,
       }),
       skipHydration: true,
       onRehydrateStorage: () => (state) => {
