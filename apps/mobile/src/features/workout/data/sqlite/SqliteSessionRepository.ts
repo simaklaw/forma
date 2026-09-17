@@ -128,9 +128,10 @@ export class SqliteSessionRepository implements SessionRepository {
     session: WorkoutSession;
     events: SessionEvent[];
     payloadHashes: string[];
+    checkpoint?: SessionCheckpoint;
   }): Promise<void> {
     this.ensureSchema();
-    const { session, events, payloadHashes } = input;
+    const { session, events, payloadHashes, checkpoint } = input;
     if (events.length !== payloadHashes.length) {
       throw new Error('payloadHashes length must match events');
     }
@@ -202,6 +203,26 @@ export class SqliteSessionRepository implements SessionRepository {
             session.rowVersion,
             payloadHashes[i]!,
             now
+          ]
+        );
+      }
+
+      if (checkpoint) {
+        this.db.runSync(
+          `INSERT INTO session_checkpoint (
+             session_id, event_ordinal, row_version, aggregate_json, created_at_ms
+           ) VALUES (?, ?, ?, ?, ?)
+           ON CONFLICT(session_id) DO UPDATE SET
+             event_ordinal = excluded.event_ordinal,
+             row_version = excluded.row_version,
+             aggregate_json = excluded.aggregate_json,
+             created_at_ms = excluded.created_at_ms`,
+          [
+            checkpoint.sessionId,
+            checkpoint.eventOrdinal,
+            checkpoint.rowVersion,
+            JSON.stringify(checkpoint.aggregate),
+            checkpoint.createdAtMs
           ]
         );
       }
