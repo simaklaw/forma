@@ -36,25 +36,39 @@ jobs:
           cache: gradle
 
       - name: Verify toolchain
+        shell: bash
         run: |
+          set -euo pipefail
           node --version
           npm --version
+          command -v pnpm
           pnpm --version
           java -version
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm install --frozen-lockfile
 
       - name: Generate Android project
         working-directory: apps/mobile
-        run: pnpm exec expo prebuild --platform android --clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm exec expo prebuild --platform android --clean
 
       - name: Build release APK
         working-directory: apps/mobile/android
-        run: ./gradlew assembleRelease --no-daemon --stacktrace
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Verify APK
+        shell: bash
         run: |
+          set -euo pipefail
           test -f apps/mobile/android/app/build/outputs/apk/release/app-release.apk
           ls -lh apps/mobile/android/app/build/outputs/apk/release/app-release.apk
 
