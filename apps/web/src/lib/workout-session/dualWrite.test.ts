@@ -114,10 +114,12 @@ test("domainSkipRest clears restEndsAtMs after complete_set", async () => {
   const id = getBoundDomainSessionId();
   assert.ok(id);
 
-  await domainCompleteSet({ exerciseId: "squat", reps: 12, restSec: 45 });
+  const restEnds = await domainCompleteSet({ exerciseId: "squat", reps: 12, restSec: 45 });
+  assert.ok(restEnds != null && restEnds > Date.now());
+
   let session = await getWebSessionService().getSession(id!);
   assert.ok(session);
-  assert.ok(session!.restEndsAtMs != null, "autoStartRest should set restEndsAtMs");
+  assert.equal(session!.restEndsAtMs, restEnds);
 
   await domainSkipRest();
   session = await getWebSessionService().getSession(id!);

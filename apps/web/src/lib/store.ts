@@ -132,6 +132,16 @@ function emptySetsForPlan(planId: string): Record<string, boolean[]> {
   return setsDone;
 }
 
+function clearRestUiAndDomain(
+  set: (fn: (s: State) => Partial<State> | State) => void,
+) {
+  set((s) => {
+    if (!s.session) return s;
+    return { session: { ...s.session, restEndsAt: null } };
+  });
+  void domainSkipRest();
+}
+
 export const useAppStore = create<State>()(
   persist(
     (set, get) => ({
@@ -289,15 +299,32 @@ export const useAppStore = create<State>()(
         });
         if (!wasDone) {
           const ex = EXERCISES.find((e) => e.id === exerciseId);
+          // Optimistic rest; domain wall-clock overwrites when journal accepts the set.
+          if (ex) {
+            set((st) => {
+              if (!st.session) return st;
+              return {
+                session: {
+                  ...st.session,
+                  restEndsAt: Date.now() + ex.restSec * 1000,
+                },
+              };
+            });
+          }
           void domainCompleteSet({
             exerciseId,
             reps: ex?.reps ?? 0,
             restSec: ex?.restSec ?? 0,
+          }).then((restEndsAtMs) => {
+            if (restEndsAtMs == null) return;
+            const cur = get().session;
+            if (!cur || cur.planId !== s.session!.planId) return;
+            set({ session: { ...cur, restEndsAt: restEndsAtMs } });
           });
         }
       },
 
-      goToExercise: (index) =>
+      goToExercise: (index) => {
         set((s) => {
           if (!s.session) return s;
           const plan = planById(s.session.planId);
@@ -310,9 +337,11 @@ export const useAppStore = create<State>()(
               restEndsAt: null,
             },
           };
-        }),
+        });
+        void domainSkipRest();
+      },
 
-      nextExercise: () =>
+      nextExercise: () => {
         set((s) => {
           if (!s.session) return s;
           const plan = planById(s.session.planId);
@@ -325,9 +354,11 @@ export const useAppStore = create<State>()(
               restEndsAt: null,
             },
           };
-        }),
+        });
+        void domainSkipRest();
+      },
 
-      prevExercise: () =>
+      prevExercise: () => {
         set((s) => {
           if (!s.session) return s;
           return {
@@ -337,7 +368,9 @@ export const useAppStore = create<State>()(
               restEndsAt: null,
             },
           };
-        }),
+        });
+        void domainSkipRest();
+      },
 
       startRest: (sec) =>
         set((s) => {
@@ -346,11 +379,7 @@ export const useAppStore = create<State>()(
         }),
 
       clearRest: () => {
-        set((s) => {
-          if (!s.session) return s;
-          return { session: { ...s.session, restEndsAt: null } };
-        });
-        void domainSkipRest();
+        clearRestUiAndDomain(set);
       },
 
       endSession: (completed) => {

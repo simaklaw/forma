@@ -17,7 +17,6 @@ export function PlayerScreen({ planId }: { planId: string }) {
   const goToExercise = useAppStore((s) => s.goToExercise);
   const nextExercise = useAppStore((s) => s.nextExercise);
   const prevExercise = useAppStore((s) => s.prevExercise);
-  const startRest = useAppStore((s) => s.startRest);
   const clearRest = useAppStore((s) => s.clearRest);
   const endSession = useAppStore((s) => s.endSession);
 
@@ -73,7 +72,6 @@ export function PlayerScreen({ planId }: { planId: string }) {
           className="flex size-11 items-center justify-center rounded-md bg-surface-2"
           aria-label="Закрыть"
           onClick={() => {
-            // Keep session — resume card + domain journal survive.
             navigate({ to: "/" });
           }}
         >
@@ -147,8 +145,8 @@ export function PlayerScreen({ planId }: { planId: string }) {
                 disabled={!allowed}
                 onClick={() => {
                   if (!allowed) return;
+                  // Rest timer comes from toggleSet → domain restEndsAtMs.
                   toggleSet(ex.id, i);
-                  if (!done) startRest(ex.restSec);
                 }}
                 className={cn(
                   "flex size-12 items-center justify-center rounded-full text-sm font-medium",

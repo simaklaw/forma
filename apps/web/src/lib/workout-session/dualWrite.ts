@@ -32,11 +32,6 @@ export function planIdFromTemplateRevision(templateRevisionId: string): string |
   return templateRevisionId.slice("plan-".length) || null;
 }
 
-/**
- * Best-effort dual-write into @forma/workout-domain.
- * UI Zustand session remains primary for Forma web player in this step;
- * domain journal is the shared contract with FitPulse mobile.
- */
 export async function domainStartPlan(planId: string): Promise<DomainStartResult> {
   try {
     const plan = planById(planId);
@@ -87,10 +82,6 @@ export async function domainStartPlan(planId: string): Promise<DomainStartResult
   }
 }
 
-/**
- * Explicit restart: abandon resumable with user_restarted (not replaced_by_new_session),
- * then start a fresh domain session for the plan.
- */
 export async function domainRestartPlan(planId: string): Promise<DomainStartResult> {
   try {
     const svc = getWebSessionService();
@@ -113,7 +104,6 @@ export async function domainRestartPlan(planId: string): Promise<DomainStartResu
   }
 }
 
-/** Peek resumable domain session without starting a new one (Today card). */
 export async function peekDomainResumable(): Promise<WorkoutSession | null> {
   try {
     return await getWebSessionService().getResumable(getLocalUserId());
@@ -136,22 +126,25 @@ export async function domainSkipRest(): Promise<void> {
   }
 }
 
-/** Record a completed set when user marks a set done (not un-done). */
+/**
+ * Record a completed set. Returns domain restEndsAtMs when autoStartRest applied,
+ * so UI timer can follow the journal wall-clock (survives reload).
+ */
 export async function domainCompleteSet(input: {
   exerciseId: string;
   reps: number;
   restSec: number;
-}): Promise<void> {
+}): Promise<number | null> {
   try {
     const sessionId = getBoundDomainSessionId();
-    if (!sessionId) return;
+    if (!sessionId) return null;
     const svc = getWebSessionService();
     const session = await svc.getSession(sessionId);
-    if (!session || session.status === "completed" || session.status === "abandoned") return;
+    if (!session || session.status === "completed" || session.status === "abandoned") return null;
 
     const step = session.steps[session.currentStepIndex];
     if (!step || step.snapshot.exerciseId !== input.exerciseId) {
-      return;
+      return null;
     }
 
     if (session.restEndsAtMs != null) {
@@ -162,14 +155,16 @@ export async function domainCompleteSet(input: {
       }
     }
 
-    await svc.dispatch(sessionId, {
+    const result = await svc.dispatch(sessionId, {
       type: "complete_set",
       weightKg: 0,
       reps: input.reps,
       autoStartRest: true,
     });
+    return result.session.restEndsAtMs;
   } catch (err) {
     console.warn("[forma web] domainCompleteSet failed", err);
+    return null;
   }
 }
 
