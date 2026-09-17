@@ -9,7 +9,11 @@ import { newEventId, newOperationId } from "./ids.ts";
 import { WebMemorySessionRepository } from "./memoryRepo.ts";
 
 export class WebSessionCommandService {
-  constructor(private readonly repo: WebMemorySessionRepository) {}
+  private readonly repo: WebMemorySessionRepository;
+
+  constructor(repo: WebMemorySessionRepository) {
+    this.repo = repo;
+  }
 
   getRepo(): WebMemorySessionRepository {
     return this.repo;
