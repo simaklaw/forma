@@ -18,6 +18,7 @@ import {
   domainCompleteSet,
   domainEndSession,
   domainRestartPlan,
+  domainSkipRest,
   domainStartPlan,
   uiSetsFromDomain,
 } from "./workout-session/dualWrite.ts";
@@ -344,11 +345,13 @@ export const useAppStore = create<State>()(
           return { session: { ...s.session, restEndsAt: Date.now() + sec * 1000 } };
         }),
 
-      clearRest: () =>
+      clearRest: () => {
         set((s) => {
           if (!s.session) return s;
           return { session: { ...s.session, restEndsAt: null } };
-        }),
+        });
+        void domainSkipRest();
+      },
 
       endSession: (completed) => {
         const s = get();

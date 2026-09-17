@@ -50,10 +50,6 @@ export async function domainStartPlan(planId: string): Promise<DomainStartResult
     const previous = await svc.getResumable(userId);
 
     if (previous && previous.templateRevisionId === templateRevisionId) {
-      // Same plan already has a resumable domain session (e.g. tab was closed
-      // mid-workout without an explicit finish). Resume it instead of
-      // discarding progress — mirrors ActiveSessionController.abandonIfDifferentDay
-      // on mobile (apps/mobile/src/features/workout/session/ActiveSessionController.ts).
       bindDomainSessionId(previous.sessionId);
       return { resumed: true, session: previous };
     }
@@ -126,6 +122,20 @@ export async function peekDomainResumable(): Promise<WorkoutSession | null> {
   }
 }
 
+/** User skipped rest overlay — clear domain restEndsAtMs if resting. */
+export async function domainSkipRest(): Promise<void> {
+  try {
+    const sessionId = getBoundDomainSessionId();
+    if (!sessionId) return;
+    const svc = getWebSessionService();
+    const session = await svc.getSession(sessionId);
+    if (!session || session.restEndsAtMs == null) return;
+    await svc.dispatch(sessionId, { type: "skip_rest" });
+  } catch (err) {
+    console.warn("[forma web] domainSkipRest failed", err);
+  }
+}
+
 /** Record a completed set when user marks a set done (not un-done). */
 export async function domainCompleteSet(input: {
   exerciseId: string;
@@ -141,7 +151,6 @@ export async function domainCompleteSet(input: {
 
     const step = session.steps[session.currentStepIndex];
     if (!step || step.snapshot.exerciseId !== input.exerciseId) {
-      // Player allows free navigation; domain is sequential — skip mismatched steps.
       return;
     }
 

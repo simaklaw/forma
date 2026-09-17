@@ -3,6 +3,7 @@ import { test, beforeEach } from "node:test";
 import {
   domainCompleteSet,
   domainRestartPlan,
+  domainSkipRest,
   domainStartPlan,
   planIdFromTemplateRevision,
   uiSetsFromDomain,
@@ -27,7 +28,6 @@ test("same plan resumes without abandon", async () => {
   const eventsBefore = await getWebSessionService().listEvents(firstId!);
   assert.ok(eventsBefore.length > 0);
 
-  // Simulate tab reopen / second start of the same plan — no domainEndSession.
   const result = await domainStartPlan("full-15");
 
   const secondId = getBoundDomainSessionId();
@@ -107,4 +107,20 @@ test("domainRestartPlan abandons with user_restarted and starts fresh", async ()
   assert.ok(fresh);
   assert.notEqual(fresh!.status, "abandoned");
   assert.equal(fresh!.steps[0]!.completedSets.length, 0);
+});
+
+test("domainSkipRest clears restEndsAtMs after complete_set", async () => {
+  await domainStartPlan("full-15");
+  const id = getBoundDomainSessionId();
+  assert.ok(id);
+
+  await domainCompleteSet({ exerciseId: "squat", reps: 12, restSec: 45 });
+  let session = await getWebSessionService().getSession(id!);
+  assert.ok(session);
+  assert.ok(session!.restEndsAtMs != null, "autoStartRest should set restEndsAtMs");
+
+  await domainSkipRest();
+  session = await getWebSessionService().getSession(id!);
+  assert.ok(session);
+  assert.equal(session!.restEndsAtMs, null);
 });
