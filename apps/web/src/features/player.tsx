@@ -4,9 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { calculateBurnedCalories, metForExercise } from "@forma/core";
 import { Button } from "@/components/ui/button";
 import { planById, planExercises } from "@/lib/catalog";
+import { canMarkSet, expectedExerciseId } from "@/lib/session-logic.ts";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { getDomainExpectedExerciseId } from "@/lib/workout-session/sessionService.ts";
 
 export function PlayerScreen({ planId }: { planId: string }) {
   const navigate = useNavigate();
@@ -14,13 +14,12 @@ export function PlayerScreen({ planId }: { planId: string }) {
   const session = useAppStore((s) => s.session);
   const startSession = useAppStore((s) => s.startSession);
   const toggleSet = useAppStore((s) => s.toggleSet);
+  const goToExercise = useAppStore((s) => s.goToExercise);
   const nextExercise = useAppStore((s) => s.nextExercise);
   const prevExercise = useAppStore((s) => s.prevExercise);
   const startRest = useAppStore((s) => s.startRest);
   const clearRest = useAppStore((s) => s.clearRest);
   const endSession = useAppStore((s) => s.endSession);
-
-  const [domainExpectedId, setDomainExpectedId] = useState<string | null>(null);
 
   const plan = planById(planId);
   const exercises = plan ? planExercises(plan) : [];
@@ -33,15 +32,25 @@ export function PlayerScreen({ planId }: { planId: string }) {
   const idx = session?.exerciseIndex ?? 0;
   const ex = exercises[Math.min(idx, Math.max(0, exercises.length - 1))];
 
-  useEffect(() => {
-    let cancelled = false;
-    void getDomainExpectedExerciseId().then((id) => {
-      if (!cancelled) setDomainExpectedId(id);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [session?.setsDone, session?.exerciseIndex, session?.planId]);
+  const expectedId =
+    session && plan ? expectedExerciseId(session.planId, session.setsDone) : null;
+  const sequentialMismatch = Boolean(expectedId && ex && expectedId !== ex.id);
+  const expectedName =
+    sequentialMismatch && expectedId
+      ? exercises.find((e) => e.id === expectedId)?.name
+      : null;
+  const expectedIndex =
+    sequentialMismatch && expectedId && plan
+      ? plan.exerciseIds.indexOf(expectedId)
+      : -1;
+
+  const estKcal = useMemo(() => {
+    if (!ex) return 0;
+    const met = metForExercise(ex.id);
+    const workSec = ex.unit === "sec" ? ex.reps * ex.sets : ex.reps * ex.sets * 3;
+    const minutes = Math.max(0.5, workSec / 60);
+    return calculateBurnedCalories(met, profile.weightKg, minutes);
+  }, [ex, profile.weightKg]);
 
   if (!plan || !exercises.length || !ex) {
     return (
@@ -55,19 +64,6 @@ export function PlayerScreen({ planId }: { planId: string }) {
   const sets = session?.setsDone[ex.id] ?? Array(ex.sets).fill(false);
   const allDone = sets.every(Boolean);
   const restEndsAt = session?.restEndsAt ?? null;
-  const sequentialMismatch =
-    domainExpectedId != null && domainExpectedId !== ex.id;
-  const expectedName =
-    sequentialMismatch && domainExpectedId
-      ? exercises.find((e) => e.id === domainExpectedId)?.name
-      : null;
-
-  const estKcal = useMemo(() => {
-    const met = metForExercise(ex.id);
-    const workSec = ex.unit === "sec" ? ex.reps * ex.sets : ex.reps * ex.sets * 3;
-    const minutes = Math.max(0.5, workSec / 60);
-    return calculateBurnedCalories(met, profile.weightKg, minutes);
-  }, [ex, profile.weightKg]);
 
   return (
     <div className="flex min-h-dvh flex-col bg-bg">
@@ -75,8 +71,9 @@ export function PlayerScreen({ planId }: { planId: string }) {
         <button
           type="button"
           className="flex size-11 items-center justify-center rounded-md bg-surface-2"
+          aria-label="Закрыть"
           onClick={() => {
-            endSession(false);
+            // Keep session — resume card + domain journal survive.
             navigate({ to: "/" });
           }}
         >
@@ -115,9 +112,17 @@ export function PlayerScreen({ planId }: { planId: string }) {
       <div className="flex-1 px-5 pt-4">
         {sequentialMismatch && expectedName && (
           <div className="mb-3 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
-            Журнал тренировки ждёт: <span className="font-medium">{expectedName}</span>.
-            Подходы здесь сохранятся в UI, но в общий domain-journal попадут по
-            порядку упражнений.
+            Сначала: <span className="font-medium">{expectedName}</span>. Подходы
+            записываются по порядку упражнений.
+            {expectedIndex >= 0 && (
+              <button
+                type="button"
+                className="mt-2 block text-sm font-medium text-accent underline"
+                onClick={() => goToExercise(expectedIndex)}
+              >
+                Перейти к упражнению
+              </button>
+            )}
           </div>
         )}
         <h1 className="font-display text-xl">{ex.name}</h1>
@@ -133,22 +138,28 @@ export function PlayerScreen({ planId }: { planId: string }) {
         </ul>
 
         <div className="mt-5 flex flex-wrap gap-2">
-          {sets.map((done, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => {
-                toggleSet(ex.id, i);
-                if (!done) startRest(ex.restSec);
-              }}
-              className={cn(
-                "flex size-12 items-center justify-center rounded-full text-sm font-medium",
-                done ? "bg-accent text-accent-fg" : "bg-surface-2 text-fg",
-              )}
-            >
-              {done ? <Check className="size-5" /> : i + 1}
-            </button>
-          ))}
+          {sets.map((done, i) => {
+            const allowed = session ? canMarkSet(session, ex.id, i) : false;
+            return (
+              <button
+                key={i}
+                type="button"
+                disabled={!allowed}
+                onClick={() => {
+                  if (!allowed) return;
+                  toggleSet(ex.id, i);
+                  if (!done) startRest(ex.restSec);
+                }}
+                className={cn(
+                  "flex size-12 items-center justify-center rounded-full text-sm font-medium",
+                  done ? "bg-accent text-accent-fg" : "bg-surface-2 text-fg",
+                  !allowed && "opacity-40",
+                )}
+              >
+                {done ? <Check className="size-5" /> : i + 1}
+              </button>
+            );
+          })}
         </div>
       </div>
 

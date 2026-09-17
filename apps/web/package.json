@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "type-check": "tsc --noEmit",
     "lint": "echo \"@forma/web: add eslint later\"",
-    "test": "node --experimental-strip-types --test src/lib/forma.test.ts src/lib/workout-session/*.test.ts"
+    "test": "node --experimental-strip-types --test src/lib/forma.test.ts src/lib/session-logic.test.ts src/lib/workout-session/*.test.ts"
   },
   "dependencies": {
     "@forma/core": "workspace:*",
