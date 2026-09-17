@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   CoachEngine,
@@ -29,11 +29,13 @@ function countSets(setsDone: Record<string, boolean[]>): { done: number; total: 
 }
 
 export function TodayScreen() {
+  const navigate = useNavigate();
   const profile = useAppStore((s) => s.profile);
   const workouts = useAppStore((s) => s.workouts);
   const meals = useAppStore((s) => s.meals);
   const session = useAppStore((s) => s.session);
   const startSession = useAppStore((s) => s.startSession);
+  const restartSession = useAppStore((s) => s.restartSession);
 
   const [domainResume, setDomainResume] = useState<{
     planId: string;
@@ -144,6 +146,18 @@ export function TodayScreen() {
     };
   }, [snapshot, doneToday]);
 
+  function continueLive() {
+    if (!livePlan) return;
+    startSession(livePlan.id);
+    void navigate({ to: "/play/$planId", params: { planId: livePlan.id } });
+  }
+
+  function restartLive() {
+    if (!livePlan) return;
+    restartSession(livePlan.id);
+    void navigate({ to: "/play/$planId", params: { planId: livePlan.id } });
+  }
+
   return (
     <div className="px-5 pb-8 pt-10">
       <header className="mb-6">
@@ -171,14 +185,14 @@ export function TodayScreen() {
             {liveCounts.done}/{liveCounts.total} подходов
             {session ? ` · шаг ${session.exerciseIndex + 1}/${livePlan.exerciseIds.length}` : ""}
           </p>
-          <Link
-            to="/play/$planId"
-            params={{ planId: livePlan.id }}
-            className="mt-3 block"
-            onClick={() => startSession(livePlan.id)}
-          >
-            <Button className="w-full">Продолжить</Button>
-          </Link>
+          <div className="mt-3 flex gap-2">
+            <Button className="flex-1" onClick={continueLive}>
+              Продолжить
+            </Button>
+            <Button variant="secondary" className="flex-1" onClick={restartLive}>
+              Заново
+            </Button>
+          </div>
         </div>
       )}
 

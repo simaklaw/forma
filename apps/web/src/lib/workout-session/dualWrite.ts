@@ -1,6 +1,6 @@
 import type { WorkoutSession } from "@forma/workout-domain";
-import { planById, planExercises } from "../catalog";
-import { todayKey } from "../forma";
+import { planById, planExercises } from "../catalog.ts";
+import { todayKey } from "../forma.ts";
 import { newSessionId } from "./ids.ts";
 import { catalogExercisesToSnapshots, contentHashForCatalog } from "./planToDomain.ts";
 import {
@@ -91,6 +91,32 @@ export async function domainStartPlan(planId: string): Promise<DomainStartResult
   }
 }
 
+/**
+ * Explicit restart: abandon resumable with user_restarted (not replaced_by_new_session),
+ * then start a fresh domain session for the plan.
+ */
+export async function domainRestartPlan(planId: string): Promise<DomainStartResult> {
+  try {
+    const svc = getWebSessionService();
+    const previous = await svc.getResumable(getLocalUserId());
+    if (previous) {
+      try {
+        await svc.dispatch(previous.sessionId, {
+          type: "abandon_session",
+          reason: "user_restarted",
+        });
+      } catch {
+        /* already terminal */
+      }
+    }
+    bindDomainSessionId(null);
+    return domainStartPlan(planId);
+  } catch (err) {
+    console.warn("[forma web] domainRestartPlan failed", err);
+    return { resumed: false, session: null };
+  }
+}
+
 /** Peek resumable domain session without starting a new one (Today card). */
 export async function peekDomainResumable(): Promise<WorkoutSession | null> {
   try {
@@ -110,7 +136,7 @@ export async function domainCompleteSet(input: {
     const sessionId = getBoundDomainSessionId();
     if (!sessionId) return;
     const svc = getWebSessionService();
-    let session = await svc.getSession(sessionId);
+    const session = await svc.getSession(sessionId);
     if (!session || session.status === "completed" || session.status === "abandoned") return;
 
     const step = session.steps[session.currentStepIndex];

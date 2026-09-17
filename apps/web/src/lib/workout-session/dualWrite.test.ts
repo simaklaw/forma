@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test, beforeEach } from "node:test";
 import {
   domainCompleteSet,
+  domainRestartPlan,
   domainStartPlan,
   planIdFromTemplateRevision,
   uiSetsFromDomain,
@@ -83,4 +84,27 @@ test("uiSetsFromDomain mirrors completed set counts", async () => {
   assert.equal(squat.filter(Boolean).length, 1);
   assert.ok(squat.length >= 1);
   assert.equal(planIdFromTemplateRevision(session!.templateRevisionId), "full-15");
+});
+
+test("domainRestartPlan abandons with user_restarted and starts fresh", async () => {
+  await domainStartPlan("full-15");
+  const firstId = getBoundDomainSessionId();
+  assert.ok(firstId);
+  await domainCompleteSet({ exerciseId: "squat", reps: 12, restSec: 45 });
+
+  const result = await domainRestartPlan("full-15");
+  assert.equal(result.resumed, false);
+
+  const secondId = getBoundDomainSessionId();
+  assert.ok(secondId);
+  assert.notEqual(secondId, firstId);
+
+  const abandoned = await getWebSessionService().getSession(firstId!);
+  assert.equal(abandoned?.status, "abandoned");
+  assert.equal(abandoned?.terminalReason, "user_restarted");
+
+  const fresh = await getWebSessionService().getSession(secondId!);
+  assert.ok(fresh);
+  assert.notEqual(fresh!.status, "abandoned");
+  assert.equal(fresh!.steps[0]!.completedSets.length, 0);
 });

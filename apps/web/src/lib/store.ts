@@ -16,6 +16,7 @@ import type {
 import {
   domainCompleteSet,
   domainEndSession,
+  domainRestartPlan,
   domainStartPlan,
   uiSetsFromDomain,
 } from "./workout-session/dualWrite.ts";
@@ -90,6 +91,7 @@ type State = {
   addMeasurement: (waist: number) => void;
   setPhoto: (slot: "before" | "after", dataUrl: string) => void;
   startSession: (planId: string) => void;
+  restartSession: (planId: string) => void;
   toggleSet: (exerciseId: string, setIndex: number) => void;
   nextExercise: () => void;
   prevExercise: () => void;
@@ -254,6 +256,21 @@ export const useAppStore = create<State>()(
             },
           });
         });
+      },
+
+      restartSession: (planId) => {
+        const plan = planById(planId);
+        if (!plan) return;
+        set({
+          session: {
+            planId,
+            exerciseIndex: 0,
+            setsDone: emptySetsForPlan(planId),
+            restEndsAt: null,
+            startedAt: Date.now(),
+          },
+        });
+        void domainRestartPlan(planId);
       },
 
       toggleSet: (exerciseId, setIndex) => {
