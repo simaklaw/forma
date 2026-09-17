@@ -5,9 +5,22 @@ Bridges Forma web player to `@forma/workout-domain` (same aggregate as FitPulse 
 | Layer | Web | Mobile |
 |-------|-----|--------|
 | Domain | `@forma/workout-domain` | same |
-| Persistence | in-memory (`WebMemorySessionRepository`) | SQLite + memory |
+| Persistence | memory + **localStorage** (`forma-workout-domain-v1`) | SQLite + memory |
 | UI state | Zustand `session` (primary for player UX) | dual-write + projections |
 
-`dualWrite.ts` records prepare/start/complete_set/complete|abandon **best-effort**. Sequential domain rules may skip sets if the player jumps exercises out of order (web player still allows free navigation).
+## Behaviour
 
-Next: localStorage persistence of domain journal, sequential UI gate parity with mobile.
+- `dualWrite.ts` records prepare/start/complete_set/complete|abandon **best-effort**.
+- Domain is **sequential**; web player still allows free navigation.
+- Player shows an amber hint when the open exercise ≠ domain `currentStepIndex`.
+- Tests use `resetWebSessionForTests()` / `persist: false` so Node has no localStorage.
+
+## CI note
+
+After adding `@forma/workout-domain` to `apps/web/package.json`, run:
+
+```bash
+pnpm install
+```
+
+and commit the updated `pnpm-lock.yaml`.

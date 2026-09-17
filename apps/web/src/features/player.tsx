@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { planById, planExercises } from "@/lib/catalog";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { getDomainExpectedExerciseId } from "@/lib/workout-session/sessionService.ts";
 
 export function PlayerScreen({ planId }: { planId: string }) {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ export function PlayerScreen({ planId }: { planId: string }) {
   const clearRest = useAppStore((s) => s.clearRest);
   const endSession = useAppStore((s) => s.endSession);
 
+  const [domainExpectedId, setDomainExpectedId] = useState<string | null>(null);
+
   const plan = planById(planId);
   const exercises = plan ? planExercises(plan) : [];
 
@@ -27,7 +30,20 @@ export function PlayerScreen({ planId }: { planId: string }) {
     if (!session || session.planId !== planId) startSession(planId);
   }, [planId, plan, session, startSession]);
 
-  if (!plan || !exercises.length) {
+  const idx = session?.exerciseIndex ?? 0;
+  const ex = exercises[Math.min(idx, Math.max(0, exercises.length - 1))];
+
+  useEffect(() => {
+    let cancelled = false;
+    void getDomainExpectedExerciseId().then((id) => {
+      if (!cancelled) setDomainExpectedId(id);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.setsDone, session?.exerciseIndex, session?.planId]);
+
+  if (!plan || !exercises.length || !ex) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-4 px-5">
         <p>План не найден</p>
@@ -36,11 +52,15 @@ export function PlayerScreen({ planId }: { planId: string }) {
     );
   }
 
-  const idx = session?.exerciseIndex ?? 0;
-  const ex = exercises[Math.min(idx, exercises.length - 1)];
   const sets = session?.setsDone[ex.id] ?? Array(ex.sets).fill(false);
   const allDone = sets.every(Boolean);
   const restEndsAt = session?.restEndsAt ?? null;
+  const sequentialMismatch =
+    domainExpectedId != null && domainExpectedId !== ex.id;
+  const expectedName =
+    sequentialMismatch && domainExpectedId
+      ? exercises.find((e) => e.id === domainExpectedId)?.name
+      : null;
 
   const estKcal = useMemo(() => {
     const met = metForExercise(ex.id);
@@ -93,6 +113,13 @@ export function PlayerScreen({ planId }: { planId: string }) {
       </div>
 
       <div className="flex-1 px-5 pt-4">
+        {sequentialMismatch && expectedName && (
+          <div className="mb-3 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
+            Журнал тренировки ждёт: <span className="font-medium">{expectedName}</span>.
+            Подходы здесь сохранятся в UI, но в общий domain-journal попадут по
+            порядку упражнений.
+          </div>
+        )}
         <h1 className="font-display text-xl">{ex.name}</h1>
         <p className="mt-1 text-sm text-muted">
           {ex.sets} × {ex.reps} {ex.unit === "sec" ? "сек" : "повт"} · отдых {ex.restSec} с

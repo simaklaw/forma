@@ -11,6 +11,10 @@ import { WebMemorySessionRepository } from "./memoryRepo.ts";
 export class WebSessionCommandService {
   constructor(private readonly repo: WebMemorySessionRepository) {}
 
+  getRepo(): WebMemorySessionRepository {
+    return this.repo;
+  }
+
   async getSession(sessionId: string): Promise<WorkoutSession | null> {
     return this.repo.getSession(sessionId);
   }
@@ -57,14 +61,17 @@ export class WebSessionCommandService {
 
 const LOCAL_USER = "local-user";
 
-let repo = new WebMemorySessionRepository();
+/** Tests: no localStorage. Browser: persist by default. */
+function createRepo(forTests = false): WebMemorySessionRepository {
+  return new WebMemorySessionRepository({ persist: !forTests });
+}
+
+let repo = createRepo(false);
 let service = new WebSessionCommandService(repo);
-let boundSessionId: string | null = null;
 
 export function resetWebSessionForTests(): void {
-  repo = new WebMemorySessionRepository();
+  repo = createRepo(true);
   service = new WebSessionCommandService(repo);
-  boundSessionId = null;
 }
 
 export function getWebSessionService(): WebSessionCommandService {
@@ -72,7 +79,7 @@ export function getWebSessionService(): WebSessionCommandService {
 }
 
 export function getBoundDomainSessionId(): string | null {
-  return boundSessionId;
+  return repo.getBoundSessionId();
 }
 
 export function getLocalUserId(): string {
@@ -80,5 +87,17 @@ export function getLocalUserId(): string {
 }
 
 export function bindDomainSessionId(id: string | null): void {
-  boundSessionId = id;
+  repo.setBoundSessionId(id);
+}
+
+/** Expected exercise id for the domain sequential step (if any). */
+export async function getDomainExpectedExerciseId(): Promise<string | null> {
+  const id = getBoundDomainSessionId();
+  if (!id) return null;
+  const session = await service.getSession(id);
+  if (!session || session.status === "completed" || session.status === "abandoned") {
+    return null;
+  }
+  const step = session.steps[session.currentStepIndex];
+  return step?.snapshot.exerciseId ?? null;
 }
