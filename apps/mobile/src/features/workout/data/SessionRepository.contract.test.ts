@@ -22,7 +22,7 @@ function factories(): Array<{ name: string; create: () => SessionRepository }> {
 }
 
 describe.each(factories())('SessionRepository contract ($name)', ({ create }) => {
-  it('commits session + events + outbox together', async () => {
+  it('commits session + events + checkpoint + outbox together', async () => {
     const repo = create();
     const sessionId = uuidv7(1_700_000_000_000);
     const prepared = applyCommand(
@@ -43,7 +43,14 @@ describe.each(factories())('SessionRepository contract ($name)', ({ create }) =>
     await repo.commitSessionChange({
       session: prepared.session,
       events: prepared.events,
-      payloadHashes: prepared.events.map((e) => hashPayload(e.payload))
+      payloadHashes: prepared.events.map((e) => hashPayload(e.payload)),
+      checkpoint: {
+        sessionId,
+        eventOrdinal: prepared.session.lastEventOrdinal,
+        rowVersion: prepared.session.rowVersion,
+        aggregate: prepared.session,
+        createdAtMs: 1000
+      }
     });
 
     const loaded = await repo.getSession(sessionId);
@@ -51,6 +58,9 @@ describe.each(factories())('SessionRepository contract ($name)', ({ create }) =>
     const events = await repo.listEvents(sessionId);
     expect(events).toHaveLength(1);
     expect(events[0]?.ordinal).toBe(1);
+    const checkpoint = await repo.getCheckpoint(sessionId);
+    expect(checkpoint?.eventOrdinal).toBe(prepared.session.lastEventOrdinal);
+    expect(checkpoint?.aggregate.status).toBe('prepared');
     const outbox = await repo.listPendingOutbox();
     expect(outbox).toHaveLength(1);
   });
