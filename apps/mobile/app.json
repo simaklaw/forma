@@ -30,7 +30,6 @@
       ]
     },
     "plugins": [
-      "expo-dev-client",
       "expo-document-picker",
       [
         "expo-build-properties",
