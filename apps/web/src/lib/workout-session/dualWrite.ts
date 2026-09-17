@@ -23,7 +23,18 @@ export async function domainStartPlan(planId: string): Promise<void> {
 
     const svc = getWebSessionService();
     const userId = getLocalUserId();
+    const templateRevisionId = `plan-${planId}`;
     const previous = await svc.getResumable(userId);
+
+    if (previous && previous.templateRevisionId === templateRevisionId) {
+      // Same plan already has a resumable domain session (e.g. tab was closed
+      // mid-workout without an explicit finish). Resume it instead of
+      // discarding progress — mirrors ActiveSessionController.abandonIfDifferentDay
+      // on mobile (apps/mobile/src/features/workout/session/ActiveSessionController.ts).
+      bindDomainSessionId(previous.sessionId);
+      return;
+    }
+
     if (previous) {
       try {
         await svc.dispatch(previous.sessionId, {
@@ -41,7 +52,7 @@ export async function domainStartPlan(planId: string): Promise<void> {
       type: "prepare_session",
       sessionId,
       userId,
-      templateRevisionId: `plan-${planId}`,
+      templateRevisionId,
       contentHash: contentHashForCatalog(exercises),
       steps,
       localStartDate: todayKey(),
