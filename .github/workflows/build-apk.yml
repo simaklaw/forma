@@ -36,7 +36,9 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-          cache: gradle
+          # cache: gradle intentionally omitted — android/ does not exist until
+          # expo prebuild runs later. setup-java fails hard when no gradle files
+          # match (it does not degrade to a cache miss).
 
       - name: Verify toolchain
         shell: bash
@@ -62,24 +64,26 @@ jobs:
           set -euo pipefail
           pnpm exec expo prebuild --platform android --clean
 
-      - name: Build release APK
+      - name: Build debug APK (for testing)
         working-directory: apps/mobile/android
         shell: bash
         run: |
           set -euo pipefail
-          ./gradlew assembleRelease --no-daemon --stacktrace
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
-      - name: Verify APK
+      - name: Locate APK
         shell: bash
         run: |
           set -euo pipefail
-          test -f apps/mobile/android/android/app/build/outputs/apk/release/app-release.apk
-          ls -lh apps/mobile/android/android/app/build/outputs/apk/release/app-release.apk
+          echo "Найденные APK:"
+          find apps/mobile/android -type f -name '*.apk' -print
+          test -n "$(find apps/mobile/android -type f -name '*.apk' -print -quit)" \
+            || { echo '::error::Ни одного .apk не найдено под apps/mobile/android'; exit 1; }
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: forma-android-apk
-          path: apps/mobile/android/android/app/build/outputs/apk/release/app-release.apk
+          name: forma-android-debug-apk
+          path: apps/mobile/android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 5
