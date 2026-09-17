@@ -62,7 +62,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # This workflow produces a plain debug APK, not a development
+          # client. Keep expo-dev-client for EAS development builds, but do
+          # not autolink it here: Expo SDK 51 otherwise adds a broken
+          # expo-dev-launcher includeBuild(null) under pnpm.
+          sed -i '/"expo-dev-client":/d' package.json
           pnpm exec expo prebuild --platform android --clean
+          # Expo SDK 51's template resolves this package from the current
+          # directory. With pnpm, resolve it through react-native instead;
+          # otherwise the empty result becomes includeBuild("null").
+          sed -i "s#require.resolve('@react-native/gradle-plugin/package.json')#require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })#" android/settings.gradle
 
       - name: Build debug APK (for testing)
         working-directory: apps/mobile/android
