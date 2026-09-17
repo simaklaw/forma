@@ -57,6 +57,11 @@ describe('SessionCommandService + MemorySessionRepository', () => {
     expect(loaded?.lastEventOrdinal).toBe(afterSet.session.lastEventOrdinal);
     expect(loaded?.steps[0]?.completedSets[0]?.reps).toBe(8);
 
+    const checkpoint = await svc.getCheckpoint(sessionId);
+    expect(checkpoint?.eventOrdinal).toBe(afterSet.session.lastEventOrdinal);
+    expect(checkpoint?.rowVersion).toBe(afterSet.session.rowVersion);
+    expect(checkpoint?.aggregate.steps[0]?.completedSets).toHaveLength(1);
+
     const events = await repo.listEvents(sessionId);
     expect(events.length).toBeGreaterThanOrEqual(3);
     expect(events.map((e) => e.type)).toEqual(
@@ -66,6 +71,52 @@ describe('SessionCommandService + MemorySessionRepository', () => {
     const outbox = await repo.listPendingOutbox();
     expect(outbox.length).toBe(events.length);
     expect(outbox.every((r) => r.status === 'pending')).toBe(true);
+  });
+
+  it('getResumable recovers from the durable checkpoint', async () => {
+    const { repo, svc } = service();
+    const sessionId = newSessionId();
+
+    await svc.dispatch(null, {
+      type: 'prepare_session',
+      sessionId,
+      userId: 'user-1',
+      templateRevisionId: 'tpl-1',
+      contentHash: 'hash',
+      steps,
+      localStartDate: '2026-09-16',
+      timezone: 'UTC'
+    }, { nowMs: 1000 });
+    await svc.dispatch(sessionId, { type: 'start_session' }, { nowMs: 2000 });
+
+    const stored = await svc.getSession(sessionId);
+    const checkpoint = await svc.getCheckpoint(sessionId);
+    expect(stored).not.toBeNull();
+    expect(checkpoint).not.toBeNull();
+
+    const recoveredStep = {
+      ...checkpoint!.aggregate.steps[0]!,
+      completedSets: [
+        {
+          setIndex: 0,
+          weightKg: 80,
+          reps: 8,
+          completedAtMs: 2500
+        }
+      ]
+    };
+    await repo.saveCheckpoint({
+      ...checkpoint!,
+      aggregate: {
+        ...checkpoint!.aggregate,
+        steps: [recoveredStep]
+      }
+    });
+
+    const recovered = await svc.getResumable('user-1');
+    expect(recovered?.sessionId).toBe(sessionId);
+    expect(recovered?.steps[0]?.completedSets).toHaveLength(1);
+    expect(recovered?.steps[0]?.completedSets[0]?.reps).toBe(8);
   });
 
   it('getResumable returns active session only', async () => {
