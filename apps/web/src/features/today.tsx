@@ -102,6 +102,7 @@ export function TodayScreen() {
     : domainResume
       ? { done: domainResume.done, total: domainResume.total }
       : null;
+  const todayIsResumable = Boolean(plan && livePlan && plan.id === livePlan.id);
 
   const snapshot = useMemo((): UserContextSnapshot => {
     const todayMeals = meals.filter((m) => m.date === today);
@@ -205,7 +206,7 @@ export function TodayScreen() {
                 {plan.focus} · {plan.minutes} мин
               </p>
             </div>
-            {doneToday && (
+            {doneToday && !todayIsResumable && (
               <span className="rounded-full bg-accent-soft px-3 py-1 text-xs text-accent">Готово</span>
             )}
           </div>
@@ -216,11 +217,17 @@ export function TodayScreen() {
             ))}
           </div>
 
-          <Link to="/play/$planId" params={{ planId: plan.id }}>
-            <Button className="w-full" size="lg" disabled={doneToday}>
-              {doneToday ? "Уже сделано сегодня" : "Начать тренировку"}
+          {todayIsResumable ? (
+            <Button className="w-full" size="lg" onClick={continueLive}>
+              Продолжить тренировку
             </Button>
-          </Link>
+          ) : (
+            <Link to="/play/$planId" params={{ planId: plan.id }}>
+              <Button className="w-full" size="lg" disabled={doneToday}>
+                {doneToday ? "Уже сделано сегодня" : "Начать тренировку"}
+              </Button>
+            </Link>
+          )}
 
           <div className="pt-2">
             <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted">Другие планы</p>
