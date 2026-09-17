@@ -10,6 +10,7 @@ import {
   hashPayload,
   type OutboxRow,
   type OutboxStatus,
+  type SessionCheckpoint,
   type SessionRepository
 } from './SessionRepository';
 
@@ -34,15 +35,30 @@ export class SessionCommandService {
     return this.repo.getSession(sessionId);
   }
 
+  /**
+   * Return the resumable aggregate from the durable checkpoint when present.
+   * The session row remains the identity/index used to locate the resumable
+   * session; the checkpoint is the restart-safe aggregate snapshot.
+   */
   async getResumable(userId: string): Promise<WorkoutSession | null> {
-    return this.repo.getResumableSession(userId);
+    const session = await this.repo.getResumableSession(userId);
+    if (!session) return null;
+
+    const checkpoint = await this.repo.getCheckpoint(session.sessionId);
+    if (!checkpoint) return session;
+    if (checkpoint.sessionId !== session.sessionId) return session;
+    if (checkpoint.aggregate.sessionId !== session.sessionId) return session;
+    if (checkpoint.aggregate.userId !== session.userId) return session;
+    if (checkpoint.aggregate.rowVersion < session.rowVersion) return session;
+
+    return checkpoint.aggregate;
   }
 
   async listEvents(sessionId: string) {
     return this.repo.listEvents(sessionId);
   }
 
-  async getCheckpoint(sessionId: string) {
+  async getCheckpoint(sessionId: string): Promise<SessionCheckpoint | null> {
     return this.repo.getCheckpoint(sessionId);
   }
 
