@@ -28,6 +28,9 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Check diff whitespace
+        run: git diff --check
+
       - name: Build web
         run: pnpm --filter @forma/web build
 
