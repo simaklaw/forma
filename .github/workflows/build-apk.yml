@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
         id: pnpm
         with:
           version: 9.15.0
@@ -73,13 +73,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -f apps/mobile/android/app/build/outputs/apk/release/app-release.apk
-          ls -lh apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+          test -f apps/mobile/android/android/app/build/outputs/apk/release/app-release.apk
+          ls -lh apps/mobile/android/android/app/build/outputs/apk/release/app-release.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: forma-android-apk
-          path: apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+          path: apps/mobile/android/android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 5
