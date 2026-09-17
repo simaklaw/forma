@@ -42,8 +42,9 @@ export class MemorySessionRepository implements SessionRepository {
     session: WorkoutSession;
     events: SessionEvent[];
     payloadHashes: string[];
+    checkpoint?: SessionCheckpoint;
   }): Promise<void> {
-    const { session, events, payloadHashes } = input;
+    const { session, events, payloadHashes, checkpoint } = input;
     if (events.length !== payloadHashes.length) {
       throw new Error('payloadHashes length must match events');
     }
@@ -51,6 +52,7 @@ export class MemorySessionRepository implements SessionRepository {
     // Snapshot for rollback semantics within this commit.
     const prevSession = this.sessions.get(session.sessionId);
     const prevEvents = this.events.get(session.sessionId);
+    const prevCheckpoint = this.checkpoints.get(session.sessionId);
     const outboxLen = this.outbox.length;
 
     try {
@@ -74,6 +76,12 @@ export class MemorySessionRepository implements SessionRepository {
 
       this.sessions.set(session.sessionId, structuredClone(session));
       this.events.set(session.sessionId, [...existing, ...structuredClone(events)]);
+      if (checkpoint) {
+        const current = this.checkpoints.get(session.sessionId);
+        if (!current || current.eventOrdinal <= checkpoint.eventOrdinal) {
+          this.checkpoints.set(session.sessionId, structuredClone(checkpoint));
+        }
+      }
 
       const now = Date.now();
       events.forEach((ev, i) => {
@@ -92,6 +100,8 @@ export class MemorySessionRepository implements SessionRepository {
       else this.sessions.delete(session.sessionId);
       if (prevEvents) this.events.set(session.sessionId, prevEvents);
       else this.events.delete(session.sessionId);
+      if (prevCheckpoint) this.checkpoints.set(session.sessionId, prevCheckpoint);
+      else this.checkpoints.delete(session.sessionId);
       this.outbox.length = outboxLen;
       throw e;
     }
