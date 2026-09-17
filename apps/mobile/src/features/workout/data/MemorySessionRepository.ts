@@ -3,6 +3,7 @@ import {
   isResumableStatus,
   type OutboxRow,
   type OutboxStatus,
+  type SessionCheckpoint,
   type SessionRepository
 } from './SessionRepository';
 
@@ -13,6 +14,7 @@ import {
 export class MemorySessionRepository implements SessionRepository {
   private sessions = new Map<string, WorkoutSession>();
   private events = new Map<string, SessionEvent[]>();
+  private checkpoints = new Map<string, SessionCheckpoint>();
   private outbox: OutboxRow[] = [];
 
   async getSession(sessionId: string): Promise<WorkoutSession | null> {
@@ -95,6 +97,17 @@ export class MemorySessionRepository implements SessionRepository {
     }
   }
 
+  async saveCheckpoint(checkpoint: SessionCheckpoint): Promise<void> {
+    const existing = this.checkpoints.get(checkpoint.sessionId);
+    if (existing && existing.eventOrdinal > checkpoint.eventOrdinal) return;
+    this.checkpoints.set(checkpoint.sessionId, structuredClone(checkpoint));
+  }
+
+  async getCheckpoint(sessionId: string): Promise<SessionCheckpoint | null> {
+    const checkpoint = this.checkpoints.get(sessionId);
+    return checkpoint ? structuredClone(checkpoint) : null;
+  }
+
   async listPendingOutbox(limit = 50): Promise<OutboxRow[]> {
     return this.outbox.filter((r) => r.status === 'pending').slice(0, limit);
   }
@@ -108,6 +121,7 @@ export class MemorySessionRepository implements SessionRepository {
     return {
       sessions: [...this.sessions.values()],
       events: Object.fromEntries(this.events),
+      checkpoints: [...this.checkpoints.values()],
       outbox: [...this.outbox]
     };
   }
