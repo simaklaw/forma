@@ -17,16 +17,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        id: pnpm
+        with:
+          version: 9.15.0
+          run_install: false
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: 22
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.0
-          run_install: false
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -41,6 +44,7 @@ jobs:
           set -euo pipefail
           node --version
           npm --version
+          echo "pnpm_home=${PNPM_HOME:-unset}"
           command -v pnpm
           pnpm --version
           java -version
