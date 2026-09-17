@@ -12,6 +12,14 @@ export interface OutboxRow {
   createdAtMs: number;
 }
 
+export interface SessionCheckpoint {
+  sessionId: string;
+  eventOrdinal: number;
+  rowVersion: number;
+  aggregate: WorkoutSession;
+  createdAtMs: number;
+}
+
 /**
  * Persistence port for the workout aggregate.
  * commitSessionChange MUST be atomic: session upsert + events + outbox.
@@ -36,6 +44,11 @@ export interface SessionRepository {
     events: SessionEvent[];
     payloadHashes: string[];
   }): Promise<void>;
+
+  /** Durable recovery point for fast process-restart hydration. */
+  saveCheckpoint(checkpoint: SessionCheckpoint): Promise<void>;
+
+  getCheckpoint(sessionId: string): Promise<SessionCheckpoint | null>;
 
   listPendingOutbox(limit?: number): Promise<OutboxRow[]>;
 
