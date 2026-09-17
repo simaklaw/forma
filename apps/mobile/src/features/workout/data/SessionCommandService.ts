@@ -42,6 +42,10 @@ export class SessionCommandService {
     return this.repo.listEvents(sessionId);
   }
 
+  async getCheckpoint(sessionId: string) {
+    return this.repo.getCheckpoint(sessionId);
+  }
+
   /** Pending outbox rows (local queue; no network in P1 skeleton). */
   async listPendingOutbox(limit?: number): Promise<OutboxRow[]> {
     return this.repo.listPendingOutbox(limit);
@@ -81,11 +85,19 @@ export class SessionCommandService {
     });
 
     const payloadHashes = result.events.map((e) => hashPayload(e.payload));
+    const checkpoint = {
+      sessionId: result.session.sessionId,
+      eventOrdinal: result.session.lastEventOrdinal,
+      rowVersion: result.session.rowVersion,
+      aggregate: result.session,
+      createdAtMs: nowMs
+    };
 
     await this.repo.commitSessionChange({
       session: result.session,
       events: result.events,
-      payloadHashes
+      payloadHashes,
+      checkpoint
     });
 
     return result;

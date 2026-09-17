@@ -3,6 +3,7 @@ import {
   isResumableStatus,
   type OutboxRow,
   type OutboxStatus,
+  type SessionCheckpoint,
   type SessionRepository
 } from '../SessionRepository';
 import { SCHEMA_SQL, WORKOUT_DB_NAME } from './schema';
@@ -36,6 +37,14 @@ type EventRow = {
   payload_json: string;
   occurred_at_ms: number;
   operation_id: string;
+};
+
+type CheckpointRow = {
+  session_id: string;
+  event_ordinal: number;
+  row_version: number;
+  aggregate_json: string;
+  created_at_ms: number;
 };
 
 type OutboxDbRow = {
@@ -119,9 +128,10 @@ export class SqliteSessionRepository implements SessionRepository {
     session: WorkoutSession;
     events: SessionEvent[];
     payloadHashes: string[];
+    checkpoint?: SessionCheckpoint;
   }): Promise<void> {
     this.ensureSchema();
-    const { session, events, payloadHashes } = input;
+    const { session, events, payloadHashes, checkpoint } = input;
     if (events.length !== payloadHashes.length) {
       throw new Error('payloadHashes length must match events');
     }
@@ -196,7 +206,70 @@ export class SqliteSessionRepository implements SessionRepository {
           ]
         );
       }
+
+      if (checkpoint) {
+        this.db.runSync(
+          `INSERT INTO session_checkpoint (
+             session_id, event_ordinal, row_version, aggregate_json, created_at_ms
+           ) VALUES (?, ?, ?, ?, ?)
+           ON CONFLICT(session_id) DO UPDATE SET
+             event_ordinal = excluded.event_ordinal,
+             row_version = excluded.row_version,
+             aggregate_json = excluded.aggregate_json,
+             created_at_ms = excluded.created_at_ms`,
+          [
+            checkpoint.sessionId,
+            checkpoint.eventOrdinal,
+            checkpoint.rowVersion,
+            JSON.stringify(checkpoint.aggregate),
+            checkpoint.createdAtMs
+          ]
+        );
+      }
     });
+  }
+
+  async saveCheckpoint(checkpoint: SessionCheckpoint): Promise<void> {
+    this.ensureSchema();
+    const existing = this.db.getFirstSync<CheckpointRow>(
+      'SELECT * FROM session_checkpoint WHERE session_id = ?',
+      [checkpoint.sessionId]
+    );
+    if (existing && existing.event_ordinal > checkpoint.eventOrdinal) return;
+
+    this.db.runSync(
+      `INSERT INTO session_checkpoint (
+         session_id, event_ordinal, row_version, aggregate_json, created_at_ms
+       ) VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(session_id) DO UPDATE SET
+         event_ordinal = excluded.event_ordinal,
+         row_version = excluded.row_version,
+         aggregate_json = excluded.aggregate_json,
+         created_at_ms = excluded.created_at_ms`,
+      [
+        checkpoint.sessionId,
+        checkpoint.eventOrdinal,
+        checkpoint.rowVersion,
+        JSON.stringify(checkpoint.aggregate),
+        checkpoint.createdAtMs
+      ]
+    );
+  }
+
+  async getCheckpoint(sessionId: string): Promise<SessionCheckpoint | null> {
+    this.ensureSchema();
+    const row = this.db.getFirstSync<CheckpointRow>(
+      'SELECT * FROM session_checkpoint WHERE session_id = ?',
+      [sessionId]
+    );
+    if (!row) return null;
+    return {
+      sessionId: row.session_id,
+      eventOrdinal: row.event_ordinal,
+      rowVersion: row.row_version,
+      aggregate: JSON.parse(row.aggregate_json) as WorkoutSession,
+      createdAtMs: row.created_at_ms
+    };
   }
 
   async listPendingOutbox(limit = 50): Promise<OutboxRow[]> {
