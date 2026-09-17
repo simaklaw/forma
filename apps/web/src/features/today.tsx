@@ -12,12 +12,59 @@ import { WeekDots } from "@/components/week-dots";
 import { FOODS, PLANS, planById, planExercises, EXERCISES } from "@/lib/catalog";
 import { coachLine, dayMacros, greeting, pickTodayPlan, todayKey } from "@/lib/forma";
 import { useAppStore } from "@/lib/store";
+import {
+  peekDomainResumable,
+  planIdFromTemplateRevision,
+  uiSetsFromDomain,
+} from "@/lib/workout-session/dualWrite.ts";
+
+function countSets(setsDone: Record<string, boolean[]>): { done: number; total: number } {
+  let done = 0;
+  let total = 0;
+  for (const arr of Object.values(setsDone)) {
+    total += arr.length;
+    done += arr.filter(Boolean).length;
+  }
+  return { done, total };
+}
 
 export function TodayScreen() {
   const profile = useAppStore((s) => s.profile);
   const workouts = useAppStore((s) => s.workouts);
   const meals = useAppStore((s) => s.meals);
   const session = useAppStore((s) => s.session);
+  const startSession = useAppStore((s) => s.startSession);
+
+  const [domainResume, setDomainResume] = useState<{
+    planId: string;
+    done: number;
+    total: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (session) {
+      setDomainResume(null);
+      return;
+    }
+    let cancelled = false;
+    void peekDomainResumable().then((ds) => {
+      if (cancelled || !ds) {
+        if (!cancelled) setDomainResume(null);
+        return;
+      }
+      const planId = planIdFromTemplateRevision(ds.templateRevisionId);
+      if (!planId || !planById(planId)) {
+        setDomainResume(null);
+        return;
+      }
+      const sets = uiSetsFromDomain(ds);
+      const { done, total } = countSets(sets);
+      setDomainResume({ planId, done, total });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [session]);
 
   const today = todayKey();
   const doneToday = workouts.some((w) => w.date === today && w.completed);
@@ -45,6 +92,14 @@ export function TodayScreen() {
   });
 
   const preview = plan ? planExercises(plan).slice(0, 3) : [];
+
+  const livePlanId = session?.planId ?? domainResume?.planId ?? null;
+  const livePlan = livePlanId ? planById(livePlanId) : undefined;
+  const liveCounts = session
+    ? countSets(session.setsDone)
+    : domainResume
+      ? { done: domainResume.done, total: domainResume.total }
+      : null;
 
   const snapshot = useMemo((): UserContextSnapshot => {
     const todayMeals = meals.filter((m) => m.date === today);
@@ -108,12 +163,23 @@ export function TodayScreen() {
         )}
       </div>
 
-      {session && (
-        <Link to="/play/$planId" params={{ planId: session.planId }} className="mb-4 block">
-          <div className="rounded-xl bg-accent-soft px-4 py-3 text-sm text-accent">
-            Сессия не закончена — продолжить
-          </div>
-        </Link>
+      {livePlan && liveCounts && (
+        <div className="mb-4 rounded-2xl bg-surface p-4 shadow-card">
+          <p className="text-xs font-medium uppercase tracking-wide text-accent">Не закончена</p>
+          <h2 className="mt-1 font-display text-lg">{livePlan.title}</h2>
+          <p className="mt-1 text-sm text-muted">
+            {liveCounts.done}/{liveCounts.total} подходов
+            {session ? ` · шаг ${session.exerciseIndex + 1}/${livePlan.exerciseIds.length}` : ""}
+          </p>
+          <Link
+            to="/play/$planId"
+            params={{ planId: livePlan.id }}
+            className="mt-3 block"
+            onClick={() => startSession(livePlan.id)}
+          >
+            <Button className="w-full">Продолжить</Button>
+          </Link>
+        </div>
       )}
 
       {plan ? (
