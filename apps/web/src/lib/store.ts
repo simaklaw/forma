@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import { useEffect, useState } from "react";
 import { EXERCISES, planById, planExercises } from "./catalog";
 import { calcGoals, todayKey } from "./forma";
+import { canMarkSet } from "./session-logic.ts";
 import type {
   MealItem,
   MealType,
@@ -93,6 +94,7 @@ type State = {
   startSession: (planId: string) => void;
   restartSession: (planId: string) => void;
   toggleSet: (exerciseId: string, setIndex: number) => void;
+  goToExercise: (index: number) => void;
   nextExercise: () => void;
   prevExercise: () => void;
   startRest: (sec: number) => void;
@@ -211,7 +213,6 @@ export const useAppStore = create<State>()(
         const plan = planById(planId);
         if (!plan) return;
 
-        // Soft resume: same plan already open in UI — keep progress.
         const current = get().session;
         if (current && current.planId === planId) {
           void domainStartPlan(planId).then((result) => {
@@ -231,7 +232,6 @@ export const useAppStore = create<State>()(
           return;
         }
 
-        // Optimistic empty UI; domain may hydrate after resume.
         set({
           session: {
             planId,
@@ -276,6 +276,7 @@ export const useAppStore = create<State>()(
       toggleSet: (exerciseId, setIndex) => {
         const s = get();
         if (!s.session) return;
+        if (!canMarkSet(s.session, exerciseId, setIndex)) return;
         const arr = [...(s.session.setsDone[exerciseId] ?? [])];
         const wasDone = Boolean(arr[setIndex]);
         arr[setIndex] = !wasDone;
@@ -294,6 +295,21 @@ export const useAppStore = create<State>()(
           });
         }
       },
+
+      goToExercise: (index) =>
+        set((s) => {
+          if (!s.session) return s;
+          const plan = planById(s.session.planId);
+          if (!plan) return s;
+          const max = plan.exerciseIds.length - 1;
+          return {
+            session: {
+              ...s.session,
+              exerciseIndex: Math.max(0, Math.min(max, index)),
+              restEndsAt: null,
+            },
+          };
+        }),
 
       nextExercise: () =>
         set((s) => {
@@ -376,7 +392,6 @@ export const useAppStore = create<State>()(
         measurements: s.measurements,
         photos: s.photos,
         coachMessages: s.coachMessages,
-        // Soft nav / refresh: keep UI progress; domain journal remains source of truth on cold start.
         session: s.session,
       }),
       skipHydration: true,
