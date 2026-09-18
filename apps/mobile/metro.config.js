@@ -13,6 +13,8 @@ config.resolver.nodeModulesPaths = [
   path.resolve(monorepoRoot, "node_modules"),
 ];
 
-config.resolver.disableHierarchicalLookup = true;
+// Do NOT set disableHierarchicalLookup — Expo SDK 51 default is false.
+// true breaks resolution under pnpm (react → @types/react, missing
+// @babel/runtime, etc.).
 
 module.exports = config;
