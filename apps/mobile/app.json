@@ -30,6 +30,7 @@
       ]
     },
     "plugins": [
+      "./plugins/withPnpmReactNativeGradle.js",
       "expo-document-picker",
       [
         "expo-build-properties",
