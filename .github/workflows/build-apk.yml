@@ -56,22 +56,47 @@ jobs:
         run: |
           set -euo pipefail
           pnpm install --frozen-lockfile
+          # pnpm isolation: babel-preset-expo is transitive via expo but Metro
+          # cannot resolve it when transforming expo/AppEntry.js under .pnpm/.
+          # Direct add (runner-local only) fixes createBundleReleaseJsAndAssets.
+          pnpm add babel-preset-expo@~11.0.15 --filter @forma/mobile
 
       - name: Generate Android project
         working-directory: apps/mobile
         shell: bash
         run: |
           set -euo pipefail
-          # This workflow produces a plain debug APK, not a development
-          # client. Keep expo-dev-client for EAS development builds, but do
-          # not autolink it here: Expo SDK 51 otherwise adds a broken
-          # expo-dev-launcher includeBuild(null) under pnpm.
+          # Plain standalone APK (not a development client). Keep expo-dev-client
+          # in package.json for EAS development builds, but do not autolink it
+          # here: Expo SDK 51 otherwise adds a broken expo-dev-launcher
+          # includeBuild(null) under pnpm.
           sed -i '/"expo-dev-client":/d' package.json
           pnpm exec expo prebuild --platform android --clean
-          # Expo SDK 51's template resolves this package from the current
-          # directory. With pnpm, resolve it through react-native instead;
-          # otherwise the empty result becomes includeBuild("null").
+          # Expo SDK 51 template resolves this package from the current directory.
+          # With pnpm, resolve through react-native instead; otherwise the empty
+          # result becomes includeBuild("null").
           sed -i "s#require.resolve('@react-native/gradle-plugin/package.json')#require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })#" android/settings.gradle
+          # Confirm config plugin applied (must survive prebuild --clean).
+          grep -q 'debuggableVariants = \[\]' android/app/build.gradle \
+            || { echo '::error::withDebugBundle plugin did not set debuggableVariants = []'; exit 1; }
+
+      - name: Pre-bundle JS into Android assets
+        working-directory: apps/mobile
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Belt-and-suspenders: ensure index.android.bundle exists even if
+          # createBundle*JsAndAssets is skipped or misconfigured.
+          mkdir -p android/app/src/main/assets
+          NODE_ENV=production pnpm exec react-native bundle \
+            --platform android \
+            --dev false \
+            --minify true \
+            --entry-file node_modules/expo/AppEntry.js \
+            --bundle-output android/app/src/main/assets/index.android.bundle \
+            --assets-dest android/app/src/main/res
+          test -s android/app/src/main/assets/index.android.bundle
+          ls -lh android/app/src/main/assets/index.android.bundle
 
       - name: Build standalone release APK
         working-directory: apps/mobile/android
@@ -80,14 +105,18 @@ jobs:
           set -euo pipefail
           ./gradlew assembleRelease --no-daemon --stacktrace
 
-      - name: Locate APK
+      - name: Locate APK and verify JS bundle inside
         shell: bash
         run: |
           set -euo pipefail
           echo "Найденные APK:"
           find apps/mobile/android -type f -name '*.apk' -print
-          test -n "$(find apps/mobile/android -type f -name '*.apk' -print -quit)" \
-            || { echo '::error::Ни одного .apk не найдено под apps/mobile/android'; exit 1; }
+          APK="$(find apps/mobile/android -type f -name '*.apk' -print | head -n 1)"
+          test -n "$APK" || { echo '::error::Ни одного .apk не найдено'; exit 1; }
+          echo "Checking bundle inside: $APK"
+          unzip -l "$APK" | tee /tmp/apk-list.txt
+          grep -E 'assets/index\.android\.bundle|index\.android\.bundle' /tmp/apk-list.txt \
+            || { echo '::error::APK does not contain index.android.bundle — Metro-less install will crash'; exit 1; }
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
