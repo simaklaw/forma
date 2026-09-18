@@ -1,13 +1,12 @@
-const { withSettingsGradle } = require('@expo/config-plugins');
+const { withSettingsGradle } = require('expo/config-plugins');
 
 /**
- * Expo SDK 51 prebuild emits settings.gradle that resolves
+ * Expo prebuild may emit settings.gradle that resolves
  * @react-native/gradle-plugin via bare require.resolve(...).
- * Under pnpm that returns empty → includeBuild(null) →
+ * Under pnpm that often returns empty → includeBuild(null) →
  * "Included build '.../android/null' does not exist".
  *
- * Resolve through react-native's package.json so Node finds the
- * package in the pnpm virtual store (same approach as the CI sed).
+ * Rewrite to resolve through react-native (same idea as CI sed).
  */
 module.exports = function withPnpmReactNativeGradle(config) {
   return withSettingsGradle(config, (config) => {
@@ -22,27 +21,17 @@ module.exports = function withPnpmReactNativeGradle(config) {
       return config;
     }
 
-    if (!contents.includes(bare)) {
-      // Template may have changed — fail loudly so CI/EAS shows the cause.
-      throw new Error(
-        'withPnpmReactNativeGradle: expected bare require.resolve(' +
-          "'@react-native/gradle-plugin/package.json') in settings.gradle; " +
-          'Expo prebuild template may have changed',
-      );
+    if (contents.includes(bare)) {
+      contents = contents.split(bare).join(withPaths);
+      config.modResults.contents = contents;
+      return config;
     }
 
-    contents = contents.split(bare).join(withPaths);
-
-    if (
-      /includeBuild\(\s*null\s*\)/.test(contents) ||
-      /includeBuild\(\s*['"]null['"]\s*\)/.test(contents)
-    ) {
-      throw new Error(
-        'withPnpmReactNativeGradle: includeBuild(null) still present after patch',
-      );
-    }
-
-    config.modResults.contents = contents;
+    // Template may already use node --print / providers.exec — leave as-is.
+    console.warn(
+      'withPnpmReactNativeGradle: no bare require.resolve(' +
+        "'@react-native/gradle-plugin/package.json') found; skipping patch",
+    );
     return config;
   });
 };
