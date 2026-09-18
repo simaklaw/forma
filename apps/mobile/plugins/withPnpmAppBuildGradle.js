@@ -7,12 +7,12 @@ function esc(p) {
 }
 
 /**
- * Expo prebuild emits app/build.gradle with node --print require.resolve(...)
- * executed from android/ — under pnpm that often returns empty (path='').
- * Resolve in Node at prebuild and inject absolute paths.
+ * Inject absolute paths for react-native / codegen / cli / entryFile so Gradle
+ * does not run node require.resolve from android/ (empty under pnpm).
  *
- * Do NOT use package.json "main": "node_modules/expo/AppEntry.js" — under
- * pnpm that relative path does not exist; use the real expo package dir.
+ * entryFile MUST be the app's local index.js — not expo/AppEntry.js — because
+ * AppEntry does import '../../App' which breaks when expo is hoisted to the
+ * monorepo root node_modules.
  */
 module.exports = function withPnpmAppBuildGradle(config) {
   return withAppBuildGradle(config, (config) => {
@@ -40,18 +40,11 @@ module.exports = function withPnpmAppBuildGradle(config) {
       const expoPkg = require.resolve('expo/package.json', {
         paths: [projectRoot],
       });
-      const expoDir = path.dirname(expoPkg);
       expoCli = require.resolve('@expo/cli', { paths: [expoPkg] });
 
-      // Real AppEntry next to expo package.json (works with pnpm store layout)
-      entryFile = path.join(expoDir, 'AppEntry.js');
+      entryFile = path.join(projectRoot, 'index.js');
       if (!fs.existsSync(entryFile)) {
-        // Fallback: expo/AppEntry may live as package export path
-        const alt = require.resolve('expo/AppEntry', { paths: [projectRoot] });
-        entryFile = alt.endsWith('.js') ? alt : alt + '.js';
-      }
-      if (!fs.existsSync(entryFile)) {
-        throw new Error(`expo AppEntry not found at ${entryFile}`);
+        throw new Error(`missing ${entryFile} — monorepo entry required`);
       }
     } catch (e) {
       console.warn(
@@ -68,6 +61,11 @@ module.exports = function withPnpmAppBuildGradle(config) {
 
     contents = contents.replace(
       /entryFile\s*=\s*file\(\[[\s\S]*?\]\.execute\([^)]*\)\.text\.trim\(\)\)/,
+      `entryFile = file("${entry}")`,
+    );
+
+    contents = contents.replace(
+      /entryFile\s*=\s*file\("[^"]+"\)/,
       `entryFile = file("${entry}")`,
     );
 
@@ -91,24 +89,12 @@ module.exports = function withPnpmAppBuildGradle(config) {
       `cliFile = new File("${cli}")`,
     );
 
-    // If template already had our previous wrong absolute path, fix it
-    contents = contents.replace(
-      /entryFile\s*=\s*file\("[^"]*node_modules\/expo\/AppEntry\.js"\)/,
-      `entryFile = file("${entry}")`,
-    );
-
     config.modResults.contents = contents;
     console.log(
-      '[withPnpmAppBuildGradle] injected paths:\n  entryFile=',
+      '[withPnpmAppBuildGradle] entryFile=',
       entry,
-      '\n  exists=',
+      'exists=',
       fs.existsSync(entryFile),
-      '\n  reactNativeDir=',
-      rn,
-      '\n  codegenDir=',
-      cg,
-      '\n  cliFile=',
-      cli,
     );
     return config;
   });
