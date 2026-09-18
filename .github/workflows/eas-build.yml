@@ -32,7 +32,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      # Repo secret is EXPO_TOKEN_FITPULSE; EAS CLI reads EXPO_TOKEN.
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN_FITPULSE }}
     defaults:
       run:
         working-directory: apps/mobile
