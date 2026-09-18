@@ -1,13 +1,13 @@
 /**
  * Standalone / preview / production APKs must not autolink the dev client.
- * expo-dev-launcher under pnpm often injects empty paths into app/build.gradle
- * ("path may not be null or empty string. path=''").
+ * expo-dev-launcher under pnpm has caused:
+ *   path may not be null or empty string. path=''
  *
- * EAS sets EAS_BUILD_PROFILE during cloud builds.
+ * EAS sets EAS_BUILD=true and EAS_BUILD_PROFILE during cloud builds.
  */
+const isEas = process.env.EAS_BUILD === 'true';
 const profile = process.env.EAS_BUILD_PROFILE || '';
-const isDevClientBuild =
-  profile === 'development' || profile === '';
+const keepDevClient = !isEas || profile === 'development';
 
 const disable = {
   platforms: {
@@ -17,7 +17,7 @@ const disable = {
 };
 
 module.exports = {
-  dependencies: isDevClientBuild
+  dependencies: keepDevClient
     ? {}
     : {
         'expo-dev-client': disable,
