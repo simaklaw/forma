@@ -3,22 +3,46 @@ const path = require("path");
 
 const projectRoot = __dirname;
 const monorepoRoot = path.resolve(projectRoot, "../..");
+const rootNodeModules = path.resolve(monorepoRoot, "node_modules");
 
 const config = getDefaultConfig(projectRoot);
 
-// Expo SDK 51 monorepo (docs.expo.dev/guides/monorepos)
 config.watchFolders = [monorepoRoot];
 
-// Prefer monorepo root so `react` is the real package, not apps/mobile's @types/react
-config.resolver.nodeModulesPaths = [
-  path.resolve(monorepoRoot, "node_modules"),
-  path.resolve(projectRoot, "node_modules"),
-];
+// Do not walk apps/mobile/node_modules (there @types/react shadows runtime react).
+config.resolver.disableHierarchicalLookup = true;
+config.resolver.nodeModulesPaths = [rootNodeModules];
 
-// Pin singleton copies (directory, not a forced sourceFile — lets Metro use package main/exports)
 config.resolver.extraNodeModules = {
-  react: path.resolve(monorepoRoot, "node_modules/react"),
-  "react-native": path.resolve(monorepoRoot, "node_modules/react-native"),
+  react: path.join(rootNodeModules, "react"),
+  "react-native": path.join(rootNodeModules, "react-native"),
+};
+
+function resolveFromMonorepo(moduleName) {
+  return require.resolve(moduleName, { paths: [monorepoRoot, rootNodeModules] });
+}
+
+const upstream = config.resolver.resolveRequest;
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (
+    moduleName === "react" ||
+    moduleName === "react-native" ||
+    moduleName.startsWith("react/") ||
+    moduleName.startsWith("react-native/")
+  ) {
+    try {
+      return {
+        type: "sourceFile",
+        filePath: resolveFromMonorepo(moduleName),
+      };
+    } catch (e) {
+      console.warn("[metro] force resolve failed for", moduleName, e.message);
+    }
+  }
+  if (typeof upstream === "function") {
+    return upstream(context, moduleName, platform);
+  }
+  return context.resolveRequest(context, moduleName, platform);
 };
 
 module.exports = config;
