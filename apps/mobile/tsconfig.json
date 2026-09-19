@@ -6,15 +6,14 @@
     "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
     "skipLibCheck": true,
-    "types": ["react", "react-native"],
+    "jsx": "react-native",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
       "@forma/core": ["../../packages/core/src"],
       "@forma/core/*": ["../../packages/core/src/*"],
       "@forma/workout-domain": ["../../packages/workout-domain/src"],
-      "@forma/workout-domain/*": ["../../packages/workout-domain/src/*"],
-      "react": ["../../node_modules/@types/react"]
+      "@forma/workout-domain/*": ["../../packages/workout-domain/src/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
