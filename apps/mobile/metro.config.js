@@ -3,19 +3,15 @@ const path = require("path");
 
 const projectRoot = __dirname;
 const monorepoRoot = path.resolve(projectRoot, "../..");
-const rootNodeModules = path.resolve(monorepoRoot, "node_modules");
 
 const config = getDefaultConfig(projectRoot);
 
+// Expo SDK 51 monorepo template — same as successful EAS build #19.
+// Do not map tsconfig paths.react; do not force extraNodeModules/react.
 config.watchFolders = [monorepoRoot];
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, "node_modules"),
-  rootNodeModules,
+  path.resolve(monorepoRoot, "node_modules"),
 ];
-config.resolver.extraNodeModules = {
-  ...(config.resolver.extraNodeModules || {}),
-  react: path.join(rootNodeModules, "react"),
-  "react-native": path.join(rootNodeModules, "react-native"),
-};
 
 module.exports = config;
