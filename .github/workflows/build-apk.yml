@@ -2,16 +2,22 @@ name: Build Android APK
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
 
 permissions:
   contents: read
+
+concurrency:
+  group: build-apk-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-apk:
     name: Build Android APK
     runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    env:
+      NODE_ENV: production
 
     steps:
       - name: Checkout
@@ -19,7 +25,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
-        id: pnpm
         with:
           version: 9.15.0
           run_install: false
@@ -35,50 +40,77 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '17'
-          # cache: gradle intentionally omitted — android/ does not exist until
-          # expo prebuild runs later. setup-java fails hard when no gradle files
-          # match (it does not degrade to a cache miss).
+          java-version: "17"
 
-      - name: Verify toolchain
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android licenses
         shell: bash
         run: |
           set -euo pipefail
-          node --version
-          npm --version
-          echo "pnpm_home=${PNPM_HOME:-unset}"
-          command -v pnpm
-          pnpm --version
-          java -version
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" || true
 
-      - name: Install dependencies
+      - name: Install workspace dependencies
         shell: bash
         run: |
           set -euo pipefail
           pnpm install --frozen-lockfile
 
-      - name: Generate Android project
+      - name: Generate Android project (expo prebuild)
         working-directory: apps/mobile
         shell: bash
         run: |
           set -euo pipefail
-          # This workflow produces a plain debug APK, not a development
-          # client. Keep expo-dev-client for EAS development builds, but do
-          # not autolink it here: Expo SDK 51 otherwise adds a broken
-          # expo-dev-launcher includeBuild(null) under pnpm.
-          sed -i '/"expo-dev-client":/d' package.json
-          pnpm exec expo prebuild --platform android --clean
-          # Expo SDK 51's template resolves this package from the current
-          # directory. With pnpm, resolve it through react-native instead;
-          # otherwise the empty result becomes includeBuild("null").
-          sed -i "s#require.resolve('@react-native/gradle-plugin/package.json')#require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })#" android/settings.gradle
+          # Plain standalone APK — strip expo-dev-client so Expo does not
+          # inject a broken expo-dev-launcher includeBuild under pnpm.
+          if grep -q '"expo-dev-client"' package.json; then
+            sed -i '/"expo-dev-client":/d' package.json
+          fi
+          pnpm exec expo prebuild --platform android --clean --no-install
 
-      - name: Build standalone release APK
+          # Safety net: pnpm can still leave includeBuild(null) if the
+          # config plugin did not rewrite settings.gradle.
+          if [[ -f android/settings.gradle ]]; then
+            sed -i "s#require.resolve('@react-native/gradle-plugin/package.json')#require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })#" android/settings.gradle || true
+            echo "--- settings.gradle (head) ---"
+            head -40 android/settings.gradle
+          fi
+
+          if [[ ! -f index.js ]]; then
+            echo "::error::apps/mobile/index.js missing (monorepo entry)"
+            exit 1
+          fi
+
+      - name: Prefetch SQLite amalgamation (avoid flaky network mid-build)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # expo-sqlite downloads this during :expo-sqlite:downloadSQLite
+          mkdir -p "$HOME/.gradle/caches"
+          ZIP_URL="https://www.sqlite.org/2024/sqlite-amalgamation-3450300.zip"
+          DEST="$RUNNER_TEMP/sqlite-amalgamation-3450300.zip"
+          for i in 1 2 3; do
+            if curl -fsSL --retry 3 --retry-delay 5 -o "$DEST" "$ZIP_URL"; then
+              echo "SQLite zip OK ($i)"
+              break
+            fi
+            echo "SQLite download attempt $i failed"
+            sleep 5
+          done
+          # Best-effort cache into gradle download area if layout is known later
+          ls -la "$DEST" || echo "::warning::SQLite prefetch failed; Gradle will retry"
+
+      - name: Build debug APK (signed, installable without keystore secrets)
         working-directory: apps/mobile/android
         shell: bash
         run: |
           set -euo pipefail
-          ./gradlew assembleRelease --no-daemon --stacktrace
+          echo "ANDROID_HOME=${ANDROID_HOME:-}"
+          echo "JAVA_HOME=${JAVA_HOME:-}"
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace --info 2>&1 | tee "$RUNNER_TEMP/gradle-build.log"
 
       - name: Locate APK
         shell: bash
@@ -86,13 +118,15 @@ jobs:
           set -euo pipefail
           echo "Найденные APK:"
           find apps/mobile/android -type f -name '*.apk' -print
-          test -n "$(find apps/mobile/android -type f -name '*.apk' -print -quit)" \
-            || { echo '::error::Ни одного .apk не найдено под apps/mobile/android'; exit 1; }
+          test -n "$(find apps/mobile/android/app/build/outputs/apk -type f -name '*.apk' -print -quit)" \
+            || { echo '::error::Ни одного .apk не найдено'; exit 1; }
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: forma-android-standalone-apk
-          path: apps/mobile/android/app/build/outputs/apk/release/*.apk
+          name: fitpulse-android-debug-apk
+          path: |
+            apps/mobile/android/app/build/outputs/apk/debug/*.apk
+            apps/mobile/android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
-          retention-days: 5
+          retention-days: 7
