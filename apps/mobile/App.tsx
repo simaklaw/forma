@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { useFonts, BarlowCondensed_600SemiBold, BarlowCondensed_700Bold } from '@expo-google-fonts/barlow-condensed';
+import { BarlowCondensed_600SemiBold, BarlowCondensed_700Bold } from '@expo-google-fonts/barlow-condensed';
 import { Inter_400Regular, Inter_600SemiBold } from '@expo-google-fonts/inter';
+import * as Font from 'expo-font';
 import { Platform, View } from 'react-native';
 import { CoachEngine } from '@forma/core';
 import { colors } from '@/core/theme/tokens';
@@ -50,14 +51,18 @@ function enableSqliteSessions(): void {
 }
 
 export default function App() {
-  const [fontsLoaded] = useFonts({
-    BarlowCondensed_600SemiBold,
-    BarlowCondensed_700Bold,
-    Inter_400Regular,
-    Inter_600SemiBold
-  });
+  const [fontsLoaded, setFontsLoaded] = useState(false);
 
   useEffect(() => {
+    void Font.loadAsync({
+      BarlowCondensed_600SemiBold,
+      BarlowCondensed_700Bold,
+      Inter_400Regular,
+      Inter_600SemiBold
+    })
+      .catch(() => undefined)
+      .finally(() => setFontsLoaded(true));
+
     enableSqliteSessions();
     void hydrateSessionReadModel();
     const trainer = new LlamaLocalAITrainer();
