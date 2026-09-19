@@ -17,7 +17,8 @@ jobs:
     timeout-minutes: 90
 
     env:
-      NODE_ENV: production
+      # Do NOT set NODE_ENV=production at job level — pnpm then skips
+      # devDependencies (babel-plugin-module-resolver) and Metro fails.
       GRADLE_OPTS: -Xmx4g -XX:MaxMetaspaceSize=1g -Dorg.gradle.daemon=false
 
     steps:
@@ -68,11 +69,17 @@ jobs:
             "ndk;25.1.8937393" \
             "cmake;3.22.1" || true
 
-      - name: Install workspace dependencies
+      - name: Install workspace dependencies (incl. devDeps for Babel/Metro)
         shell: bash
+        env:
+          # Force full install even if runner inherits NODE_ENV=production
+          NODE_ENV: development
         run: |
           set -euo pipefail
           pnpm install --frozen-lockfile
+          # Sanity: required by apps/mobile/babel.config.js
+          node -e "require.resolve('babel-plugin-module-resolver')"
+          echo "babel-plugin-module-resolver OK"
 
       - name: Generate Android project (expo prebuild)
         working-directory: apps/mobile
@@ -98,18 +105,14 @@ jobs:
             } >> android/gradle.properties
           fi
 
-          # Embed JS into APK: empty debuggableVariants → Metro bundle runs for all variants
-          # (default debug expects a live Metro server → "Unable to load script")
           APP_GRADLE="android/app/build.gradle"
           if [[ -f "$APP_GRADLE" ]]; then
-            if grep -q 'debuggableVariants' "$APP_GRADLE"; then
-              sed -i 's/debuggableVariants.*/debuggableVariants = []/' "$APP_GRADLE"
-            elif grep -q 'react {' "$APP_GRADLE"; then
-              # Insert right after `react {`
+            # Uncomment / force empty debuggableVariants so JS is always packaged
+            sed -i 's|^[[:space:]]*//[[:space:]]*debuggableVariants.*|    debuggableVariants = []|' "$APP_GRADLE" || true
+            if ! grep -q '^[[:space:]]*debuggableVariants' "$APP_GRADLE"; then
               awk '
                 /react[[:space:]]*\{/ && !done {
                   print
-                  print "    // CI: package JS bundle (no Metro on device)"
                   print "    debuggableVariants = []"
                   done=1
                   next
@@ -117,14 +120,8 @@ jobs:
                 { print }
               ' "$APP_GRADLE" > "$APP_GRADLE.tmp" && mv "$APP_GRADLE.tmp" "$APP_GRADLE"
             fi
-
-            # Sideload-friendly release: sign with debug keystore if not already
-            if grep -q 'buildTypes' "$APP_GRADLE" && ! grep -q 'signingConfig signingConfigs.debug' "$APP_GRADLE"; then
-              sed -i '/release[[:space:]]*{/a\            signingConfig signingConfigs.debug' "$APP_GRADLE" || true
-            fi
-
-            echo "--- app/build.gradle (react + release) ---"
-            grep -n -A8 -E 'react \{|debuggableVariants|buildTypes|signingConfig' "$APP_GRADLE" || true
+            echo "--- react block ---"
+            grep -n -A12 'react {' "$APP_GRADLE" | head -20 || true
           fi
 
           if [[ ! -f index.js ]]; then
@@ -150,11 +147,12 @@ jobs:
       - name: Build release APK (JS bundle embedded, debug-signed)
         working-directory: apps/mobile/android
         shell: bash
+        env:
+          NODE_ENV: production
         run: |
           set -euo pipefail
           echo "ANDROID_HOME=${ANDROID_HOME:-}"
           chmod +x ./gradlew
-          # release runs createBundleReleaseJsAndAssets → index.android.bundle inside APK
           ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Verify bundle inside APK
@@ -164,7 +162,6 @@ jobs:
           APK=$(find apps/mobile/android/app/build/outputs/apk -name '*.apk' | head -1)
           echo "APK=$APK"
           test -n "$APK"
-          # List assets; fail if JS bundle missing
           unzip -l "$APK" | tee "$RUNNER_TEMP/apk-list.txt" | grep -E 'index\.(android\.)?bundle|assets/index' \
             || { echo '::error::JS bundle not found inside APK'; exit 1; }
 
