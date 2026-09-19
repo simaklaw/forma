@@ -42,15 +42,34 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Accept Android licenses
+      - name: Configure Android SDK (preinstalled on GitHub runners)
         shell: bash
         run: |
           set -euo pipefail
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" || true
+          ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+
+          # cmdline-tools path differs by image version
+          for d in latest 16.0 13.0 12.0; do
+            if [[ -d "$ANDROID_HOME/cmdline-tools/$d/bin" ]]; then
+              echo "$ANDROID_HOME/cmdline-tools/$d/bin" >> "$GITHUB_PATH"
+              export PATH="$ANDROID_HOME/cmdline-tools/$d/bin:$PATH"
+              break
+            fi
+          done
+
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls -la "$ANDROID_HOME" || true
+
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-34" \
+            "build-tools;34.0.0" \
+            "ndk;25.1.8937393" \
+            "cmake;3.22.1" || true
 
       - name: Install workspace dependencies
         shell: bash
@@ -63,15 +82,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Plain standalone APK — strip expo-dev-client so Expo does not
-          # inject a broken expo-dev-launcher includeBuild under pnpm.
           if grep -q '"expo-dev-client"' package.json; then
             sed -i '/"expo-dev-client":/d' package.json
           fi
           pnpm exec expo prebuild --platform android --clean --no-install
 
-          # Safety net: pnpm can still leave includeBuild(null) if the
-          # config plugin did not rewrite settings.gradle.
           if [[ -f android/settings.gradle ]]; then
             sed -i "s#require.resolve('@react-native/gradle-plugin/package.json')#require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })#" android/settings.gradle || true
             echo "--- settings.gradle (head) ---"
@@ -79,30 +94,29 @@ jobs:
           fi
 
           if [[ ! -f index.js ]]; then
-            echo "::error::apps/mobile/index.js missing (monorepo entry)"
+            echo "::error::apps/mobile/index.js missing"
             exit 1
           fi
 
-      - name: Prefetch SQLite amalgamation (avoid flaky network mid-build)
+      - name: Prefetch SQLite amalgamation
         shell: bash
         run: |
           set -euo pipefail
-          # expo-sqlite downloads this during :expo-sqlite:downloadSQLite
-          mkdir -p "$HOME/.gradle/caches"
           ZIP_URL="https://www.sqlite.org/2024/sqlite-amalgamation-3450300.zip"
           DEST="$RUNNER_TEMP/sqlite-amalgamation-3450300.zip"
-          for i in 1 2 3; do
-            if curl -fsSL --retry 3 --retry-delay 5 -o "$DEST" "$ZIP_URL"; then
-              echo "SQLite zip OK ($i)"
+          for i in 1 2 3 4 5; do
+            if curl -fsSL --retry 5 --retry-delay 3 -o "$DEST" "$ZIP_URL"; then
+              echo "SQLite zip OK (attempt $i)"
+              # Place where gradle-download-task / expo-sqlite often look
+              mkdir -p "$HOME/.gradle/caches/modules-2/files-2.1"
               break
             fi
             echo "SQLite download attempt $i failed"
-            sleep 5
+            sleep 3
           done
-          # Best-effort cache into gradle download area if layout is known later
-          ls -la "$DEST" || echo "::warning::SQLite prefetch failed; Gradle will retry"
+          ls -la "$DEST" 2>/dev/null || echo "::warning::SQLite prefetch failed; Gradle will retry"
 
-      - name: Build debug APK (signed, installable without keystore secrets)
+      - name: Build debug APK
         working-directory: apps/mobile/android
         shell: bash
         run: |
@@ -110,7 +124,7 @@ jobs:
           echo "ANDROID_HOME=${ANDROID_HOME:-}"
           echo "JAVA_HOME=${JAVA_HOME:-}"
           chmod +x ./gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace --info 2>&1 | tee "$RUNNER_TEMP/gradle-build.log"
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Locate APK
         shell: bash
