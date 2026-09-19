@@ -18,6 +18,8 @@ jobs:
 
     env:
       NODE_ENV: production
+      # Jetifier on hermes-android OOM'd at default ~512m heap
+      GRADLE_OPTS: -Xmx4g -XX:MaxMetaspaceSize=1g -Dorg.gradle.daemon=false
 
     steps:
       - name: Checkout
@@ -51,7 +53,6 @@ jobs:
           echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
           echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
 
-          # cmdline-tools path differs by image version
           for d in latest 16.0 13.0 12.0; do
             if [[ -d "$ANDROID_HOME/cmdline-tools/$d/bin" ]]; then
               echo "$ANDROID_HOME/cmdline-tools/$d/bin" >> "$GITHUB_PATH"
@@ -59,9 +60,6 @@ jobs:
               break
             fi
           done
-
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          ls -la "$ANDROID_HOME" || true
 
           yes | sdkmanager --licenses >/dev/null 2>&1 || true
           sdkmanager --install \
@@ -89,8 +87,19 @@ jobs:
 
           if [[ -f android/settings.gradle ]]; then
             sed -i "s#require.resolve('@react-native/gradle-plugin/package.json')#require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })#" android/settings.gradle || true
-            echo "--- settings.gradle (head) ---"
-            head -40 android/settings.gradle
+          fi
+
+          # Memory + skip jetifier (RN 0.74 / Expo 51 are AndroidX; jetify OOM on hermes AAR)
+          if [[ -f android/gradle.properties ]]; then
+            {
+              echo ""
+              echo "# CI overrides"
+              echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError"
+              echo "org.gradle.parallel=true"
+              echo "android.enableJetifier=false"
+            } >> android/gradle.properties
+            echo "--- gradle.properties ---"
+            cat android/gradle.properties
           fi
 
           if [[ ! -f index.js ]]; then
@@ -107,14 +116,11 @@ jobs:
           for i in 1 2 3 4 5; do
             if curl -fsSL --retry 5 --retry-delay 3 -o "$DEST" "$ZIP_URL"; then
               echo "SQLite zip OK (attempt $i)"
-              # Place where gradle-download-task / expo-sqlite often look
-              mkdir -p "$HOME/.gradle/caches/modules-2/files-2.1"
               break
             fi
-            echo "SQLite download attempt $i failed"
             sleep 3
           done
-          ls -la "$DEST" 2>/dev/null || echo "::warning::SQLite prefetch failed; Gradle will retry"
+          ls -la "$DEST" 2>/dev/null || echo "::warning::SQLite prefetch failed"
 
       - name: Build debug APK
         working-directory: apps/mobile/android
@@ -122,7 +128,6 @@ jobs:
         run: |
           set -euo pipefail
           echo "ANDROID_HOME=${ANDROID_HOME:-}"
-          echo "JAVA_HOME=${JAVA_HOME:-}"
           chmod +x ./gradlew
           ./gradlew assembleDebug --no-daemon --stacktrace
 
@@ -130,7 +135,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo "Найденные APK:"
           find apps/mobile/android -type f -name '*.apk' -print
           test -n "$(find apps/mobile/android/app/build/outputs/apk -type f -name '*.apk' -print -quit)" \
             || { echo '::error::Ни одного .apk не найдено'; exit 1; }
