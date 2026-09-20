@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { CoachEngine, estimateBurnFromSetLogs, toDateKey } from '@forma/core';
+import { CoachEngine, estimateBurnFromSetLogs, isProfileComplete, toDateKey } from '@forma/core';
 import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
 import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
@@ -11,39 +11,56 @@ type Props = {
   exerciseNames?: Record<number, string>;
 };
 
-/** On-device coach strip — RulesLocalAITrainer until llama.rn is wired. */
+/** On-device coach strip — only when profile is complete (no domain throw). */
 export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames }: Props) {
   const profile = useFitPulseStore((s) => s.profile);
   const todayMeals = useFitPulseStore((s) => s.todayMeals);
   const setLogs = useFitPulseStore((s) => s.setLogs);
-  const targets = useFitPulseStore((s) => s.calculateTargets());
+  const calculateTargets = useFitPulseStore((s) => s.calculateTargets);
   const [advice, setAdvice] = useState('');
 
-  const burned = useMemo(
-    () =>
-      estimateBurnFromSetLogs({
-        weightKg: profile.weight,
-        setLogs,
-        dateKey: toDateKey(new Date()),
-        exerciseNames
-      }),
-    [profile.weight, setLogs, exerciseNames]
-  );
+  const complete = isProfileComplete({
+    weightKg: profile.weight,
+    heightCm: profile.height,
+    age: profile.age,
+    gender: profile.sex
+  });
 
-  const snapshot = useMemo(
-    () =>
-      mobileCoachSnapshot({
-        profile,
-        todayMeals,
-        targetCalories: targets.target,
-        burnedCalories: burned,
-        lastWorkoutName: anyDoneToday ? dayName : undefined,
-        rpeScore: 7
-      }),
-    [profile, todayMeals, targets.target, burned, dayName, anyDoneToday]
-  );
+  const burned = useMemo(() => {
+    if (!complete || !Number.isFinite(profile.weight) || (profile.weight as number) <= 0) return 0;
+    return estimateBurnFromSetLogs({
+      weightKg: profile.weight as number,
+      setLogs,
+      dateKey: toDateKey(new Date()),
+      exerciseNames
+    });
+  }, [complete, profile.weight, setLogs, exerciseNames]);
+
+  const snapshot = useMemo(() => {
+    if (!complete) return null;
+    const targets = calculateTargets();
+    return mobileCoachSnapshot({
+      profile: profile as {
+        sex: 'male' | 'female';
+        age: number;
+        height: number;
+        weight: number;
+        pal: number;
+        goal: 'recomp' | 'maintain' | 'gain';
+      },
+      todayMeals,
+      targetCalories: targets.target,
+      burnedCalories: burned,
+      lastWorkoutName: anyDoneToday ? dayName : undefined,
+      rpeScore: 7
+    });
+  }, [complete, profile, todayMeals, calculateTargets, burned, dayName, anyDoneToday]);
 
   useEffect(() => {
+    if (!snapshot) {
+      setAdvice('');
+      return;
+    }
     let cancelled = false;
     const prompt = anyDoneToday ? 'восстановление после тренировки' : 'совет на тренировку';
     CoachEngine.getTrainer()
