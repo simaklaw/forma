@@ -10,7 +10,13 @@ import WeightChart from '@/components/WeightChart';
 export default function ProgressScreen() {
   const weightHistory = useFitPulseStore((s) => s.weightHistory);
   const setLogs = useFitPulseStore((s) => s.setLogs);
-  const weightKg = useFitPulseStore((s) => s.profile.weight);
+  const profileWeight = useFitPulseStore((s) => s.profile.weight);
+
+  // Defense-in-depth: profile.weight is null until onboarding; never pass null into MET math.
+  const weightKg =
+    typeof profileWeight === 'number' && Number.isFinite(profileWeight) && profileWeight > 0
+      ? profileWeight
+      : 0;
 
   const volume = selectWeeklyVolume(setLogs);
   const hasAnyVolume = volume.some((v) => v.volumeKg > 0);
