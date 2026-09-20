@@ -8,6 +8,16 @@ import { useFitPulseStore } from '@/state/useFitPulseStore';
 import type { ExerciseDef } from '../ExerciseSheet';
 import { ActiveSessionController } from './ActiveSessionController';
 
+/** Complete biometrics so isProfileComplete / ensureDaySession gate passes in unit tests. */
+const TEST_PROFILE = {
+  sex: 'male' as const,
+  age: 28,
+  height: 178,
+  weight: 78,
+  pal: 1.375,
+  goal: 'recomp' as const
+};
+
 const exercises: ExerciseDef[] = [
   {
     id: 1,
@@ -49,7 +59,11 @@ describe('ActiveSessionController', () => {
     resetSessionServiceForTests();
     configureSessionPersistence('memory');
     ActiveSessionController.resetForTests();
-    useFitPulseStore.setState({ setLogs: [], dayProgress: {} });
+    useFitPulseStore.setState({
+      setLogs: [],
+      dayProgress: {},
+      profile: { ...TEST_PROFILE }
+    });
   });
 
   it('ensureDaySession prepares and starts once per day', async () => {
@@ -77,6 +91,9 @@ describe('ActiveSessionController', () => {
     const resumed = await ActiveSessionController.ensureDaySession('legs', exercises);
     expect(resumed.sessionId).toBe(first.sessionId);
     expect(resumed.status).toBe('active');
+    expect(resumed.steps[0]?.completedSets.length).toHaveLength
+      ? resumed.steps[0].completedSets.length >= 1
+      : true;
     expect(resumed.steps[0]?.completedSets.length).toBeGreaterThanOrEqual(1);
 
     const stored = await getSessionService().getSession(first.sessionId);
