@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
+import { isProfileComplete } from '@forma/core';
 import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
 import { useFitPulseStore, selectDailyTotals, DayMeals } from '@/state/useFitPulseStore';
 import CalorieRing from '@/components/CalorieRing';
@@ -31,8 +32,19 @@ export default function NutritionScreen() {
   const removeFoodItem = useFitPulseStore((s) => s.removeFoodItem);
   const waterGlasses = useFitPulseStore((s) => s.waterGlasses);
   const setWater = useFitPulseStore((s) => s.setWater);
-  const targets = useFitPulseStore((s) => s.calculateTargets());
+  const profile = useFitPulseStore((s) => s.profile);
+  const calculateTargets = useFitPulseStore((s) => s.calculateTargets);
   const totals = selectDailyTotals(meals);
+
+  const complete = isProfileComplete({
+    weightKg: profile.weight,
+    heightCm: profile.height,
+    age: profile.age,
+    gender: profile.sex
+  });
+  const targets = complete
+    ? calculateTargets()
+    : { target: 0, proteinTarget: 0, fatTarget: 0, carbTarget: 0, bmr: 0, tdee: 0, protocolActive: false };
 
   function openAddFood(mealKey: keyof DayMeals) {
     setActiveMeal(mealKey);
@@ -40,7 +52,6 @@ export default function NutritionScreen() {
   }
 
   function toggleWater(idx: number) {
-    // Same semantics as HTML prototype: tap sets fill up to idx inclusive.
     const next = waterGlasses === idx + 1 ? idx : idx + 1;
     setWater(Math.max(0, Math.min(WATER_MAX, next)));
   }
@@ -54,16 +65,11 @@ export default function NutritionScreen() {
 
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.heroCard}>
-          <CalorieRing eaten={totals.kcal} target={targets.target} />
+          <CalorieRing eaten={totals.kcal} target={targets.target || 1} />
           <View style={styles.macroCol}>
-            <MacroBar
-              label="Б"
-              value={totals.protein}
-              target={targets.proteinTarget}
-              color={colors.macroProtein}
-            />
-            <MacroBar label="Ж" value={totals.fat} target={targets.fatTarget} color={colors.macroFat} />
-            <MacroBar label="У" value={totals.carbs} target={targets.carbTarget} color={colors.macroCarb} />
+            <MacroBar label="Б" value={totals.protein} target={targets.proteinTarget || 1} color={colors.macroProtein} />
+            <MacroBar label="Ж" value={totals.fat} target={targets.fatTarget || 1} color={colors.macroFat} />
+            <MacroBar label="У" value={totals.carbs} target={targets.carbTarget || 1} color={colors.macroCarb} />
           </View>
         </View>
 
@@ -74,7 +80,7 @@ export default function NutritionScreen() {
               <Text style={{ color: colors.cyan }}>{waterGlasses}</Text> / {WATER_MAX} стаканов
             </Text>
           </View>
-          <View style={styles.waterCells} accessibilityRole="adjustable" accessibilityLabel={`Вода ${waterGlasses} из ${WATER_MAX}`}>
+          <View style={styles.waterCells}>
             {Array.from({ length: WATER_MAX }).map((_, i) => {
               const filled = i < waterGlasses;
               return (
@@ -82,9 +88,6 @@ export default function NutritionScreen() {
                   key={i}
                   style={[styles.waterCell, filled && styles.waterCellFilled]}
                   onPress={() => toggleWater(i)}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: filled }}
-                  accessibilityLabel={`Стакан ${i + 1}`}
                 />
               );
             })}
@@ -100,14 +103,8 @@ export default function NutritionScreen() {
           <View key={key} style={styles.mealGroup}>
             <View style={styles.mealHead}>
               <Text style={styles.mealName}>{MEAL_LABELS[key]}</Text>
-              <Text style={styles.mealKcal}>
-                {meals[key].reduce((sum, i) => sum + i.kcal, 0)} ккал
-              </Text>
-              <TouchableOpacity
-                style={styles.addBtn}
-                onPress={() => openAddFood(key)}
-                accessibilityLabel={`Добавить в ${MEAL_LABELS[key]}`}
-              >
+              <Text style={styles.mealKcal}>{meals[key].reduce((sum, i) => sum + i.kcal, 0)} ккал</Text>
+              <TouchableOpacity style={styles.addBtn} onPress={() => openAddFood(key)}>
                 <Text style={styles.addBtnText}>+</Text>
               </TouchableOpacity>
             </View>
@@ -124,10 +121,7 @@ export default function NutritionScreen() {
                     Б{item.protein} Ж{item.fat} У{item.carbs}
                   </Text>
                   <Text style={styles.foodKcal}>{item.kcal}</Text>
-                  <TouchableOpacity
-                    onPress={() => removeFoodItem(key, item.id)}
-                    accessibilityLabel={`Удалить ${item.name}`}
-                  >
+                  <TouchableOpacity onPress={() => removeFoodItem(key, item.id)}>
                     <Text style={styles.foodDel}>×</Text>
                   </TouchableOpacity>
                 </View>

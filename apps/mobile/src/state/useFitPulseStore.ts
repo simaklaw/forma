@@ -21,6 +21,7 @@ import {
   type ProfileState
 } from '@/engines/MetabolicEngine';
 import { SetLogEntry, DayProgress, toDateKey, pruneOldSetLogs } from '@/engines/WorkoutStats';
+import { uuidv7 } from '@/features/workout/data/ids';
 
 export type { SetLogEntry, DayProgress } from '@/engines/WorkoutStats';
 
@@ -46,6 +47,16 @@ export interface FoodItem {
   loggedAt?: number;
 }
 
+/** User-defined product kept in local catalog (per 100g macros). */
+export interface CustomFoodDef {
+  id: string;
+  name: string;
+  kcal: number;
+  protein: number;
+  fat: number;
+  carbs: number;
+}
+
 export interface DayMeals {
   breakfast: FoodItem[];
   lunch: FoodItem[];
@@ -53,7 +64,6 @@ export interface DayMeals {
   dinner: FoodItem[];
 }
 
-/** Stored profile — null means not provided yet (onboarding). */
 export type StoredProfile = {
   sex: Sex | null;
   age: number | null;
@@ -113,8 +123,7 @@ function mergeProfile(base: StoredProfile, patch: unknown): StoredProfile {
     height: 'height' in p ? asPositiveNumber(p.height) : base.height,
     weight: 'weight' in p ? asPositiveNumber(p.weight) : base.weight,
     pal: typeof p.pal === 'number' && Number.isFinite(p.pal) ? p.pal : base.pal,
-    goal:
-      p.goal === 'gain' || p.goal === 'maintain' || p.goal === 'recomp' ? p.goal : base.goal
+    goal: p.goal === 'gain' || p.goal === 'maintain' || p.goal === 'recomp' ? p.goal : base.goal
   };
 }
 
@@ -122,6 +131,7 @@ interface AppStore {
   profile: StoredProfile;
   metabolic: MetabolicStatus;
   todayMeals: DayMeals;
+  customFoods: CustomFoodDef[];
   waterGlasses: number;
   weightHistory: number[];
   setLogs: SetLogEntry[];
@@ -134,6 +144,7 @@ interface AppStore {
   triggerDietBreak: () => void;
   addFoodItem: (mealType: keyof DayMeals, item: Omit<FoodItem, 'id'>) => void;
   removeFoodItem: (mealType: keyof DayMeals, id: string) => void;
+  addCustomFood: (item: Omit<CustomFoodDef, 'id'>) => CustomFoodDef;
   setWater: (count: number) => void;
   logWeight: (weight: number) => void;
 
@@ -143,7 +154,6 @@ interface AppStore {
   setCoachMessages: (messages: CoachMessage[]) => void;
   clearCoachMessages: () => void;
 
-  /** Throws RangeError if profile incomplete — callers must gate with isProfileComplete. */
   calculateTargets: () => Targets;
   isPlateauSuspected: () => boolean;
   hydrate: (
@@ -153,6 +163,7 @@ interface AppStore {
         | 'profile'
         | 'metabolic'
         | 'todayMeals'
+        | 'customFoods'
         | 'waterGlasses'
         | 'weightHistory'
         | 'setLogs'
@@ -168,16 +179,9 @@ export const useFitPulseStore = create<AppStore>()(
   persist(
     (set, get) => ({
       profile: emptyProfile(),
-      metabolic: {
-        type: null,
-        endsAt: null
-      },
-      todayMeals: {
-        breakfast: [],
-        lunch: [],
-        snack: [],
-        dinner: []
-      },
+      metabolic: { type: null, endsAt: null },
+      todayMeals: { breakfast: [], lunch: [], snack: [], dinner: [] },
+      customFoods: [],
       waterGlasses: 0,
       weightHistory: [],
       setLogs: [],
@@ -186,12 +190,9 @@ export const useFitPulseStore = create<AppStore>()(
       coachMessages: defaultCoachMessages(),
 
       updateProfile: (newProfile) =>
-        set((state) => ({
-          profile: mergeProfile(state.profile, newProfile)
-        })),
+        set((state) => ({ profile: mergeProfile(state.profile, newProfile) })),
 
       triggerRefeed: () => set({ metabolic: startRefeed() }),
-
       triggerDietBreak: () => set({ metabolic: startDietBreak() }),
 
       addFoodItem: (mealType, item) =>
@@ -209,6 +210,21 @@ export const useFitPulseStore = create<AppStore>()(
             [mealType]: state.todayMeals[mealType].filter((i) => i.id !== id)
           }
         })),
+
+      addCustomFood: (item) => {
+        const key = item.name.trim().toLowerCase();
+        const existing = get().customFoods.find((f) => f.name.trim().toLowerCase() === key);
+        if (existing) {
+          const updated: CustomFoodDef = { ...existing, ...item };
+          set((s) => ({
+            customFoods: s.customFoods.map((f) => (f.id === existing.id ? updated : f))
+          }));
+          return updated;
+        }
+        const created: CustomFoodDef = { ...item, id: uuidv7() };
+        set((s) => ({ customFoods: [...s.customFoods, created] }));
+        return created;
+      },
 
       setWater: (count) => set({ waterGlasses: count }),
 
@@ -246,11 +262,7 @@ export const useFitPulseStore = create<AppStore>()(
         return get().dayProgress[todayKey]?.[exerciseId] ?? 0;
       },
 
-      setCoachMessages: (messages) =>
-        set({
-          coachMessages: messages.slice(-COACH_MESSAGE_CAP)
-        }),
-
+      setCoachMessages: (messages) => set({ coachMessages: messages.slice(-COACH_MESSAGE_CAP) }),
       clearCoachMessages: () => set({ coachMessages: defaultCoachMessages() }),
 
       calculateTargets: () => {
@@ -291,9 +303,10 @@ export const useFitPulseStore = create<AppStore>()(
           const valid = keys.every((k) => Array.isArray((data.todayMeals as DayMeals)[k]));
           if (valid) next.todayMeals = data.todayMeals as DayMeals;
         }
-        if (typeof data.waterGlasses === 'number') {
-          next.waterGlasses = data.waterGlasses;
+        if (Array.isArray(data.customFoods)) {
+          next.customFoods = data.customFoods as CustomFoodDef[];
         }
+        if (typeof data.waterGlasses === 'number') next.waterGlasses = data.waterGlasses;
         if (Array.isArray(data.weightHistory) && data.weightHistory.every((n) => typeof n === 'number')) {
           next.weightHistory = data.weightHistory;
         }
@@ -305,9 +318,7 @@ export const useFitPulseStore = create<AppStore>()(
         ) {
           next.setLogs = data.setLogs;
         }
-        if (data.dayProgress && typeof data.dayProgress === 'object') {
-          next.dayProgress = data.dayProgress;
-        }
+        if (data.dayProgress && typeof data.dayProgress === 'object') next.dayProgress = data.dayProgress;
         if (
           data.personalRecords &&
           typeof data.personalRecords === 'object' &&
@@ -336,6 +347,7 @@ export const useFitPulseStore = create<AppStore>()(
           ...current,
           ...p,
           profile: mergeProfile(current.profile, p.profile),
+          customFoods: Array.isArray(p.customFoods) ? p.customFoods : current.customFoods,
           coachMessages: sanitizeCoachMessages(p.coachMessages ?? current.coachMessages)
         };
       }
@@ -343,7 +355,6 @@ export const useFitPulseStore = create<AppStore>()(
   )
 );
 
-/** Convenience selector: total kcal/macros eaten today across all meals. */
 export function selectDailyTotals(meals: DayMeals) {
   const all = [...meals.breakfast, ...meals.lunch, ...meals.snack, ...meals.dinner];
   return all.reduce(
