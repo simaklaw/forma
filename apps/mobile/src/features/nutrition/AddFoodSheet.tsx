@@ -3,9 +3,10 @@ import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import Slider from '@react-native-community/slider';
 import AppBottomSheet from '@/components/BottomSheet';
-import { colors, fonts, spacing } from '@/core/theme/tokens';
-import { useFitPulseStore, DayMeals } from '@/state/useFitPulseStore';
+import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { useFitPulseStore, DayMeals, type FoodItem } from '@/state/useFitPulseStore';
 import { OpenFoodFactsService, NormalizedFood } from '@/services/OpenFoodFactsService';
+import { uuidv7 } from '@/features/workout/data/ids';
 
 const LOCAL_PRESETS: NormalizedFood[] = [
   { name: 'Куриная грудка варёная', kcal: 165, protein: 31, fat: 3.6, carbs: 0 },
@@ -18,6 +19,8 @@ const LOCAL_PRESETS: NormalizedFood[] = [
   { name: 'Банан, 1 шт.', kcal: 89, protein: 1.1, fat: 0.3, carbs: 23 }
 ];
 
+type Tab = 'database' | 'custom';
+
 interface Props {
   mealKey: keyof DayMeals;
   mealLabel: string;
@@ -26,27 +29,47 @@ interface Props {
 
 const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel, onClose }, ref) => {
   const addFoodItem = useFitPulseStore((s) => s.addFoodItem);
+  const customFoods = useFitPulseStore((s) => s.customFoods);
+  const addCustomFood = useFitPulseStore((s) => s.addCustomFood);
+
+  const [tab, setTab] = useState<Tab>('database');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<NormalizedFood[]>(LOCAL_PRESETS);
   const [sourceLabel, setSourceLabel] = useState('Локальная база:');
   const [loading, setLoading] = useState(false);
+  const [portion, setPortion] = useState(100);
 
   const [name, setName] = useState('');
-  const [kcal100, setKcal100] = useState('');
-  const [protein100, setProtein100] = useState('');
-  const [fat100, setFat100] = useState('');
-  const [carbs100, setCarbs100] = useState('');
-  const [portion, setPortion] = useState(100);
+  const [kcal100, setKcal100] = useState('120');
+  const [protein100, setProtein100] = useState('10');
+  const [fat100, setFat100] = useState('5');
+  const [carbs100, setCarbs100] = useState('10');
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const runLocalFilter = useCallback((q: string) => {
-    const lower = q.toLowerCase();
-    setResults(LOCAL_PRESETS.filter((f) => f.name.toLowerCase().includes(lower)));
-    setSourceLabel('Локальная база:');
-  }, []);
+  const catalogPresets = useCallback((): NormalizedFood[] => {
+    const custom: NormalizedFood[] = (customFoods ?? []).map((f) => ({
+      name: f.name,
+      kcal: f.kcal,
+      protein: f.protein,
+      fat: f.fat,
+      carbs: f.carbs
+    }));
+    const names = new Set(custom.map((c) => c.name.trim().toLowerCase()));
+    return [...LOCAL_PRESETS.filter((p) => !names.has(p.name.trim().toLowerCase())), ...custom];
+  }, [customFoods]);
+
+  const runLocalFilter = useCallback(
+    (q: string) => {
+      const lower = q.toLowerCase();
+      setResults(catalogPresets().filter((f) => f.name.toLowerCase().includes(lower)));
+      setSourceLabel('Локальная база:');
+    },
+    [catalogPresets]
+  );
 
   useEffect(() => {
+    if (tab !== 'database') return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (query.trim().length < 2) {
       runLocalFilter(query);
@@ -67,81 +90,73 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query]);
+  }, [query, tab, runLocalFilter]);
 
-  function selectPreset(item: NormalizedFood) {
-    setName(item.name);
-    setKcal100(String(item.kcal));
-    setProtein100(String(item.protein));
-    setFat100(String(item.fat));
-    setCarbs100(String(item.carbs));
-  }
-
-  function confirmAdd() {
+  function logFromFood(item: NormalizedFood) {
     const mult = portion / 100;
     addFoodItem(mealKey, {
-      name: name || 'Продукт',
-      kcal: Math.round((parseFloat(kcal100) || 0) * mult),
-      protein: Math.round((parseFloat(protein100) || 0) * mult),
-      fat: Math.round((parseFloat(fat100) || 0) * mult),
-      carbs: Math.round((parseFloat(carbs100) || 0) * mult)
+      name: item.name,
+      kcal: Math.round((item.kcal || 0) * mult),
+      protein: Math.round((item.protein || 0) * mult),
+      fat: Math.round((item.fat || 0) * mult),
+      carbs: Math.round((item.carbs || 0) * mult)
     });
-    setName('');
-    setKcal100('');
-    setProtein100('');
-    setFat100('');
-    setCarbs100('');
-    setPortion(100);
     setQuery('');
+    setPortion(100);
     onClose();
   }
 
-  return (
-    <AppBottomSheet ref={ref} eyebrow="Дневник питания" title={`Добавить в ${mealLabel.toLowerCase()}`} onClose={onClose} snapPoints={['75%', '92%']}>
-      <ScrollView keyboardShouldPersistTaps="handled">
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Поиск в базе продуктов…"
-          placeholderTextColor={colors.paperFaint}
-          value={query}
-          onChangeText={setQuery}
-        />
-        <Text style={styles.sourceLabel}>{loading ? 'Ищу в Open Food Facts…' : sourceLabel}</Text>
-        <View style={styles.presetList}>
-          {results.slice(0, 8).map((item, i) => (
-            <TouchableOpacity key={i} style={styles.presetRow} onPress={() => selectPreset(item)}>
-              <Text style={styles.presetName} numberOfLines={1}>
-                {item.name}
-              </Text>
-              <Text style={styles.presetKcal}>{item.kcal} ккал/100г</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+  function confirmCustom() {
+    const def = {
+      name: name.trim() || 'Свой продукт',
+      kcal: parseFloat(kcal100) || 0,
+      protein: parseFloat(protein100) || 0,
+      fat: parseFloat(fat100) || 0,
+      carbs: parseFloat(carbs100) || 0
+    };
+    addCustomFood(def);
+    logFromFood(def);
+    setName('');
+    setKcal100('120');
+    setProtein100('10');
+    setFat100('5');
+    setCarbs100('10');
+  }
 
-        <View style={styles.formRow}>
-          <Text style={styles.label}>Название</Text>
-          <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Свой продукт" placeholderTextColor={colors.paperFaint} />
-        </View>
-        <View style={styles.formGrid}>
-          <View style={styles.formCol}>
-            <Text style={styles.label}>Ккал/100г</Text>
-            <TextInput style={styles.input} value={kcal100} onChangeText={setKcal100} keyboardType="numeric" placeholder="120" placeholderTextColor={colors.paperFaint} />
-          </View>
-          <View style={styles.formCol}>
-            <Text style={styles.label}>Белки</Text>
-            <TextInput style={styles.input} value={protein100} onChangeText={setProtein100} keyboardType="numeric" placeholder="10" placeholderTextColor={colors.paperFaint} />
-          </View>
-          <View style={styles.formCol}>
-            <Text style={styles.label}>Жиры</Text>
-            <TextInput style={styles.input} value={fat100} onChangeText={setFat100} keyboardType="numeric" placeholder="3" placeholderTextColor={colors.paperFaint} />
-          </View>
-        </View>
-        <View style={styles.formRow}>
-          <Text style={styles.label}>Углеводы, г/100г</Text>
-          <TextInput style={styles.input} value={carbs100} onChangeText={setCarbs100} keyboardType="numeric" placeholder="15" placeholderTextColor={colors.paperFaint} />
-        </View>
-        <View style={styles.formRow}>
+  return (
+    <AppBottomSheet
+      ref={ref}
+      eyebrow="Дневник питания"
+      title={`Добавить в ${mealLabel.toLowerCase()}`}
+      onClose={onClose}
+      snapPoints={['75%', '92%']}
+    >
+      <View style={styles.tabs}>
+        {(['database', 'custom'] as const).map((t) => (
+          <TouchableOpacity
+            key={t}
+            style={[styles.tab, tab === t && styles.tabOn]}
+            onPress={() => setTab(t)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: tab === t }}
+          >
+            <Text style={[styles.tabText, tab === t && styles.tabTextOn]}>
+              {t === 'database' ? 'Из базы' : 'Свой продукт'}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {tab === 'database' ? (
+        <ScrollView keyboardShouldPersistTaps="handled">
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Поиск в базе продуктов…"
+            placeholderTextColor={colors.paperFaint}
+            value={query}
+            onChangeText={setQuery}
+          />
+          <Text style={styles.sourceLabel}>{loading ? 'Ищу в Open Food Facts…' : sourceLabel}</Text>
           <Text style={styles.label}>Порция: {portion} г</Text>
           <Slider
             minimumValue={25}
@@ -153,12 +168,65 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
             maximumTrackTintColor={colors.lineStrong}
             thumbTintColor={colors.lime}
           />
-        </View>
-
-        <TouchableOpacity style={styles.cta} onPress={confirmAdd} accessibilityRole="button">
-          <Text style={styles.ctaText}>Добавить в дневник</Text>
-        </TouchableOpacity>
-      </ScrollView>
+          <View style={styles.presetList}>
+            {results.slice(0, 12).map((item, i) => (
+              <TouchableOpacity key={`${item.name}-${i}`} style={styles.presetRow} onPress={() => logFromFood(item)}>
+                <Text style={styles.presetName} numberOfLines={1}>
+                  {item.name}
+                </Text>
+                <Text style={styles.presetKcal}>{item.kcal} ккал/100г</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      ) : (
+        <ScrollView keyboardShouldPersistTaps="handled">
+          <View style={styles.formRow}>
+            <Text style={styles.label}>Название</Text>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+              placeholder="Свой продукт"
+              placeholderTextColor={colors.paperFaint}
+            />
+          </View>
+          <View style={styles.formGrid}>
+            <View style={styles.formCol}>
+              <Text style={styles.label}>Ккал/100г</Text>
+              <TextInput style={styles.input} value={kcal100} onChangeText={setKcal100} keyboardType="numeric" />
+            </View>
+            <View style={styles.formCol}>
+              <Text style={styles.label}>Белки</Text>
+              <TextInput style={styles.input} value={protein100} onChangeText={setProtein100} keyboardType="numeric" />
+            </View>
+            <View style={styles.formCol}>
+              <Text style={styles.label}>Жиры</Text>
+              <TextInput style={styles.input} value={fat100} onChangeText={setFat100} keyboardType="numeric" />
+            </View>
+          </View>
+          <View style={styles.formRow}>
+            <Text style={styles.label}>Углеводы, г/100г</Text>
+            <TextInput style={styles.input} value={carbs100} onChangeText={setCarbs100} keyboardType="numeric" />
+          </View>
+          <View style={styles.formRow}>
+            <Text style={styles.label}>Порция: {portion} г</Text>
+            <Slider
+              minimumValue={25}
+              maximumValue={400}
+              step={25}
+              value={portion}
+              onValueChange={setPortion}
+              minimumTrackTintColor={colors.lime}
+              maximumTrackTintColor={colors.lineStrong}
+              thumbTintColor={colors.lime}
+            />
+          </View>
+          <TouchableOpacity style={styles.cta} onPress={confirmCustom} accessibilityRole="button">
+            <Text style={styles.ctaText}>Сохранить и добавить</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      )}
     </AppBottomSheet>
   );
 });
@@ -167,6 +235,18 @@ AddFoodSheet.displayName = 'AddFoodSheet';
 export default AddFoodSheet;
 
 const styles = StyleSheet.create({
+  tabs: {
+    flexDirection: 'row',
+    backgroundColor: colors.panel,
+    borderRadius: radius.control,
+    padding: 4,
+    marginBottom: 12,
+    gap: 4
+  },
+  tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 8 },
+  tabOn: { backgroundColor: colors.lime },
+  tabText: { color: colors.paperDim, fontFamily: fonts.bodySemi, fontSize: 13 },
+  tabTextOn: { color: colors.ink },
   searchInput: {
     backgroundColor: colors.panel,
     borderWidth: 1,
@@ -176,8 +256,15 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     marginBottom: 4
   },
-  sourceLabel: { color: colors.paperFaint, fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4, marginTop: 6 },
-  presetList: { maxHeight: 140, marginBottom: 8 },
+  sourceLabel: {
+    color: colors.paperFaint,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+    marginTop: 6
+  },
+  presetList: { marginBottom: 8 },
   presetRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -191,7 +278,15 @@ const styles = StyleSheet.create({
   formGrid: { flexDirection: 'row', gap: 8, marginBottom: 4 },
   formCol: { flex: 1 },
   label: { fontSize: 11, color: colors.paperFaint, marginBottom: 4 },
-  input: { backgroundColor: colors.panel, borderWidth: 1, borderColor: colors.lineStrong, color: colors.paper, padding: 8, fontFamily: fonts.mono, fontSize: 14 },
+  input: {
+    backgroundColor: colors.panel,
+    borderWidth: 1,
+    borderColor: colors.lineStrong,
+    color: colors.paper,
+    padding: 8,
+    fontFamily: fonts.mono,
+    fontSize: 14
+  },
   cta: { marginTop: 10, marginBottom: 30, padding: 14, backgroundColor: colors.lime, alignItems: 'center' },
   ctaText: { color: colors.ink, fontSize: 16, fontFamily: fonts.mono }
 });

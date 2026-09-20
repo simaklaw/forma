@@ -66,6 +66,11 @@ export interface WorkoutSession {
   rowVersion: number;
   localStartDate: string;
   timezone: string;
+  /**
+   * User body mass frozen at prepare_session — never follows later profile edits.
+   * Optional for backward-compatible aggregate_json from older builds.
+   */
+  weightKgSnapshot?: number;
 }
 
 export interface CommandContext {
