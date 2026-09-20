@@ -91,9 +91,6 @@ describe('ActiveSessionController', () => {
     const resumed = await ActiveSessionController.ensureDaySession('legs', exercises);
     expect(resumed.sessionId).toBe(first.sessionId);
     expect(resumed.status).toBe('active');
-    expect(resumed.steps[0]?.completedSets.length).toHaveLength
-      ? resumed.steps[0].completedSets.length >= 1
-      : true;
     expect(resumed.steps[0]?.completedSets.length).toBeGreaterThanOrEqual(1);
 
     const stored = await getSessionService().getSession(first.sessionId);
