@@ -1,20 +1,24 @@
 /**
  * useFitPulseStore — React Native Zustand store for FitPulse.
  * Metabolic math lives in @forma/core; this file is persistence + UI state.
+ *
+ * Profile fields start as null until onboarding. Domain calculateTargets is only
+ * called when isProfileComplete (App gate / screen guards).
  */
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  ProfileState,
   MetabolicStatus,
   Targets,
   Goal,
+  Sex,
   calculateTargets as calcTargets,
   detectWeightPlateau as detectPlateau,
   startRefeed,
-  startDietBreak
+  startDietBreak,
+  type ProfileState
 } from '@/engines/MetabolicEngine';
 import { SetLogEntry, DayProgress, toDateKey, pruneOldSetLogs } from '@/engines/WorkoutStats';
 
@@ -49,6 +53,16 @@ export interface DayMeals {
   dinner: FoodItem[];
 }
 
+/** Stored profile — null means not provided yet (onboarding). */
+export type StoredProfile = {
+  sex: Sex | null;
+  age: number | null;
+  height: number | null;
+  weight: number | null;
+  pal: number;
+  goal: Goal;
+};
+
 function generateId(): string {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 }
@@ -71,8 +85,41 @@ function sanitizeCoachMessages(value: unknown): CoachMessage[] {
   return cleaned.slice(-COACH_MESSAGE_CAP);
 }
 
+function asPositiveNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
+}
+
+function asSex(value: unknown): Sex | null {
+  return value === 'male' || value === 'female' ? value : null;
+}
+
+function emptyProfile(): StoredProfile {
+  return {
+    sex: null,
+    age: null,
+    height: null,
+    weight: null,
+    pal: 1.375,
+    goal: 'recomp'
+  };
+}
+
+function mergeProfile(base: StoredProfile, patch: unknown): StoredProfile {
+  if (!patch || typeof patch !== 'object') return base;
+  const p = patch as Record<string, unknown>;
+  return {
+    sex: 'sex' in p ? asSex(p.sex) : base.sex,
+    age: 'age' in p ? asPositiveNumber(p.age) : base.age,
+    height: 'height' in p ? asPositiveNumber(p.height) : base.height,
+    weight: 'weight' in p ? asPositiveNumber(p.weight) : base.weight,
+    pal: typeof p.pal === 'number' && Number.isFinite(p.pal) ? p.pal : base.pal,
+    goal:
+      p.goal === 'gain' || p.goal === 'maintain' || p.goal === 'recomp' ? p.goal : base.goal
+  };
+}
+
 interface AppStore {
-  profile: ProfileState;
+  profile: StoredProfile;
   metabolic: MetabolicStatus;
   todayMeals: DayMeals;
   waterGlasses: number;
@@ -82,7 +129,7 @@ interface AppStore {
   personalRecords: Record<number, number>;
   coachMessages: CoachMessage[];
 
-  updateProfile: (newProfile: Partial<ProfileState>) => void;
+  updateProfile: (newProfile: Partial<StoredProfile>) => void;
   triggerRefeed: () => void;
   triggerDietBreak: () => void;
   addFoodItem: (mealType: keyof DayMeals, item: Omit<FoodItem, 'id'>) => void;
@@ -96,6 +143,7 @@ interface AppStore {
   setCoachMessages: (messages: CoachMessage[]) => void;
   clearCoachMessages: () => void;
 
+  /** Throws RangeError if profile incomplete — callers must gate with isProfileComplete. */
   calculateTargets: () => Targets;
   isPlateauSuspected: () => boolean;
   hydrate: (
@@ -119,14 +167,7 @@ interface AppStore {
 export const useFitPulseStore = create<AppStore>()(
   persist(
     (set, get) => ({
-      profile: {
-        sex: 'male',
-        age: 26,
-        height: 178,
-        weight: 76,
-        pal: 1.375,
-        goal: 'recomp' as Goal
-      },
+      profile: emptyProfile(),
       metabolic: {
         type: null,
         endsAt: null
@@ -144,7 +185,10 @@ export const useFitPulseStore = create<AppStore>()(
       personalRecords: {},
       coachMessages: defaultCoachMessages(),
 
-      updateProfile: (newProfile) => set((state) => ({ profile: { ...state.profile, ...newProfile } })),
+      updateProfile: (newProfile) =>
+        set((state) => ({
+          profile: mergeProfile(state.profile, newProfile)
+        })),
 
       triggerRefeed: () => set({ metabolic: startRefeed() }),
 
@@ -170,8 +214,8 @@ export const useFitPulseStore = create<AppStore>()(
 
       logWeight: (weight) =>
         set((state) => ({
-          profile: { ...state.profile, weight },
-          weightHistory: [...state.weightHistory, weight].slice(-30)
+          profile: { ...state.profile, weight: asPositiveNumber(weight) },
+          weightHistory: [...state.weightHistory, weight].filter((n) => Number.isFinite(n) && n > 0).slice(-30)
         })),
 
       recordSet: (exerciseId, weight, reps, rir) => {
@@ -211,7 +255,15 @@ export const useFitPulseStore = create<AppStore>()(
 
       calculateTargets: () => {
         const { profile, metabolic } = get();
-        return calcTargets(profile, metabolic);
+        const domainProfile: ProfileState = {
+          sex: profile.sex as Sex,
+          age: profile.age as number,
+          height: profile.height as number,
+          weight: profile.weight as number,
+          pal: profile.pal,
+          goal: profile.goal
+        };
+        return calcTargets(domainProfile, metabolic);
       },
 
       isPlateauSuspected: () => {
@@ -224,7 +276,7 @@ export const useFitPulseStore = create<AppStore>()(
         const next: Partial<AppStore> = {};
 
         if (data.profile && typeof data.profile === 'object') {
-          next.profile = { ...current.profile, ...data.profile };
+          next.profile = mergeProfile(current.profile, data.profile);
         }
         if (
           data.metabolic &&
@@ -283,6 +335,7 @@ export const useFitPulseStore = create<AppStore>()(
         return {
           ...current,
           ...p,
+          profile: mergeProfile(current.profile, p.profile),
           coachMessages: sanitizeCoachMessages(p.coachMessages ?? current.coachMessages)
         };
       }
