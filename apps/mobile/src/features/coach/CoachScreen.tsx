@@ -10,22 +10,56 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CoachEngine, estimateBurnFromSetLogs, toDateKey } from '@forma/core';
+import { CoachEngine, estimateBurnFromSetLogs, isProfileComplete, toDateKey } from '@forma/core';
 import { getMobileTrainerProgress } from '@/ai/trainerProgress';
 import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
 import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
 import { COACH_WELCOME, useFitPulseStore } from '@/state/useFitPulseStore';
+import type { ProfileState, Sex } from '@/engines/MetabolicEngine';
 
 const CHIPS = ['Сколько белка?', 'Калории сегодня', 'Совет на тренировку', 'Восстановление'];
+
+function toDomainProfile(profile: {
+  sex: Sex | null;
+  age: number | null;
+  height: number | null;
+  weight: number | null;
+  pal: number;
+  goal: ProfileState['goal'];
+}): ProfileState | null {
+  if (
+    !isProfileComplete({
+      weightKg: profile.weight,
+      heightCm: profile.height,
+      age: profile.age,
+      gender: profile.sex
+    })
+  ) {
+    return null;
+  }
+  return {
+    sex: profile.sex as Sex,
+    age: profile.age as number,
+    height: profile.height as number,
+    weight: profile.weight as number,
+    pal: profile.pal,
+    goal: profile.goal
+  };
+}
 
 export default function CoachScreen() {
   const profile = useFitPulseStore((s) => s.profile);
   const todayMeals = useFitPulseStore((s) => s.todayMeals);
   const setLogs = useFitPulseStore((s) => s.setLogs);
-  const targets = useFitPulseStore((s) => s.calculateTargets());
   const messages = useFitPulseStore((s) => s.coachMessages);
   const setCoachMessages = useFitPulseStore((s) => s.setCoachMessages);
   const clearCoachMessages = useFitPulseStore((s) => s.clearCoachMessages);
+
+  const domainProfile = useMemo(() => toDomainProfile(profile), [profile]);
+  const targets = useMemo(() => {
+    if (!domainProfile) return null;
+    return useFitPulseStore.getState().calculateTargets();
+  }, [domainProfile]);
 
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
@@ -33,20 +67,24 @@ export default function CoachScreen() {
   const [progress, setProgress] = useState(0);
   const listRef = useRef<FlatList<(typeof messages)[number]>>(null);
 
-  const snapshot = useMemo(
-    () =>
-      mobileCoachSnapshot({
-        profile,
-        todayMeals,
-        targetCalories: targets.target,
-        burnedCalories: estimateBurnFromSetLogs({
-          weightKg: profile.weight,
-          setLogs,
-          dateKey: toDateKey(new Date())
-        })
-      }),
-    [profile, todayMeals, targets.target, setLogs]
-  );
+  const safeWeightKg =
+    typeof profile.weight === 'number' && Number.isFinite(profile.weight) && profile.weight > 0
+      ? profile.weight
+      : 0;
+
+  const snapshot = useMemo(() => {
+    if (!domainProfile || !targets) return null;
+    return mobileCoachSnapshot({
+      profile: domainProfile,
+      todayMeals,
+      targetCalories: targets.target,
+      burnedCalories: estimateBurnFromSetLogs({
+        weightKg: safeWeightKg,
+        setLogs,
+        dateKey: toDateKey(new Date())
+      })
+    });
+  }, [domainProfile, todayMeals, targets, safeWeightKg, setLogs]);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -58,7 +96,7 @@ export default function CoachScreen() {
 
   async function send(raw?: string) {
     const q = (raw ?? input).trim();
-    if (!q || busy) return;
+    if (!q || busy || !snapshot) return;
     setInput('');
     const userId = `u-${Date.now()}`;
     const coachId = `c-${Date.now()}`;
@@ -120,9 +158,9 @@ export default function CoachScreen() {
           {CHIPS.map((c) => (
             <Pressable
               key={c}
-              disabled={busy}
+              disabled={busy || !snapshot}
               onPress={() => void send(c)}
-              style={[styles.chip, busy && styles.chipDisabled]}
+              style={[styles.chip, (busy || !snapshot) && styles.chipDisabled]}
             >
               <Text style={styles.chipText}>{c}</Text>
             </Pressable>
@@ -156,8 +194,8 @@ export default function CoachScreen() {
           />
           <Pressable
             onPress={() => void send()}
-            disabled={busy || !input.trim()}
-            style={[styles.send, (busy || !input.trim()) && styles.sendDisabled]}
+            disabled={busy || !input.trim() || !snapshot}
+            style={[styles.send, (busy || !input.trim() || !snapshot) && styles.sendDisabled]}
           >
             <Text style={styles.sendText}>Ок</Text>
           </Pressable>

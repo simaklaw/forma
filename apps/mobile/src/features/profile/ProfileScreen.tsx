@@ -5,22 +5,34 @@ import { Picker } from '@react-native-picker/picker';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
+import { isProfileComplete } from '@forma/core';
 import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { Goal, Sex } from '@/engines/MetabolicEngine';
 import ProtocolBanner from '@/components/ProtocolBanner';
+
+function numStr(v: number | null | undefined): string {
+  return typeof v === 'number' && Number.isFinite(v) ? String(v) : '';
+}
 
 export default function ProfileScreen() {
   const profile = useFitPulseStore((s) => s.profile);
   const updateProfile = useFitPulseStore((s) => s.updateProfile);
   const logWeight = useFitPulseStore((s) => s.logWeight);
   const hydrate = useFitPulseStore((s) => s.hydrate);
-  const targets = useFitPulseStore((s) => s.calculateTargets());
   const fullState = useFitPulseStore((s) => s);
 
-  const [ageInput, setAgeInput] = useState(String(profile.age));
-  const [heightInput, setHeightInput] = useState(String(profile.height));
-  const [weightInput, setWeightInput] = useState(String(profile.weight));
+  const complete = isProfileComplete({
+    weightKg: profile.weight,
+    heightCm: profile.height,
+    age: profile.age,
+    gender: profile.sex
+  });
+  const targets = complete ? useFitPulseStore.getState().calculateTargets() : null;
+
+  const [ageInput, setAgeInput] = useState(numStr(profile.age));
+  const [heightInput, setHeightInput] = useState(numStr(profile.height));
+  const [weightInput, setWeightInput] = useState(numStr(profile.weight));
 
   function commitNumber(field: 'age' | 'height' | 'weight', value: string) {
     const num = parseFloat(value);
@@ -28,7 +40,7 @@ export default function ProfileScreen() {
     if (field === 'weight') {
       logWeight(num);
     } else {
-      updateProfile({ [field]: num } as any);
+      updateProfile({ [field]: num });
     }
   }
 
@@ -53,17 +65,17 @@ export default function ProfileScreen() {
       const content = await FileSystem.readAsStringAsync(result.assets[0].uri);
       const parsed = JSON.parse(content);
       hydrate(parsed);
-      setAgeInput(String(useFitPulseStore.getState().profile.age));
-      setHeightInput(String(useFitPulseStore.getState().profile.height));
-      setWeightInput(String(useFitPulseStore.getState().profile.weight));
+      const next = useFitPulseStore.getState().profile;
+      setAgeInput(numStr(next.age));
+      setHeightInput(numStr(next.height));
+      setWeightInput(numStr(next.weight));
       Alert.alert('Импорт', 'Данные восстановлены из файла');
     } catch (e) {
       Alert.alert('Ошибка импорта', e instanceof Error ? e.message : 'Файл повреждён или не в формате JSON');
     }
   }
 
-  const initials =
-    profile.sex === 'female' ? 'Ж' : 'М';
+  const initials = profile.sex === 'female' ? 'Ж' : profile.sex === 'male' ? 'М' : '—';
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
@@ -79,10 +91,13 @@ export default function ProfileScreen() {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.identityTitle}>
-              {profile.age} лет · {profile.height} см · {profile.weight} кг
+              {numStr(profile.age) || '—'} лет · {numStr(profile.height) || '—'} см ·{' '}
+              {numStr(profile.weight) || '—'} кг
             </Text>
             <Text style={styles.identitySub}>
-              Цель {targets.target.toLocaleString('ru-RU')} ккал · BMR {targets.bmr}
+              {targets
+                ? `Цель ${targets.target.toLocaleString('ru-RU')} ккал · BMR ${targets.bmr}`
+                : 'Заполните профиль для расчёта КБЖУ'}
             </Text>
           </View>
         </View>
@@ -98,7 +113,7 @@ export default function ProfileScreen() {
               <Text style={styles.label}>Пол</Text>
               <View style={styles.pickerWrap}>
                 <Picker
-                  selectedValue={profile.sex}
+                  selectedValue={profile.sex ?? undefined}
                   onValueChange={(v: Sex) => updateProfile({ sex: v })}
                   dropdownIconColor={colors.paper}
                 >
@@ -169,21 +184,24 @@ export default function ProfileScreen() {
 
           <View style={styles.calcResult}>
             <View style={styles.resultCell}>
-              <Text style={styles.resultVal}>{targets.bmr}</Text>
+              <Text style={styles.resultVal}>{targets ? targets.bmr : '—'}</Text>
               <Text style={styles.resultLbl}>BMR</Text>
             </View>
             <View style={styles.resultCell}>
-              <Text style={styles.resultVal}>{targets.tdee}</Text>
+              <Text style={styles.resultVal}>{targets ? targets.tdee : '—'}</Text>
               <Text style={styles.resultLbl}>TDEE</Text>
             </View>
             <View style={[styles.resultCell, { borderRightWidth: 0 }]}>
-              <Text style={[styles.resultVal, { color: colors.lime }]}>{targets.target}</Text>
+              <Text style={[styles.resultVal, { color: colors.lime }]}>
+                {targets ? targets.target : '—'}
+              </Text>
               <Text style={styles.resultLbl}>Цель</Text>
             </View>
           </View>
           <Text style={styles.macroNote}>
-            Белки {targets.proteinTarget} г · жиры {targets.fatTarget} г · углеводы {targets.carbTarget} г
-            (ISSN 2.0 / 1.0 г на кг).
+            {targets
+              ? `Белки ${targets.proteinTarget} г · жиры ${targets.fatTarget} г · углеводы ${targets.carbTarget} г (ISSN 2.0 / 1.0 г на кг).`
+              : 'Заполните вес, рост, возраст и пол — тогда появятся цели КБЖУ.'}
           </Text>
         </View>
 
