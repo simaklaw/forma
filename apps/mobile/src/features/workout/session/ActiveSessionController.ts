@@ -1,3 +1,4 @@
+import { isProfileComplete } from '@forma/core';
 import type { WorkoutSession } from '@forma/workout-domain';
 import {
   getSessionService,
@@ -8,6 +9,7 @@ import { contentHashForExercises, exercisesToSnapshots } from './planToSnapshots
 import { LOCAL_USER_ID } from './currentUser';
 import { projectSessionEvents } from '@/features/workout/data/sessionProjections';
 import { clearDayReadModel } from './clearDayReadModel';
+import { useFitPulseStore } from '@/state/useFitPulseStore';
 
 export function dayTemplateId(dayId: string): string {
   return `day-${dayId}`;
@@ -21,12 +23,6 @@ function isResumable(s: WorkoutSession): boolean {
   return s.status === 'prepared' || s.status === 'active' || s.status === 'paused';
 }
 
-/**
- * Thin imperative controller: keeps the active day-plan session id and
- * projects accepted session events into the legacy workout read model.
- *
- * After process death, resume is driven by getResumable + templateRevisionId.
- */
 class ActiveSessionControllerImpl {
   private sessionId: string | null = null;
   private dayId: string | null = null;
@@ -40,7 +36,6 @@ class ActiveSessionControllerImpl {
     return this.dayId;
   }
 
-  /** Test-only — clears in-memory pointers only (does not touch repository). */
   resetForTests(): void {
     this.sessionId = null;
     this.dayId = null;
@@ -63,10 +58,6 @@ class ActiveSessionControllerImpl {
     return session;
   }
 
-  /**
-   * Single-active: abandon only when the resumable session belongs to a *different* day.
-   * Same-day match via templateRevisionId (survives process death).
-   */
   private async abandonIfDifferentDay(nextDayId: string): Promise<WorkoutSession | null> {
     const svc = getSessionService();
     const previous = await svc.getResumable(LOCAL_USER_ID);
@@ -88,6 +79,18 @@ class ActiveSessionControllerImpl {
   }
 
   async ensureDaySession(dayId: string, exercises: ExerciseDef[]): Promise<WorkoutSession> {
+    const profile = useFitPulseStore.getState().profile;
+    if (
+      !isProfileComplete({
+        weightKg: profile.weight,
+        heightCm: profile.height,
+        age: profile.age,
+        gender: profile.sex
+      })
+    ) {
+      throw new Error('Profile incomplete — cannot start workout session');
+    }
+
     const svc = getSessionService();
     const templateId = dayTemplateId(dayId);
 
@@ -116,18 +119,14 @@ class ActiveSessionControllerImpl {
       contentHash: contentHashForExercises(exercises),
       steps,
       localStartDate,
-      timezone
+      timezone,
+      weightKgSnapshot: profile.weight as number
     });
 
     const started = await svc.dispatch(sessionId, { type: 'start_session' });
     return this.bind(started.session, dayId);
   }
 
-  /**
-   * Explicit "start over": abandon with user_restarted, clear legacy day projection
-   * for that localStartDate (so merge Math.max cannot keep abandoned counts),
-   * then prepare a fresh session.
-   */
   async restartDaySession(dayId: string, exercises: ExerciseDef[]): Promise<WorkoutSession> {
     const svc = getSessionService();
     const previous = await svc.getResumable(LOCAL_USER_ID);
