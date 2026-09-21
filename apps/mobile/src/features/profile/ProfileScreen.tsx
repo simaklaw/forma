@@ -76,6 +76,7 @@ export default function ProfileScreen() {
   }
 
   const initials = profile.sex === 'female' ? 'Ж' : profile.sex === 'male' ? 'М' : '—';
+  const sexLabel = profile.sex === 'female' ? 'Женский' : profile.sex === 'male' ? 'Мужской' : '—';
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
@@ -91,7 +92,7 @@ export default function ProfileScreen() {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.identityTitle}>
-              {numStr(profile.age) || '—'} лет · {numStr(profile.height) || '—'} см ·{' '}
+              {sexLabel} · {numStr(profile.age) || '—'} лет · {numStr(profile.height) || '—'} см ·{' '}
               {numStr(profile.weight) || '—'} кг
             </Text>
             <Text style={styles.identitySub}>
@@ -115,10 +116,12 @@ export default function ProfileScreen() {
                 <Picker
                   selectedValue={profile.sex ?? undefined}
                   onValueChange={(v: Sex) => updateProfile({ sex: v })}
+                  style={styles.picker}
+                  itemStyle={styles.pickerItem}
                   dropdownIconColor={colors.paper}
                 >
-                  <Picker.Item label="Мужской" value="male" />
-                  <Picker.Item label="Женский" value="female" />
+                  <Picker.Item label="Мужской" value="male" color={colors.paper} />
+                  <Picker.Item label="Женский" value="female" color={colors.paper} />
                 </Picker>
               </View>
             </View>
@@ -158,11 +161,13 @@ export default function ProfileScreen() {
                 <Picker
                   selectedValue={profile.pal}
                   onValueChange={(v: number) => updateProfile({ pal: v })}
+                  style={styles.picker}
+                  itemStyle={styles.pickerItem}
                   dropdownIconColor={colors.paper}
                 >
-                  <Picker.Item label="1.2 — низкая" value={1.2} />
-                  <Picker.Item label="1.375 — умеренная" value={1.375} />
-                  <Picker.Item label="1.55 — высокая" value={1.55} />
+                  <Picker.Item label="1.2 — низкая" value={1.2} color={colors.paper} />
+                  <Picker.Item label="1.375 — умеренная" value={1.375} color={colors.paper} />
+                  <Picker.Item label="1.55 — высокая" value={1.55} color={colors.paper} />
                 </Picker>
               </View>
             </View>
@@ -172,11 +177,13 @@ export default function ProfileScreen() {
                 <Picker
                   selectedValue={profile.goal}
                   onValueChange={(v: Goal) => updateProfile({ goal: v })}
+                  style={styles.picker}
+                  itemStyle={styles.pickerItem}
                   dropdownIconColor={colors.paper}
                 >
-                  <Picker.Item label="Дефицит −12%" value="recomp" />
-                  <Picker.Item label="Поддержание" value="maintain" />
-                  <Picker.Item label="Профицит +10%" value="gain" />
+                  <Picker.Item label="Дефицит −12%" value="recomp" color={colors.paper} />
+                  <Picker.Item label="Поддержание" value="maintain" color={colors.paper} />
+                  <Picker.Item label="Профицит +10%" value="gain" color={colors.paper} />
                 </Picker>
               </View>
             </View>
@@ -295,7 +302,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.lineStrong,
     borderRadius: radius.control,
-    overflow: 'hidden'
+    overflow: 'hidden',
+    justifyContent: 'center'
+  },
+  picker: {
+    color: colors.paper,
+    backgroundColor: colors.ink,
+    width: '100%'
+  },
+  pickerItem: {
+    color: colors.paper,
+    backgroundColor: colors.ink,
+    fontSize: 14
   },
   calcResult: {
     flexDirection: 'row',

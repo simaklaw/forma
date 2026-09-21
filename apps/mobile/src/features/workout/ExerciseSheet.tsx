@@ -53,8 +53,8 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const reference = useExerciseReference(exercise?.wgerSearchTerm ?? null);
 
     const [completedSets, setCompletedSets] = useState(0);
-    const [weight, setWeight] = useState(0);
-    const [reps, setReps] = useState(0);
+    const [weight, setWeight] = useState(() => exercise?.workingWeight ?? 0);
+    const [reps, setReps] = useState(() => exercise?.workingReps ?? 0);
     const [rir, setRir] = useState(2);
     const [restRemaining, setRestRemaining] = useState<number | null>(null);
     const [sessionSnap, setSessionSnap] = useState<WorkoutSession | null>(null);
@@ -112,7 +112,11 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         : { isCurrent: true, expectedName: null, expectedExerciseId: null, currentStepIndex: 0, totalSteps: 0 };
 
     const weightStep = exercise.weightStep ?? 2.5;
-    const oneRm = Math.round(estimateOneRepMax(weight, reps));
+    // Domain requires weightKg > 0 — never call estimateOneRepMax with 0/NaN on first paint.
+    const oneRm =
+      Number.isFinite(weight) && weight > 0 && Number.isFinite(reps) && reps >= 1
+        ? Math.round(estimateOneRepMax(weight, reps))
+        : 0;
     const rpe = rpeFromRir(rir);
     const finished = completedSets >= exercise.totalSets;
     const blockedBySequence = !seq.isCurrent && !finished;
@@ -122,6 +126,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
     function recordNextSet() {
       if (!exercise || completedSets >= exercise.totalSets || blockedBySequence) return;
+      if (!(Number.isFinite(weight) && weight > 0)) return;
       if (dayId && dayExercises?.length) {
         void ActiveSessionController.recordSetForExercise({
           dayId,
@@ -247,7 +252,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           <View style={styles.stepperBlock}>
             <TouchableOpacity
               style={styles.stepperBtn}
-              onPress={() => setWeight((w) => Math.max(0, roundToStep(w - weightStep, weightStep)))}
+              onPress={() =>
+                setWeight((w) => Math.max(weightStep, roundToStep(w - weightStep, weightStep)))
+              }
               accessibilityRole="button"
               accessibilityLabel="Уменьшить вес"
               disabled={blockedBySequence}
@@ -317,7 +324,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
             <Text style={styles.gridLbl}>RPE (10 − RIR)</Text>
           </View>
           <View style={[styles.gridCell, { borderRightWidth: 0 }]}>
-            <Text style={styles.gridVal}>{oneRm}</Text>
+            <Text style={styles.gridVal}>{oneRm > 0 ? oneRm : '—'}</Text>
             <Text style={styles.gridLbl}>прогноз 1ПМ, кг</Text>
           </View>
         </View>

@@ -35,7 +35,7 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
   const [tab, setTab] = useState<Tab>('database');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<NormalizedFood[]>(LOCAL_PRESETS);
-  const [sourceLabel, setSourceLabel] = useState('Локальная база:');
+  const [sourceLabel, setSourceLabel] = useState('Локальная база');
   const [loading, setLoading] = useState(false);
   const [portion, setPortion] = useState(100);
 
@@ -61,9 +61,13 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
 
   const runLocalFilter = useCallback(
     (q: string) => {
-      const lower = q.toLowerCase();
-      setResults(catalogPresets().filter((f) => f.name.toLowerCase().includes(lower)));
-      setSourceLabel('Локальная база:');
+      const lower = q.trim().toLowerCase();
+      const catalog = catalogPresets();
+      const filtered = lower
+        ? catalog.filter((f) => f.name.toLowerCase().includes(lower))
+        : catalog;
+      setResults(filtered);
+      setSourceLabel(lower ? 'Локальная база' : 'Локальная база');
     },
     [catalogPresets]
   );
@@ -71,26 +75,44 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
   useEffect(() => {
     if (tab !== 'database') return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    // Always show local matches immediately (offline-first).
+    runLocalFilter(query);
+
     if (query.trim().length < 2) {
-      runLocalFilter(query);
+      setLoading(false);
       return;
     }
+
     setLoading(true);
     debounceRef.current = setTimeout(async () => {
-      const remote = await OpenFoodFactsService.searchProducts(query.trim());
-      setLoading(false);
-      if (remote.length > 0) {
-        setResults(remote);
-        setSourceLabel('Open Food Facts:');
-      } else {
+      try {
+        const remote = await OpenFoodFactsService.searchProducts(query.trim());
+        if (remote.length > 0) {
+          // Merge: local matches first, then OFF results without duplicates.
+          const local = catalogPresets().filter((f) =>
+            f.name.toLowerCase().includes(query.trim().toLowerCase())
+          );
+          const localNames = new Set(local.map((f) => f.name.trim().toLowerCase()));
+          const merged = [...local, ...remote.filter((r) => !localNames.has(r.name.trim().toLowerCase()))];
+          setResults(merged);
+          setSourceLabel('Локально + Open Food Facts');
+        } else {
+          runLocalFilter(query);
+          setSourceLabel('OFF пусто — локальная база');
+        }
+      } catch {
         runLocalFilter(query);
-        setSourceLabel('OFF пусто — локальная база:');
+        setSourceLabel('OFF недоступен — локальная база');
+      } finally {
+        setLoading(false);
       }
     }, 400);
+
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [query, tab, runLocalFilter]);
+  }, [query, tab, runLocalFilter, catalogPresets]);
 
   function logFromFood(item: NormalizedFood) {
     const mult = portion / 100;
@@ -151,12 +173,14 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
         <ScrollView keyboardShouldPersistTaps="handled">
           <TextInput
             style={styles.searchInput}
-            placeholder="Поиск в базе продуктов…"
+            placeholder="Поиск: рис, творог, курица…"
             placeholderTextColor={colors.paperFaint}
             value={query}
             onChangeText={setQuery}
           />
-          <Text style={styles.sourceLabel}>{loading ? 'Ищу в Open Food Facts…' : sourceLabel}</Text>
+          <Text style={styles.sourceLabel}>
+            {loading ? `${sourceLabel} · ищу в Open Food Facts…` : sourceLabel}
+          </Text>
           <Text style={styles.label}>Порция: {portion} г</Text>
           <Slider
             minimumValue={25}
@@ -169,14 +193,22 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
             thumbTintColor={colors.lime}
           />
           <View style={styles.presetList}>
-            {results.slice(0, 12).map((item, i) => (
-              <TouchableOpacity key={`${item.name}-${i}`} style={styles.presetRow} onPress={() => logFromFood(item)}>
-                <Text style={styles.presetName} numberOfLines={1}>
-                  {item.name}
-                </Text>
-                <Text style={styles.presetKcal}>{item.kcal} ккал/100г</Text>
-              </TouchableOpacity>
-            ))}
+            {results.length === 0 ? (
+              <Text style={styles.empty}>Ничего не найдено — попробуйте «Свой продукт»</Text>
+            ) : (
+              results.slice(0, 12).map((item, i) => (
+                <TouchableOpacity
+                  key={`${item.name}-${i}`}
+                  style={styles.presetRow}
+                  onPress={() => logFromFood(item)}
+                >
+                  <Text style={styles.presetName} numberOfLines={1}>
+                    {item.name}
+                  </Text>
+                  <Text style={styles.presetKcal}>{item.kcal} ккал/100г</Text>
+                </TouchableOpacity>
+              ))
+            )}
           </View>
         </ScrollView>
       ) : (
@@ -264,6 +296,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     marginTop: 6
   },
+  empty: { color: colors.paperFaint, fontSize: 13, paddingVertical: 16, fontFamily: fonts.body },
   presetList: { marginBottom: 8 },
   presetRow: {
     flexDirection: 'row',
