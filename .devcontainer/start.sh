@@ -4,6 +4,11 @@ set -euo pipefail
 export PATH="$HOME/.local/bin:$PATH"
 export FCC_OPEN_BROWSER=0
 
+# FCC Code Sessions uses the local Codex CLI.
+if ! command -v codex >/dev/null 2>&1; then
+  npm install --global @openai/codex
+fi
+
 # Stop previous instances cleanly so Codespace restarts are idempotent.
 pkill -f "fcc-server" 2>/dev/null || true
 sudo nginx -s quit 2>/dev/null || true
