@@ -1,0 +1,22 @@
+{
+  "name": "Forma + Free Claude Code",
+  "image": "mcr.microsoft.com/devcontainers/python:3-3.14-trixie",
+  "features": {
+    "ghcr.io/devcontainers/features/node:2": {
+      "version": "22"
+    }
+  },
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "Forma Free Claude Code",
+      "protocol": "http",
+      "visibility": "private"
+    }
+  },
+  "remoteEnv": {
+    "FCC_OPEN_BROWSER": "0"
+  },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postStartCommand": "bash .devcontainer/start.sh"
+}
