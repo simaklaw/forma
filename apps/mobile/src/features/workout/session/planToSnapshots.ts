@@ -1,8 +1,12 @@
 import type { SessionStepSnapshot } from '@forma/workout-domain';
 import type { ExerciseDef } from '../ExerciseSheet';
+import { resolveWorkingLoadKg } from '../catalog';
 
 /** Map UI exercise defs to immutable session step snapshots (content identity for this start). */
-export function exercisesToSnapshots(exercises: ExerciseDef[]): SessionStepSnapshot[] {
+export function exercisesToSnapshots(
+  exercises: ExerciseDef[],
+  bodyWeightKg = 0
+): SessionStepSnapshot[] {
   return exercises.map((ex, i) => ({
     stepIndex: i,
     exerciseId: String(ex.id),
@@ -10,14 +14,17 @@ export function exercisesToSnapshots(exercises: ExerciseDef[]): SessionStepSnaps
     name: ex.name,
     targetSets: ex.totalSets,
     targetReps: ex.workingReps,
-    targetWeightKg: ex.workingWeight,
+    targetWeightKg: resolveWorkingLoadKg(ex, bodyWeightKg),
     restSeconds: ex.restSeconds
   }));
 }
 
-export function contentHashForExercises(exercises: ExerciseDef[]): string {
+export function contentHashForExercises(exercises: ExerciseDef[], bodyWeightKg = 0): string {
   const raw = exercises
-    .map((e) => `${e.id}:${e.totalSets}x${e.workingReps}@${e.workingWeight}:${e.restSeconds}`)
+    .map(
+      (e) =>
+        `${e.id}:${e.totalSets}x${e.workingReps}@${resolveWorkingLoadKg(e, bodyWeightKg)}:${e.restSeconds}`
+    )
     .join('|');
   let h = 2166136261;
   for (let i = 0; i < raw.length; i++) {
