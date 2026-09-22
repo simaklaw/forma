@@ -1,0 +1,67 @@
+name: Test Free Claude Code
+
+on:
+  push:
+    branches:
+      - experiment/free-claude-code
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/test-free-claude-code.yml"
+      - ".devcontainer/**"
+  workflow_dispatch:
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Forma
+        uses: actions/checkout@v4
+
+      - name: Validate Codespaces config
+        run: |
+          python -m json.tool .devcontainer/devcontainer.json >/dev/null
+          bash -n .devcontainer/setup.sh
+          bash -n .devcontainer/start.sh
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: latest
+
+      - name: Install Free Claude Code
+        run: |
+          uv tool install --force git+https://github.com/Alishahryar1/free-claude-code.git
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          fcc-server --version
+
+      - name: Start FCC server
+        run: |
+          nohup fcc-server > "$RUNNER_TEMP/fcc-server.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/fcc-server.pid"
+
+      - name: Wait for FCC health endpoint
+        run: |
+          for i in {1..30}; do
+            if curl --fail --silent --show-error http://127.0.0.1:8082/health; then
+              echo
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "FCC server did not become healthy"
+          cat "$RUNNER_TEMP/fcc-server.log" || true
+          exit 1
+
+      - name: Show FCC diagnostics
+        if: always()
+        run: |
+          echo "=== FCC server log ==="
+          cat "$RUNNER_TEMP/fcc-server.log" || true
+          echo "=== FCC process ==="
+          ps aux | grep -E 'fcc-server|free-claude-code' | grep -v grep || true
