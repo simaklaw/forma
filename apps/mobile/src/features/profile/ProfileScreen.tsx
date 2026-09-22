@@ -110,19 +110,29 @@ export default function ProfileScreen() {
 
         <View style={styles.card}>
           <View style={styles.calcGrid}>
-            <View style={styles.calcField}>
+            <View style={[styles.calcField, { width: '100%' }]}>
               <Text style={styles.label}>Пол</Text>
-              <View style={styles.pickerWrap}>
-                <Picker
-                  selectedValue={profile.sex ?? undefined}
-                  onValueChange={(v: Sex) => updateProfile({ sex: v })}
-                  style={styles.picker}
-                  itemStyle={styles.pickerItem}
-                  dropdownIconColor={colors.paper}
-                >
-                  <Picker.Item label="Мужской" value="male" color={colors.paper} />
-                  <Picker.Item label="Женский" value="female" color={colors.paper} />
-                </Picker>
+              <View style={styles.segmentRow}>
+                {(
+                  [
+                    { value: 'male' as Sex, label: 'Мужской' },
+                    { value: 'female' as Sex, label: 'Женский' }
+                  ] as const
+                ).map((opt) => {
+                  const on = profile.sex === opt.value;
+                  return (
+                    <TouchableOpacity
+                      key={opt.value}
+                      style={[styles.segmentBtn, on && styles.segmentBtnOn]}
+                      onPress={() => updateProfile({ sex: opt.value })}
+                      accessibilityRole="radio"
+                      accessibilityState={{ checked: on }}
+                      accessibilityLabel={opt.label}
+                    >
+                      <Text style={[styles.segmentText, on && styles.segmentTextOn]}>{opt.label}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </View>
             <View style={styles.calcField}>
@@ -297,6 +307,19 @@ const styles = StyleSheet.create({
     fontFamily: fonts.mono,
     fontSize: 13.5
   },
+  segmentRow: { flexDirection: 'row', gap: 8 },
+  segmentBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    borderColor: colors.lineStrong,
+    backgroundColor: colors.ink,
+    alignItems: 'center'
+  },
+  segmentBtnOn: { borderColor: colors.lime, backgroundColor: colors.limeDim },
+  segmentText: { color: colors.paperDim, fontFamily: fonts.bodySemi, fontSize: 14 },
+  segmentTextOn: { color: colors.lime },
   pickerWrap: {
     backgroundColor: colors.ink,
     borderWidth: 1,
