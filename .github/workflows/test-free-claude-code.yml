@@ -31,7 +31,7 @@ jobs:
         run: |
           uv tool install --force git+https://github.com/Alishahryar1/free-claude-code.git
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          fcc-server --help >/dev/null
+          fcc-server --version
 
       - name: Start FCC server
         run: |
