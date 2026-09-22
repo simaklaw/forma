@@ -9,6 +9,7 @@ on:
       - main
     paths:
       - ".github/workflows/test-free-claude-code.yml"
+      - ".devcontainer/**"
   workflow_dispatch:
 
 jobs:
@@ -21,6 +22,12 @@ jobs:
     steps:
       - name: Checkout Forma
         uses: actions/checkout@v4
+
+      - name: Validate Codespaces config
+        run: |
+          python -m json.tool .devcontainer/devcontainer.json >/dev/null
+          bash -n .devcontainer/setup.sh
+          bash -n .devcontainer/start.sh
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
