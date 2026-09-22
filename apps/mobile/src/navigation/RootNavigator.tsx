@@ -59,6 +59,7 @@ export default function RootNavigator() {
   return (
     <NavigationContainer theme={navTheme}>
       <Tab.Navigator
+        initialRouteName="Профиль"
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarStyle: {
