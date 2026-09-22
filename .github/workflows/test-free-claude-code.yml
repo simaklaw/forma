@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - experiment/free-claude-code
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/test-free-claude-code.yml"
   workflow_dispatch:
 
 jobs:
