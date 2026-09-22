@@ -107,7 +107,8 @@ class ActiveSessionControllerImpl {
     }
 
     const sessionId = newSessionId();
-    const steps = exercisesToSnapshots(exercises);
+    const bodyKg = profile.weight as number;
+    const steps = exercisesToSnapshots(exercises, bodyKg);
     const localStartDate = new Date().toISOString().slice(0, 10);
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
@@ -116,11 +117,11 @@ class ActiveSessionControllerImpl {
       sessionId,
       userId: LOCAL_USER_ID,
       templateRevisionId: templateId,
-      contentHash: contentHashForExercises(exercises),
+      contentHash: contentHashForExercises(exercises, bodyKg),
       steps,
       localStartDate,
       timezone,
-      weightKgSnapshot: profile.weight as number
+      weightKgSnapshot: bodyKg
     });
 
     const started = await svc.dispatch(sessionId, { type: 'start_session' });
