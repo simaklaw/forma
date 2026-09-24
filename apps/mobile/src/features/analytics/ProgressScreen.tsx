@@ -11,6 +11,7 @@ export default function ProgressScreen() {
   const weightHistory = useFitPulseStore((s) => s.weightHistory);
   const setLogs = useFitPulseStore((s) => s.setLogs);
   const profileWeight = useFitPulseStore((s) => s.profile.weight);
+  const dayProgress = useFitPulseStore((s) => s.dayProgress);
 
   // Defense-in-depth: profile.weight is null until onboarding; never pass null into MET math.
   const weightKg =
@@ -20,6 +21,17 @@ export default function ProgressScreen() {
 
   const volume = selectWeeklyVolume(setLogs);
   const hasAnyVolume = volume.some((v) => v.volumeKg > 0);
+
+  const weekKeys = useMemo(() => lastNDays(7).map((d) => toDateKey(d)), []);
+  const weekSets = useMemo(() => {
+    let n = 0;
+    for (const key of weekKeys) {
+      const day = dayProgress[key];
+      if (!day) continue;
+      for (const count of Object.values(day)) n += count;
+    }
+    return n;
+  }, [dayProgress, weekKeys]);
 
   const burnSeries = useMemo(() => {
     const days = lastNDays(7);
@@ -44,7 +56,7 @@ export default function ProgressScreen() {
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.eyebrow}>Последние 7 дней</Text>
+        <Text style={styles.eyebrow}>FORMA · последние 7 дней</Text>
         <Text style={styles.title}>Прогресс</Text>
       </View>
 
@@ -57,6 +69,17 @@ export default function ProgressScreen() {
           <View style={styles.statCard}>
             <Text style={styles.statVal}>{burnedWeek > 0 ? `~${burnedWeek}` : '—'}</Text>
             <Text style={styles.statLbl}>ккал за 7 дней</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statVal}>{weightKg > 0 ? String(weightKg) : '—'}</Text>
+            <Text style={styles.statLbl}>вес, кг</Text>
+          </View>
+        </View>
+
+        <View style={styles.statsRow}>
+          <View style={[styles.statCard, { flex: 1 }]}>
+            <Text style={styles.statVal}>{weekSets > 0 ? String(weekSets) : '—'}</Text>
+            <Text style={styles.statLbl}>подходов за 7 дней</Text>
           </View>
         </View>
 
@@ -119,7 +142,7 @@ export default function ProgressScreen() {
             <WeightChart history={weightHistory} />
           ) : (
             <Text style={styles.emptyState}>
-              Пока меньше двух записей веса — обновите вес в профиле, и здесь появится график.
+              Нужны минимум две записи веса в профиле — тогда появится линия.
             </Text>
           )}
         </View>
@@ -136,8 +159,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: colors.line
   },
-  eyebrow: { color: colors.paperFaint, fontSize: 11, fontFamily: fonts.body },
-  title: { color: colors.paper, fontSize: 30, fontFamily: fonts.mono },
+  eyebrow: { color: colors.lime, fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 0.8 },
+  title: { color: colors.paper, fontSize: 30, fontFamily: fonts.mono, marginTop: 2 },
   body: { paddingBottom: 120 },
   statsRow: {
     flexDirection: 'row',
@@ -151,9 +174,9 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     backgroundColor: colors.panel,
     borderRadius: radius.card,
-    padding: 16
+    padding: 14
   },
-  statVal: { color: colors.paper, fontSize: 22, fontFamily: fonts.mono },
+  statVal: { color: colors.paper, fontSize: 20, fontFamily: fonts.mono },
   statLbl: { color: colors.paperFaint, fontSize: 11, marginTop: 4, fontFamily: fonts.body },
   chartBlock: {
     marginHorizontal: spacing.xl,
