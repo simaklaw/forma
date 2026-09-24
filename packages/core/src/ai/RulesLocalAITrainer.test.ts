@@ -26,6 +26,21 @@ describe("RulesLocalAITrainer", () => {
     assert.match(first, /160 г/);
   });
 
+  it("answers sleep chip without medical claims", async () => {
+    const trainer = new RulesLocalAITrainer();
+    const text = await trainer.generateAdvice(context, "Сон и восстановление");
+    assert.match(text, /7–9/);
+    assert.match(text, /сон/i);
+    assert.equal(text.includes("диагноз"), false);
+  });
+
+  it("answers water chip with nutrition tab hint", async () => {
+    const trainer = new RulesLocalAITrainer();
+    const text = await trainer.generateAdvice(context, "Вода сегодня");
+    assert.match(text, /Питание/);
+    assert.match(text, /стакан/i);
+  });
+
   it("streams exactly the same content as generateAdvice", async () => {
     const trainer = new RulesLocalAITrainer();
     const expected = await trainer.generateAdvice(context, "что с белком?");
