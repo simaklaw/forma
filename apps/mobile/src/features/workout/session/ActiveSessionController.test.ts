@@ -66,17 +66,27 @@ describe('ActiveSessionController', () => {
     });
   });
 
+  it('ensureDaySession returns null when profile incomplete (does not throw)', async () => {
+    useFitPulseStore.setState({
+      profile: { ...TEST_PROFILE, weight: 0, age: 0, sex: null as unknown as 'male' }
+    });
+    await expect(ActiveSessionController.ensureDaySession('legs', exercises)).resolves.toBeNull();
+    await expect(ActiveSessionController.restartDaySession('legs', exercises)).resolves.toBeNull();
+  });
+
   it('ensureDaySession prepares and starts once per day', async () => {
     const a = await ActiveSessionController.ensureDaySession('legs', exercises);
-    expect(a.status).toBe('active');
-    expect(a.steps).toHaveLength(2);
+    expect(a).not.toBeNull();
+    expect(a!.status).toBe('active');
+    expect(a!.steps).toHaveLength(2);
 
     const b = await ActiveSessionController.ensureDaySession('legs', exercises);
-    expect(b.sessionId).toBe(a.sessionId);
+    expect(b!.sessionId).toBe(a!.sessionId);
   });
 
   it('cold start resumes same day without abandon (simulates process restart)', async () => {
     const first = await ActiveSessionController.ensureDaySession('legs', exercises);
+    expect(first).not.toBeNull();
     await ActiveSessionController.recordSetForExercise({
       dayId: 'legs',
       exercises,
@@ -89,11 +99,11 @@ describe('ActiveSessionController', () => {
     expect(ActiveSessionController.getSessionId()).toBeNull();
 
     const resumed = await ActiveSessionController.ensureDaySession('legs', exercises);
-    expect(resumed.sessionId).toBe(first.sessionId);
-    expect(resumed.status).toBe('active');
-    expect(resumed.steps[0]?.completedSets.length).toBeGreaterThanOrEqual(1);
+    expect(resumed!.sessionId).toBe(first!.sessionId);
+    expect(resumed!.status).toBe('active');
+    expect(resumed!.steps[0]?.completedSets.length).toBeGreaterThanOrEqual(1);
 
-    const stored = await getSessionService().getSession(first.sessionId);
+    const stored = await getSessionService().getSession(first!.sessionId);
     expect(stored?.status).not.toBe('abandoned');
   });
 
@@ -101,15 +111,15 @@ describe('ActiveSessionController', () => {
     const legs = await ActiveSessionController.ensureDaySession('legs', exercises);
     const push = await ActiveSessionController.ensureDaySession('push', exercises);
 
-    expect(push.sessionId).not.toBe(legs.sessionId);
-    expect(push.status).toBe('active');
+    expect(push!.sessionId).not.toBe(legs!.sessionId);
+    expect(push!.status).toBe('active');
 
-    const previous = await getSessionService().getSession(legs.sessionId);
+    const previous = await getSessionService().getSession(legs!.sessionId);
     expect(previous?.status).toBe('abandoned');
     expect(previous?.terminalReason).toBe('replaced_by_new_session');
 
     const resumable = await getSessionService().getResumable('local-user');
-    expect(resumable?.sessionId).toBe(push.sessionId);
+    expect(resumable?.sessionId).toBe(push!.sessionId);
   });
 
   it('cold start then switch day still abandons previous day', async () => {
@@ -117,9 +127,9 @@ describe('ActiveSessionController', () => {
     ActiveSessionController.resetForTests();
 
     const push = await ActiveSessionController.ensureDaySession('push', exercises);
-    expect(push.sessionId).not.toBe(legs.sessionId);
+    expect(push!.sessionId).not.toBe(legs!.sessionId);
 
-    const previous = await getSessionService().getSession(legs.sessionId);
+    const previous = await getSessionService().getSession(legs!.sessionId);
     expect(previous?.status).toBe('abandoned');
   });
 
@@ -136,11 +146,11 @@ describe('ActiveSessionController', () => {
     ActiveSessionController.resetForTests();
 
     const next = await ActiveSessionController.restartDaySession('legs', exercises);
-    expect(next.sessionId).not.toBe(first.sessionId);
-    expect(next.status).toBe('active');
-    expect(next.steps[0]?.completedSets).toHaveLength(0);
+    expect(next!.sessionId).not.toBe(first!.sessionId);
+    expect(next!.status).toBe('active');
+    expect(next!.steps[0]?.completedSets).toHaveLength(0);
 
-    const old = await getSessionService().getSession(first.sessionId);
+    const old = await getSessionService().getSession(first!.sessionId);
     expect(old?.status).toBe('abandoned');
     expect(old?.terminalReason).toBe('user_restarted');
   });
@@ -161,7 +171,7 @@ describe('ActiveSessionController', () => {
       weightKg: 80,
       reps: 7
     });
-    await projectIntoStore(first.sessionId);
+    await projectIntoStore(first!.sessionId);
     expect(useFitPulseStore.getState().completedSetsToday(1)).toBe(2);
 
     const next = await ActiveSessionController.restartDaySession('legs', exercises);
@@ -174,10 +184,10 @@ describe('ActiveSessionController', () => {
       weightKg: 82,
       reps: 8
     });
-    await projectIntoStore(next.sessionId);
+    await projectIntoStore(next!.sessionId);
 
     expect(useFitPulseStore.getState().completedSetsToday(1)).toBe(1);
-    expect(next.sessionId).not.toBe(first.sessionId);
+    expect(next!.sessionId).not.toBe(first!.sessionId);
   });
 
   it('recordSetForExercise dual-writes sequential sets', async () => {
@@ -203,6 +213,19 @@ describe('ActiveSessionController', () => {
     });
     expect(after2?.steps[0]?.completedSets).toHaveLength(2);
     expect(after2?.currentStepIndex).toBe(1);
+  });
+
+  it('recordSetForExercise rejects non-positive weight without throwing', async () => {
+    await ActiveSessionController.ensureDaySession('legs', exercises);
+    await expect(
+      ActiveSessionController.recordSetForExercise({
+        dayId: 'legs',
+        exercises,
+        exerciseId: 1,
+        weightKg: 0,
+        reps: 8
+      })
+    ).resolves.toBeNull();
   });
 
   it('out-of-order exercise returns null without throwing', async () => {
