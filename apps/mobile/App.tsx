@@ -7,7 +7,8 @@ import { Inter_400Regular, Inter_600SemiBold } from '@expo-google-fonts/inter';
 import * as Font from 'expo-font';
 import { Platform, View } from 'react-native';
 import { CoachEngine, isProfileComplete } from '@forma/core';
-import { colors } from '@/core/theme/tokens';
+import { resolveColors } from '@/core/theme/tokens';
+import { useThemeStore } from '@/state/useThemeStore';
 import RootNavigator from '@/navigation/RootNavigator';
 import OnboardingScreen from '@/features/onboarding/OnboardingScreen';
 import { WorkoutErrorBoundary } from '@/features/workout/WorkoutErrorBoundary';
@@ -52,6 +53,8 @@ export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [hydrated, setHydrated] = useState(() => useFitPulseStore.persist.hasHydrated());
   const profile = useFitPulseStore((s) => s.profile);
+  const themeMode = useThemeStore((s) => s.mode);
+  const shell = resolveColors(themeMode);
 
   useEffect(() => {
     void Font.loadAsync({
@@ -75,7 +78,7 @@ export default function App() {
   }, []);
 
   if (!fontsLoaded || !hydrated) {
-    return <View style={{ flex: 1, backgroundColor: colors.ink }} />;
+    return <View style={{ flex: 1, backgroundColor: shell.ink }} />;
   }
 
   const complete = isProfileComplete({
@@ -86,9 +89,9 @@ export default function App() {
   });
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.ink }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: shell.ink }}>
       <SafeAreaProvider>
-        <StatusBar style="light" />
+        <StatusBar style={themeMode === 'light' ? 'dark' : 'light'} />
         {complete ? (
           <WorkoutErrorBoundary>
             <RootNavigator />
