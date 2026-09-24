@@ -17,7 +17,14 @@ import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
 import { COACH_WELCOME, selectDailyTotals, useFitPulseStore } from '@/state/useFitPulseStore';
 import type { ProfileState, Sex } from '@/engines/MetabolicEngine';
 
-const CHIPS = ['Сколько белка?', 'Калории сегодня', 'Совет на тренировку', 'Восстановление'];
+const CHIPS = [
+  'Сколько белка?',
+  'Калории сегодня',
+  'Совет на тренировку',
+  'Восстановление',
+  'Сон и восстановление',
+  'Вода сегодня'
+];
 
 function toDomainProfile(profile: {
   sex: Sex | null;
