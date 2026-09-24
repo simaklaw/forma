@@ -46,6 +46,8 @@ export default function NutritionScreen() {
     ? calculateTargets()
     : { target: 0, proteinTarget: 0, fatTarget: 0, carbTarget: 0, bmr: 0, tdee: 0, protocolActive: false };
 
+  const remainingKcal = complete ? Math.round(targets.target - totals.kcal) : 0;
+
   function openAddFood(mealKey: keyof DayMeals) {
     setActiveMeal(mealKey);
     sheetRef.current?.expand();
@@ -59,17 +61,56 @@ export default function NutritionScreen() {
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.eyebrow}>Сегодня</Text>
+        <Text style={styles.eyebrow}>FORMA · Сегодня</Text>
         <Text style={styles.title}>Питание</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.body}>
+        {!complete ? (
+          <View style={styles.gateBanner}>
+            <Text style={styles.gateTitle}>Сначала профиль</Text>
+            <Text style={styles.gateBody}>
+              Цели по ккал и БЖУ считаются из веса, роста, возраста и пола. Откройте
+              «Профиль» и заполните поля — без этого кольцо и макросы не подставят
+              фиктивные числа.
+            </Text>
+          </View>
+        ) : null}
+
         <View style={styles.heroCard}>
-          <CalorieRing eaten={totals.kcal} target={targets.target || 1} />
+          <CalorieRing
+            eaten={totals.kcal}
+            target={targets.target || 0}
+            ready={complete}
+          />
           <View style={styles.macroCol}>
-            <MacroBar label="Б" value={totals.protein} target={targets.proteinTarget || 1} color={colors.macroProtein} />
-            <MacroBar label="Ж" value={totals.fat} target={targets.fatTarget || 1} color={colors.macroFat} />
-            <MacroBar label="У" value={totals.carbs} target={targets.carbTarget || 1} color={colors.macroCarb} />
+            <MacroBar
+              label="Б"
+              value={totals.protein}
+              target={targets.proteinTarget || 0}
+              color={colors.macroProtein}
+            />
+            <MacroBar
+              label="Ж"
+              value={totals.fat}
+              target={targets.fatTarget || 0}
+              color={colors.macroFat}
+            />
+            <MacroBar
+              label="У"
+              value={totals.carbs}
+              target={targets.carbTarget || 0}
+              color={colors.macroCarb}
+            />
+            {complete ? (
+              <Text style={styles.remainHint}>
+                {remainingKcal >= 0
+                  ? `Осталось ${remainingKcal.toLocaleString('ru-RU')} ккал · цель ${targets.target.toLocaleString('ru-RU')}`
+                  : `Сверх цели на ${Math.abs(remainingKcal).toLocaleString('ru-RU')} ккал`}
+              </Text>
+            ) : (
+              <Text style={styles.remainHint}>Цели появятся после профиля</Text>
+            )}
           </View>
         </View>
 
@@ -103,7 +144,9 @@ export default function NutritionScreen() {
           <View key={key} style={styles.mealGroup}>
             <View style={styles.mealHead}>
               <Text style={styles.mealName}>{MEAL_LABELS[key]}</Text>
-              <Text style={styles.mealKcal}>{meals[key].reduce((sum, i) => sum + i.kcal, 0)} ккал</Text>
+              <Text style={styles.mealKcal}>
+                {meals[key].reduce((sum, i) => sum + i.kcal, 0)} ккал
+              </Text>
               <TouchableOpacity style={styles.addBtn} onPress={() => openAddFood(key)}>
                 <Text style={styles.addBtnText}>+</Text>
               </TouchableOpacity>
@@ -149,9 +192,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: colors.line
   },
-  eyebrow: { color: colors.paperFaint, fontSize: 11, fontFamily: fonts.body },
+  eyebrow: { color: colors.lime, fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1 },
   title: { color: colors.paper, fontSize: 30, fontFamily: fonts.mono },
   body: { paddingBottom: 120 },
+  gateBanner: {
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.lg,
+    padding: spacing.lg,
+    backgroundColor: colors.panelRaised,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.lineStrong
+  },
+  gateTitle: { color: colors.paper, fontFamily: fonts.bodySemi, fontSize: 14, marginBottom: 6 },
+  gateBody: { color: colors.paperDim, fontFamily: fonts.body, fontSize: 13, lineHeight: 18 },
   heroCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -165,6 +219,12 @@ const styles = StyleSheet.create({
     borderColor: colors.line
   },
   macroCol: { flex: 1 },
+  remainHint: {
+    marginTop: 2,
+    color: colors.paperFaint,
+    fontFamily: fonts.mono,
+    fontSize: 11
+  },
   waterCard: {
     marginHorizontal: spacing.xl,
     marginTop: spacing.md,
