@@ -5,15 +5,8 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { CoachEngine, estimateBurnFromSetLogs, isProfileComplete, toDateKey } from '@forma/core';
 import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
 import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
+import type { TabParamList } from '@/navigation/types';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
-
-type TabParamList = {
-  Тренировки: undefined;
-  Питание: undefined;
-  Тренер: undefined;
-  Прогресс: undefined;
-  Профиль: undefined;
-};
 
 type Props = {
   dayName: string;
