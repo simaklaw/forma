@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CoachEngine, estimateBurnFromSetLogs, isProfileComplete, toDateKey } from '@forma/core';
 import { getMobileTrainerProgress } from '@/ai/trainerProgress';
 import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import ProfileGateBanner from '@/components/ProfileGateBanner';
 import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
 import { COACH_WELCOME, selectDailyTotals, useFitPulseStore } from '@/state/useFitPulseStore';
 import type { ProfileState, Sex } from '@/engines/MetabolicEngine';
@@ -149,17 +150,15 @@ export default function CoachScreen() {
           <Text style={styles.eyebrow}>FORMA</Text>
           <Text style={styles.title}>Тренер</Text>
           <Text style={styles.sub}>
-            Сначала заполните профиль: пол, вес, рост и возраст 13–120. Без них цели КБЖУ и советы
-            не считаются — вес по умолчанию не подставляется.
+            Без полного профиля цели КБЖУ и советы не считаются — вес по умолчанию не
+            подставляется.
           </Text>
         </View>
-        <View style={styles.emptyCard}>
-          <Text style={styles.emptyTitle}>Профиль неполный</Text>
-          <Text style={styles.emptyBody}>
-            Откройте вкладку «Профиль» и сохраните биометрию. После этого здесь появятся чипы и
-            локальный тренер.
-          </Text>
-        </View>
+        <ProfileGateBanner
+          inset
+          title="Профиль неполный"
+          body="Откройте «Профиль» и сохраните пол, вес, рост и возраст. После этого здесь появятся чипы и локальный тренер."
+        />
       </SafeAreaView>
     );
   }
@@ -268,17 +267,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.mono,
     marginTop: 6
   },
-  emptyCard: {
-    marginHorizontal: spacing.xl,
-    marginTop: spacing.lg,
-    padding: spacing.lg,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.panel
-  },
-  emptyTitle: { color: colors.paper, fontFamily: fonts.mono, fontSize: 16, marginBottom: 8 },
-  emptyBody: { color: colors.paperDim, fontFamily: fonts.body, fontSize: 14, lineHeight: 20 },
   clearBtn: {
     marginTop: 8,
     paddingHorizontal: 12,
