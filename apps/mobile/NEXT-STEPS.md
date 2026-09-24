@@ -8,37 +8,37 @@
 
 ### Закрыто (ветка `fix/profile-gate-weightkg`)
 
-- Profile gate: `weightKg` finite > 0, без default 70 kg; баннер на Профиле
-- Nutrition: ring remaining/over, banner, FORMA eyebrow; **~40 offline RU presets**, до 24 в списке
-- Workout: gym/home tabs, current-step highlight, session bar; **горизонтальный скролл дней**
-- Gym catalog: Push / Pull / Legs / Full Body / **Upper / Lower** (ids 22–30)
-- Coach / Progress: protein-aware, empty states, FORMA branding
-- CI: typecheck + lint + test; `eslint-plugin-import`; зоны features + coach/onboarding
+- Profile gate: `weightKg` finite > 0, без default 70 kg
+- **ProfileGateBanner** + `TabParamList` shared: Nutrition, Coach, Progress, WorkoutCoachCard CTA
+- Nutrition: ring remaining/over; **~40 offline RU presets**
+- Workout: gym/home, current-step, session bar, horizontal day tabs
+- Gym: PPL + Full Body + Upper/Lower (ids 22–30)
+- Coach chips expanded; ProtocolBanner FORMA polish
+- CI: typecheck + lint + test; eslint-plugin-import
 
-### Только на устройстве пользователя
+### Только на устройстве
 
-- Metro / QA по `QA-CHECKLIST.md` (rest timer через lock screen)
+- QA по `QA-CHECKLIST.md`
 - APK — **только после явного «собирай APK»**
 
 ## 2. Решения
 
-- Каталог: локальный (фото техники с wger — ок)
-- Нативка (MMKV / Skia / HealthKit / ExecuTorch): отложена до dev client
+- Каталог локальный; нативка отложена до dev client
 
-## 3. Открытые (не блокируют playable MVP)
+## 3. Открытые (не блокируют MVP)
 
-1. Ручной прогон `QA-CHECKLIST.md`
-2. Опционально: мини-база статей (контент-домен)
-3. Native modules — с dev client
+1. Ручной QA
+2. Опционально: мини-база статей
+3. Native modules
 
 ## 4. Критерий «план → APK»
 
-- [x] Profile gate
+- [x] Profile gate + shared gate CTA
 - [x] Session + current step UX
 - [x] Nutrition ring + offline presets
 - [x] Coach / Progress empty states
-- [x] Gym + Home (PPL + Full + Upper/Lower + bodyweight)
-- [x] Day tabs scroll при многих днях
-- [x] CI + eslint-plugin-import
+- [x] Gym + Home catalogs
+- [x] Day tabs scroll
+- [x] CI
 - [ ] Ваш ручной QA
 - [ ] Явная команда собрать APK
