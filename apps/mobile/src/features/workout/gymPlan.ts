@@ -1,6 +1,6 @@
 import type { WorkoutDay } from './bodyweightPlan';
 
-/** Gym Push/Pull/Legs — barbell/dumbbell defaults. Ids 1–9 preserved for existing logs. */
+/** Gym Push/Pull/Legs + Full Body — barbell/dumbbell defaults. Ids 1–9 preserved for existing logs. */
 export const GYM_PLAN: WorkoutDay[] = [
   {
     id: 'push',
@@ -128,6 +128,49 @@ export const GYM_PLAN: WorkoutDay[] = [
         targetMuscles: ['quads', 'glutes', 'hamstrings'],
         note: 'Завершающее упражнение на объём: короткий отдых держит метаболический стресс высоким, вес — умеренный, фокус на контролируемом негативе.',
         wgerSearchTerm: 'Dumbbell Lunge'
+      }
+    ]
+  },
+  {
+    id: 'full',
+    name: 'Всё тело — full body',
+    meta: '≈55 мин',
+    exercises: [
+      {
+        id: 22,
+        index: 1,
+        name: 'Приседания со штангой',
+        workingWeight: 70,
+        workingReps: 8,
+        totalSets: 3,
+        restSeconds: 90,
+        targetMuscles: ['quads', 'glutes', 'core'],
+        note: 'Full body: умеренный вес, техника важнее отказа. Глубина комфортная, колени по носкам.',
+        wgerSearchTerm: 'Barbell Squat'
+      },
+      {
+        id: 23,
+        index: 2,
+        name: 'Жим гантелей лёжа',
+        workingWeight: 22,
+        workingReps: 10,
+        totalSets: 3,
+        restSeconds: 90,
+        targetMuscles: ['chest', 'shoulders', 'triceps'],
+        note: 'После ног — верх. Лопатки сведены, гантели сходятся вверху без удара.',
+        wgerSearchTerm: 'Dumbbell Bench Press'
+      },
+      {
+        id: 24,
+        index: 3,
+        name: 'Тяга гантели в наклоне',
+        workingWeight: 24,
+        workingReps: 10,
+        totalSets: 3,
+        restSeconds: 75,
+        targetMuscles: ['back', 'biceps'],
+        note: 'Одна рука на скамье, спина параллельна полу — тянем локтем к тазу.',
+        wgerSearchTerm: 'Dumbbell Row'
       }
     ]
   }
