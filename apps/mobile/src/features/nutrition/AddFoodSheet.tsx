@@ -7,24 +7,50 @@ import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
 import { useFitPulseStore, DayMeals } from '@/state/useFitPulseStore';
 import { OpenFoodFactsService, NormalizedFood } from '@/services/OpenFoodFactsService';
 
-/** Offline-first RU presets — always visible when sheet opens / query empty. */
+/** Offline-first RU presets — always visible when sheet opens / query empty. Values per 100g unless noted in name. */
 const LOCAL_PRESETS: NormalizedFood[] = [
   { name: 'Куриная грудка варёная', kcal: 165, protein: 31, fat: 3.6, carbs: 0 },
-  { name: 'Рис отварной', kcal: 130, protein: 2.7, fat: 0.3, carbs: 28 },
-  { name: 'Гречка отварная', kcal: 110, protein: 4, fat: 1.1, carbs: 21 },
+  { name: 'Куриное бедро без кожи', kcal: 185, protein: 27, fat: 8, carbs: 0 },
+  { name: 'Индейка запечённая', kcal: 135, protein: 29, fat: 2, carbs: 0 },
+  { name: 'Говядина тушёная', kcal: 232, protein: 24, fat: 14, carbs: 0 },
+  { name: 'Говядина постная отварная', kcal: 175, protein: 28, fat: 6, carbs: 0 },
+  { name: 'Свинина нежирная тушёная', kcal: 220, protein: 22, fat: 14, carbs: 0 },
+  { name: 'Лосось на пару', kcal: 208, protein: 20, fat: 13, carbs: 0 },
+  { name: 'Треска отварная', kcal: 78, protein: 17.5, fat: 0.6, carbs: 0 },
+  { name: 'Тунец в собственном соку', kcal: 96, protein: 21, fat: 1, carbs: 0 },
+  { name: 'Креветки варёные', kcal: 95, protein: 22, fat: 1, carbs: 0 },
   { name: 'Яйцо куриное, 1 шт.', kcal: 78, protein: 6.3, fat: 5.3, carbs: 0.6 },
+  { name: 'Белок яичный, 1 шт.', kcal: 17, protein: 3.6, fat: 0.1, carbs: 0.2 },
   { name: 'Творог 5%', kcal: 121, protein: 17, fat: 5, carbs: 3 },
   { name: 'Творог 0%', kcal: 71, protein: 16, fat: 0.3, carbs: 1.8 },
-  { name: 'Лосось на пару', kcal: 208, protein: 20, fat: 13, carbs: 0 },
+  { name: 'Творог 9%', kcal: 159, protein: 16, fat: 9, carbs: 3 },
+  { name: 'Греческий йогурт 2%', kcal: 73, protein: 10, fat: 2, carbs: 3.5 },
+  { name: 'Молоко 2.5%', kcal: 52, protein: 2.8, fat: 2.5, carbs: 4.7 },
+  { name: 'Кефир 1%', kcal: 40, protein: 3, fat: 1, carbs: 4 },
+  { name: 'Сыр гауда', kcal: 356, protein: 25, fat: 27, carbs: 2 },
+  { name: 'Протеин сывороточный, порция 30 г', kcal: 120, protein: 24, fat: 1.5, carbs: 2 },
+  { name: 'Рис отварной', kcal: 130, protein: 2.7, fat: 0.3, carbs: 28 },
+  { name: 'Гречка отварная', kcal: 110, protein: 4, fat: 1.1, carbs: 21 },
   { name: 'Овсянка на воде', kcal: 88, protein: 3, fat: 1.7, carbs: 15 },
+  { name: 'Макароны отварные', kcal: 131, protein: 5, fat: 0.5, carbs: 27 },
+  { name: 'Картофель отварной', kcal: 82, protein: 2, fat: 0.1, carbs: 17 },
+  { name: 'Батат запечённый', kcal: 90, protein: 2, fat: 0.1, carbs: 21 },
+  { name: 'Киноа отварная', kcal: 120, protein: 4.4, fat: 1.9, carbs: 21 },
+  { name: 'Хлеб ржаной', kcal: 214, protein: 6.6, fat: 1.2, carbs: 43 },
+  { name: 'Хлеб цельнозерновой', kcal: 247, protein: 9, fat: 3.5, carbs: 41 },
   { name: 'Банан, 1 шт.', kcal: 89, protein: 1.1, fat: 0.3, carbs: 23 },
   { name: 'Яблоко, 1 шт.', kcal: 52, protein: 0.3, fat: 0.2, carbs: 14 },
-  { name: 'Говядина тушёная', kcal: 232, protein: 24, fat: 14, carbs: 0 },
-  { name: 'Индейка запечённая', kcal: 135, protein: 29, fat: 2, carbs: 0 },
-  { name: 'Тунец в собственном соку', kcal: 96, protein: 21, fat: 1, carbs: 0 },
-  { name: 'Молоко 2.5%', kcal: 52, protein: 2.8, fat: 2.5, carbs: 4.7 },
-  { name: 'Хлеб ржаной', kcal: 214, protein: 6.6, fat: 1.2, carbs: 43 },
-  { name: 'Картофель отварной', kcal: 82, protein: 2, fat: 0.1, carbs: 17 }
+  { name: 'Апельсин, 1 шт.', kcal: 47, protein: 0.9, fat: 0.1, carbs: 12 },
+  { name: 'Черника', kcal: 57, protein: 0.7, fat: 0.3, carbs: 14 },
+  { name: 'Брокколи отварная', kcal: 35, protein: 2.4, fat: 0.4, carbs: 7 },
+  { name: 'Огурец', kcal: 15, protein: 0.7, fat: 0.1, carbs: 3.6 },
+  { name: 'Помидор', kcal: 18, protein: 0.9, fat: 0.2, carbs: 3.9 },
+  { name: 'Салат айсберг', kcal: 14, protein: 0.9, fat: 0.1, carbs: 3 },
+  { name: 'Авокадо', kcal: 160, protein: 2, fat: 15, carbs: 9 },
+  { name: 'Миндаль', kcal: 579, protein: 21, fat: 50, carbs: 22 },
+  { name: 'Арахисовая паста', kcal: 588, protein: 25, fat: 50, carbs: 20 },
+  { name: 'Оливковое масло, 1 ст.л.', kcal: 119, protein: 0, fat: 13.5, carbs: 0 },
+  { name: 'Масло сливочное', kcal: 717, protein: 0.5, fat: 81, carbs: 0.5 }
 ];
 
 function matchesQuery(name: string, query: string): boolean {
@@ -213,7 +239,7 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
             {results.length === 0 ? (
               <Text style={styles.empty}>Ничего не найдено — попробуйте «Свой продукт»</Text>
             ) : (
-              results.slice(0, 16).map((item, i) => (
+              results.slice(0, 24).map((item, i) => (
                 <TouchableOpacity
                   key={`${item.name}-${i}`}
                   style={styles.presetRow}
