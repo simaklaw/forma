@@ -2,6 +2,9 @@ name: Build Android APK
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - fix/profile-gate-weightkg
 
 permissions:
   contents: read
