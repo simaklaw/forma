@@ -29,7 +29,7 @@ const SET_LOG_RETENTION_DAYS = 180;
 const COACH_MESSAGE_CAP = 40;
 
 export const COACH_WELCOME =
-  'Я локальный тренер. Данные не уходят в облако. Спроси про белок, калории или тренировку.';
+  'Я локальный тренер. Данные не уходят в облако. Спроси про белок, калории, сон, воду или тренировку — или нажми чип.';
 
 export interface CoachMessage {
   id: string;
