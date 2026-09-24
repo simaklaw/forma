@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { estimateBurnFromSetLogs, estimateDailyBurns, toDateKey } from '@forma/core';
 import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
 import ProfileGateBanner from '@/components/ProfileGateBanner';
+import { tipForDate } from '@/lib/dailyTips';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { lastNDays, selectWeeklyVolume, weekdayRuShort } from '@/engines/WorkoutStats';
 import WeightChart from '@/components/WeightChart';
@@ -22,6 +23,7 @@ export default function ProgressScreen() {
 
   const volume = selectWeeklyVolume(setLogs);
   const hasAnyVolume = volume.some((v) => v.volumeKg > 0);
+  const todayTip = useMemo(() => tipForDate(new Date()), []);
 
   const weekKeys = useMemo(() => lastNDays(7).map((d) => toDateKey(d)), []);
   const weekSets = useMemo(() => {
@@ -69,6 +71,12 @@ export default function ProgressScreen() {
             body="Оценка сожжённых ккал (MET) считается от массы тела. Укажите вес в «Профиль» — без default 70 кг."
           />
         ) : null}
+
+        <View style={styles.tipCard}>
+          <Text style={styles.tipEyebrow}>FORMA · совет дня</Text>
+          <Text style={styles.tipTitle}>{todayTip.title}</Text>
+          <Text style={styles.tipBody}>{todayTip.body}</Text>
+        </View>
 
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
@@ -173,6 +181,24 @@ const styles = StyleSheet.create({
   eyebrow: { color: colors.lime, fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 0.8 },
   title: { color: colors.paper, fontSize: 30, fontFamily: fonts.mono, marginTop: 2 },
   body: { paddingBottom: 120 },
+  tipCard: {
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.lg,
+    padding: spacing.lg,
+    backgroundColor: colors.panel,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.line
+  },
+  tipEyebrow: {
+    color: colors.lime,
+    fontSize: 10,
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 0.8,
+    marginBottom: 6
+  },
+  tipTitle: { color: colors.paper, fontFamily: fonts.bodySemi, fontSize: 15, marginBottom: 6 },
+  tipBody: { color: colors.paperDim, fontFamily: fonts.body, fontSize: 13, lineHeight: 19 },
   statsRow: {
     flexDirection: 'row',
     gap: 10,
