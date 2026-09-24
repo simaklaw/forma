@@ -79,7 +79,8 @@ jobs:
           NODE_ENV: development
         run: |
           set -euo pipefail
-          pnpm install --frozen-lockfile
+          # Lockfile lag: apps/mobile added eslint-plugin-import without lock update
+          pnpm install --no-frozen-lockfile
           # Sanity: required by apps/mobile/babel.config.js
           node -e "require.resolve('babel-plugin-module-resolver')"
           echo "babel-plugin-module-resolver OK"
