@@ -5,8 +5,10 @@ import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
 import { isProfileComplete } from '@forma/core';
-import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { fonts, radius, spacing } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
+import { useThemeStore } from '@/state/useThemeStore';
 import { Goal, Sex } from '@/engines/MetabolicEngine';
 import ProtocolBanner from '@/components/ProtocolBanner';
 
@@ -15,6 +17,10 @@ function numStr(v: number | null | undefined): string {
 }
 
 export default function ProfileScreen() {
+  const colors = useThemeColors();
+  const themeMode = useThemeStore((s) => s.mode);
+  const setThemeMode = useThemeStore((s) => s.setMode);
+
   const profile = useFitPulseStore((s) => s.profile);
   const updateProfile = useFitPulseStore((s) => s.updateProfile);
   const logWeight = useFitPulseStore((s) => s.logWeight);
@@ -78,33 +84,93 @@ export default function ProfileScreen() {
   const sexLabel = profile.sex === 'female' ? 'Женский' : profile.sex === 'male' ? 'Мужской' : '—';
 
   return (
-    <SafeAreaView style={styles.screen} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.eyebrow}>FORMA · Аккаунт</Text>
-        <Text style={styles.title}>Профиль</Text>
+    <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]} edges={['top']}>
+      <View style={[styles.header, { borderColor: colors.line }]}>
+        <Text style={[styles.eyebrow, { color: colors.lime }]}>FITPULSE · Аккаунт</Text>
+        <Text style={[styles.title, { color: colors.paper }]}>Профиль</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.body}>
+        <View style={styles.sectionHead}>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>Оформление</Text>
+          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>тема</Text>
+        </View>
+        <View style={[styles.themeCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <Text style={[styles.settingName, { color: colors.paper }]}>Цветовая схема</Text>
+          <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>
+            Тёмная ink или светлая спортивная — mint-акценты сохраняются
+          </Text>
+          <View style={styles.themeRow}>
+            {(
+              [
+                { id: 'dark' as const, label: 'Тёмная' },
+                { id: 'light' as const, label: 'Светлая' }
+              ] as const
+            ).map((opt) => {
+              const on = themeMode === opt.id;
+              return (
+                <TouchableOpacity
+                  key={opt.id}
+                  style={[
+                    styles.themeBtn,
+                    { borderColor: colors.lineStrong, backgroundColor: colors.ink },
+                    on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                  ]}
+                  onPress={() => setThemeMode(opt.id)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: on }}
+                  accessibilityLabel={opt.label}
+                >
+                  <Text
+                    style={[
+                      styles.themeBtnText,
+                      { color: colors.paperDim },
+                      on && { color: colors.lime }
+                    ]}
+                  >
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
         {!complete ? (
-          <View style={styles.gateBanner}>
-            <Text style={styles.gateTitle}>Заполните биометрию</Text>
-            <Text style={styles.gateBody}>
+          <View
+            style={[
+              styles.gateBanner,
+              { backgroundColor: colors.panelRaised, borderColor: colors.lineStrong }
+            ]}
+          >
+            <Text style={[styles.gateTitle, { color: colors.paper }]}>Заполните биометрию</Text>
+            <Text style={[styles.gateBody, { color: colors.paperDim }]}>
               Пол, вес, рост и возраст нужны для BMR/TDEE и целей КБЖУ. Без них вес по
               умолчанию не подставляется — кольцо питания и советы тренера ждут профиль.
             </Text>
           </View>
         ) : null}
 
-        <View style={styles.identityCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{initials}</Text>
+        <View
+          style={[
+            styles.identityCard,
+            { backgroundColor: colors.panel, borderColor: colors.line }
+          ]}
+        >
+          <View
+            style={[
+              styles.avatar,
+              { borderColor: colors.lime, backgroundColor: colors.limeDim }
+            ]}
+          >
+            <Text style={[styles.avatarText, { color: colors.lime }]}>{initials}</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.identityTitle}>
+            <Text style={[styles.identityTitle, { color: colors.paper }]}>
               {sexLabel} · {numStr(profile.age) || '—'} лет · {numStr(profile.height) || '—'} см ·{' '}
               {numStr(profile.weight) || '—'} кг
             </Text>
-            <Text style={styles.identitySub}>
+            <Text style={[styles.identitySub, { color: colors.paperFaint }]}>
               {targets
                 ? `Цель ${targets.target.toLocaleString('ru-RU')} ккал · BMR ${targets.bmr}`
                 : 'Заполните профиль для расчёта КБЖУ'}
@@ -113,14 +179,14 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.sectionHead}>
-          <Text style={styles.sectionTitle}>Параметры и КБЖУ</Text>
-          <Text style={styles.sectionCount}>Миффлин-Сан Жеор</Text>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>Параметры и КБЖУ</Text>
+          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>Миффлин-Сан Жеор</Text>
         </View>
 
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
           <View style={styles.calcGrid}>
             <View style={[styles.calcField, { width: '100%' }]}>
-              <Text style={styles.label}>Пол</Text>
+              <Text style={[styles.label, { color: colors.paperFaint }]}>Пол</Text>
               <View style={styles.segmentRow}>
                 {(
                   [
@@ -132,22 +198,41 @@ export default function ProfileScreen() {
                   return (
                     <TouchableOpacity
                       key={opt.value}
-                      style={[styles.segmentBtn, on && styles.segmentBtnOn]}
+                      style={[
+                        styles.segmentBtn,
+                        { borderColor: colors.lineStrong, backgroundColor: colors.ink },
+                        on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                      ]}
                       onPress={() => updateProfile({ sex: opt.value })}
                       accessibilityRole="radio"
                       accessibilityState={{ checked: on }}
                       accessibilityLabel={opt.label}
                     >
-                      <Text style={[styles.segmentText, on && styles.segmentTextOn]}>{opt.label}</Text>
+                      <Text
+                        style={[
+                          styles.segmentText,
+                          { color: colors.paperDim },
+                          on && { color: colors.lime }
+                        ]}
+                      >
+                        {opt.label}
+                      </Text>
                     </TouchableOpacity>
                   );
                 })}
               </View>
             </View>
             <View style={styles.calcField}>
-              <Text style={styles.label}>Возраст</Text>
+              <Text style={[styles.label, { color: colors.paperFaint }]}>Возраст</Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.ink,
+                    borderColor: colors.lineStrong,
+                    color: colors.paper
+                  }
+                ]}
                 value={ageInput}
                 keyboardType="numeric"
                 onChangeText={setAgeInput}
@@ -155,9 +240,16 @@ export default function ProfileScreen() {
               />
             </View>
             <View style={styles.calcField}>
-              <Text style={styles.label}>Рост, см</Text>
+              <Text style={[styles.label, { color: colors.paperFaint }]}>Рост, см</Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.ink,
+                    borderColor: colors.lineStrong,
+                    color: colors.paper
+                  }
+                ]}
                 value={heightInput}
                 keyboardType="numeric"
                 onChangeText={setHeightInput}
@@ -165,9 +257,16 @@ export default function ProfileScreen() {
               />
             </View>
             <View style={styles.calcField}>
-              <Text style={styles.label}>Вес, кг</Text>
+              <Text style={[styles.label, { color: colors.paperFaint }]}>Вес, кг</Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.ink,
+                    borderColor: colors.lineStrong,
+                    color: colors.paper
+                  }
+                ]}
                 value={weightInput}
                 keyboardType="numeric"
                 onChangeText={setWeightInput}
@@ -175,7 +274,7 @@ export default function ProfileScreen() {
               />
             </View>
             <View style={[styles.calcField, { width: '100%' }]}>
-              <Text style={styles.label}>Активность (PAL)</Text>
+              <Text style={[styles.label, { color: colors.paperFaint }]}>Активность (PAL)</Text>
               <View style={styles.segmentRow}>
                 {(
                   [
@@ -188,20 +287,32 @@ export default function ProfileScreen() {
                   return (
                     <TouchableOpacity
                       key={String(opt.value)}
-                      style={[styles.segmentBtn, on && styles.segmentBtnOn]}
+                      style={[
+                        styles.segmentBtn,
+                        { borderColor: colors.lineStrong, backgroundColor: colors.ink },
+                        on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                      ]}
                       onPress={() => updateProfile({ pal: opt.value })}
                       accessibilityRole="radio"
                       accessibilityState={{ checked: on }}
                       accessibilityLabel={opt.label}
                     >
-                      <Text style={[styles.segmentText, on && styles.segmentTextOn]}>{opt.label}</Text>
+                      <Text
+                        style={[
+                          styles.segmentText,
+                          { color: colors.paperDim },
+                          on && { color: colors.lime }
+                        ]}
+                      >
+                        {opt.label}
+                      </Text>
                     </TouchableOpacity>
                   );
                 })}
               </View>
             </View>
             <View style={[styles.calcField, { width: '100%' }]}>
-              <Text style={styles.label}>Бюджет калорий</Text>
+              <Text style={[styles.label, { color: colors.paperFaint }]}>Бюджет калорий</Text>
               <View style={styles.segmentRow}>
                 {(
                   [
@@ -214,13 +325,25 @@ export default function ProfileScreen() {
                   return (
                     <TouchableOpacity
                       key={opt.value}
-                      style={[styles.segmentBtn, on && styles.segmentBtnOn]}
+                      style={[
+                        styles.segmentBtn,
+                        { borderColor: colors.lineStrong, backgroundColor: colors.ink },
+                        on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                      ]}
                       onPress={() => updateProfile({ goal: opt.value })}
                       accessibilityRole="radio"
                       accessibilityState={{ checked: on }}
                       accessibilityLabel={opt.label}
                     >
-                      <Text style={[styles.segmentText, on && styles.segmentTextOn]}>{opt.label}</Text>
+                      <Text
+                        style={[
+                          styles.segmentText,
+                          { color: colors.paperDim },
+                          on && { color: colors.lime }
+                        ]}
+                      >
+                        {opt.label}
+                      </Text>
                     </TouchableOpacity>
                   );
                 })}
@@ -228,23 +351,27 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          <View style={styles.calcResult}>
-            <View style={styles.resultCell}>
-              <Text style={styles.resultVal}>{targets ? targets.bmr : '—'}</Text>
-              <Text style={styles.resultLbl}>BMR</Text>
+          <View style={[styles.calcResult, { borderColor: colors.line }]}>
+            <View style={[styles.resultCell, { borderColor: colors.line }]}>
+              <Text style={[styles.resultVal, { color: colors.paper }]}>
+                {targets ? targets.bmr : '—'}
+              </Text>
+              <Text style={[styles.resultLbl, { color: colors.paperFaint }]}>BMR</Text>
             </View>
-            <View style={styles.resultCell}>
-              <Text style={styles.resultVal}>{targets ? targets.tdee : '—'}</Text>
-              <Text style={styles.resultLbl}>TDEE</Text>
+            <View style={[styles.resultCell, { borderColor: colors.line }]}>
+              <Text style={[styles.resultVal, { color: colors.paper }]}>
+                {targets ? targets.tdee : '—'}
+              </Text>
+              <Text style={[styles.resultLbl, { color: colors.paperFaint }]}>TDEE</Text>
             </View>
-            <View style={[styles.resultCell, { borderRightWidth: 0 }]}>
+            <View style={[styles.resultCell, { borderRightWidth: 0, borderColor: colors.line }]}>
               <Text style={[styles.resultVal, { color: colors.lime }]}>
                 {targets ? targets.target : '—'}
               </Text>
-              <Text style={styles.resultLbl}>Цель</Text>
+              <Text style={[styles.resultLbl, { color: colors.paperFaint }]}>Цель</Text>
             </View>
           </View>
-          <Text style={styles.macroNote}>
+          <Text style={[styles.macroNote, { color: colors.paperFaint }]}>
             {targets
               ? `Белки ${targets.proteinTarget} г · жиры ${targets.fatTarget} г · углеводы ${targets.carbTarget} г (ISSN 2.0 / 1.0 г на кг).`
               : 'Заполните вес, рост, возраст и пол — тогда появятся цели КБЖУ.'}
@@ -252,21 +379,33 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.sectionHead}>
-          <Text style={styles.sectionTitle}>Метаболическое плато</Text>
-          <Text style={styles.sectionCount}>Refeed / Diet Break</Text>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>Метаболическое плато</Text>
+          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>Refeed / Diet Break</Text>
         </View>
         <ProtocolBanner />
 
         <View style={styles.sectionHead}>
-          <Text style={styles.sectionTitle}>Данные</Text>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>Данные</Text>
         </View>
-        <TouchableOpacity style={styles.settingRow} onPress={exportData} accessibilityRole="button">
-          <Text style={styles.settingName}>Экспорт данных</Text>
-          <Text style={styles.settingDesc}>Скачать резервную копию (JSON)</Text>
+        <TouchableOpacity
+          style={[styles.settingRow, { backgroundColor: colors.panel, borderColor: colors.line }]}
+          onPress={exportData}
+          accessibilityRole="button"
+        >
+          <Text style={[styles.settingName, { color: colors.paper }]}>Экспорт данных</Text>
+          <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>
+            Скачать резервную копию (JSON)
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.settingRow} onPress={importData} accessibilityRole="button">
-          <Text style={styles.settingName}>Импорт данных</Text>
-          <Text style={styles.settingDesc}>Восстановить из файла резервной копии</Text>
+        <TouchableOpacity
+          style={[styles.settingRow, { backgroundColor: colors.panel, borderColor: colors.line }]}
+          onPress={importData}
+          accessibilityRole="button"
+        >
+          <Text style={[styles.settingName, { color: colors.paper }]}>Импорт данных</Text>
+          <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>
+            Восстановить из файла резервной копии
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -274,35 +413,45 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.ink },
+  screen: { flex: 1 },
   header: {
     paddingHorizontal: spacing.xxl,
     paddingBottom: spacing.lg,
-    borderBottomWidth: 1,
-    borderColor: colors.line
+    borderBottomWidth: 1
   },
-  eyebrow: { color: colors.lime, fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1 },
-  title: { color: colors.paper, fontSize: 30, fontFamily: fonts.mono },
+  eyebrow: { fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1 },
+  title: { fontSize: 30, fontFamily: fonts.mono },
   body: { paddingHorizontal: spacing.xl, paddingBottom: 120, paddingTop: spacing.lg },
+  themeCard: {
+    padding: spacing.lg,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    marginBottom: spacing.md
+  },
+  themeRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  themeBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    alignItems: 'center'
+  },
+  themeBtnText: { fontFamily: fonts.bodySemi, fontSize: 13 },
   gateBanner: {
     marginBottom: spacing.md,
     padding: spacing.lg,
-    backgroundColor: colors.panelRaised,
     borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: colors.lineStrong
+    borderWidth: 1
   },
-  gateTitle: { color: colors.paper, fontFamily: fonts.bodySemi, fontSize: 14, marginBottom: 6 },
-  gateBody: { color: colors.paperDim, fontFamily: fonts.body, fontSize: 13, lineHeight: 18 },
+  gateTitle: { fontFamily: fonts.bodySemi, fontSize: 14, marginBottom: 6 },
+  gateBody: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18 },
   identityCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
     padding: spacing.lg,
-    backgroundColor: colors.panel,
     borderRadius: radius.card,
     borderWidth: 1,
-    borderColor: colors.line,
     marginBottom: spacing.md
   },
   avatar: {
@@ -310,38 +459,31 @@ const styles = StyleSheet.create({
     height: 52,
     borderRadius: radius.control,
     borderWidth: 1,
-    borderColor: colors.lime,
-    backgroundColor: colors.limeDim,
     alignItems: 'center',
     justifyContent: 'center'
   },
-  avatarText: { color: colors.lime, fontFamily: fonts.mono, fontSize: 20 },
-  identityTitle: { color: colors.paper, fontSize: 15, fontFamily: fonts.bodySemi },
-  identitySub: { color: colors.paperFaint, fontSize: 12, marginTop: 4, fontFamily: fonts.body },
+  avatarText: { fontFamily: fonts.mono, fontSize: 20 },
+  identityTitle: { fontSize: 15, fontFamily: fonts.bodySemi },
+  identitySub: { fontSize: 12, marginTop: 4, fontFamily: fonts.body },
   sectionHead: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: spacing.lg,
     marginBottom: 10
   },
-  sectionTitle: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.bodySemi },
-  sectionCount: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 13 },
+  sectionTitle: { fontSize: 13, fontFamily: fonts.bodySemi },
+  sectionCount: { fontFamily: fonts.mono, fontSize: 13 },
   card: {
-    backgroundColor: colors.panel,
     borderRadius: radius.card,
     borderWidth: 1,
-    borderColor: colors.line,
     padding: spacing.md
   },
   calcGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 14 },
   calcField: { width: '47%' },
-  label: { fontSize: 10.5, color: colors.paperFaint, marginBottom: 4 },
+  label: { fontSize: 10.5, marginBottom: 4 },
   input: {
-    backgroundColor: colors.ink,
     borderWidth: 1,
-    borderColor: colors.lineStrong,
     borderRadius: radius.control,
-    color: colors.paper,
     padding: 10,
     fontFamily: fonts.mono,
     fontSize: 13.5
@@ -352,44 +494,31 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: radius.control,
     borderWidth: 1,
-    borderColor: colors.lineStrong,
-    backgroundColor: colors.ink,
     alignItems: 'center'
   },
-  segmentBtnOn: { borderColor: colors.lime, backgroundColor: colors.limeDim },
-  segmentText: { color: colors.paperDim, fontFamily: fonts.bodySemi, fontSize: 12, textAlign: 'center' },
-  segmentTextOn: { color: colors.lime },
+  segmentText: { fontFamily: fonts.bodySemi, fontSize: 12, textAlign: 'center' },
   calcResult: {
     flexDirection: 'row',
     borderWidth: 1,
-    borderColor: colors.line,
     borderRadius: radius.control,
     overflow: 'hidden',
     marginBottom: 8
   },
-  macroNote: {
-    color: colors.paperFaint,
-    fontSize: 11,
-    lineHeight: 16,
-    fontFamily: fonts.body
-  },
+  macroNote: { fontSize: 11, lineHeight: 16, fontFamily: fonts.body },
   resultCell: {
     flex: 1,
     padding: 12,
     alignItems: 'center',
-    borderRightWidth: 1,
-    borderColor: colors.line
+    borderRightWidth: 1
   },
-  resultVal: { color: colors.paper, fontSize: 19, fontFamily: fonts.mono },
-  resultLbl: { color: colors.paperFaint, fontSize: 9.5, marginTop: 2 },
+  resultVal: { fontSize: 19, fontFamily: fonts.mono },
+  resultLbl: { fontSize: 9.5, marginTop: 2 },
   settingRow: {
     padding: 14,
     marginBottom: 8,
-    backgroundColor: colors.panel,
     borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: colors.line
+    borderWidth: 1
   },
-  settingName: { color: colors.paper, fontSize: 14, fontFamily: fonts.bodySemi },
-  settingDesc: { color: colors.paperFaint, fontSize: 11.5, marginTop: 2 }
+  settingName: { fontSize: 14, fontFamily: fonts.bodySemi },
+  settingDesc: { fontSize: 11.5, marginTop: 2 }
 });
