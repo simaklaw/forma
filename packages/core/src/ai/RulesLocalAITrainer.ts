@@ -46,6 +46,16 @@ function advise(ctx: UserContextSnapshot, userPrompt: string): string {
     return `Цель ${ctx.dailyMetrics.targetCalories} ккал, съедено ${ctx.dailyMetrics.consumedCalories}, сожжено ${burned}. Дельта ${delta > 0 ? "+" : ""}${delta}.`;
   }
 
+  // Coach chips: «Сон и восстановление»
+  if (q.includes("сон") || q.includes("sleep")) {
+    return "Ориентир 7–9 часов сна. После тяжёлого дня приоритет — сон и белок, а не ещё одна «добивающая» сессия. Это не медицинский совет, а привычка под восстановление.";
+  }
+
+  // Coach chips: «Вода сегодня»
+  if (q.includes("вод") || q.includes("water") || q.includes("гидрат")) {
+    return "Отмечай стаканы во вкладке «Питание». Жажда часто маскируется под голод между приёмами. После тренировки — вода раньше, чем сладкий напиток «за восстановление».";
+  }
+
   if (ctx.lastWorkout && (q.includes("трен") || q.includes("workout") || q.includes("восстан"))) {
     return `«${ctx.lastWorkout.name}» уже в логе (RPE ${ctx.lastWorkout.rpeScore}). Сегодня — белок, вода и сон. Нет смысла добивать ещё один тяжёлый блок.`;
   }
