@@ -1,9 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { CoachEngine, estimateBurnFromSetLogs, isProfileComplete, toDateKey } from '@forma/core';
 import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
 import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
+
+type TabParamList = {
+  Тренировки: undefined;
+  Питание: undefined;
+  Тренер: undefined;
+  Прогресс: undefined;
+  Профиль: undefined;
+};
 
 type Props = {
   dayName: string;
@@ -13,6 +23,7 @@ type Props = {
 
 /** On-device coach strip — shows gate / loading / advice (never silent null when mounted). */
 export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames }: Props) {
+  const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const profile = useFitPulseStore((s) => s.profile);
   const todayMeals = useFitPulseStore((s) => s.todayMeals);
   const setLogs = useFitPulseStore((s) => s.setLogs);
@@ -40,7 +51,16 @@ export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames }: Props
   const proteinTarget = useMemo(() => {
     if (!complete) return 0;
     return calculateTargets().proteinTarget;
-  }, [complete, calculateTargets, profile.weight, profile.height, profile.age, profile.sex, profile.pal, profile.goal]);
+  }, [
+    complete,
+    calculateTargets,
+    profile.weight,
+    profile.height,
+    profile.age,
+    profile.sex,
+    profile.pal,
+    profile.goal
+  ]);
 
   const snapshot = useMemo(() => {
     if (!complete) return null;
@@ -115,6 +135,16 @@ export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames }: Props
         <Text style={styles.meta}>Белок сегодня: цель {proteinTarget} г</Text>
       ) : null}
       <Text style={styles.body}>{body}</Text>
+      {!complete ? (
+        <Pressable
+          style={styles.cta}
+          onPress={() => navigation.navigate('Профиль')}
+          accessibilityRole="button"
+          accessibilityLabel="Открыть профиль"
+        >
+          <Text style={styles.ctaText}>Открыть профиль</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -147,5 +177,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
     fontFamily: fonts.body
+  },
+  cta: {
+    marginTop: 12,
+    alignSelf: 'flex-start',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: radius.control,
+    backgroundColor: colors.lime
+  },
+  ctaText: {
+    color: colors.ink,
+    fontFamily: fonts.bodySemi,
+    fontSize: 13
   }
 });
