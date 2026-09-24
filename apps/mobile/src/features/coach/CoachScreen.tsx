@@ -14,7 +14,7 @@ import { CoachEngine, estimateBurnFromSetLogs, isProfileComplete, toDateKey } fr
 import { getMobileTrainerProgress } from '@/ai/trainerProgress';
 import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
 import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
-import { COACH_WELCOME, useFitPulseStore } from '@/state/useFitPulseStore';
+import { COACH_WELCOME, selectDailyTotals, useFitPulseStore } from '@/state/useFitPulseStore';
 import type { ProfileState, Sex } from '@/engines/MetabolicEngine';
 
 const CHIPS = ['Сколько белка?', 'Калории сегодня', 'Совет на тренировку', 'Восстановление'];
@@ -72,12 +72,15 @@ export default function CoachScreen() {
       ? profile.weight
       : 0;
 
+  const mealTotals = useMemo(() => selectDailyTotals(todayMeals), [todayMeals]);
+
   const snapshot = useMemo(() => {
     if (!domainProfile || !targets) return null;
     return mobileCoachSnapshot({
       profile: domainProfile,
       todayMeals,
       targetCalories: targets.target,
+      proteinTarget: targets.proteinTarget,
       burnedCalories: estimateBurnFromSetLogs({
         weightKg: safeWeightKg,
         setLogs,
@@ -124,8 +127,35 @@ export default function CoachScreen() {
       ? `Загрузка · ${Math.round(progress * 100)}%`
       : 'Rules · offline';
 
+  const proteinLine =
+    targets != null
+      ? `Белок ${Math.round(mealTotals.protein)} / ${targets.proteinTarget} г · ${targets.target} ккал`
+      : null;
+
   const visible = messages.filter((m) => m.text.length > 0);
   const canClear = messages.some((m) => m.id !== 'welcome' && m.text.length > 0);
+
+  if (!snapshot) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <View style={styles.header}>
+          <Text style={styles.eyebrow}>FORMA</Text>
+          <Text style={styles.title}>Тренер</Text>
+          <Text style={styles.sub}>
+            Сначала заполните профиль: пол, вес, рост и возраст 13–120. Без них цели КБЖУ и советы
+            не считаются — вес по умолчанию не подставляется.
+          </Text>
+        </View>
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyTitle}>Профиль неполный</Text>
+          <Text style={styles.emptyBody}>
+            Откройте вкладку «Профиль» и сохраните биометрию. После этого здесь появятся чипы и
+            локальный тренер.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -137,9 +167,10 @@ export default function CoachScreen() {
         <View style={styles.header}>
           <View style={styles.headerRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.eyebrow}>Локальный AI</Text>
+              <Text style={styles.eyebrow}>FORMA · локальный AI</Text>
               <Text style={styles.title}>Тренер</Text>
               <Text style={styles.sub}>{status}</Text>
+              {proteinLine ? <Text style={styles.metrics}>{proteinLine}</Text> : null}
             </View>
             {canClear && (
               <Pressable
@@ -158,9 +189,9 @@ export default function CoachScreen() {
           {CHIPS.map((c) => (
             <Pressable
               key={c}
-              disabled={busy || !snapshot}
+              disabled={busy}
               onPress={() => void send(c)}
-              style={[styles.chip, (busy || !snapshot) && styles.chipDisabled]}
+              style={[styles.chip, busy && styles.chipDisabled]}
             >
               <Text style={styles.chipText}>{c}</Text>
             </Pressable>
@@ -194,8 +225,8 @@ export default function CoachScreen() {
           />
           <Pressable
             onPress={() => void send()}
-            disabled={busy || !input.trim() || !snapshot}
-            style={[styles.send, (busy || !input.trim() || !snapshot) && styles.sendDisabled]}
+            disabled={busy || !input.trim()}
+            style={[styles.send, (busy || !input.trim()) && styles.sendDisabled]}
           >
             <Text style={styles.sendText}>Ок</Text>
           </Pressable>
@@ -216,14 +247,31 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.line
   },
   headerRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  eyebrow: { color: colors.paperFaint, fontSize: 11, fontFamily: fonts.body },
+  eyebrow: { color: colors.lime, fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1.2 },
   title: {
     color: colors.paper,
     fontSize: 30,
     fontFamily: fonts.mono,
     marginTop: 2
   },
-  sub: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.body, marginTop: 4 },
+  sub: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.body, marginTop: 4, lineHeight: 18 },
+  metrics: {
+    color: colors.paperFaint,
+    fontSize: 12,
+    fontFamily: fonts.mono,
+    marginTop: 6
+  },
+  emptyCard: {
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.lg,
+    padding: spacing.lg,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.panel
+  },
+  emptyTitle: { color: colors.paper, fontFamily: fonts.mono, fontSize: 16, marginBottom: 8 },
+  emptyBody: { color: colors.paperDim, fontFamily: fonts.body, fontSize: 14, lineHeight: 20 },
   clearBtn: {
     marginTop: 8,
     paddingHorizontal: 12,
