@@ -88,7 +88,6 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     useEffect(() => {
       if (!exercise) return;
       setCompletedSets(completedSetsToday(exercise.id));
-      // Bodyweight catalog: seed with profile mass so domain never sees 0kg.
       const seed = resolveWorkingLoadKg(exercise, bodyKg);
       setWeight(seed > 0 ? seed : exercise.workingWeight > 0 ? exercise.workingWeight : bodyKg);
       setReps(exercise.workingReps);
@@ -121,7 +120,6 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         : { isCurrent: true, expectedName: null, expectedExerciseId: null, currentStepIndex: 0, totalSteps: 0 };
 
     const weightStep = exercise.weightStep ?? 2.5;
-    // Domain requires weightKg > 0 — never call estimateOneRepMax with 0/NaN on first paint.
     const oneRm =
       Number.isFinite(weight) && weight > 0 && Number.isFinite(reps) && reps >= 1
         ? Math.round(estimateOneRepMax(weight, reps))
@@ -198,7 +196,20 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const ctaDisabled = finished || restRemaining !== null || blockedBySequence;
 
     return (
-      <AppBottomSheet ref={ref} eyebrow={`Упражнение ${String(exercise.index).padStart(2, '0')}`} title={exercise.name}>
+      <AppBottomSheet
+        ref={ref}
+        eyebrow={
+          seq.totalSteps > 0
+            ? `Упр. ${String(exercise.index).padStart(2, '0')} · шаг ${seq.currentStepIndex + 1}/${seq.totalSteps}`
+            : `Упражнение ${String(exercise.index).padStart(2, '0')}`
+        }
+        title={exercise.name}
+      >
+        {seq.isCurrent && !finished && seq.totalSteps > 0 && (
+          <View style={styles.currentChip}>
+            <Text style={styles.currentChipText}>Текущий шаг сессии</Text>
+          </View>
+        )}
         {blockedBySequence && (
           <View style={styles.seqBanner} accessibilityRole="text">
             <Text style={styles.seqBannerTitle}>Сначала другое упражнение</Text>
@@ -399,6 +410,17 @@ ExerciseSheet.displayName = 'ExerciseSheet';
 export default ExerciseSheet;
 
 const styles = StyleSheet.create({
+  currentChip: {
+    alignSelf: 'flex-start',
+    marginBottom: spacing.sm,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radius.pill,
+    backgroundColor: colors.limeDim,
+    borderWidth: 1,
+    borderColor: colors.lime
+  },
+  currentChipText: { color: colors.lime, fontFamily: fonts.mono, fontSize: 11 },
   seqBanner: {
     marginBottom: spacing.md,
     padding: 12,
@@ -509,18 +531,18 @@ const styles = StyleSheet.create({
   },
   restLabel: { flex: 1, color: colors.paperFaint, fontSize: 11 },
   restVal: { color: colors.ember, fontSize: 26, fontFamily: fonts.mono },
-  restSkip: { color: colors.paperFaint, fontSize: 11, textDecorationLine: 'underline' },
-  sets: { marginTop: 12 },
+  restSkip: { color: colors.lime, fontSize: 12, fontFamily: fonts.mono },
+  sets: { marginTop: spacing.lg, gap: 6 },
   setRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    paddingVertical: 9,
+    gap: 10,
+    paddingVertical: 8,
     borderBottomWidth: 1,
     borderColor: colors.line
   },
-  setNum: { width: 24, color: colors.paperFaint, fontSize: 13, fontFamily: fonts.mono },
-  setSpec: { flex: 1, color: colors.paper, fontFamily: fonts.mono, fontSize: 15 },
+  setNum: { width: 20, color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 13 },
+  setSpec: { flex: 1, color: colors.paperDim, fontFamily: fonts.body, fontSize: 13 },
   setDone: { color: colors.lime, fontFamily: fonts.mono },
   setPending: { color: colors.paperFaint, fontFamily: fonts.mono },
   cta: {
