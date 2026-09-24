@@ -1,23 +1,14 @@
 import React, { useRef } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { isProfileComplete } from '@forma/core';
 import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
 import { useFitPulseStore, selectDailyTotals, DayMeals } from '@/state/useFitPulseStore';
 import CalorieRing from '@/components/CalorieRing';
 import MacroBar from '@/components/MacroBar';
+import ProfileGateBanner from '@/components/ProfileGateBanner';
 import AddFoodSheet from './AddFoodSheet';
-
-type TabParamList = {
-  Тренировки: undefined;
-  Питание: undefined;
-  Тренер: undefined;
-  Прогресс: undefined;
-  Профиль: undefined;
-};
 
 const MEAL_LABELS: Record<keyof DayMeals, string> = {
   breakfast: 'Завтрак',
@@ -35,7 +26,6 @@ function formatClockTime(ms?: number): string {
 }
 
 export default function NutritionScreen() {
-  const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const sheetRef = useRef<GorhomBottomSheet>(null);
   const [activeMeal, setActiveMeal] = React.useState<keyof DayMeals>('breakfast');
 
@@ -78,21 +68,10 @@ export default function NutritionScreen() {
 
       <ScrollView contentContainerStyle={styles.body}>
         {!complete ? (
-          <View style={styles.gateBanner}>
-            <Text style={styles.gateTitle}>Сначала профиль</Text>
-            <Text style={styles.gateBody}>
-              Цели по ккал и БЖУ считаются из веса, роста, возраста и пола. Без этого кольцо и
-              макросы не подставят фиктивные числа.
-            </Text>
-            <TouchableOpacity
-              style={styles.gateCta}
-              onPress={() => navigation.navigate('Профиль')}
-              accessibilityRole="button"
-              accessibilityLabel="Открыть профиль"
-            >
-              <Text style={styles.gateCtaText}>Открыть профиль</Text>
-            </TouchableOpacity>
-          </View>
+          <ProfileGateBanner
+            inset
+            body="Цели по ккал и БЖУ считаются из веса, роста, возраста и пола. Без этого кольцо и макросы не подставят фиктивные числа."
+          />
         ) : null}
 
         <View style={styles.heroCard}>
@@ -213,26 +192,6 @@ const styles = StyleSheet.create({
   eyebrow: { color: colors.lime, fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1 },
   title: { color: colors.paper, fontSize: 30, fontFamily: fonts.mono },
   body: { paddingBottom: 120 },
-  gateBanner: {
-    marginHorizontal: spacing.xl,
-    marginTop: spacing.lg,
-    padding: spacing.lg,
-    backgroundColor: colors.panelRaised,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: colors.lineStrong
-  },
-  gateTitle: { color: colors.paper, fontFamily: fonts.bodySemi, fontSize: 14, marginBottom: 6 },
-  gateBody: { color: colors.paperDim, fontFamily: fonts.body, fontSize: 13, lineHeight: 18 },
-  gateCta: {
-    marginTop: 12,
-    alignSelf: 'flex-start',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: radius.control,
-    backgroundColor: colors.lime
-  },
-  gateCtaText: { color: colors.ink, fontFamily: fonts.bodySemi, fontSize: 13 },
   heroCard: {
     flexDirection: 'row',
     alignItems: 'center',
