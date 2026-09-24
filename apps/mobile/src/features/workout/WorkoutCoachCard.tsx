@@ -50,6 +50,7 @@ export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames }: Props
       },
       todayMeals,
       targetCalories: targets.target,
+      proteinTarget: targets.proteinTarget,
       burnedCalories: burned,
       lastWorkoutName: anyDoneToday ? dayName : undefined,
       rpeScore: 7
