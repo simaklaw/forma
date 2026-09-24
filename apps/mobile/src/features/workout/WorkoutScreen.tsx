@@ -235,7 +235,12 @@ export default function WorkoutScreen() {
         })}
       </View>
 
-      <View style={styles.dayTabs} accessibilityRole="tablist">
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.dayTabs}
+        accessibilityRole="tablist"
+      >
         {plan.map((day) => {
           const active = day.id === activeDay.id;
           return (
@@ -252,7 +257,7 @@ export default function WorkoutScreen() {
             </TouchableOpacity>
           );
         })}
-      </View>
+      </ScrollView>
 
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.ticket}>
@@ -496,30 +501,30 @@ export default function WorkoutScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.ink },
-  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, paddingBottom: spacing.xs },
+  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, paddingBottom: spacing.sm },
   eyebrow: { color: colors.lime, fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1 },
-  title: { color: colors.paper, fontSize: 28, fontFamily: fonts.mono, marginTop: 2 },
+  title: { color: colors.paper, fontSize: 30, fontFamily: fonts.mono, marginTop: 2 },
   modeTabs: {
     flexDirection: 'row',
     gap: 8,
     paddingHorizontal: spacing.lg,
-    marginTop: spacing.sm,
-    marginBottom: 4
+    paddingBottom: spacing.sm
   },
   modeTab: {
-    paddingVertical: 8,
-    paddingHorizontal: 18,
-    borderRadius: radius.pill,
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: radius.control,
     borderWidth: 1,
-    borderColor: colors.lineStrong,
-    backgroundColor: colors.panel
+    borderColor: colors.line,
+    backgroundColor: colors.panel,
+    alignItems: 'center'
   },
   modeTabActive: { borderColor: colors.lime, backgroundColor: colors.limeDim },
   modeTabText: { color: colors.paperDim, fontFamily: fonts.mono, fontSize: 13 },
   modeTabTextActive: { color: colors.lime },
   dayTabs: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
     gap: 6,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm
@@ -558,9 +563,9 @@ const styles = StyleSheet.create({
   startPillText: { color: colors.ink, fontFamily: fonts.mono, fontSize: 13, fontWeight: '700' },
   resumeBlock: { marginTop: 10 },
   resumeHint: { color: colors.cyan, fontSize: 12, fontFamily: fonts.body, marginBottom: 8 },
-  resumeActions: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  resumeActions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   restartPill: {
-    marginTop: 12,
+    marginTop: 0,
     alignSelf: 'flex-start',
     paddingVertical: 8,
     paddingHorizontal: 14,
@@ -573,89 +578,96 @@ const styles = StyleSheet.create({
   ticketPerf: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    borderColor: colors.line
+    borderColor: colors.line,
+    backgroundColor: colors.ink
   },
   perfCell: {
     flex: 1,
     paddingVertical: 10,
     paddingHorizontal: 8,
     borderRightWidth: 1,
-    borderColor: colors.line
+    borderColor: colors.line,
+    alignItems: 'center'
   },
-  perfVal: { color: colors.paper, fontSize: 16, fontFamily: fonts.mono },
-  perfLbl: { color: colors.paperFaint, fontSize: 10, marginTop: 2 },
+  perfVal: { color: colors.paper, fontFamily: fonts.mono, fontSize: 16 },
+  perfLbl: { color: colors.paperFaint, fontSize: 10, marginTop: 2, fontFamily: fonts.body },
   streakRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
     gap: 10,
+    alignItems: 'center',
     marginTop: spacing.md,
-    padding: 12,
-    borderRadius: radius.control,
+    padding: spacing.md,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: colors.line,
     backgroundColor: colors.panel
   },
-  streakText: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.body },
+  streakText: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
   ticks: { flexDirection: 'row', gap: 4, marginTop: 8 },
-  tick: { width: 10, height: 10, borderRadius: 2 },
+  tick: { flex: 1, height: 4, borderRadius: 2 },
   tickDone: { backgroundColor: colors.lime },
   tickToday: { backgroundColor: colors.cyan },
   tickMissed: { backgroundColor: colors.lineStrong },
   sectionHead: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'baseline',
-    marginTop: spacing.xl,
-    marginBottom: spacing.sm
+    marginTop: spacing.lg,
+    marginBottom: 10
   },
-  sectionTitle: { color: colors.paper, fontSize: 16, fontFamily: fonts.mono },
-  sectionCount: { color: colors.paperFaint, fontSize: 12, fontFamily: fonts.body },
+  sectionTitle: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.bodySemi },
+  sectionCount: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 13 },
   sessionBar: {
     marginBottom: spacing.sm,
-    padding: 10,
-    borderRadius: radius.control,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.panelRaised
-  },
-  sessionBarLabel: { color: colors.cyan, fontFamily: fonts.mono, fontSize: 12, marginBottom: 6 },
-  sessionTrack: {
-    height: 4,
-    borderRadius: radius.pill,
-    backgroundColor: colors.lineStrong,
-    overflow: 'hidden'
-  },
-  sessionFill: { height: '100%', backgroundColor: colors.lime, borderRadius: radius.pill },
-  logRowCurrent: {
-    borderColor: colors.lime,
-    backgroundColor: colors.limeDim
-  },
-  logRowDone: { opacity: 0.72 },
-  logRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    marginBottom: 8,
+    padding: spacing.md,
     borderRadius: radius.control,
     borderWidth: 1,
     borderColor: colors.line,
     backgroundColor: colors.panel
   },
-  logIndex: { color: colors.paperFaint, fontFamily: fonts.mono, width: 28 },
+  sessionBarLabel: { color: colors.cyan, fontFamily: fonts.mono, fontSize: 12, marginBottom: 6 },
+  sessionTrack: {
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.lineStrong,
+    overflow: 'hidden'
+  },
+  sessionFill: { height: '100%', backgroundColor: colors.cyan },
+  logRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.panel
+  },
+  logRowDone: { opacity: 0.7 },
+  logRowCurrent: {
+    borderColor: colors.lime,
+    backgroundColor: colors.limeDim
+  },
+  logIndex: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 14, width: 28 },
   logIndexCurrent: { color: colors.lime },
   logNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  logName: { color: colors.paper, fontFamily: fonts.mono, fontSize: 15, flexShrink: 1 },
+  logName: { flexShrink: 1, color: colors.paper, fontSize: 15, fontFamily: fonts.bodySemi },
   logNameCurrent: { color: colors.lime },
   nowBadge: {
-    paddingHorizontal: 6,
+    paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: radius.pill,
     backgroundColor: colors.lime
   },
-  nowBadgeText: { color: colors.ink, fontFamily: fonts.mono, fontSize: 10, fontWeight: '700' },
-  logSpec: { color: colors.paperFaint, fontSize: 11, marginTop: 2, fontFamily: fonts.body },
-  logPr: { color: colors.paper, fontSize: 16, fontFamily: fonts.mono },
-  logPrLbl: { color: colors.paperFaint, fontSize: 9.5 }
+  nowBadgeText: {
+    color: colors.ink,
+    fontSize: 10,
+    fontFamily: fonts.bodySemi,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6
+  },
+  logSpec: { color: colors.paperFaint, fontSize: 12, marginTop: 2, fontFamily: fonts.body },
+  logPr: { color: colors.paper, fontFamily: fonts.mono, fontSize: 14 },
+  logPrLbl: { color: colors.paperFaint, fontSize: 10, fontFamily: fonts.body }
 });
