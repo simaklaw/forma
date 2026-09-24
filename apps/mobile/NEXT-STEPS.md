@@ -6,40 +6,39 @@
 
 Продуктовые заглушки и инженерные дыры, которые можно закрыть **без APK / без native dev client**, закрыты.
 
-### Закрыто в последних проходах (ветка `fix/profile-gate-weightkg`)
+### Закрыто (ветка `fix/profile-gate-weightkg`)
 
-- Profile gate: `weightKg` finite > 0, без default 70 kg
-- Nutrition: ring remaining/over, banner при неполном профиле, FORMA eyebrow
-- Workout: gym/home tabs, current-step highlight, session progress bar, player step chip
-- Gym catalog: Push / Pull / Legs / **Full Body** (ids 22–24, без коллизии с 1–9)
+- Profile gate: `weightKg` finite > 0, без default 70 kg; баннер на Профиле
+- Nutrition: ring remaining/over, banner, FORMA eyebrow; **~40 offline RU presets**, до 24 в списке
+- Workout: gym/home tabs, current-step highlight, session bar; **горизонтальный скролл дней**
+- Gym catalog: Push / Pull / Legs / Full Body / **Upper / Lower** (ids 22–30)
 - Coach / Progress: protein-aware, empty states, FORMA branding
-- CI: typecheck + lint + test; `eslint-plugin-import` закреплён явно; зоны features включают coach/onboarding
+- CI: typecheck + lint + test; `eslint-plugin-import`; зоны features + coach/onboarding
 
-### По-прежнему только на устройстве пользователя
+### Только на устройстве пользователя
 
-- Metro / симулятор / реальный QA по `QA-CHECKLIST.md` (особенно rest timer через lock screen)
-- APK — **только после вашего явного «собирай APK»** (план: сначала product-complete)
+- Metro / QA по `QA-CHECKLIST.md` (rest timer через lock screen)
+- APK — **только после явного «собирай APK»**
 
 ## 2. Решения
 
-- Каталог: **локальный**, не wger как источник плана (фото техники с wger — ок)
+- Каталог: локальный (фото техники с wger — ок)
 - Нативка (MMKV / Skia / HealthKit / ExecuTorch): отложена до dev client
 
-## 3. Открытые пункты (не блокируют playable MVP)
+## 3. Открытые (не блокируют playable MVP)
 
-1. Ручной прогон `QA-CHECKLIST.md` на телефоне
-2. Опционально: Upper/Lower split, мини-база статей (контент-домен)
-3. Native modules — когда появится сборка dev client
+1. Ручной прогон `QA-CHECKLIST.md`
+2. Опционально: мини-база статей (контент-домен)
+3. Native modules — с dev client
 
-## 4. Критерий «план выполнен → можно APK»
+## 4. Критерий «план → APK»
 
-- [x] Profile gate строгий
-- [x] Workout session sequential + UX текущего шага
-- [x] Nutrition КБЖУ ring без фейковых targets
-- [x] Coach / Progress осмысленные empty states
-- [x] Gym + Home каталоги (PPL + Full Body / bodyweight days)
-- [x] CI quality job с tests
-- [ ] Ваш ручной QA на устройстве
+- [x] Profile gate
+- [x] Session + current step UX
+- [x] Nutrition ring + offline presets
+- [x] Coach / Progress empty states
+- [x] Gym + Home (PPL + Full + Upper/Lower + bodyweight)
+- [x] Day tabs scroll при многих днях
+- [x] CI + eslint-plugin-import
+- [ ] Ваш ручной QA
 - [ ] Явная команда собрать APK
-
-После вашего QA и команды — EAS/workflow APK.
