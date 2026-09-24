@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { estimateBurnFromSetLogs, estimateDailyBurns, toDateKey } from '@forma/core';
 import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import ProfileGateBanner from '@/components/ProfileGateBanner';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { lastNDays, selectWeeklyVolume, weekdayRuShort } from '@/engines/WorkoutStats';
 import WeightChart from '@/components/WeightChart';
@@ -61,6 +62,14 @@ export default function ProgressScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.body}>
+        {weightKg <= 0 ? (
+          <ProfileGateBanner
+            inset
+            title="Нужен вес в профиле"
+            body="Оценка сожжённых ккал (MET) считается от массы тела. Укажите вес в «Профиль» — без default 70 кг."
+          />
+        ) : null}
+
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
             <Text style={styles.statVal}>{burnedToday > 0 ? `~${burnedToday}` : '—'}</Text>
@@ -105,7 +114,9 @@ export default function ProgressScreen() {
             </View>
           ) : (
             <Text style={styles.emptyState}>
-              Пока нет подходов — оценка калорий появится после первой тренировки.
+              {weightKg <= 0
+                ? 'Укажите вес в профиле и залогируйте подходы — появится оценка ккал.'
+                : 'Пока нет подходов — оценка калорий появится после первой тренировки.'}
             </Text>
           )}
         </View>
