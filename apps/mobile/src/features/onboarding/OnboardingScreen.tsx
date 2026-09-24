@@ -11,11 +11,11 @@ export default function OnboardingScreen() {
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.body}>
-        <Text style={styles.eyebrow}>FitPulse</Text>
-        <Text style={styles.title}>Домашний тренер</Text>
+        <Text style={styles.eyebrow}>FORMA</Text>
+        <Text style={styles.title}>Профиль</Text>
         <Text style={styles.sub}>
           Чтобы считать нагрузку и калории по Миффлину–Сан Жеору, нужны ваши данные. Без них
-          тренировка не стартует.
+          тренировка не стартует. Вес по умолчанию не подставляется.
         </Text>
         <View style={styles.card}>
           <ProfileForm

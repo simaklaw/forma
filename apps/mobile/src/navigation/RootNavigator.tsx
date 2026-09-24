@@ -25,19 +25,28 @@ const navTheme = {
   }
 };
 
-/** Glyph-only icons keep the bar light without adding icon packs. */
+/** Letter marks — no emoji chrome on the tab bar. */
 const ICONS: Record<string, string> = {
-  Тренировки: '🏋️',
-  Питание: '🍽',
-  Тренер: '💬',
-  Прогресс: '📊',
-  Профиль: '👤'
+  Тренировки: 'Тр',
+  Питание: 'Пт',
+  Тренер: 'Тн',
+  Прогресс: 'Пр',
+  Профиль: 'Пф'
 };
 
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
   return (
     <View style={{ alignItems: 'center', gap: 2 }}>
-      <Text style={{ fontSize: 16, opacity: focused ? 1 : 0.45 }}>{ICONS[name] ?? '•'}</Text>
+      <Text
+        style={{
+          fontSize: 11,
+          fontFamily: fonts.mono,
+          color: focused ? colors.lime : colors.paperFaint,
+          letterSpacing: 0.4
+        }}
+      >
+        {ICONS[name] ?? '·'}
+      </Text>
       {focused ? (
         <View
           style={{

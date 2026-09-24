@@ -12,8 +12,9 @@ export function isProfileComplete(p: ProfileDraft): boolean {
     (p.weightKg as number) > 0 &&
     Number.isFinite(p.heightCm) &&
     (p.heightCm as number) > 0 &&
-    Number.isFinite(p.age) &&
-    (p.age as number) > 0 &&
+    Number.isInteger(p.age) &&
+    (p.age as number) >= 13 &&
+    (p.age as number) <= 120 &&
     (p.gender === 'male' || p.gender === 'female')
   );
 }

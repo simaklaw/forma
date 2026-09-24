@@ -30,7 +30,8 @@ export function ProfileForm({ initial, submitLabel, onSubmit }: Props) {
     return {
       weight: Number.isFinite(w) && w > 0 ? w : null,
       height: Number.isFinite(h) && h > 0 ? h : null,
-      age: Number.isInteger(a) && a > 0 ? a : null,
+      // Must match MetabolicEngine validateProfile (13–120) and isProfileComplete.
+      age: Number.isInteger(a) && a >= 13 && a <= 120 ? a : null,
       sex
     };
   }, [weight, height, age, sex]);
@@ -51,6 +52,7 @@ export function ProfileForm({ initial, submitLabel, onSubmit }: Props) {
             style={[styles.sexBtn, sex === g && styles.sexBtnOn]}
             onPress={() => setSex(g)}
             accessibilityRole="button"
+            accessibilityState={{ selected: sex === g }}
           >
             <Text style={[styles.sexText, sex === g && styles.sexTextOn]}>
               {g === 'male' ? 'Мужской' : 'Женский'}
@@ -58,9 +60,9 @@ export function ProfileForm({ initial, submitLabel, onSubmit }: Props) {
           </TouchableOpacity>
         ))}
       </View>
-      <Field label="Вес, кг" value={weight} onChange={setWeight} placeholder="78" />
-      <Field label="Рост, см" value={height} onChange={setHeight} placeholder="178" />
-      <Field label="Возраст" value={age} onChange={setAge} placeholder="28" />
+      <Field label="Вес, кг" value={weight} onChange={setWeight} placeholder="например 78" />
+      <Field label="Рост, см" value={height} onChange={setHeight} placeholder="например 178" />
+      <Field label="Возраст (13–120)" value={age} onChange={setAge} placeholder="например 28" />
       <TouchableOpacity
         style={[styles.cta, !ready && styles.ctaDisabled]}
         disabled={!ready}
