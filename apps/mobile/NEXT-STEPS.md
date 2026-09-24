@@ -14,6 +14,7 @@
 - Workout: gym/home, current-step, session bar, horizontal day tabs
 - Gym: PPL + Full Body + Upper/Lower (ids 22–30)
 - Coach chips expanded; ProtocolBanner FORMA polish
+- **Daily tips** offline mini-base (`lib/dailyTips.ts`) на экране Прогресс
 - CI: typecheck + lint + test; eslint-plugin-import
 
 ### Только на устройстве
@@ -28,8 +29,7 @@
 ## 3. Открытые (не блокируют MVP)
 
 1. Ручной QA
-2. Опционально: мини-база статей
-3. Native modules
+2. Native modules (dev client)
 
 ## 4. Критерий «план → APK»
 
@@ -39,6 +39,7 @@
 - [x] Coach / Progress empty states
 - [x] Gym + Home catalogs
 - [x] Day tabs scroll
+- [x] Offline daily tips
 - [x] CI
 - [ ] Ваш ручной QA
 - [ ] Явная команда собрать APK
