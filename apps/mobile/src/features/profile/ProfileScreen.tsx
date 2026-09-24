@@ -80,11 +80,21 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.eyebrow}>Аккаунт</Text>
+        <Text style={styles.eyebrow}>FORMA · Аккаунт</Text>
         <Text style={styles.title}>Профиль</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.body}>
+        {!complete ? (
+          <View style={styles.gateBanner}>
+            <Text style={styles.gateTitle}>Заполните биометрию</Text>
+            <Text style={styles.gateBody}>
+              Пол, вес, рост и возраст нужны для BMR/TDEE и целей КБЖУ. Без них вес по
+              умолчанию не подставляется — кольцо питания и советы тренера ждут профиль.
+            </Text>
+          </View>
+        ) : null}
+
         <View style={styles.identityCard}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{initials}</Text>
@@ -271,9 +281,19 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: colors.line
   },
-  eyebrow: { color: colors.paperFaint, fontSize: 11, fontFamily: fonts.body },
+  eyebrow: { color: colors.lime, fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1 },
   title: { color: colors.paper, fontSize: 30, fontFamily: fonts.mono },
   body: { paddingHorizontal: spacing.xl, paddingBottom: 120, paddingTop: spacing.lg },
+  gateBanner: {
+    marginBottom: spacing.md,
+    padding: spacing.lg,
+    backgroundColor: colors.panelRaised,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.lineStrong
+  },
+  gateTitle: { color: colors.paper, fontFamily: fonts.bodySemi, fontSize: 14, marginBottom: 6 },
+  gateBody: { color: colors.paperDim, fontFamily: fonts.body, fontSize: 13, lineHeight: 18 },
   identityCard: {
     flexDirection: 'row',
     alignItems: 'center',
