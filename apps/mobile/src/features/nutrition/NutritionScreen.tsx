@@ -6,6 +6,7 @@ import { isProfileComplete } from '@forma/core';
 import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
 import { useFitPulseStore, selectDailyTotals, DayMeals } from '@/state/useFitPulseStore';
 import CalorieRing from '@/components/CalorieRing';
+import DailyTipCard from '@/components/DailyTipCard';
 import MacroBar from '@/components/MacroBar';
 import ProfileGateBanner from '@/components/ProfileGateBanner';
 import AddFoodSheet from './AddFoodSheet';
@@ -110,6 +111,8 @@ export default function NutritionScreen() {
             )}
           </View>
         </View>
+
+        <DailyTipCard inset />
 
         <View style={styles.waterCard}>
           <View style={styles.waterHead}>
