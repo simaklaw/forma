@@ -63,7 +63,7 @@ export default function NutritionScreen() {
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.eyebrow}>FORMA · Сегодня</Text>
+        <Text style={styles.eyebrow}>FITPULSE · Сегодня</Text>
         <Text style={styles.title}>Питание</Text>
       </View>
 
