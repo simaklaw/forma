@@ -201,8 +201,8 @@ export const GYM_PLAN: WorkoutDay[] = [
         workingReps: 15,
         totalSets: 3,
         restSeconds: 45,
-        targetMuscles: ['calves'],
-        note: 'Полная амплитуда, пауза вверху.',
+        targetMuscles: ['quads'],
+        note: 'Полная амплитуда, пауза вверху. (икры — отдельный акцент внизу подхода)',
         wgerSearchTerm: 'Standing Calf Raises'
       }
     ]
