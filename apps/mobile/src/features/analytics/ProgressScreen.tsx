@@ -15,7 +15,6 @@ export default function ProgressScreen() {
   const profileWeight = useFitPulseStore((s) => s.profile.weight);
   const dayProgress = useFitPulseStore((s) => s.dayProgress);
 
-  // Defense-in-depth: profile.weight is null until onboarding; never pass null into MET math.
   const weightKg =
     typeof profileWeight === 'number' && Number.isFinite(profileWeight) && profileWeight > 0
       ? profileWeight
@@ -58,7 +57,7 @@ export default function ProgressScreen() {
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.eyebrow}>FORMA · последние 7 дней</Text>
+        <Text style={styles.eyebrow}>FITPULSE · последние 7 дней</Text>
         <Text style={styles.title}>Прогресс</Text>
       </View>
 
