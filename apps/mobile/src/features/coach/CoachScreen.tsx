@@ -133,7 +133,7 @@ export default function CoachScreen() {
     ? 'llama.rn · on-device'
     : progress > 0 && progress < 1
       ? `Загрузка · ${Math.round(progress * 100)}%`
-      : 'Rules · offline';
+      : 'Подсказки · offline';
 
   const proteinLine =
     targets != null
@@ -147,7 +147,7 @@ export default function CoachScreen() {
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
         <View style={styles.header}>
-          <Text style={styles.eyebrow}>FORMA</Text>
+          <Text style={styles.eyebrow}>FITPULSE</Text>
           <Text style={styles.title}>Тренер</Text>
           <Text style={styles.sub}>
             Без полного профиля цели КБЖУ и советы не считаются — вес по умолчанию не
@@ -173,7 +173,7 @@ export default function CoachScreen() {
         <View style={styles.header}>
           <View style={styles.headerRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.eyebrow}>FORMA · локальный AI</Text>
+              <Text style={styles.eyebrow}>FITPULSE · локальные подсказки</Text>
               <Text style={styles.title}>Тренер</Text>
               <Text style={styles.sub}>{status}</Text>
               {proteinLine ? <Text style={styles.metrics}>{proteinLine}</Text> : null}
