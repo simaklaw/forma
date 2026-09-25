@@ -1,11 +1,15 @@
 import type { WorkoutDay } from './bodyweightPlan';
 
-/** Gym PPL + Full Body + Upper/Lower. Ids 1–9 and 22–24 preserved for existing logs. */
+/**
+ * Gym PPL + Full Body + Upper/Lower + arms/shoulders.
+ * Ids 1–9 and 22–30 preserved for existing logs.
+ * New ids 31+ from wger-aligned names (offline catalog; photos via wgerSearchTerm).
+ */
 export const GYM_PLAN: WorkoutDay[] = [
   {
     id: 'push',
     name: 'Жим — грудь, плечи, трицепс',
-    meta: '≈50 мин',
+    meta: '≈55 мин',
     exercises: [
       {
         id: 4,
@@ -16,31 +20,55 @@ export const GYM_PLAN: WorkoutDay[] = [
         totalSets: 4,
         restSeconds: 120,
         targetMuscles: ['chest', 'shoulders', 'triceps'],
-        note: 'Базовый жим для верха тела — лопатки сведены и прижаты к скамье весь подход, гриф идёт к нижней трети груди, а не к шее.',
+        note: 'Базовый жим — лопатки сведены, гриф к нижней трети груди.',
         wgerSearchTerm: 'Bench Press'
       },
       {
-        id: 5,
+        id: 31,
         index: 2,
+        name: 'Жим гантелей на наклонной',
+        workingWeight: 22,
+        workingReps: 10,
+        totalSets: 3,
+        restSeconds: 90,
+        targetMuscles: ['chest', 'shoulders'],
+        note: 'Верх груди: скамья 30–45°, гантели сходятся вверху без удара.',
+        wgerSearchTerm: 'Incline Bench Press'
+      },
+      {
+        id: 5,
+        index: 3,
         name: 'Жим гантелей сидя',
         workingWeight: 18,
         workingReps: 10,
         totalSets: 3,
         restSeconds: 90,
         targetMuscles: ['shoulders', 'triceps'],
-        note: 'Изоляция передней и средней дельты после тяжёлого жима — амплитуда полная, без раскачки корпусом.',
+        note: 'Полная амплитуда, без раскачки корпусом.',
         wgerSearchTerm: 'Dumbbell Shoulder Press'
       },
       {
+        id: 32,
+        index: 4,
+        name: 'Разведения гантелей',
+        workingWeight: 12,
+        workingReps: 12,
+        totalSets: 3,
+        restSeconds: 60,
+        targetMuscles: ['chest'],
+        note: 'Лёгкий сгиб в локтях, растяжка внизу без боли в плече.',
+        wgerSearchTerm: 'Fly With Dumbbells'
+      },
+      {
         id: 6,
-        index: 3,
+        index: 5,
         name: 'Разгибания на трицепс на блоке',
         workingWeight: 25,
         workingReps: 12,
         totalSets: 3,
         restSeconds: 60,
         targetMuscles: ['triceps'],
-        note: 'Завершающая изоляция — локти прижаты к корпусу весь подход, работает только предплечье.',
+        note: 'Локти прижаты, работает только предплечье.',
         wgerSearchTerm: 'Triceps Pushdown'
       }
     ]
@@ -48,7 +76,7 @@ export const GYM_PLAN: WorkoutDay[] = [
   {
     id: 'pull',
     name: 'Тяга — спина, задняя дельта, бицепс',
-    meta: '≈50 мин',
+    meta: '≈55 мин',
     exercises: [
       {
         id: 7,
@@ -59,8 +87,8 @@ export const GYM_PLAN: WorkoutDay[] = [
         totalSets: 4,
         restSeconds: 120,
         targetMuscles: ['back', 'lowerback', 'biceps'],
-        note: 'Корпус фиксирован под 45°, спина нейтральная весь подход — тянем локтями к тазу, не руками к груди.',
-        wgerSearchTerm: 'Bent Over Row'
+        note: 'Корпус ~45°, тянем локтями к тазу.',
+        wgerSearchTerm: 'Bent Over Rowing'
       },
       {
         id: 8,
@@ -71,27 +99,51 @@ export const GYM_PLAN: WorkoutDay[] = [
         totalSets: 3,
         restSeconds: 90,
         targetMuscles: ['back', 'biceps'],
-        note: 'Широчайшие в приоритете — тянем локтями вниз-назад, не грудью вверх навстречу рукояти.',
+        note: 'Локти вниз-назад, не грудью к рукояти.',
         wgerSearchTerm: 'Lat Pulldown'
       },
       {
-        id: 9,
+        id: 33,
         index: 3,
+        name: 'Тяга горизонтального блока',
+        workingWeight: 45,
+        workingReps: 10,
+        totalSets: 3,
+        restSeconds: 75,
+        targetMuscles: ['back', 'biceps'],
+        note: 'Грудь вверх, лопатки сводятся в конце тяги.',
+        wgerSearchTerm: 'Seated Cable Row'
+      },
+      {
+        id: 9,
+        index: 4,
         name: 'Сгибания на бицепс со штангой',
         workingWeight: 30,
         workingReps: 10,
         totalSets: 3,
         restSeconds: 60,
         targetMuscles: ['biceps'],
-        note: 'Локти неподвижны у корпуса — амплитуда за счёт предплечья, не за счёт раскачки плечом.',
-        wgerSearchTerm: 'Barbell Curl'
+        note: 'Локти у корпуса, без читинга.',
+        wgerSearchTerm: 'Biceps Curls With Barbell'
+      },
+      {
+        id: 34,
+        index: 5,
+        name: 'Молотковые сгибания',
+        workingWeight: 14,
+        workingReps: 12,
+        totalSets: 3,
+        restSeconds: 60,
+        targetMuscles: ['biceps'],
+        note: 'Нейтральный хват, контроль негатива.',
+        wgerSearchTerm: 'Hammer Curls'
       }
     ]
   },
   {
     id: 'legs',
     name: 'Ноги — сила',
-    meta: '≈45 мин',
+    meta: '≈55 мин',
     exercises: [
       {
         id: 1,
@@ -102,7 +154,7 @@ export const GYM_PLAN: WorkoutDay[] = [
         totalSets: 4,
         restSeconds: 90,
         targetMuscles: ['quads', 'glutes', 'core'],
-        note: 'Почему RIR 1–3: высокопороговые волокна рекрутируются только у отказа (принцип Хеннемана) — так работает механическое напряжение на гипертрофию.',
+        note: 'Глубина комфортная, колени по носкам.',
         wgerSearchTerm: 'Barbell Squat'
       },
       {
@@ -114,20 +166,44 @@ export const GYM_PLAN: WorkoutDay[] = [
         totalSets: 3,
         restSeconds: 120,
         targetMuscles: ['hamstrings', 'glutes', 'back', 'core'],
-        note: 'Тяжёлый базовый подход низкой повторности — держите нейтральную спину и не гонитесь за амплитудой в ущерб технике на последних повторах.',
-        wgerSearchTerm: 'Deadlift'
+        note: 'Нейтральная спина, не гонитесь за весом в ущерб технике.',
+        wgerSearchTerm: 'Deadlifts'
+      },
+      {
+        id: 35,
+        index: 3,
+        name: 'Жим ногами',
+        workingWeight: 120,
+        workingReps: 12,
+        totalSets: 3,
+        restSeconds: 90,
+        targetMuscles: ['quads', 'glutes'],
+        note: 'Поясница прижата, не блокируйте колени.',
+        wgerSearchTerm: 'Leg Press'
       },
       {
         id: 3,
-        index: 3,
+        index: 4,
         name: 'Выпады с гантелями',
         workingWeight: 14,
         workingReps: 12,
         totalSets: 3,
         restSeconds: 60,
         targetMuscles: ['quads', 'glutes', 'hamstrings'],
-        note: 'Завершающее упражнение на объём: короткий отдых держит метаболический стресс высоким, вес — умеренный, фокус на контролируемом негативе.',
-        wgerSearchTerm: 'Dumbbell Lunge'
+        note: 'Контролируемый негатив, колено не заваливается внутрь.',
+        wgerSearchTerm: 'Dumbbell Lunges Walking'
+      },
+      {
+        id: 36,
+        index: 5,
+        name: 'Подъёмы на носки',
+        workingWeight: 40,
+        workingReps: 15,
+        totalSets: 3,
+        restSeconds: 45,
+        targetMuscles: ['calves'],
+        note: 'Полная амплитуда, пауза вверху.',
+        wgerSearchTerm: 'Standing Calf Raises'
       }
     ]
   },
@@ -145,7 +221,7 @@ export const GYM_PLAN: WorkoutDay[] = [
         totalSets: 3,
         restSeconds: 90,
         targetMuscles: ['quads', 'glutes', 'core'],
-        note: 'Full body: умеренный вес, техника важнее отказа. Глубина комфортная, колени по носкам.',
+        note: 'Full body: техника важнее отказа.',
         wgerSearchTerm: 'Barbell Squat'
       },
       {
@@ -157,8 +233,8 @@ export const GYM_PLAN: WorkoutDay[] = [
         totalSets: 3,
         restSeconds: 90,
         targetMuscles: ['chest', 'shoulders', 'triceps'],
-        note: 'После ног — верх. Лопатки сведены, гантели сходятся вверху без удара.',
-        wgerSearchTerm: 'Dumbbell Bench Press'
+        note: 'Лопатки сведены, гантели сходятся вверху.',
+        wgerSearchTerm: 'Benchpress Dumbbells'
       },
       {
         id: 24,
@@ -169,8 +245,20 @@ export const GYM_PLAN: WorkoutDay[] = [
         totalSets: 3,
         restSeconds: 75,
         targetMuscles: ['back', 'biceps'],
-        note: 'Одна рука на скамье, спина параллельна полу — тянем локтем к тазу.',
-        wgerSearchTerm: 'Dumbbell Row'
+        note: 'Одна рука на скамье, тянем локтем к тазу.',
+        wgerSearchTerm: 'Bent Over Dumbbell Rows'
+      },
+      {
+        id: 37,
+        index: 4,
+        name: 'Румынская тяга',
+        workingWeight: 50,
+        workingReps: 8,
+        totalSets: 3,
+        restSeconds: 90,
+        targetMuscles: ['hamstrings', 'glutes', 'back'],
+        note: 'Таз назад, лёгкий сгиб в коленях.',
+        wgerSearchTerm: 'Romanian Deadlift'
       }
     ]
   },
@@ -188,7 +276,7 @@ export const GYM_PLAN: WorkoutDay[] = [
         totalSets: 3,
         restSeconds: 90,
         targetMuscles: ['chest', 'shoulders', 'triceps'],
-        note: 'Upper day: контролируемый негатив, лопатки сведены, без отрыва таза.',
+        note: 'Контролируемый негатив, без отрыва таза.',
         wgerSearchTerm: 'Bench Press'
       },
       {
@@ -200,7 +288,7 @@ export const GYM_PLAN: WorkoutDay[] = [
         totalSets: 3,
         restSeconds: 75,
         targetMuscles: ['back', 'biceps'],
-        note: 'Тяните локтем к тазу, корпус стабилен — баланс жиму в этот же день.',
+        note: 'Баланс жиму в этот же день.',
         wgerSearchTerm: 'Dumbbell Row'
       },
       {
@@ -212,15 +300,27 @@ export const GYM_PLAN: WorkoutDay[] = [
         totalSets: 3,
         restSeconds: 60,
         targetMuscles: ['shoulders'],
-        note: 'Локти чуть согнуты, без раскачки; акцент на средней дельте.',
-        wgerSearchTerm: 'Lateral Raise'
+        note: 'Локти чуть согнуты, акцент на средней дельте.',
+        wgerSearchTerm: 'Lateral Raises'
+      },
+      {
+        id: 38,
+        index: 4,
+        name: 'Разведения на заднюю дельту',
+        workingWeight: 8,
+        workingReps: 12,
+        totalSets: 3,
+        restSeconds: 60,
+        targetMuscles: ['shoulders', 'back'],
+        note: 'Корпус наклонён, без раскачки.',
+        wgerSearchTerm: 'Rear Delt Raises'
       }
     ]
   },
   {
     id: 'lower',
     name: 'Низ — lower',
-    meta: '≈45 мин',
+    meta: '≈50 мин',
     exercises: [
       {
         id: 28,
@@ -231,7 +331,7 @@ export const GYM_PLAN: WorkoutDay[] = [
         totalSets: 4,
         restSeconds: 120,
         targetMuscles: ['quads', 'glutes', 'core'],
-        note: 'Lower day: глубина комфортная, колени по носкам, спина нейтральная.',
+        note: 'Спина нейтральная, глубина комфортная.',
         wgerSearchTerm: 'Barbell Squat'
       },
       {
@@ -243,7 +343,7 @@ export const GYM_PLAN: WorkoutDay[] = [
         totalSets: 3,
         restSeconds: 90,
         targetMuscles: ['hamstrings', 'glutes', 'back'],
-        note: 'Таз назад, гриф вдоль бёдер, лёгкий сгиб в коленях — акцент на бицепс бедра.',
+        note: 'Гриф вдоль бёдер, акцент на бицепс бедра.',
         wgerSearchTerm: 'Romanian Deadlift'
       },
       {
@@ -255,8 +355,130 @@ export const GYM_PLAN: WorkoutDay[] = [
         totalSets: 3,
         restSeconds: 75,
         targetMuscles: ['quads', 'glutes', 'hamstrings'],
-        note: 'Переднее бедро параллельно полу, колено не заваливается внутрь.',
+        note: 'Переднее бедро параллельно полу.',
         wgerSearchTerm: 'Dumbbell Lunge'
+      },
+      {
+        id: 39,
+        index: 4,
+        name: 'Сгибания ног лёжа',
+        workingWeight: 35,
+        workingReps: 12,
+        totalSets: 3,
+        restSeconds: 60,
+        targetMuscles: ['hamstrings'],
+        note: 'Без рывка, пауза вверху.',
+        wgerSearchTerm: 'Leg Curls'
+      }
+    ]
+  },
+  {
+    id: 'shoulders',
+    name: 'Плечи — дельты',
+    meta: '≈40 мин',
+    exercises: [
+      {
+        id: 40,
+        index: 1,
+        name: 'Армейский жим',
+        workingWeight: 40,
+        workingReps: 8,
+        totalSets: 4,
+        restSeconds: 90,
+        targetMuscles: ['shoulders', 'triceps'],
+        note: 'Рёбра вниз, не прогибайте поясницу.',
+        wgerSearchTerm: 'Shoulder Press, Barbell'
+      },
+      {
+        id: 41,
+        index: 2,
+        name: 'Махи в стороны',
+        workingWeight: 10,
+        workingReps: 12,
+        totalSets: 3,
+        restSeconds: 60,
+        targetMuscles: ['shoulders'],
+        note: 'Контроль, без читинга.',
+        wgerSearchTerm: 'Lateral Raises'
+      },
+      {
+        id: 42,
+        index: 3,
+        name: 'Подъёмы перед собой',
+        workingWeight: 10,
+        workingReps: 12,
+        totalSets: 3,
+        restSeconds: 60,
+        targetMuscles: ['shoulders'],
+        note: 'До уровня плеч, медленный негатив.',
+        wgerSearchTerm: 'Front Raises'
+      },
+      {
+        id: 43,
+        index: 4,
+        name: 'Шраги с гантелями',
+        workingWeight: 20,
+        workingReps: 12,
+        totalSets: 3,
+        restSeconds: 60,
+        targetMuscles: ['shoulders', 'back'],
+        note: 'Плечи вверх-назад, без вращения.',
+        wgerSearchTerm: 'Shrugs, Dumbbells'
+      }
+    ]
+  },
+  {
+    id: 'arms',
+    name: 'Руки — бицепс и трицепс',
+    meta: '≈40 мин',
+    exercises: [
+      {
+        id: 44,
+        index: 1,
+        name: 'Сгибания со штангой',
+        workingWeight: 28,
+        workingReps: 10,
+        totalSets: 3,
+        restSeconds: 60,
+        targetMuscles: ['biceps'],
+        note: 'Локти на месте.',
+        wgerSearchTerm: 'Biceps Curls With Barbell'
+      },
+      {
+        id: 45,
+        index: 2,
+        name: 'Молотковые сгибания',
+        workingWeight: 14,
+        workingReps: 12,
+        totalSets: 3,
+        restSeconds: 60,
+        targetMuscles: ['biceps'],
+        note: 'Нейтральный хват.',
+        wgerSearchTerm: 'Hammer Curls'
+      },
+      {
+        id: 46,
+        index: 3,
+        name: 'Французский жим',
+        workingWeight: 20,
+        workingReps: 10,
+        totalSets: 3,
+        restSeconds: 75,
+        targetMuscles: ['triceps'],
+        note: 'Локти не разъезжаются.',
+        wgerSearchTerm: 'Skullcrusher'
+      },
+      {
+        id: 47,
+        index: 4,
+        name: 'Разгибания на блоке',
+        workingWeight: 25,
+        workingReps: 12,
+        totalSets: 3,
+        restSeconds: 60,
+        targetMuscles: ['triceps'],
+        note: 'Локти прижаты к корпусу.',
+        wgerSearchTerm: 'Tricep Pushdown'
       }
     ]
   }
