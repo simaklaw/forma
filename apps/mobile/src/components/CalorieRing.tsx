@@ -1,25 +1,39 @@
 /**
- * CalorieRing — SVG ring matching FitPulse nutrition hero.
- * Skia upgrade is optional later; API stays the same.
+ * CalorieRing — SVG ring for nutrition hero.
+ * Shows eaten / target, remaining, and over-target state.
  */
 
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { colors, fonts } from '@/core/theme/tokens';
+import { fonts, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 
 interface Props {
   eaten: number;
   target: number;
   size?: number;
+  /** When false, ring is muted and center shows setup hint */
+  ready?: boolean;
 }
 
-export default function CalorieRing({ eaten, target, size = 108 }: Props) {
+export default function CalorieRing({
+  eaten,
+  target,
+  size = 108,
+  ready = true
+}: Props) {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const strokeWidth = 8;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const pct = Math.min(100, Math.round((eaten / Math.max(1, target)) * 100));
+  const safeTarget = Math.max(1, target);
+  const pct = ready ? Math.min(100, Math.round((eaten / safeTarget) * 100)) : 0;
   const dashOffset = circumference - (circumference * pct) / 100;
+  const remaining = Math.round(target - eaten);
+  const over = ready && remaining < 0;
+  const stroke = !ready ? colors.lineStrong : over ? colors.ember : colors.lime;
 
   return (
     <View style={{ width: size, height: size }}>
@@ -36,7 +50,7 @@ export default function CalorieRing({ eaten, target, size = 108 }: Props) {
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={colors.lime}
+          stroke={stroke}
           strokeWidth={strokeWidth}
           fill="none"
           strokeDasharray={`${circumference} ${circumference}`}
@@ -48,18 +62,39 @@ export default function CalorieRing({ eaten, target, size = 108 }: Props) {
       </Svg>
       <View style={StyleSheet.absoluteFillObject}>
         <View style={styles.center}>
-          <Text style={styles.value}>{eaten.toLocaleString('ru-RU')}</Text>
-          <Text style={styles.label}>ккал</Text>
-          <Text style={styles.sub}>из {target.toLocaleString('ru-RU')}</Text>
+          {!ready ? (
+            <>
+              <Text style={styles.valueMuted}>—</Text>
+              <Text style={styles.label}>цель</Text>
+              <Text style={styles.sub}>заполните профиль</Text>
+            </>
+          ) : (
+            <>
+              <Text style={[styles.value, over && styles.valueOver]}>
+                {eaten.toLocaleString('ru-RU')}
+              </Text>
+              <Text style={styles.label}>ккал</Text>
+              <Text style={[styles.sub, over && styles.subOver]}>
+                {over
+                  ? `+${Math.abs(remaining).toLocaleString('ru-RU')} сверх`
+                  : `ещё ${remaining.toLocaleString('ru-RU')}`}
+              </Text>
+            </>
+          )}
         </View>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   value: { color: colors.paper, fontSize: 26, fontFamily: fonts.mono, lineHeight: 28 },
+  valueMuted: { color: colors.paperFaint, fontSize: 26, fontFamily: fonts.mono, lineHeight: 28 },
+  valueOver: { color: colors.ember },
   label: { color: colors.paperDim, fontSize: 11, fontFamily: fonts.body, marginTop: 2 },
-  sub: { color: colors.paperFaint, fontSize: 10, fontFamily: fonts.body, marginTop: 1 }
+  sub: { color: colors.paperFaint, fontSize: 10, fontFamily: fonts.body, marginTop: 1 },
+  subOver: { color: colors.ember }
 });
+}

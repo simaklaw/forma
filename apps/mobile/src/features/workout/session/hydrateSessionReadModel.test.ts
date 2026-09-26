@@ -7,6 +7,15 @@ import type { ExerciseDef } from '../ExerciseSheet';
 import { ActiveSessionController } from './ActiveSessionController';
 import { hydrateSessionReadModel } from './hydrateSessionReadModel';
 
+const TEST_PROFILE = {
+  sex: 'male' as const,
+  age: 28,
+  height: 178,
+  weight: 78,
+  pal: 1.375,
+  goal: 'recomp' as const
+};
+
 const exercises: ExerciseDef[] = [
   {
     id: 1,
@@ -28,7 +37,8 @@ describe('hydrateSessionReadModel', () => {
     ActiveSessionController.resetForTests();
     useFitPulseStore.setState({
       setLogs: [],
-      dayProgress: {}
+      dayProgress: {},
+      profile: { ...TEST_PROFILE }
     });
   });
 
@@ -43,7 +53,11 @@ describe('hydrateSessionReadModel', () => {
     });
 
     ActiveSessionController.resetForTests();
-    useFitPulseStore.setState({ setLogs: [], dayProgress: {} });
+    useFitPulseStore.setState({
+      setLogs: [],
+      dayProgress: {},
+      profile: { ...TEST_PROFILE }
+    });
 
     await hydrateSessionReadModel();
 

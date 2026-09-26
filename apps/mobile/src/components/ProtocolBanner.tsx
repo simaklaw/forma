@@ -1,10 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors, fonts, spacing } from '@/core/theme/tokens';
+import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { isProtocolActive, detectWeightPlateau } from '@/engines/MetabolicEngine';
 
 export default function ProtocolBanner() {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const metabolic = useFitPulseStore((s) => s.metabolic);
   const weightHistory = useFitPulseStore((s) => s.weightHistory);
   const goal = useFitPulseStore((s) => s.profile.goal);
@@ -27,7 +30,10 @@ export default function ProtocolBanner() {
   return (
     <View>
       <View style={[styles.status, (active || suspected) && styles.statusActive]}>
-        <Text style={[styles.statusText, (active || suspected) && styles.statusTextActive]}>{statusText}</Text>
+        <Text style={styles.eyebrow}>FITPULSE · метаболизм</Text>
+        <Text style={[styles.statusText, (active || suspected) && styles.statusTextActive]}>
+          {statusText}
+        </Text>
       </View>
       <View style={styles.actions}>
         <TouchableOpacity
@@ -53,20 +59,37 @@ export default function ProtocolBanner() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   status: {
     borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: colors.lineStrong,
-    padding: 10,
+    borderColor: colors.line,
+    borderRadius: radius.card,
+    backgroundColor: colors.panel,
+    padding: spacing.md,
     marginBottom: spacing.md
   },
-  statusActive: { borderStyle: 'solid', borderColor: colors.ember },
-  statusText: { color: colors.paperDim, fontSize: 11.5, lineHeight: 16, fontFamily: fonts.body },
+  statusActive: { borderColor: colors.ember },
+  eyebrow: {
+    color: colors.lime,
+    fontSize: 10,
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 0.8,
+    marginBottom: 6
+  },
+  statusText: { color: colors.paperDim, fontSize: 12, lineHeight: 17, fontFamily: fonts.body },
   statusTextActive: { color: colors.paper },
   actions: { flexDirection: 'row', gap: 10, marginBottom: spacing.xl },
-  btn: { flex: 1, padding: 12, borderWidth: 1, borderColor: colors.lineStrong },
+  btn: {
+    flex: 1,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.lineStrong,
+    borderRadius: radius.control,
+    backgroundColor: colors.panel
+  },
   btnDisabled: { opacity: 0.35 },
   btnTitle: { color: colors.paper, fontSize: 12.5, fontFamily: fonts.bodySemi, marginBottom: 4 },
   btnSub: { color: colors.paperFaint, fontSize: 10, fontFamily: fonts.body }
 });
+}

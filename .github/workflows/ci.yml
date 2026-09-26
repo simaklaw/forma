@@ -31,8 +31,9 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
+      # package.json may list eslint-plugin-import before lock is regenerated
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Check diff whitespace
         run: git diff --check

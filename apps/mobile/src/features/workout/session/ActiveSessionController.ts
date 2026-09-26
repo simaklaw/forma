@@ -1,3 +1,4 @@
+import { isProfileComplete } from '@forma/core';
 import type { WorkoutSession } from '@forma/workout-domain';
 import {
   getSessionService,
@@ -8,6 +9,7 @@ import { contentHashForExercises, exercisesToSnapshots } from './planToSnapshots
 import { LOCAL_USER_ID } from './currentUser';
 import { projectSessionEvents } from '@/features/workout/data/sessionProjections';
 import { clearDayReadModel } from './clearDayReadModel';
+import { useFitPulseStore } from '@/state/useFitPulseStore';
 
 export function dayTemplateId(dayId: string): string {
   return `day-${dayId}`;
@@ -21,12 +23,24 @@ function isResumable(s: WorkoutSession): boolean {
   return s.status === 'prepared' || s.status === 'active' || s.status === 'paused';
 }
 
-/**
- * Thin imperative controller: keeps the active day-plan session id and
- * projects accepted session events into the legacy workout read model.
- *
- * After process death, resume is driven by getResumable + templateRevisionId.
- */
+/** Finite positive body mass from profile — never invents 70 kg. */
+function profileBodyKg(): number | null {
+  const profile = useFitPulseStore.getState().profile;
+  if (
+    !isProfileComplete({
+      weightKg: profile.weight,
+      heightCm: profile.height,
+      age: profile.age,
+      gender: profile.sex
+    })
+  ) {
+    return null;
+  }
+  const w = profile.weight;
+  if (typeof w !== 'number' || !Number.isFinite(w) || w <= 0) return null;
+  return w;
+}
+
 class ActiveSessionControllerImpl {
   private sessionId: string | null = null;
   private dayId: string | null = null;
@@ -40,7 +54,6 @@ class ActiveSessionControllerImpl {
     return this.dayId;
   }
 
-  /** Test-only — clears in-memory pointers only (does not touch repository). */
   resetForTests(): void {
     this.sessionId = null;
     this.dayId = null;
@@ -63,10 +76,6 @@ class ActiveSessionControllerImpl {
     return session;
   }
 
-  /**
-   * Single-active: abandon only when the resumable session belongs to a *different* day.
-   * Same-day match via templateRevisionId (survives process death).
-   */
   private async abandonIfDifferentDay(nextDayId: string): Promise<WorkoutSession | null> {
     const svc = getSessionService();
     const previous = await svc.getResumable(LOCAL_USER_ID);
@@ -87,7 +96,16 @@ class ActiveSessionControllerImpl {
     return null;
   }
 
-  async ensureDaySession(dayId: string, exercises: ExerciseDef[]): Promise<WorkoutSession> {
+  /**
+   * Prepare+start (or resume) a day session.
+   * Returns null when profile biometrics are incomplete — never throws for that boundary.
+   */
+  async ensureDaySession(dayId: string, exercises: ExerciseDef[]): Promise<WorkoutSession | null> {
+    const bodyKg = profileBodyKg();
+    if (bodyKg == null) {
+      return null;
+    }
+
     const svc = getSessionService();
     const templateId = dayTemplateId(dayId);
 
@@ -104,7 +122,7 @@ class ActiveSessionControllerImpl {
     }
 
     const sessionId = newSessionId();
-    const steps = exercisesToSnapshots(exercises);
+    const steps = exercisesToSnapshots(exercises, bodyKg);
     const localStartDate = new Date().toISOString().slice(0, 10);
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
@@ -113,22 +131,18 @@ class ActiveSessionControllerImpl {
       sessionId,
       userId: LOCAL_USER_ID,
       templateRevisionId: templateId,
-      contentHash: contentHashForExercises(exercises),
+      contentHash: contentHashForExercises(exercises, bodyKg),
       steps,
       localStartDate,
-      timezone
+      timezone,
+      weightKgSnapshot: bodyKg
     });
 
     const started = await svc.dispatch(sessionId, { type: 'start_session' });
     return this.bind(started.session, dayId);
   }
 
-  /**
-   * Explicit "start over": abandon with user_restarted, clear legacy day projection
-   * for that localStartDate (so merge Math.max cannot keep abandoned counts),
-   * then prepare a fresh session.
-   */
-  async restartDaySession(dayId: string, exercises: ExerciseDef[]): Promise<WorkoutSession> {
+  async restartDaySession(dayId: string, exercises: ExerciseDef[]): Promise<WorkoutSession | null> {
     const svc = getSessionService();
     const previous = await svc.getResumable(LOCAL_USER_ID);
     let dateKeyToClear: string | null = null;
@@ -164,7 +178,11 @@ class ActiveSessionControllerImpl {
     reps: number;
     rir?: number;
   }): Promise<WorkoutSession | null> {
+    if (!Number.isFinite(input.weightKg) || input.weightKg <= 0) {
+      return null;
+    }
     const session = await this.ensureDaySession(input.dayId, input.exercises);
+    if (!session) return null;
     const step = session.steps[session.currentStepIndex];
     if (!step || step.snapshot.exerciseId !== String(input.exerciseId)) {
       return null;

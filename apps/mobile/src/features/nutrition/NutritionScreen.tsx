@@ -2,10 +2,14 @@ import React, { useRef } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
-import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { isProfileComplete } from '@forma/core';
+import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useFitPulseStore, selectDailyTotals, DayMeals } from '@/state/useFitPulseStore';
 import CalorieRing from '@/components/CalorieRing';
+import DailyTipCard from '@/components/DailyTipCard';
 import MacroBar from '@/components/MacroBar';
+import ProfileGateBanner from '@/components/ProfileGateBanner';
 import AddFoodSheet from './AddFoodSheet';
 
 const MEAL_LABELS: Record<keyof DayMeals, string> = {
@@ -24,6 +28,8 @@ function formatClockTime(ms?: number): string {
 }
 
 export default function NutritionScreen() {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const sheetRef = useRef<GorhomBottomSheet>(null);
   const [activeMeal, setActiveMeal] = React.useState<keyof DayMeals>('breakfast');
 
@@ -31,8 +37,21 @@ export default function NutritionScreen() {
   const removeFoodItem = useFitPulseStore((s) => s.removeFoodItem);
   const waterGlasses = useFitPulseStore((s) => s.waterGlasses);
   const setWater = useFitPulseStore((s) => s.setWater);
-  const targets = useFitPulseStore((s) => s.calculateTargets());
+  const profile = useFitPulseStore((s) => s.profile);
+  const calculateTargets = useFitPulseStore((s) => s.calculateTargets);
   const totals = selectDailyTotals(meals);
+
+  const complete = isProfileComplete({
+    weightKg: profile.weight,
+    heightCm: profile.height,
+    age: profile.age,
+    gender: profile.sex
+  });
+  const targets = complete
+    ? calculateTargets()
+    : { target: 0, proteinTarget: 0, fatTarget: 0, carbTarget: 0, bmr: 0, tdee: 0, protocolActive: false };
+
+  const remainingKcal = complete ? Math.round(targets.target - totals.kcal) : 0;
 
   function openAddFood(mealKey: keyof DayMeals) {
     setActiveMeal(mealKey);
@@ -40,7 +59,6 @@ export default function NutritionScreen() {
   }
 
   function toggleWater(idx: number) {
-    // Same semantics as HTML prototype: tap sets fill up to idx inclusive.
     const next = waterGlasses === idx + 1 ? idx : idx + 1;
     setWater(Math.max(0, Math.min(WATER_MAX, next)));
   }
@@ -48,24 +66,56 @@ export default function NutritionScreen() {
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.eyebrow}>Сегодня</Text>
+        <Text style={styles.eyebrow}>FITPULSE · Сегодня</Text>
         <Text style={styles.title}>Питание</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.body}>
+        {!complete ? (
+          <ProfileGateBanner
+            inset
+            body="Цели по ккал и БЖУ считаются из веса, роста, возраста и пола. Без этого кольцо и макросы не подставят фиктивные числа."
+          />
+        ) : null}
+
         <View style={styles.heroCard}>
-          <CalorieRing eaten={totals.kcal} target={targets.target} />
+          <CalorieRing
+            eaten={totals.kcal}
+            target={targets.target || 0}
+            ready={complete}
+          />
           <View style={styles.macroCol}>
             <MacroBar
               label="Б"
               value={totals.protein}
-              target={targets.proteinTarget}
+              target={targets.proteinTarget || 0}
               color={colors.macroProtein}
             />
-            <MacroBar label="Ж" value={totals.fat} target={targets.fatTarget} color={colors.macroFat} />
-            <MacroBar label="У" value={totals.carbs} target={targets.carbTarget} color={colors.macroCarb} />
+            <MacroBar
+              label="Ж"
+              value={totals.fat}
+              target={targets.fatTarget || 0}
+              color={colors.macroFat}
+            />
+            <MacroBar
+              label="У"
+              value={totals.carbs}
+              target={targets.carbTarget || 0}
+              color={colors.macroCarb}
+            />
+            {complete ? (
+              <Text style={styles.remainHint}>
+                {remainingKcal >= 0
+                  ? `Осталось ${remainingKcal.toLocaleString('ru-RU')} ккал · цель ${targets.target.toLocaleString('ru-RU')}`
+                  : `Сверх цели на ${Math.abs(remainingKcal).toLocaleString('ru-RU')} ккал`}
+              </Text>
+            ) : (
+              <Text style={styles.remainHint}>Цели появятся после профиля</Text>
+            )}
           </View>
         </View>
+
+        <DailyTipCard inset />
 
         <View style={styles.waterCard}>
           <View style={styles.waterHead}>
@@ -74,7 +124,7 @@ export default function NutritionScreen() {
               <Text style={{ color: colors.cyan }}>{waterGlasses}</Text> / {WATER_MAX} стаканов
             </Text>
           </View>
-          <View style={styles.waterCells} accessibilityRole="adjustable" accessibilityLabel={`Вода ${waterGlasses} из ${WATER_MAX}`}>
+          <View style={styles.waterCells}>
             {Array.from({ length: WATER_MAX }).map((_, i) => {
               const filled = i < waterGlasses;
               return (
@@ -82,9 +132,6 @@ export default function NutritionScreen() {
                   key={i}
                   style={[styles.waterCell, filled && styles.waterCellFilled]}
                   onPress={() => toggleWater(i)}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: filled }}
-                  accessibilityLabel={`Стакан ${i + 1}`}
                 />
               );
             })}
@@ -103,11 +150,7 @@ export default function NutritionScreen() {
               <Text style={styles.mealKcal}>
                 {meals[key].reduce((sum, i) => sum + i.kcal, 0)} ккал
               </Text>
-              <TouchableOpacity
-                style={styles.addBtn}
-                onPress={() => openAddFood(key)}
-                accessibilityLabel={`Добавить в ${MEAL_LABELS[key]}`}
-              >
+              <TouchableOpacity style={styles.addBtn} onPress={() => openAddFood(key)}>
                 <Text style={styles.addBtnText}>+</Text>
               </TouchableOpacity>
             </View>
@@ -124,10 +167,7 @@ export default function NutritionScreen() {
                     Б{item.protein} Ж{item.fat} У{item.carbs}
                   </Text>
                   <Text style={styles.foodKcal}>{item.kcal}</Text>
-                  <TouchableOpacity
-                    onPress={() => removeFoodItem(key, item.id)}
-                    accessibilityLabel={`Удалить ${item.name}`}
-                  >
+                  <TouchableOpacity onPress={() => removeFoodItem(key, item.id)}>
                     <Text style={styles.foodDel}>×</Text>
                   </TouchableOpacity>
                 </View>
@@ -147,7 +187,8 @@ export default function NutritionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.ink },
   header: {
     paddingHorizontal: spacing.xxl,
@@ -155,7 +196,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: colors.line
   },
-  eyebrow: { color: colors.paperFaint, fontSize: 11, fontFamily: fonts.body },
+  eyebrow: { color: colors.lime, fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1 },
   title: { color: colors.paper, fontSize: 30, fontFamily: fonts.mono },
   body: { paddingBottom: 120 },
   heroCard: {
@@ -171,6 +212,12 @@ const styles = StyleSheet.create({
     borderColor: colors.line
   },
   macroCol: { flex: 1 },
+  remainHint: {
+    marginTop: 2,
+    color: colors.paperFaint,
+    fontFamily: fonts.mono,
+    fontSize: 11
+  },
   waterCard: {
     marginHorizontal: spacing.xl,
     marginTop: spacing.md,
@@ -242,3 +289,4 @@ const styles = StyleSheet.create({
   },
   foodDel: { width: 22, textAlign: 'center', color: colors.paperFaint, fontSize: 16 }
 });
+}

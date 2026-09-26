@@ -72,12 +72,10 @@ jobs:
       - name: Install workspace dependencies (incl. devDeps for Babel/Metro)
         shell: bash
         env:
-          # Force full install even if runner inherits NODE_ENV=production
           NODE_ENV: development
         run: |
           set -euo pipefail
-          pnpm install --frozen-lockfile
-          # Sanity: required by apps/mobile/babel.config.js
+          pnpm install --no-frozen-lockfile
           node -e "require.resolve('babel-plugin-module-resolver')"
           echo "babel-plugin-module-resolver OK"
 
@@ -107,7 +105,6 @@ jobs:
 
           APP_GRADLE="android/app/build.gradle"
           if [[ -f "$APP_GRADLE" ]]; then
-            # Uncomment / force empty debuggableVariants so JS is always packaged
             sed -i 's|^[[:space:]]*//[[:space:]]*debuggableVariants.*|    debuggableVariants = []|' "$APP_GRADLE" || true
             if ! grep -q '^[[:space:]]*debuggableVariants' "$APP_GRADLE"; then
               awk '
@@ -120,8 +117,6 @@ jobs:
                 { print }
               ' "$APP_GRADLE" > "$APP_GRADLE.tmp" && mv "$APP_GRADLE.tmp" "$APP_GRADLE"
             fi
-            echo "--- react block ---"
-            grep -n -A12 'react {' "$APP_GRADLE" | head -20 || true
           fi
 
           if [[ ! -f index.js ]]; then

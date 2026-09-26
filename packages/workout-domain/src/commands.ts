@@ -15,6 +15,8 @@ export type WorkoutCommand =
       steps: SessionStepSnapshot[];
       localStartDate: string;
       timezone: string;
+      /** User body mass at session start (optional for older callers). */
+      weightKgSnapshot?: number;
     }
   | { type: 'start_session' }
   | {

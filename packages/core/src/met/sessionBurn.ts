@@ -2,9 +2,14 @@ import { calculateBurnedCalories } from "../engines/MetabolicEngine.ts";
 import { metForExercise } from "./exerciseMet.ts";
 import type { SetLogEntry } from "../engines/WorkoutStats.ts";
 
+function isValidWeightKg(weightKg: number): boolean {
+  return Number.isFinite(weightKg) && weightKg > 0;
+}
+
 /**
  * Rough session burn from logged sets.
  * Default: ~1.2 min effective work per set at MET 5 (strength training).
+ * Non-finite / non-positive weight → 0 (never call strict domain with garbage).
  */
 export function estimateSessionBurnKcal(args: {
   weightKg: number;
@@ -12,7 +17,7 @@ export function estimateSessionBurnKcal(args: {
   minutesPerSet?: number;
   met?: number;
 }): number {
-  if (args.setsCompleted <= 0 || args.weightKg <= 0) return 0;
+  if (args.setsCompleted <= 0 || !isValidWeightKg(args.weightKg)) return 0;
   const minutes = args.setsCompleted * (args.minutesPerSet ?? 1.2);
   return calculateBurnedCalories(args.met ?? 5.0, args.weightKg, minutes);
 }
@@ -28,7 +33,7 @@ export function estimateBurnFromSetLogs(args: {
   exerciseNames?: Record<number, string>;
   minutesPerSet?: number;
 }): number {
-  if (args.weightKg <= 0 || args.setLogs.length === 0) return 0;
+  if (!isValidWeightKg(args.weightKg) || args.setLogs.length === 0) return 0;
   const minutesPerSet = args.minutesPerSet ?? 1.2;
   let total = 0;
   for (const entry of args.setLogs) {

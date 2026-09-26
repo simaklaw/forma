@@ -102,7 +102,8 @@ export function applyCommand(
       lastEventOrdinal: 0,
       rowVersion: 0,
       localStartDate: command.localStartDate,
-      timezone: command.timezone
+      timezone: command.timezone,
+      weightKgSnapshot: command.weightKgSnapshot
     };
 
     const event: SessionEvent = {

@@ -6,9 +6,12 @@ import { BarlowCondensed_600SemiBold, BarlowCondensed_700Bold } from '@expo-goog
 import { Inter_400Regular, Inter_600SemiBold } from '@expo-google-fonts/inter';
 import * as Font from 'expo-font';
 import { Platform, View } from 'react-native';
-import { CoachEngine } from '@forma/core';
-import { colors } from '@/core/theme/tokens';
+import { CoachEngine, isProfileComplete } from '@forma/core';
+import { resolveColors } from '@/core/theme/tokens';
+import { useThemeStore } from '@/state/useThemeStore';
 import RootNavigator from '@/navigation/RootNavigator';
+import OnboardingScreen from '@/features/onboarding/OnboardingScreen';
+import { WorkoutErrorBoundary } from '@/features/workout/WorkoutErrorBoundary';
 import { LlamaLocalAITrainer } from '@/ai/LlamaLocalAITrainer';
 import { setMobileTrainerProgress } from '@/ai/trainerProgress';
 import {
@@ -18,12 +21,8 @@ import {
   type SqliteDatabase
 } from '@/features/workout/data';
 import { hydrateSessionReadModel } from '@/features/workout/session/hydrateSessionReadModel';
+import { useFitPulseStore } from '@/state/useFitPulseStore';
 
-/**
- * Native (iOS/Android): prefer SQLite for durable sessions.
- * On failure: explicit console warning + non-blocking memory fallback
- * (not hard fail-fast — app still boots; sessions will not survive kill).
- */
 function enableSqliteSessions(): void {
   const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
   try {
@@ -52,6 +51,10 @@ function enableSqliteSessions(): void {
 
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [hydrated, setHydrated] = useState(() => useFitPulseStore.persist.hasHydrated());
+  const profile = useFitPulseStore((s) => s.profile);
+  const themeMode = useThemeStore((s) => s.mode);
+  const shell = resolveColors(themeMode);
 
   useEffect(() => {
     void Font.loadAsync({
@@ -68,17 +71,34 @@ export default function App() {
     const trainer = new LlamaLocalAITrainer();
     CoachEngine.setTrainer(trainer);
     void trainer.initialize((ratio) => setMobileTrainerProgress(ratio));
+
+    const unsub = useFitPulseStore.persist.onFinishHydration(() => setHydrated(true));
+    if (useFitPulseStore.persist.hasHydrated()) setHydrated(true);
+    return unsub;
   }, []);
 
-  if (!fontsLoaded) {
-    return <View style={{ flex: 1, backgroundColor: colors.ink }} />;
+  if (!fontsLoaded || !hydrated) {
+    return <View style={{ flex: 1, backgroundColor: shell.ink }} />;
   }
 
+  const complete = isProfileComplete({
+    weightKg: profile.weight,
+    heightCm: profile.height,
+    age: profile.age,
+    gender: profile.sex
+  });
+
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.ink }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: shell.ink }}>
       <SafeAreaProvider>
-        <StatusBar style="light" />
-        <RootNavigator />
+        <StatusBar style={themeMode === 'light' ? 'dark' : 'light'} />
+        {complete ? (
+          <WorkoutErrorBoundary>
+            <RootNavigator />
+          </WorkoutErrorBoundary>
+        ) : (
+          <OnboardingScreen />
+        )}
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
