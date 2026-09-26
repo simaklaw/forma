@@ -1,7 +1,7 @@
 # HANDOFF — FitPulse / Forma
 
 **Checkpoint date:** 2026-09-26
-**Active branch:** `main` (after workout-screen-overrides merge)
+**Active branch:** `main`
 **Repo:** https://github.com/simaklaw/forma
 **Product name:** FitPulse (mobile)
 **APK:** do **not** build until owner says so.
@@ -10,12 +10,12 @@
 
 ## Where we stopped
 
-### Day plan overrides — UI wired
+### Day plan overrides — complete UX
 
-- `dayPlanOverrides.ts` + tests (on main)
-- Catalog replace banner + detail CTA (on main)
-- **WorkoutScreen:** `resolveDayExercises`, long-press → replace target + Каталог, «Сбросить замены»
-- Sessions use `effectiveExercises`
+- AsyncStorage overrides + catalog replace CTA
+- WorkoutScreen: `resolveDayExercises`, long-press → catalog, reset button
+- **`useFocusEffect`** reloads overrides when returning from catalog after replace
+- Clears selected exercise if it left the day after swap
 
 ### Also on main
 
@@ -37,6 +37,6 @@
 
 1. No APK without owner go-ahead.
 2. No Google Fit.
-3. Preserve frozen catalog exercise ids **1–30** (overrides reference ids).
+3. Preserve frozen catalog exercise ids **1–30**.
 4. Update this file after each chunk.
 5. Bump `PLAN_REVISION` when default static plans change.

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { estimateBurnFromSetLogs, toDateKey as coreToDateKey } from '@forma/core';
@@ -116,24 +116,36 @@ export default function WorkoutScreen() {
   const [overrideIds, setOverrideIds] = useState<number[] | null>(null);
   const [overrideTick, setOverrideTick] = useState(0);
 
-  useEffect(() => {
-    if (!activeDay) {
-      setOverrideIds(null);
-      return;
-    }
-    let cancelled = false;
-    void loadDayOverrideIds(trainingMode, activeDay.id).then((ids) => {
-      if (!cancelled) setOverrideIds(ids);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [activeDay?.id, trainingMode, overrideTick]);
+  // Reload overrides whenever this tab gains focus (e.g. after catalog replace).
+  useFocusEffect(
+    useCallback(() => {
+      if (!activeDay) {
+        setOverrideIds(null);
+        return;
+      }
+      let cancelled = false;
+      void loadDayOverrideIds(trainingMode, activeDay.id).then((ids) => {
+        if (!cancelled) setOverrideIds(ids);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [activeDay?.id, trainingMode, overrideTick])
+  );
 
   const effectiveExercises = useMemo(() => {
     if (!activeDay) return [];
     return resolveDayExercises(trainingMode, activeDay.exercises, overrideIds);
   }, [activeDay, trainingMode, overrideIds]);
+
+  useEffect(() => {
+    if (
+      selectedExerciseId != null &&
+      !effectiveExercises.some((ex) => ex.id === selectedExerciseId)
+    ) {
+      setSelectedExerciseId(null);
+    }
+  }, [effectiveExercises, selectedExerciseId]);
 
   useEffect(() => {
     if (!plan.some((d) => d.id === selectedDayId)) {
