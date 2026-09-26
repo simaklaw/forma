@@ -19,13 +19,62 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: Check secret is configured
+        env:
+          KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::Repository secret DEEPSEEK_API_KEY is empty or missing."
+            echo "Settings → Secrets and variables → Actions → New repository secret"
+            echo "Name must be exactly: DEEPSEEK_API_KEY"
+            exit 1
+          fi
+          # Length only — never print the key
+          echo "DEEPSEEK_API_KEY is set (length=${#KEY})"
+          case "$KEY" in
+            sk-*) echo "Key prefix looks like a DeepSeek token (sk-…)" ;;
+            *) echo "::warning::Key does not start with sk- — double-check you pasted the API key, not something else" ;;
+          esac
+
+      - name: Probe DeepSeek API (auth only)
+        env:
+          KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          code=$(curl -sS -o /tmp/ds.json -w "%{http_code}" \
+            https://api.deepseek.com/chat/completions \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${KEY}" \
+            -d '{"model":"deepseek-flash","messages":[{"role":"user","content":"ping"}],"max_tokens":5}')
+          echo "HTTP status: $code"
+          # Show error type only, strip any accidental key material
+          python3 - <<'PY'
+import json
+try:
+    d=json.load(open("/tmp/ds.json"))
+except Exception as e:
+    print("body parse error", e)
+    raise SystemExit(1)
+err=(d.get("error") or {})
+if err:
+    print("error.type=", err.get("type"))
+    print("error.code=", err.get("code"))
+    msg=str(err.get("message") or "")
+    # redact any sk- substrings
+    import re
+    msg=re.sub(r"sk-[A-Za-z0-9]+", "sk-***", msg)
+    print("error.message=", msg[:200])
+    raise SystemExit(1)
+if not d.get("choices"):
+    print("no choices in response:", list(d.keys())[:20])
+    raise SystemExit(1)
+print("DeepSeek API auth OK")
+PY
+
       - name: DeepSeek Code Review
         uses: hustcer/deepseek-review@v1
         with:
           chat-token: ${{ secrets.DEEPSEEK_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          # Current DeepSeek API models: deepseek-flash | deepseek-v4-pro
-          # (deepseek-chat is legacy and may return empty results)
           model: deepseek-flash
           base-url: https://api.deepseek.com
           exclude-patterns: 'pnpm-lock.yaml,package-lock.json,*.lock,*.md,*.svg,*.png,*.jpg,*.webp,*.wav'
