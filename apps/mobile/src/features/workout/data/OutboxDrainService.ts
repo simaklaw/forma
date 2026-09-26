@@ -1,5 +1,8 @@
+import { createLogger } from '@/core/logger';
 import type { OutboxRow, OutboxStatus } from './SessionRepository';
 import { getSessionService } from './createSessionService';
+
+const log = createLogger('outbox');
 
 export type OutboxTransport = {
   /**
@@ -55,9 +58,17 @@ export class OutboxDrainService {
           await this.mark(row.operationId, 'failed');
           failed += 1;
         }
-      } catch {
+      } catch (err) {
         skipped += 1;
+        log.warn('transport threw; row skipped', {
+          operationId: row.operationId,
+          err: err instanceof Error ? err.message : String(err)
+        });
       }
+    }
+
+    if (pending.length > 0) {
+      log.debug('drainOnce finished', { accepted, failed, skipped, pending: pending.length });
     }
 
     return { accepted, failed, skipped };
@@ -65,11 +76,15 @@ export class OutboxDrainService {
 
   /** Drop accepted rows older than retentionDays. Call once per app session. */
   async pruneAccepted(retentionDays = 14): Promise<number> {
-    return getSessionService().pruneOutbox(retentionDays, ['accepted']);
+    const n = await getSessionService().pruneOutbox(retentionDays, ['accepted']);
+    if (n > 0) log.info('pruned accepted outbox rows', { count: n, retentionDays });
+    return n;
   }
 
   async pruneFailed(retentionDays = 90): Promise<number> {
-    return getSessionService().pruneOutbox(retentionDays, ['failed']);
+    const n = await getSessionService().pruneOutbox(retentionDays, ['failed']);
+    if (n > 0) log.info('pruned failed outbox rows', { count: n, retentionDays });
+    return n;
   }
 }
 
