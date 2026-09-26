@@ -14,7 +14,7 @@
     "test": "turbo run test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "format:check:gate": "prettier --check \"apps/mobile/src/features/workout/catalogBrowser.ts\" \"apps/mobile/src/features/workout/catalogBrowser.test.ts\" \"apps/mobile/src/features/workout/exerciseFavorites.ts\" \"apps/mobile/src/features/workout/exerciseFavorites.test.ts\""
+    "format:check:gate": "prettier --check apps/mobile/src/features/workout/catalogBrowser.ts apps/mobile/src/features/workout/catalogBrowser.test.ts apps/mobile/src/features/workout/exerciseFavorites.ts apps/mobile/src/features/workout/exerciseFavorites.test.ts"
   },
   "pnpm": {
     "overrides": {
@@ -23,7 +23,7 @@
     }
   },
   "devDependencies": {
-    "prettier": "^3.4.2",
+    "prettier": "3.4.2",
     "turbo": "^2.3.0",
     "typescript": "^5.7.0"
   }
