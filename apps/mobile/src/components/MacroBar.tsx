@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, fonts, radius } from '@/core/theme/tokens';
+import { fonts, radius, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 
 interface Props {
   label: string;
@@ -10,22 +11,34 @@ interface Props {
 }
 
 export default function MacroBar({ label, value, target, color }: Props) {
-  const pct = Math.min(100, Math.round((value / Math.max(1, target)) * 100));
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
+  const safeTarget = Math.max(1, target);
+  const pct = Math.min(100, Math.round((value / safeTarget) * 100));
+  const remaining = Math.round(target - value);
+  const over = remaining < 0;
+
   return (
     <View style={styles.row}>
       <View style={[styles.dot, { backgroundColor: color }]} />
       <Text style={styles.tag}>{label}</Text>
       <View style={styles.track}>
-        <View style={[styles.fill, { width: `${pct}%`, backgroundColor: color }]} />
+        <View
+          style={[
+            styles.fill,
+            { width: `${pct}%`, backgroundColor: over ? colors.ember : color }
+          ]}
+        />
       </View>
-      <Text style={styles.val}>
+      <Text style={[styles.val, over && styles.valOver]}>
         {Math.round(value)}/{Math.round(target)} г
       </Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
   dot: { width: 7, height: 7, borderRadius: radius.pill },
   tag: { width: 16, color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 12 },
@@ -43,5 +56,7 @@ const styles = StyleSheet.create({
     color: colors.paperDim,
     fontFamily: fonts.mono,
     fontSize: 12.5
-  }
+  },
+  valOver: { color: colors.ember }
 });
+}

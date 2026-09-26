@@ -6,13 +6,12 @@ const monorepoRoot = path.resolve(projectRoot, "../..");
 
 const config = getDefaultConfig(projectRoot);
 
+// Expo SDK 51 monorepo template — same as successful EAS build #19.
+// Do not map tsconfig paths.react; do not force extraNodeModules/react.
 config.watchFolders = [monorepoRoot];
-
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, "node_modules"),
   path.resolve(monorepoRoot, "node_modules"),
 ];
-
-config.resolver.disableHierarchicalLookup = true;
 
 module.exports = config;

@@ -10,22 +10,67 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CoachEngine, estimateBurnFromSetLogs, toDateKey } from '@forma/core';
+import { CoachEngine, estimateBurnFromSetLogs, isProfileComplete, toDateKey } from '@forma/core';
 import { getMobileTrainerProgress } from '@/ai/trainerProgress';
-import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
+import ProfileGateBanner from '@/components/ProfileGateBanner';
 import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
-import { COACH_WELCOME, useFitPulseStore } from '@/state/useFitPulseStore';
+import { COACH_WELCOME, selectDailyTotals, useFitPulseStore } from '@/state/useFitPulseStore';
+import type { ProfileState, Sex } from '@/engines/MetabolicEngine';
 
-const CHIPS = ['Сколько белка?', 'Калории сегодня', 'Совет на тренировку', 'Восстановление'];
+const CHIPS = [
+  'Сколько белка?',
+  'Калории сегодня',
+  'Совет на тренировку',
+  'Восстановление',
+  'Сон и восстановление',
+  'Вода сегодня'
+];
+
+function toDomainProfile(profile: {
+  sex: Sex | null;
+  age: number | null;
+  height: number | null;
+  weight: number | null;
+  pal: number;
+  goal: ProfileState['goal'];
+}): ProfileState | null {
+  if (
+    !isProfileComplete({
+      weightKg: profile.weight,
+      heightCm: profile.height,
+      age: profile.age,
+      gender: profile.sex
+    })
+  ) {
+    return null;
+  }
+  return {
+    sex: profile.sex as Sex,
+    age: profile.age as number,
+    height: profile.height as number,
+    weight: profile.weight as number,
+    pal: profile.pal,
+    goal: profile.goal
+  };
+}
 
 export default function CoachScreen() {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const profile = useFitPulseStore((s) => s.profile);
   const todayMeals = useFitPulseStore((s) => s.todayMeals);
   const setLogs = useFitPulseStore((s) => s.setLogs);
-  const targets = useFitPulseStore((s) => s.calculateTargets());
   const messages = useFitPulseStore((s) => s.coachMessages);
   const setCoachMessages = useFitPulseStore((s) => s.setCoachMessages);
   const clearCoachMessages = useFitPulseStore((s) => s.clearCoachMessages);
+
+  const domainProfile = useMemo(() => toDomainProfile(profile), [profile]);
+  const targets = useMemo(() => {
+    if (!domainProfile) return null;
+    return useFitPulseStore.getState().calculateTargets();
+  }, [domainProfile]);
 
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
@@ -33,20 +78,27 @@ export default function CoachScreen() {
   const [progress, setProgress] = useState(0);
   const listRef = useRef<FlatList<(typeof messages)[number]>>(null);
 
-  const snapshot = useMemo(
-    () =>
-      mobileCoachSnapshot({
-        profile,
-        todayMeals,
-        targetCalories: targets.target,
-        burnedCalories: estimateBurnFromSetLogs({
-          weightKg: profile.weight,
-          setLogs,
-          dateKey: toDateKey(new Date())
-        })
-      }),
-    [profile, todayMeals, targets.target, setLogs]
-  );
+  const safeWeightKg =
+    typeof profile.weight === 'number' && Number.isFinite(profile.weight) && profile.weight > 0
+      ? profile.weight
+      : 0;
+
+  const mealTotals = useMemo(() => selectDailyTotals(todayMeals), [todayMeals]);
+
+  const snapshot = useMemo(() => {
+    if (!domainProfile || !targets) return null;
+    return mobileCoachSnapshot({
+      profile: domainProfile,
+      todayMeals,
+      targetCalories: targets.target,
+      proteinTarget: targets.proteinTarget,
+      burnedCalories: estimateBurnFromSetLogs({
+        weightKg: safeWeightKg,
+        setLogs,
+        dateKey: toDateKey(new Date())
+      })
+    });
+  }, [domainProfile, todayMeals, targets, safeWeightKg, setLogs]);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -58,7 +110,7 @@ export default function CoachScreen() {
 
   async function send(raw?: string) {
     const q = (raw ?? input).trim();
-    if (!q || busy) return;
+    if (!q || busy || !snapshot) return;
     setInput('');
     const userId = `u-${Date.now()}`;
     const coachId = `c-${Date.now()}`;
@@ -84,10 +136,35 @@ export default function CoachScreen() {
     ? 'llama.rn · on-device'
     : progress > 0 && progress < 1
       ? `Загрузка · ${Math.round(progress * 100)}%`
-      : 'Rules · offline';
+      : 'Подсказки · offline';
+
+  const proteinLine =
+    targets != null
+      ? `Белок ${Math.round(mealTotals.protein)} / ${targets.proteinTarget} г · ${targets.target} ккал`
+      : null;
 
   const visible = messages.filter((m) => m.text.length > 0);
   const canClear = messages.some((m) => m.id !== 'welcome' && m.text.length > 0);
+
+  if (!snapshot) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <View style={styles.header}>
+          <Text style={styles.eyebrow}>FITPULSE</Text>
+          <Text style={styles.title}>Тренер</Text>
+          <Text style={styles.sub}>
+            Без полного профиля цели КБЖУ и советы не считаются — вес по умолчанию не
+            подставляется.
+          </Text>
+        </View>
+        <ProfileGateBanner
+          inset
+          title="Профиль неполный"
+          body="Откройте «Профиль» и сохраните пол, вес, рост и возраст. После этого здесь появятся чипы и локальный тренер."
+        />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -99,9 +176,10 @@ export default function CoachScreen() {
         <View style={styles.header}>
           <View style={styles.headerRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.eyebrow}>Локальный AI</Text>
+              <Text style={styles.eyebrow}>FITPULSE · локальные подсказки</Text>
               <Text style={styles.title}>Тренер</Text>
               <Text style={styles.sub}>{status}</Text>
+              {proteinLine ? <Text style={styles.metrics}>{proteinLine}</Text> : null}
             </View>
             {canClear && (
               <Pressable
@@ -167,7 +245,8 @@ export default function CoachScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.ink },
   flex: { flex: 1 },
   header: {
@@ -178,14 +257,20 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.line
   },
   headerRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  eyebrow: { color: colors.paperFaint, fontSize: 11, fontFamily: fonts.body },
+  eyebrow: { color: colors.lime, fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1.2 },
   title: {
     color: colors.paper,
     fontSize: 30,
     fontFamily: fonts.mono,
     marginTop: 2
   },
-  sub: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.body, marginTop: 4 },
+  sub: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.body, marginTop: 4, lineHeight: 18 },
+  metrics: {
+    color: colors.paperFaint,
+    fontSize: 12,
+    fontFamily: fonts.mono,
+    marginTop: 6
+  },
   clearBtn: {
     marginTop: 8,
     paddingHorizontal: 12,
@@ -270,3 +355,4 @@ const styles = StyleSheet.create({
   sendDisabled: { opacity: 0.4 },
   sendText: { color: colors.ink, fontFamily: fonts.bodySemi, fontSize: 14 }
 });
+}

@@ -6,7 +6,8 @@
 import React, { forwardRef, useCallback, useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import GorhomBottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
-import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 
 interface Props {
   title: string;
@@ -18,6 +19,8 @@ interface Props {
 
 const AppBottomSheet = forwardRef<GorhomBottomSheet, Props>(
   ({ title, eyebrow, snapPoints, onClose, children }, ref) => {
+    const colors = useThemeColors();
+    const styles = createStyles(colors);
     const points = useMemo(() => snapPoints ?? ['60%', '85%'], [snapPoints]);
 
     const renderBackdrop = useCallback(
@@ -63,7 +66,8 @@ const AppBottomSheet = forwardRef<GorhomBottomSheet, Props>(
 AppBottomSheet.displayName = 'AppBottomSheet';
 export default AppBottomSheet;
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   background: {
     backgroundColor: colors.panelRaised,
     borderTopLeftRadius: radius.sheet,
@@ -96,3 +100,4 @@ const styles = StyleSheet.create({
   },
   closeText: { color: colors.paperDim, fontSize: 18, lineHeight: 20 }
 });
+}

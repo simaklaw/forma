@@ -4,7 +4,6 @@
     "slug": "fitpulse",
     "version": "0.1.0",
     "icon": "./assets/branding/fitpulse-icon.png",
-    "newArchEnabled": false,
     "orientation": "portrait",
     "scheme": "fitpulse",
     "userInterfaceStyle": "dark",
@@ -30,6 +29,8 @@
       ]
     },
     "plugins": [
+      "./plugins/withPnpmReactNativeGradle.js",
+      "./plugins/withPnpmAppBuildGradle.js",
       "expo-document-picker",
       [
         "expo-build-properties",

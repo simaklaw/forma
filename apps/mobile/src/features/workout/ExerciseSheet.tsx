@@ -5,7 +5,8 @@ import type { WorkoutSession } from '@forma/workout-domain';
 import AppBottomSheet from '@/components/BottomSheet';
 import ExerciseVideo from '@/components/ExerciseVideo';
 import MuscleMap, { MuscleKey } from '@/components/MuscleMap';
-import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 import { estimateOneRepMax, rpeFromRir } from '@/engines/MetabolicEngine';
 import { RestTimerEngine } from '@/engines/RestTimerEngine';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
@@ -15,6 +16,7 @@ import { ActiveSessionController } from './session/ActiveSessionController';
 import { sequentialStepInfo } from './session/sequentialStep';
 import { applySessionProjection } from './data/applySessionProjection';
 import { getSessionService } from './data';
+import { formatLoadLabel, isBodyweightExercise, resolveWorkingLoadKg } from './catalog';
 
 const beepSource = require('../../../assets/sfx/beep.wav');
 
@@ -48,13 +50,16 @@ function remainingRestSeconds(restEndsAtMs: number | null | undefined, nowMs = D
 
 const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
   ({ exercise, dayId, dayExercises, onFinished, onGoToExpected }, ref) => {
+    const colors = useThemeColors();
+    const styles = createStyles(colors);
     const completedSetsToday = useFitPulseStore((s) => s.completedSetsToday);
     const setLogs = useFitPulseStore((s) => s.setLogs);
+    const profileWeight = useFitPulseStore((s) => s.profile.weight);
     const reference = useExerciseReference(exercise?.wgerSearchTerm ?? null);
 
     const [completedSets, setCompletedSets] = useState(0);
-    const [weight, setWeight] = useState(0);
-    const [reps, setReps] = useState(0);
+    const [weight, setWeight] = useState(() => exercise?.workingWeight ?? 0);
+    const [reps, setReps] = useState(() => exercise?.workingReps ?? 0);
     const [rir, setRir] = useState(2);
     const [restRemaining, setRestRemaining] = useState<number | null>(null);
     const [sessionSnap, setSessionSnap] = useState<WorkoutSession | null>(null);
@@ -78,10 +83,16 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       [dayExercises]
     );
 
+    const bodyKg =
+      typeof profileWeight === 'number' && Number.isFinite(profileWeight) && profileWeight > 0
+        ? profileWeight
+        : 0;
+
     useEffect(() => {
       if (!exercise) return;
       setCompletedSets(completedSetsToday(exercise.id));
-      setWeight(exercise.workingWeight);
+      const seed = resolveWorkingLoadKg(exercise, bodyKg);
+      setWeight(seed > 0 ? seed : exercise.workingWeight > 0 ? exercise.workingWeight : bodyKg);
       setReps(exercise.workingReps);
       setRestRemaining(null);
       RestTimerEngine.stopTimer();
@@ -102,7 +113,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       return () => {
         cancelled = true;
       };
-    }, [exercise?.id, startRestFromDeadline]);
+    }, [exercise?.id, bodyKg, startRestFromDeadline]);
 
     if (!exercise) return null;
 
@@ -112,7 +123,10 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         : { isCurrent: true, expectedName: null, expectedExerciseId: null, currentStepIndex: 0, totalSteps: 0 };
 
     const weightStep = exercise.weightStep ?? 2.5;
-    const oneRm = Math.round(estimateOneRepMax(weight, reps));
+    const oneRm =
+      Number.isFinite(weight) && weight > 0 && Number.isFinite(reps) && reps >= 1
+        ? Math.round(estimateOneRepMax(weight, reps))
+        : 0;
     const rpe = rpeFromRir(rir);
     const finished = completedSets >= exercise.totalSets;
     const blockedBySequence = !seq.isCurrent && !finished;
@@ -122,6 +136,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
     function recordNextSet() {
       if (!exercise || completedSets >= exercise.totalSets || blockedBySequence) return;
+      if (!(Number.isFinite(weight) && weight > 0)) return;
       if (dayId && dayExercises?.length) {
         void ActiveSessionController.recordSetForExercise({
           dayId,
@@ -184,7 +199,20 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const ctaDisabled = finished || restRemaining !== null || blockedBySequence;
 
     return (
-      <AppBottomSheet ref={ref} eyebrow={`Упражнение ${String(exercise.index).padStart(2, '0')}`} title={exercise.name}>
+      <AppBottomSheet
+        ref={ref}
+        eyebrow={
+          seq.totalSteps > 0
+            ? `Упр. ${String(exercise.index).padStart(2, '0')} · шаг ${seq.currentStepIndex + 1}/${seq.totalSteps}`
+            : `Упражнение ${String(exercise.index).padStart(2, '0')}`
+        }
+        title={exercise.name}
+      >
+        {seq.isCurrent && !finished && seq.totalSteps > 0 && (
+          <View style={styles.currentChip}>
+            <Text style={styles.currentChipText}>Текущий шаг сессии</Text>
+          </View>
+        )}
         {blockedBySequence && (
           <View style={styles.seqBanner} accessibilityRole="text">
             <Text style={styles.seqBannerTitle}>Сначала другое упражнение</Text>
@@ -227,7 +255,11 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
             <Text style={styles.gridLbl}>подходы</Text>
           </View>
           <View style={styles.gridCell}>
-            <Text style={styles.gridVal}>{exercise.workingWeight} кг</Text>
+            <Text style={styles.gridVal}>
+              {isBodyweightExercise(exercise)
+                ? formatLoadLabel(exercise, bodyKg)
+                : `${exercise.workingWeight} кг`}
+            </Text>
             <Text style={styles.gridLbl}>рабочий вес</Text>
           </View>
           <View style={[styles.gridCell, { borderRightWidth: 0 }]}>
@@ -247,7 +279,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           <View style={styles.stepperBlock}>
             <TouchableOpacity
               style={styles.stepperBtn}
-              onPress={() => setWeight((w) => Math.max(0, roundToStep(w - weightStep, weightStep)))}
+              onPress={() =>
+                setWeight((w) => Math.max(weightStep, roundToStep(w - weightStep, weightStep)))
+              }
               accessibilityRole="button"
               accessibilityLabel="Уменьшить вес"
               disabled={blockedBySequence}
@@ -317,7 +351,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
             <Text style={styles.gridLbl}>RPE (10 − RIR)</Text>
           </View>
           <View style={[styles.gridCell, { borderRightWidth: 0 }]}>
-            <Text style={styles.gridVal}>{oneRm}</Text>
+            <Text style={styles.gridVal}>{oneRm > 0 ? oneRm : '—'}</Text>
             <Text style={styles.gridLbl}>прогноз 1ПМ, кг</Text>
           </View>
         </View>
@@ -346,7 +380,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
                     ? `${logged!.weight} кг × ${logged!.reps}`
                     : isNext
                       ? `→ ${weight} кг × ${reps}`
-                      : `план: ${exercise.workingWeight} кг × ${exercise.workingReps}`}
+                      : `план: ${formatLoadLabel(exercise, bodyKg)} × ${exercise.workingReps}`}
                 </Text>
                 <Text style={done ? styles.setDone : styles.setPending}>
                   {done ? '✓ выполнен' : isNext ? 'следующий' : 'не начат'}
@@ -378,7 +412,19 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 ExerciseSheet.displayName = 'ExerciseSheet';
 export default ExerciseSheet;
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+  currentChip: {
+    alignSelf: 'flex-start',
+    marginBottom: spacing.sm,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radius.pill,
+    backgroundColor: colors.limeDim,
+    borderWidth: 1,
+    borderColor: colors.lime
+  },
+  currentChipText: { color: colors.lime, fontFamily: fonts.mono, fontSize: 11 },
   seqBanner: {
     marginBottom: spacing.md,
     padding: 12,
@@ -484,23 +530,23 @@ const styles = StyleSheet.create({
     padding: 12,
     borderWidth: 1,
     borderStyle: 'dashed',
-    borderColor: colors.lineStrong,
-    borderRadius: radius.control
+    borderRadius: radius.control,
+    borderColor: colors.lineStrong
   },
   restLabel: { flex: 1, color: colors.paperFaint, fontSize: 11 },
   restVal: { color: colors.ember, fontSize: 26, fontFamily: fonts.mono },
-  restSkip: { color: colors.paperFaint, fontSize: 11, textDecorationLine: 'underline' },
-  sets: { marginTop: 12 },
+  restSkip: { color: colors.lime, fontSize: 12, fontFamily: fonts.mono },
+  sets: { marginTop: spacing.lg, gap: 6 },
   setRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    paddingVertical: 9,
+    gap: 10,
+    paddingVertical: 8,
     borderBottomWidth: 1,
     borderColor: colors.line
   },
-  setNum: { width: 24, color: colors.paperFaint, fontSize: 13, fontFamily: fonts.mono },
-  setSpec: { flex: 1, color: colors.paper, fontFamily: fonts.mono, fontSize: 15 },
+  setNum: { width: 20, color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 13 },
+  setSpec: { flex: 1, color: colors.paperDim, fontFamily: fonts.body, fontSize: 13 },
   setDone: { color: colors.lime, fontFamily: fonts.mono },
   setPending: { color: colors.paperFaint, fontFamily: fonts.mono },
   cta: {
@@ -514,3 +560,4 @@ const styles = StyleSheet.create({
   ctaDisabled: { opacity: 0.5 },
   ctaText: { color: colors.ink, fontSize: 16, fontFamily: fonts.mono }
 });
+}

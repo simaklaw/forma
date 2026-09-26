@@ -2,18 +2,40 @@ import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { estimateBurnFromSetLogs, estimateDailyBurns, toDateKey } from '@forma/core';
-import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
+import DailyTipCard from '@/components/DailyTipCard';
+import ProfileGateBanner from '@/components/ProfileGateBanner';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { lastNDays, selectWeeklyVolume, weekdayRuShort } from '@/engines/WorkoutStats';
 import WeightChart from '@/components/WeightChart';
 
 export default function ProgressScreen() {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const weightHistory = useFitPulseStore((s) => s.weightHistory);
   const setLogs = useFitPulseStore((s) => s.setLogs);
-  const weightKg = useFitPulseStore((s) => s.profile.weight);
+  const profileWeight = useFitPulseStore((s) => s.profile.weight);
+  const dayProgress = useFitPulseStore((s) => s.dayProgress);
+
+  const weightKg =
+    typeof profileWeight === 'number' && Number.isFinite(profileWeight) && profileWeight > 0
+      ? profileWeight
+      : 0;
 
   const volume = selectWeeklyVolume(setLogs);
   const hasAnyVolume = volume.some((v) => v.volumeKg > 0);
+
+  const weekKeys = useMemo(() => lastNDays(7).map((d) => toDateKey(d)), []);
+  const weekSets = useMemo(() => {
+    let n = 0;
+    for (const key of weekKeys) {
+      const day = dayProgress[key];
+      if (!day) continue;
+      for (const count of Object.values(day)) n += count;
+    }
+    return n;
+  }, [dayProgress, weekKeys]);
 
   const burnSeries = useMemo(() => {
     const days = lastNDays(7);
@@ -38,11 +60,21 @@ export default function ProgressScreen() {
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.eyebrow}>Последние 7 дней</Text>
+        <Text style={styles.eyebrow}>FITPULSE · последние 7 дней</Text>
         <Text style={styles.title}>Прогресс</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.body}>
+        {weightKg <= 0 ? (
+          <ProfileGateBanner
+            inset
+            title="Нужен вес в профиле"
+            body="Оценка сожжённых ккал (MET) считается от массы тела. Укажите вес в «Профиль» — без default 70 кг."
+          />
+        ) : null}
+
+        <DailyTipCard inset />
+
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
             <Text style={styles.statVal}>{burnedToday > 0 ? `~${burnedToday}` : '—'}</Text>
@@ -51,6 +83,17 @@ export default function ProgressScreen() {
           <View style={styles.statCard}>
             <Text style={styles.statVal}>{burnedWeek > 0 ? `~${burnedWeek}` : '—'}</Text>
             <Text style={styles.statLbl}>ккал за 7 дней</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statVal}>{weightKg > 0 ? String(weightKg) : '—'}</Text>
+            <Text style={styles.statLbl}>вес, кг</Text>
+          </View>
+        </View>
+
+        <View style={styles.statsRow}>
+          <View style={[styles.statCard, { flex: 1 }]}>
+            <Text style={styles.statVal}>{weekSets > 0 ? String(weekSets) : '—'}</Text>
+            <Text style={styles.statLbl}>подходов за 7 дней</Text>
           </View>
         </View>
 
@@ -76,7 +119,9 @@ export default function ProgressScreen() {
             </View>
           ) : (
             <Text style={styles.emptyState}>
-              Пока нет подходов — оценка калорий появится после первой тренировки.
+              {weightKg <= 0
+                ? 'Укажите вес в профиле и залогируйте подходы — появится оценка ккал.'
+                : 'Пока нет подходов — оценка калорий появится после первой тренировки.'}
             </Text>
           )}
         </View>
@@ -113,7 +158,7 @@ export default function ProgressScreen() {
             <WeightChart history={weightHistory} />
           ) : (
             <Text style={styles.emptyState}>
-              Пока меньше двух записей веса — обновите вес в профиле, и здесь появится график.
+              Нужны минимум две записи веса в профиле — тогда появится линия.
             </Text>
           )}
         </View>
@@ -122,7 +167,8 @@ export default function ProgressScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.ink },
   header: {
     paddingHorizontal: spacing.xxl,
@@ -130,8 +176,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: colors.line
   },
-  eyebrow: { color: colors.paperFaint, fontSize: 11, fontFamily: fonts.body },
-  title: { color: colors.paper, fontSize: 30, fontFamily: fonts.mono },
+  eyebrow: { color: colors.lime, fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 0.8 },
+  title: { color: colors.paper, fontSize: 30, fontFamily: fonts.mono, marginTop: 2 },
   body: { paddingBottom: 120 },
   statsRow: {
     flexDirection: 'row',
@@ -145,9 +191,9 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     backgroundColor: colors.panel,
     borderRadius: radius.card,
-    padding: 16
+    padding: 14
   },
-  statVal: { color: colors.paper, fontSize: 22, fontFamily: fonts.mono },
+  statVal: { color: colors.paper, fontSize: 20, fontFamily: fonts.mono },
   statLbl: { color: colors.paperFaint, fontSize: 11, marginTop: 4, fontFamily: fonts.body },
   chartBlock: {
     marginHorizontal: spacing.xl,
@@ -166,3 +212,4 @@ const styles = StyleSheet.create({
   barLabel: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 11 },
   emptyState: { color: colors.paperFaint, fontFamily: fonts.body, fontSize: 12.5, lineHeight: 18 }
 });
+}

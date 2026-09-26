@@ -4,7 +4,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import Svg, { Circle, Polyline } from 'react-native-svg';
-import { colors } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 
 interface Props {
   history: number[];
@@ -13,6 +13,7 @@ interface Props {
 }
 
 export default function WeightChart({ history, width = 340, height = 70 }: Props) {
+  const colors = useThemeColors();
   const points = history.slice(-7);
   if (points.length < 2) return <View style={{ width, height }} />;
 
