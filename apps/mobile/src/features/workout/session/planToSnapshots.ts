@@ -2,6 +2,12 @@ import type { SessionStepSnapshot } from '@forma/workout-domain';
 import type { ExerciseDef } from '../ExerciseSheet';
 import { resolveWorkingLoadKg } from '../catalog';
 
+/**
+ * Bump when default gym/home day plans change structure or exercise targets.
+ * Included in templateRevisionId and exerciseRevisionId so old sessions stay isolated.
+ */
+export const PLAN_REVISION = '2026-09-26.1';
+
 /** Map UI exercise defs to immutable session step snapshots (content identity for this start). */
 export function exercisesToSnapshots(
   exercises: ExerciseDef[],
@@ -10,7 +16,7 @@ export function exercisesToSnapshots(
   return exercises.map((ex, i) => ({
     stepIndex: i,
     exerciseId: String(ex.id),
-    exerciseRevisionId: `local-ex-${ex.id}-v1`,
+    exerciseRevisionId: `local-ex-${ex.id}-${PLAN_REVISION}`,
     name: ex.name,
     targetSets: ex.totalSets,
     targetReps: ex.workingReps,
@@ -31,5 +37,5 @@ export function contentHashForExercises(exercises: ExerciseDef[], bodyWeightKg =
     h ^= raw.charCodeAt(i);
     h = Math.imul(h, 16777619);
   }
-  return (h >>> 0).toString(16);
+  return `${PLAN_REVISION}:${(h >>> 0).toString(16)}`;
 }
