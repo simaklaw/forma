@@ -10,16 +10,23 @@
 
 ## Where we stopped
 
-### Recent
+### CI helpers
+
+- **DeepSeek Code Review** workflow: `.github/workflows/deepseek-review.yml`
+  - Secret required: `DEEPSEEK_API_KEY` (repo → Settings → Secrets and variables → Actions)
+  - Runs on PR `opened` / `reopened` / `synchronize`
+  - Skip: put `skip cr` or `skip review` in PR title or body
+
+### Product
 
 - Day plan overrides UX complete + focus reload
-- Prettier gate expanded: `reducer.ts`, `dayPlanOverrides*`, `replaceTarget.ts`
+- Prettier gate includes `replaceTarget.ts`
 
 ### Next backlog
 
-1. Health Connect — **pause and ask owner before implementing**
+1. Health Connect — **only after owner OK** (owner deferred: after this CI helper)
 2. ESLint monorepo gate
-3. Optional: generated technique videos
+3. Prettier `reducer.ts` into gate
 4. APK only when owner says so
 
 ---
@@ -31,3 +38,4 @@
 3. Preserve frozen catalog exercise ids **1–30**.
 4. Update this file after each chunk.
 5. Bump `PLAN_REVISION` when default static plans change.
+6. Never commit API keys; only GitHub Actions secrets.
