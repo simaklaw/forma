@@ -1,4 +1,4 @@
-import { buildCatalogItems, filterCatalogItems } from './catalogBrowser';
+import { buildCatalogItems, filterCatalogItems, inferEquipment } from './catalogBrowser';
 
 describe('catalog browser filters', () => {
   const gym = buildCatalogItems('gym');
@@ -29,6 +29,16 @@ describe('catalog browser filters', () => {
     const calves = filterCatalogItems(gym, '', 'calves');
     expect(calves.length).toBeGreaterThan(0);
     expect(calves.every((item) => item.targetMuscles.includes('calves'))).toBe(true);
+  });
+
+  it('filters by equipment', () => {
+    const dumbbells = filterCatalogItems(gym, '', null, 'dumbbells');
+    expect(dumbbells.length).toBeGreaterThan(0);
+    expect(dumbbells.every((item) => inferEquipment(item) === 'dumbbells')).toBe(true);
+
+    const none = filterCatalogItems(home, '', null, 'none');
+    expect(none.length).toBeGreaterThan(0);
+    expect(none.every((item) => inferEquipment(item) === 'none')).toBe(true);
   });
 
   it('returns empty for nonsense query', () => {
