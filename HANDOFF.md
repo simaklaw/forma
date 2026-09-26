@@ -1,45 +1,46 @@
 # HANDOFF — FitPulse / Forma
 
 **Checkpoint date:** 2026-09-26
-**Active branch:** `main`
+**Active branch:** `feat/day-plan-override` (merge when CI green)
 **Repo:** https://github.com/simaklaw/forma
 **Product name:** FitPulse (mobile)
 **APK:** do **not** build until owner says so.
 
 ---
 
-## Where we stopped (done recently)
+## Where we stopped
 
-### Session logging (2026-09-26)
+### Day plan overrides (in progress / this branch)
 
-- `ActiveSessionController` uses `createLogger('session')` for start / abandon / restart / complete / blocked profile
+- `dayPlanOverrides.ts` — AsyncStorage overrides per `mode` + `dayId` (ordered exercise ids)
+- `resolveDayExercises` / `replaceDaySlot` / `clearDayOverride`
+- `replaceTarget.ts` — in-memory target for catalog → slot replace flow
+- Unit tests for resolve + home catalog lookup
 
-### Logger + Prettier domain gate
+**Still to wire on UI (next chunk if not in same PR):**
+- WorkoutScreen: load overrides, apply `resolveDayExercises`, "Заменить" sets `replaceTarget` + navigate Каталог
+- CatalogScreen / ExerciseDetailModal: banner + confirm replace via `replaceDaySlot`
 
-- `apps/mobile/src/core/logger.ts`
-- OutboxDrainService + progressive `format:check:gate`
+### Already on main
 
-### PLAN_REVISION = `2026-09-26.1`
-
-### Catalog UX: equipment, detail, favorites, recent
+- Session logger, PLAN_REVISION, catalog UX, Prettier gate, outbox prune
 
 ---
 
 ## Next backlog
 
-1. Prettier-format `reducer.ts` + expand gate; rest of mobile/web
-2. Optional: replace exercise in today’s day plan from catalog
-3. Optional: generated technique video assets
-4. Health Connect (not Google Fit)
-5. ESLint monorepo gate
-6. APK only when owner says so
+1. Finish UI wiring for replace flow (if not merged fully)
+2. Prettier `reducer.ts` + expand gate
+3. Health Connect (not Google Fit)
+4. ESLint monorepo
+5. APK only when owner says so
 
 ---
 
 ## Rules
 
 1. No APK without owner go-ahead.
-2. No Google Fit — Health Connect only when sync is in scope.
-3. Preserve exercise ids **1–30**.
+2. No Google Fit.
+3. Preserve frozen catalog exercise ids **1–30** (overrides reference ids, do not renumber).
 4. Update this file after each chunk.
-5. Bump `PLAN_REVISION` when default plans change.
+5. Bump `PLAN_REVISION` when default static plans change.
