@@ -8,14 +8,25 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import MuscleMap, { MUSCLE_LABELS } from '@/components/MuscleMap';
 import ExerciseVideo from '@/components/ExerciseVideo';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
+import type { TabParamList } from '@/navigation/types';
 import type { CatalogItem } from './catalogBrowser';
 import { EQUIPMENT_LABELS, inferEquipment } from './catalogBrowser';
 import { useExerciseReference } from './useExerciseReference';
 import { isFavorite, pushRecent, toggleFavorite } from './exerciseFavorites';
+import { catalogFor } from './catalog';
+import { replaceDaySlot } from './dayPlanOverrides';
+import {
+  clearReplaceTarget,
+  getReplaceTarget,
+  subscribeReplaceTarget,
+  type ReplaceTarget
+} from './replaceTarget';
 
 interface Props {
   item: CatalogItem | null;
@@ -26,8 +37,13 @@ interface Props {
 
 export default function ExerciseDetailModal({ item, visible, onClose, onFavoriteChange }: Props) {
   const colors = useThemeColors();
+  const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const reference = useExerciseReference(item?.wgerSearchTerm ?? null);
   const [favorited, setFavorited] = useState(false);
+  const [replaceTarget, setReplaceTargetState] = useState<ReplaceTarget | null>(getReplaceTarget());
+  const [replacing, setReplacing] = useState(false);
+
+  useEffect(() => subscribeReplaceTarget(() => setReplaceTargetState(getReplaceTarget())), []);
 
   useEffect(() => {
     if (!item || !visible) return;
@@ -49,10 +65,35 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
     onFavoriteChange?.(next);
   }
 
+  async function onConfirmReplace() {
+    if (!item || !replaceTarget || replaceTarget.mode !== item.mode) return;
+    const day = catalogFor(replaceTarget.mode).find((d) => d.id === replaceTarget.dayId);
+    if (!day) return;
+    setReplacing(true);
+    try {
+      await replaceDaySlot(
+        replaceTarget.mode,
+        replaceTarget.dayId,
+        replaceTarget.slotIndex,
+        item.id,
+        day.exercises
+      );
+      clearReplaceTarget();
+      onClose();
+      navigation.navigate('Тренировки');
+    } finally {
+      setReplacing(false);
+    }
+  }
+
   if (!item) return null;
 
   const equipment = inferEquipment(item);
   const loadLabel = item.workingWeight > 0 ? `${item.workingWeight} кг` : 'свой вес';
+  const canReplace =
+    replaceTarget != null &&
+    replaceTarget.mode === item.mode &&
+    replaceTarget.currentExerciseId !== item.id;
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -90,6 +131,22 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
             {item.mode === 'gym' ? 'ЗАЛ' : 'ДОМ'} · {item.dayName.toUpperCase()}
           </Text>
           <Text style={[styles.title, { color: colors.paper }]}>{item.name}</Text>
+
+          {canReplace ? (
+            <TouchableOpacity
+              onPress={() => void onConfirmReplace()}
+              disabled={replacing}
+              style={[styles.replaceCta, { backgroundColor: colors.lime }]}
+              accessibilityRole="button"
+              accessibilityLabel="Подставить в план дня"
+            >
+              <Text style={[styles.replaceCtaText, { color: colors.ink }]}>
+                {replacing
+                  ? 'Сохраняем…'
+                  : `Подставить вместо «${replaceTarget!.currentName}»`}
+              </Text>
+            </TouchableOpacity>
+          ) : null}
 
           {reference?.imageUrl ? (
             <Image
@@ -138,7 +195,9 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
           <MuscleMap targetMuscles={item.targetMuscles} />
 
           <Text style={[styles.readonlyHint, { color: colors.paperFaint }]}>
-            Только просмотр. Чтобы выполнить упражнение, запустите тренировку во вкладке «Тренировки».
+            {canReplace
+              ? 'Замена сохранится только для этого дня плана (можно сбросить на экране «Тренировки»).'
+              : 'Только просмотр. Чтобы выполнить упражнение, запустите тренировку во вкладке «Тренировки». Долгое нажатие на упражнение дня открывает замену.'}
           </Text>
         </ScrollView>
       </View>
@@ -167,6 +226,13 @@ const styles = StyleSheet.create({
   body: { padding: spacing.lg, paddingBottom: 48, gap: 12 },
   eyebrow: { fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1 },
   title: { fontSize: 26, fontFamily: fonts.mono, marginBottom: 4 },
+  replaceCta: {
+    borderRadius: radius.pill,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center'
+  },
+  replaceCtaText: { fontFamily: fonts.bodySemi, fontSize: 14, textAlign: 'center' },
   photo: {
     width: '100%',
     height: 180,
