@@ -2,54 +2,21 @@ import React, { useMemo, useState } from 'react';
 import { FlatList, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
-import type { MuscleKey } from '@/components/MuscleMap';
-import type { ExerciseDef } from './ExerciseSheet';
-import { CATALOGS, type TrainingMode } from './catalog';
-
-const MUSCLE_LABELS: Record<MuscleKey, string> = {
-  chest: 'грудь',
-  shoulders: 'плечи',
-  biceps: 'бицепс',
-  triceps: 'трицепс',
-  core: 'кор',
-  quads: 'квадрицепс',
-  hamstrings: 'бицепс бедра',
-  glutes: 'ягодицы',
-  lowerback: 'поясница',
-  back: 'спина',
-  calves: 'икры'
-};
-
-type CatalogItem = ExerciseDef & { mode: TrainingMode; dayName: string };
-
-function normalize(value: string): string {
-  return value.trim().toLocaleLowerCase('ru-RU');
-}
-
-function buildItems(mode: TrainingMode): CatalogItem[] {
-  return CATALOGS[mode].flatMap((day) =>
-    day.exercises.map((exercise) => ({ ...exercise, mode, dayName: day.name }))
-  );
-}
+import { MUSCLE_LABELS, type MuscleKey } from '@/components/MuscleMap';
+import { type TrainingMode } from './catalog';
+import { buildCatalogItems, filterCatalogItems } from './catalogBrowser';
 
 export default function CatalogScreen() {
   const colors = useThemeColors();
   const [mode, setMode] = useState<TrainingMode>('gym');
   const [query, setQuery] = useState('');
   const [muscle, setMuscle] = useState<MuscleKey | null>(null);
-  const items = useMemo(() => buildItems(mode), [mode]);
+  const items = useMemo(() => buildCatalogItems(mode), [mode]);
   const muscles = useMemo(
     () => Array.from(new Set(items.flatMap((item) => item.targetMuscles))),
     [items]
   );
-  const filtered = useMemo(() => {
-    const q = normalize(query);
-    return items.filter((item) => {
-      const matchesQuery = !q || normalize(`${item.name} ${item.dayName} ${item.note}`).includes(q);
-      const matchesMuscle = !muscle || item.targetMuscles.includes(muscle);
-      return matchesQuery && matchesMuscle;
-    });
-  }, [items, muscle, query]);
+  const filtered = useMemo(() => filterCatalogItems(items, query, muscle), [items, muscle, query]);
 
   function changeMode(next: TrainingMode) {
     setMode(next);

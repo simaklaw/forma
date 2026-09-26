@@ -227,7 +227,8 @@ export function applyCommand(
         (stillWorkOnStep || moreSteps) &&
         !allRequiredDone({ ...next, steps });
 
-      if (shouldRest && stillWorkOnStep) {
+      // Rest between sets of one step AND after the last set when another step remains.
+      if (shouldRest) {
         if (!ctx.eventId2) {
           throw new DomainError(
             'invalid_transition',

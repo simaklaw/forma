@@ -12,6 +12,15 @@ This file is the **single source of truth** for handoff between AI agents and th
 
 ## Where we stopped (done recently)
 
+### Stabilization after catalog/theme (2026-09-26)
+
+- **Rest between exercises:** `complete_set` starts rest after the last set of a step when another step remains (`packages/workout-domain/src/reducer.ts` + test).
+- Catalog filter extracted to `catalogBrowser.ts` with tests; `catalogIntegrity.test.ts` freezes exercise ids **1–30**.
+- Outbox prune: `accepted` 14 days, `failed` 90 days.
+- Removed unused root `build-android-apk.yml` (never executed by GitHub Actions).
+- MuscleMap: `accessibilityLabel` for target muscles; `MUSCLE_LABELS` exported.
+- Mobile: **21 Jest suites / 115 tests**; typecheck passed. Workout-domain 12 tests green.
+
 ### Catalog browser + MuscleMap follow-up (2026-09-26)
 
 - Added `apps/mobile/src/features/workout/CatalogScreen.tsx`: offline exercise browser with home/gym mode, text search, muscle chips, load metadata, and empty state.
@@ -41,7 +50,7 @@ This file is the **single source of truth** for handoff between AI agents and th
 
 - Event-sourced session layer under `apps/mobile/src/features/workout/data/` + `session/`
 - Rest timer, sequential steps, ExerciseSheet, MuscleMap
-- Theme toggle exists in places (dark default); **not** fully rolled out to all screens
+- Theme toggle exists; light theme rolled out to remaining workout/nutrition surfaces.
 - Branding direction: **FitPulse**, not "forma" in UI chrome
 
 ---
@@ -51,6 +60,14 @@ This file is the **single source of truth** for handoff between AI agents and th
 1. ~~**Catalog browser screen** — list/search exercises with **filter home | gym** (and ideally category chips). Wire from Workout tab / Today.~~ **Done 2026-09-26.**
 2. ~~**`calves` in MuscleMap** — add `calves` to `MuscleKey`, labels, positions in `apps/mobile/src/components/MuscleMap.tsx`; then use `targetMuscles: ['calves']` where appropriate (e.g. calf raises).~~ **Done 2026-09-26.**
 3. ~~**Light theme on remaining screens** — sporty light palette, same toggle; no pure gray Material defaults; keep FitPulse identity.~~ **Done 2026-09-26.**
+
+### Stabilization (2026-09-26, after catalog/theme)
+
+- Rest between exercises: `complete_set` now starts rest when the last set of a step is done and another step remains (`packages/workout-domain/src/reducer.ts`).
+- Catalog filter extracted to `catalogBrowser.ts` + tests; `catalogIntegrity.test.ts` freezes ids 1–30.
+- Outbox prune (`accepted` 14d / `failed` 90d).
+- Removed dead root `build-android-apk.yml` (GitHub Actions never ran it).
+- Health Connect still deferred. Google Fit still rejected. APK still not built.
 
 ### Deferred / later (not blocking APK when backlog 1–3 done)
 
@@ -104,9 +121,10 @@ Implementation notes for a future agent:
 ```
 Продолжаем FitPulse (simaklaw/forma), ветка fix/profile-gate-weightkg.
 Сначала прочитай HANDOFF.md в корне репозитория.
-Следующие задачи по порядку: (1) экран-браузер «Каталог» фильтр дом/зал,
-(2) calves в MuscleMap, (3) light theme на остальных экранах.
-Google Fit не трогаем — только Health Connect когда дойдём до health sync.
+Каталог / calves / light theme — уже сделаны.
+Следующее по рекомендациям: PR в main только с разрешения владельца;
+фильтры оборудования / детали упражнения / избранное;
+Health Connect как отдельный модуль (не Google Fit).
 APK не собираем, пока не скажу.
 ```
 
@@ -116,10 +134,9 @@ APK не собираем, пока не скажу.
 You are continuing the FitPulse mobile app in https://github.com/simaklaw/forma
 Branch: fix/profile-gate-weightkg
 Read HANDOFF.md at repo root first — it is authoritative.
-Next: Catalog browser (home/gym filter), then calves in MuscleMap,
-then light theme on remaining screens.
-Do NOT integrate Google Fit; Health Connect only when health sync is in scope.
-Do NOT build APK until the human says so.
+Catalog / calves / light theme are done.
+Next: equipment filters, exercise detail, favorites; Health Connect module when health sync is in scope.
+Do NOT integrate Google Fit. Do NOT build APK until the human says so.
 Preserve exercise ids 1–30 in gym/home plans.
 Update HANDOFF.md when you finish a chunk.
 ```

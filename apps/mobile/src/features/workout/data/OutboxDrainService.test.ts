@@ -60,4 +60,12 @@ describe('OutboxDrainService', () => {
     const still = await drain.listPending(100);
     expect(still).toHaveLength(0);
   });
+
+  it('prunes accepted outbox rows older than retention', async () => {
+    await ActiveSessionController.ensureDaySession('legs', exercises);
+    const drain = new OutboxDrainService({ async send() { return 'accepted'; } });
+    await drain.drainOnce(100);
+    const pruned = await drain.pruneAccepted(0);
+    expect(pruned).toBeGreaterThan(0);
+  });
 });
