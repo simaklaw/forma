@@ -10,33 +10,24 @@
 
 ## Where we stopped
 
-### Day plan overrides — complete UX
+### Recent
 
-- AsyncStorage overrides + catalog replace CTA
-- WorkoutScreen: `resolveDayExercises`, long-press → catalog, reset button
-- **`useFocusEffect`** reloads overrides when returning from catalog after replace
-- Clears selected exercise if it left the day after swap
+- Day plan overrides UX complete + focus reload
+- Prettier gate expanded: `reducer.ts`, `dayPlanOverrides*`, `replaceTarget.ts`
 
-### Also on main
+### Next backlog
 
-- Session logger, PLAN_REVISION, catalog UX, Prettier gate, outbox prune
-
----
-
-## Next backlog
-
-1. Prettier `reducer.ts` + expand gate
-2. Health Connect (not Google Fit)
-3. ESLint monorepo
-4. Optional: generated technique videos
-5. APK only when owner says so
+1. Health Connect — **pause and ask owner before implementing**
+2. ESLint monorepo gate
+3. Optional: generated technique videos
+4. APK only when owner says so
 
 ---
 
 ## Rules
 
 1. No APK without owner go-ahead.
-2. No Google Fit.
+2. No Google Fit. Health Connect only after owner green-light.
 3. Preserve frozen catalog exercise ids **1–30**.
 4. Update this file after each chunk.
 5. Bump `PLAN_REVISION` when default static plans change.
