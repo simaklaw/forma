@@ -10,29 +10,27 @@
 
 ## Where we stopped (done recently)
 
-### Logger + Prettier domain gate (2026-09-26)
+### Session logging (2026-09-26)
 
-- `apps/mobile/src/core/logger.ts` — scoped logger (`createLogger` / `log`)
-- Wired into `OutboxDrainService` (drain/prune)
-- Prettier gate expanded to `packages/workout-domain/src/{commands,events,index,types}.ts` + logger
+- `ActiveSessionController` uses `createLogger('session')` for start / abandon / restart / complete / blocked profile
 
-### PLAN_REVISION
+### Logger + Prettier domain gate
 
-- `PLAN_REVISION = '2026-09-26.1'`
-- template / exercise revision / contentHash isolation
+- `apps/mobile/src/core/logger.ts`
+- OutboxDrainService + progressive `format:check:gate`
 
-### Catalog UX
+### PLAN_REVISION = `2026-09-26.1`
 
-- Equipment, detail modal, favorites, recent row
+### Catalog UX: equipment, detail, favorites, recent
 
 ---
 
 ## Next backlog
 
-1. Format + gate `reducer.ts` / rest of mobile & web
+1. Prettier-format `reducer.ts` + expand gate; rest of mobile/web
 2. Optional: replace exercise in today’s day plan from catalog
-3. Optional: real technique video assets (generated)
-4. Health Connect module (not Google Fit)
+3. Optional: generated technique video assets
+4. Health Connect (not Google Fit)
 5. ESLint monorepo gate
 6. APK only when owner says so
 

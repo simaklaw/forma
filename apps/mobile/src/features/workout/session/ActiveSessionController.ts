@@ -1,5 +1,6 @@
 import { isProfileComplete } from '@forma/core';
 import type { WorkoutSession } from '@forma/workout-domain';
+import { createLogger } from '@/core/logger';
 import {
   getSessionService,
   newSessionId
@@ -10,6 +11,8 @@ import { LOCAL_USER_ID } from './currentUser';
 import { projectSessionEvents } from '@/features/workout/data/sessionProjections';
 import { clearDayReadModel } from './clearDayReadModel';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
+
+const log = createLogger('session');
 
 /** Template id includes plan revision so plan edits do not resume stale sessions. */
 export function dayTemplateId(dayId: string): string {
@@ -93,8 +96,14 @@ class ActiveSessionControllerImpl {
         type: 'abandon_session',
         reason: 'replaced_by_new_session'
       });
-    } catch {
-      // already terminal or race
+      log.info('abandoned previous day session', {
+        fromTemplate: previous.templateRevisionId,
+        nextDayId
+      });
+    } catch (err) {
+      log.debug('abandon previous session ignored', {
+        err: err instanceof Error ? err.message : String(err)
+      });
     }
     return null;
   }
@@ -106,6 +115,7 @@ class ActiveSessionControllerImpl {
   async ensureDaySession(dayId: string, exercises: ExerciseDef[]): Promise<WorkoutSession | null> {
     const bodyKg = profileBodyKg();
     if (bodyKg == null) {
+      log.debug('ensureDaySession blocked: incomplete profile', { dayId });
       return null;
     }
 
@@ -121,6 +131,7 @@ class ActiveSessionControllerImpl {
 
     const sameDayOrNull = await this.abandonIfDifferentDay(dayId);
     if (sameDayOrNull) {
+      log.debug('resumed same-day session', { dayId, sessionId: sameDayOrNull.sessionId });
       return this.bind(sameDayOrNull, dayId);
     }
 
@@ -142,6 +153,7 @@ class ActiveSessionControllerImpl {
     });
 
     const started = await svc.dispatch(sessionId, { type: 'start_session' });
+    log.info('started day session', { dayId, sessionId, steps: steps.length });
     return this.bind(started.session, dayId);
   }
 
@@ -157,8 +169,11 @@ class ActiveSessionControllerImpl {
           type: 'abandon_session',
           reason: 'user_restarted'
         });
-      } catch {
-        // ignore
+        log.info('restart: abandoned previous session', { sessionId: previous.sessionId });
+      } catch (err) {
+        log.debug('restart abandon ignored', {
+          err: err instanceof Error ? err.message : String(err)
+        });
       }
     } else {
       dateKeyToClear = new Date().toISOString().slice(0, 10);
@@ -188,6 +203,10 @@ class ActiveSessionControllerImpl {
     if (!session) return null;
     const step = session.steps[session.currentStepIndex];
     if (!step || step.snapshot.exerciseId !== String(input.exerciseId)) {
+      log.debug('recordSet rejected: out of order or missing step', {
+        expected: step?.snapshot.exerciseId,
+        got: input.exerciseId
+      });
       return null;
     }
 
@@ -228,6 +247,7 @@ class ActiveSessionControllerImpl {
       type: 'complete_session',
       reason: 'all_sets_done'
     });
+    log.info('completed day session', { sessionId: this.sessionId });
     this.emit();
   }
 
