@@ -13,7 +13,7 @@ import {
   type Equipment
 } from './catalogBrowser';
 import ExerciseDetailModal from './ExerciseDetailModal';
-import { favoriteKey, loadFavorites, parseFavoriteKey } from './exerciseFavorites';
+import { favoriteKey, loadFavorites, loadRecent, parseFavoriteKey } from './exerciseFavorites';
 
 const EQUIPMENT_ORDER: Equipment[] = [
   'none',
@@ -32,16 +32,19 @@ export default function CatalogScreen() {
   const [muscle, setMuscle] = useState<MuscleKey | null>(null);
   const [equipment, setEquipment] = useState<Equipment | null>(null);
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
+  const [recentKeys, setRecentKeys] = useState<string[]>([]);
   const [selected, setSelected] = useState<CatalogItem | null>(null);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
-  const refreshFavorites = useCallback(async () => {
-    setFavoriteKeys(await loadFavorites());
+  const refreshLists = useCallback(async () => {
+    const [fav, recent] = await Promise.all([loadFavorites(), loadRecent()]);
+    setFavoriteKeys(fav);
+    setRecentKeys(recent);
   }, []);
 
   useEffect(() => {
-    void refreshFavorites();
-  }, [refreshFavorites]);
+    void refreshLists();
+  }, [refreshLists]);
 
   const items = useMemo(() => buildCatalogItems(mode), [mode]);
   const muscles = useMemo(
@@ -53,8 +56,12 @@ export default function CatalogScreen() {
     return EQUIPMENT_ORDER.filter((key) => present.has(key));
   }, [items]);
 
+  const byKey = useMemo(
+    () => new Map(items.map((item) => [favoriteKey(item.mode, item.id), item])),
+    [items]
+  );
+
   const favoriteItems = useMemo(() => {
-    const byKey = new Map(items.map((item) => [favoriteKey(item.mode, item.id), item]));
     return favoriteKeys
       .map((key) => {
         const parsed = parseFavoriteKey(key);
@@ -62,7 +69,18 @@ export default function CatalogScreen() {
         return byKey.get(key) ?? null;
       })
       .filter((item): item is CatalogItem => item != null);
-  }, [favoriteKeys, items, mode]);
+  }, [favoriteKeys, byKey, mode]);
+
+  const recentItems = useMemo(() => {
+    return recentKeys
+      .map((key) => {
+        const parsed = parseFavoriteKey(key);
+        if (!parsed || parsed.mode !== mode) return null;
+        return byKey.get(key) ?? null;
+      })
+      .filter((item): item is CatalogItem => item != null)
+      .slice(0, 8);
+  }, [recentKeys, byKey, mode]);
 
   const filtered = useMemo(() => {
     const base = filterCatalogItems(items, query, muscle, equipment);
@@ -143,6 +161,35 @@ export default function CatalogScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {recentItems.length > 0 && !showFavoritesOnly && !query && !muscle && !equipment ? (
+        <View style={styles.recentBlock}>
+          <Text style={[styles.recentLabel, { color: colors.paperFaint }]}>НЕДАВНИЕ</Text>
+          <FlatList
+            data={recentItems}
+            horizontal
+            keyExtractor={(item) => `recent-${item.mode}-${item.id}`}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chips}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => setSelected(item)}
+                style={[
+                  styles.recentChip,
+                  { borderColor: colors.lineStrong, backgroundColor: colors.panel }
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={`${item.name}. Недавнее упражнение`}
+              >
+                <Text style={[styles.chipText, { color: colors.paper }]} numberOfLines={1}>
+                  {item.name}
+                </Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      ) : null}
+
       <FlatList
         data={equipmentOptions}
         horizontal
@@ -267,9 +314,12 @@ export default function CatalogScreen() {
       <ExerciseDetailModal
         item={selected}
         visible={selected != null}
-        onClose={() => setSelected(null)}
+        onClose={() => {
+          setSelected(null);
+          void refreshLists();
+        }}
         onFavoriteChange={() => {
-          void refreshFavorites();
+          void refreshLists();
         }}
       />
     </SafeAreaView>
@@ -311,6 +361,21 @@ const styles = StyleSheet.create({
     fontSize: 14
   },
   favRow: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
+  recentBlock: { marginTop: 4 },
+  recentLabel: {
+    fontSize: 11,
+    fontFamily: fonts.bodySemi,
+    letterSpacing: 1,
+    paddingHorizontal: spacing.lg,
+    marginBottom: 4
+  },
+  recentChip: {
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    maxWidth: 200
+  },
   chips: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, gap: 8 },
   chip: {
     borderWidth: 1,
