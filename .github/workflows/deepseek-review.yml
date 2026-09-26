@@ -24,9 +24,10 @@ jobs:
         with:
           chat-token: ${{ secrets.DEEPSEEK_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          model: deepseek-chat
+          # Current DeepSeek API models: deepseek-flash | deepseek-v4-pro
+          # (deepseek-chat is legacy and may return empty results)
+          model: deepseek-flash
           base-url: https://api.deepseek.com
-          # Single-line patterns (multiline YAML folding broke earlier runs)
           exclude-patterns: 'pnpm-lock.yaml,package-lock.json,*.lock,*.md,*.svg,*.png,*.jpg,*.webp,*.wav'
           sys-prompt: >-
             Ты senior-архитектор monorepo FitPulse/Forma (TypeScript, React Native/Expo,
