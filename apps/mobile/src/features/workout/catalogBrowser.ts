@@ -38,7 +38,8 @@ export function inferEquipment(
   }
   if (/блок|cable|machine|leg press|pushdown|pulldown|leg curl/.test(text)) return 'machine';
   if (/гантел|dumbbell/.test(text)) return 'dumbbells';
-  if (/наклонн|скамь|bench/.test(text) && !/жим штанги лёжа|barbell squat/.test(text)) return 'bench';
+  if (/наклонн|скамь|bench/.test(text) && !/жим штанги лёжа|barbell squat/.test(text))
+    return 'bench';
   if (/штан|barbell|deadlift|squat|skull|армейск|жим штанги/.test(text)) return 'barbell';
   return 'barbell';
 }

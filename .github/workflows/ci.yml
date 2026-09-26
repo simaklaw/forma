@@ -17,7 +17,6 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # pnpm MUST be on PATH before setup-node with cache: pnpm
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
         with:
@@ -31,12 +30,15 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
-      # package.json may list eslint-plugin-import before lock is regenerated
       - name: Install
         run: pnpm install --no-frozen-lockfile
 
       - name: Check diff whitespace
         run: git diff --check
+
+      # Progressive Prettier gate — expand as packages are formatted.
+      - name: Check formatting (gate paths)
+        run: pnpm exec prettier --version && pnpm format:check:gate
 
       - name: Build web
         run: pnpm --filter @forma/web build
