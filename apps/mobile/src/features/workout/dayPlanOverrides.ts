@@ -35,7 +35,9 @@ export async function loadDayOverrideIds(
   const all = await readAll();
   const ids = all[mode]?.[dayId];
   if (!Array.isArray(ids) || ids.length === 0) return null;
-  if (!ids.every((id) => typeof id === 'number' && Number.isFinite(id))) return null;
+  if (!ids.every((id) => typeof id === 'number' && Number.isFinite(id))) {
+    return null;
+  }
   return ids;
 }
 
@@ -50,7 +52,10 @@ export async function saveDayOverrideIds(
   await writeAll(all);
 }
 
-export async function clearDayOverride(mode: TrainingMode, dayId: string): Promise<void> {
+export async function clearDayOverride(
+  mode: TrainingMode,
+  dayId: string
+): Promise<void> {
   const all = await readAll();
   if (!all[mode]?.[dayId]) return;
   delete all[mode][dayId];
@@ -59,7 +64,10 @@ export async function clearDayOverride(mode: TrainingMode, dayId: string): Promi
 }
 
 /** Flat catalog lookup within a training mode (gym or home). */
-export function catalogExerciseById(mode: TrainingMode, id: number): ExerciseDef | null {
+export function catalogExerciseById(
+  mode: TrainingMode,
+  id: number
+): ExerciseDef | null {
   for (const day of CATALOGS[mode]) {
     const found = day.exercises.find((ex) => ex.id === id);
     if (found) return found;
@@ -82,7 +90,8 @@ export function resolveDayExercises(
   }
   return overrideIds.map((id, i) => {
     const fromCatalog = catalogExerciseById(mode, id);
-    const source = fromCatalog ?? base[i]!;
+    const fallback = base[i];
+    const source = fromCatalog ?? fallback!;
     return { ...source, index: i + 1 };
   });
 }
@@ -96,7 +105,10 @@ export async function replaceDaySlot(
   base: ExerciseDef[]
 ): Promise<ExerciseDef[]> {
   const existing = await loadDayOverrideIds(mode, dayId);
-  const ids = existing && existing.length === base.length ? [...existing] : base.map((ex) => ex.id);
+  const ids =
+    existing && existing.length === base.length
+      ? [...existing]
+      : base.map((ex) => ex.id);
   if (slotIndex < 0 || slotIndex >= ids.length) {
     return resolveDayExercises(mode, base, existing);
   }
