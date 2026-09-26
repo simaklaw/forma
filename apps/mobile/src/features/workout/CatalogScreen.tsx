@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
@@ -9,8 +9,11 @@ import {
   EQUIPMENT_LABELS,
   filterCatalogItems,
   inferEquipment,
+  type CatalogItem,
   type Equipment
 } from './catalogBrowser';
+import ExerciseDetailModal from './ExerciseDetailModal';
+import { favoriteKey, loadFavorites, parseFavoriteKey } from './exerciseFavorites';
 
 const EQUIPMENT_ORDER: Equipment[] = [
   'none',
@@ -28,6 +31,18 @@ export default function CatalogScreen() {
   const [query, setQuery] = useState('');
   const [muscle, setMuscle] = useState<MuscleKey | null>(null);
   const [equipment, setEquipment] = useState<Equipment | null>(null);
+  const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
+  const [selected, setSelected] = useState<CatalogItem | null>(null);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+
+  const refreshFavorites = useCallback(async () => {
+    setFavoriteKeys(await loadFavorites());
+  }, []);
+
+  useEffect(() => {
+    void refreshFavorites();
+  }, [refreshFavorites]);
+
   const items = useMemo(() => buildCatalogItems(mode), [mode]);
   const muscles = useMemo(
     () => Array.from(new Set(items.flatMap((item) => item.targetMuscles))),
@@ -37,15 +52,30 @@ export default function CatalogScreen() {
     const present = new Set(items.map((item) => inferEquipment(item)));
     return EQUIPMENT_ORDER.filter((key) => present.has(key));
   }, [items]);
-  const filtered = useMemo(
-    () => filterCatalogItems(items, query, muscle, equipment),
-    [items, muscle, query, equipment]
-  );
+
+  const favoriteItems = useMemo(() => {
+    const byKey = new Map(items.map((item) => [favoriteKey(item.mode, item.id), item]));
+    return favoriteKeys
+      .map((key) => {
+        const parsed = parseFavoriteKey(key);
+        if (!parsed || parsed.mode !== mode) return null;
+        return byKey.get(key) ?? null;
+      })
+      .filter((item): item is CatalogItem => item != null);
+  }, [favoriteKeys, items, mode]);
+
+  const filtered = useMemo(() => {
+    const base = filterCatalogItems(items, query, muscle, equipment);
+    if (!showFavoritesOnly) return base;
+    const set = new Set(favoriteKeys);
+    return base.filter((item) => set.has(favoriteKey(item.mode, item.id)));
+  }, [items, muscle, query, equipment, showFavoritesOnly, favoriteKeys]);
 
   function changeMode(next: TrainingMode) {
     setMode(next);
     setMuscle(null);
     setEquipment(null);
+    setShowFavoritesOnly(false);
   }
 
   return (
@@ -91,6 +121,28 @@ export default function CatalogScreen() {
         accessibilityLabel="Поиск упражнений"
         returnKeyType="search"
       />
+      <View style={styles.favRow}>
+        <TouchableOpacity
+          onPress={() => setShowFavoritesOnly((value) => !value)}
+          style={[
+            styles.chip,
+            { borderColor: colors.lineStrong, backgroundColor: colors.panel },
+            showFavoritesOnly && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+          ]}
+          accessibilityRole="button"
+          accessibilityState={{ selected: showFavoritesOnly }}
+          accessibilityLabel="Показать только избранное"
+        >
+          <Text
+            style={[
+              styles.chipText,
+              { color: showFavoritesOnly ? colors.lime : colors.paperDim }
+            ]}
+          >
+            ★ Избранное{favoriteItems.length ? ` (${favoriteItems.length})` : ''}
+          </Text>
+        </TouchableOpacity>
+      </View>
       <FlatList
         data={equipmentOptions}
         horizontal
@@ -170,33 +222,55 @@ export default function CatalogScreen() {
         data={filtered}
         keyExtractor={(item) => `${item.mode}-${item.id}-${item.dayName}`}
         contentContainerStyle={styles.list}
-        renderItem={({ item, index }) => (
-          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
-            <View style={styles.cardTop}>
-              <Text style={[styles.index, { color: colors.lime }]}>
-                {String(index + 1).padStart(2, '0')}
-              </Text>
-              <View style={styles.cardCopy}>
-                <Text style={[styles.name, { color: colors.paper }]}>{item.name}</Text>
-                <Text style={[styles.meta, { color: colors.paperFaint }]}>
-                  {item.dayName} · {EQUIPMENT_LABELS[inferEquipment(item)]}
+        renderItem={({ item, index }) => {
+          const isFav = favoriteKeys.includes(favoriteKey(item.mode, item.id));
+          return (
+            <TouchableOpacity
+              onPress={() => setSelected(item)}
+              style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.name}. Открыть детали`}
+            >
+              <View style={styles.cardTop}>
+                <Text style={[styles.index, { color: colors.lime }]}>
+                  {String(index + 1).padStart(2, '0')}
+                </Text>
+                <View style={styles.cardCopy}>
+                  <Text style={[styles.name, { color: colors.paper }]}>
+                    {isFav ? '★ ' : ''}
+                    {item.name}
+                  </Text>
+                  <Text style={[styles.meta, { color: colors.paperFaint }]}>
+                    {item.dayName} · {EQUIPMENT_LABELS[inferEquipment(item)]}
+                  </Text>
+                </View>
+                <Text style={[styles.load, { color: colors.paperDim }]}>
+                  {item.workingWeight > 0 ? `${item.workingWeight} кг` : 'свой вес'}
                 </Text>
               </View>
-              <Text style={[styles.load, { color: colors.paperDim }]}>
-                {item.workingWeight > 0 ? `${item.workingWeight} кг` : 'свой вес'}
+              <Text style={[styles.muscles, { color: colors.paperDim }]}>
+                {item.targetMuscles.map((key) => MUSCLE_LABELS[key]).join(' · ')}
               </Text>
-            </View>
-            <Text style={[styles.muscles, { color: colors.paperDim }]}>
-              {item.targetMuscles.map((key) => MUSCLE_LABELS[key]).join(' · ')}
-            </Text>
-          </View>
-        )}
+            </TouchableOpacity>
+          );
+        }}
         ListEmptyComponent={
           <Text style={[styles.empty, { color: colors.paperFaint }]}>
-            Ничего не найдено. Измените запрос или фильтр.
+            {showFavoritesOnly
+              ? 'В избранном пока пусто. Откройте упражнение и нажмите «В избранное».'
+              : 'Ничего не найдено. Измените запрос или фильтр.'}
           </Text>
         }
         keyboardShouldPersistTaps="handled"
+      />
+
+      <ExerciseDetailModal
+        item={selected}
+        visible={selected != null}
+        onClose={() => setSelected(null)}
+        onFavoriteChange={() => {
+          void refreshFavorites();
+        }}
       />
     </SafeAreaView>
   );
@@ -236,6 +310,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 14
   },
+  favRow: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
   chips: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, gap: 8 },
   chip: {
     borderWidth: 1,
