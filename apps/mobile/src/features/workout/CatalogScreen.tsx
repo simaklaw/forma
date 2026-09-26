@@ -14,6 +14,12 @@ import {
 } from './catalogBrowser';
 import ExerciseDetailModal from './ExerciseDetailModal';
 import { favoriteKey, loadFavorites, loadRecent, parseFavoriteKey } from './exerciseFavorites';
+import {
+  clearReplaceTarget,
+  getReplaceTarget,
+  subscribeReplaceTarget,
+  type ReplaceTarget
+} from './replaceTarget';
 
 const EQUIPMENT_ORDER: Equipment[] = [
   'none',
@@ -35,6 +41,13 @@ export default function CatalogScreen() {
   const [recentKeys, setRecentKeys] = useState<string[]>([]);
   const [selected, setSelected] = useState<CatalogItem | null>(null);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [replaceTarget, setReplaceTargetState] = useState<ReplaceTarget | null>(getReplaceTarget());
+
+  useEffect(() => subscribeReplaceTarget(() => setReplaceTargetState(getReplaceTarget())), []);
+
+  useEffect(() => {
+    if (replaceTarget) setMode(replaceTarget.mode);
+  }, [replaceTarget]);
 
   const refreshLists = useCallback(async () => {
     const [fav, recent] = await Promise.all([loadFavorites(), loadRecent()]);
@@ -105,6 +118,31 @@ export default function CatalogScreen() {
           Офлайн-список упражнений для дома и зала
         </Text>
       </View>
+
+      {replaceTarget ? (
+        <View
+          style={[
+            styles.replaceBanner,
+            { borderColor: colors.lime, backgroundColor: colors.limeDim }
+          ]}
+        >
+          <Text style={[styles.replaceBannerTitle, { color: colors.lime }]}>
+            Замена в плане: {replaceTarget.dayName}
+          </Text>
+          <Text style={[styles.replaceBannerBody, { color: colors.paper }]}>
+            Выберите упражнение вместо «{replaceTarget.currentName}» (слот{' '}
+            {replaceTarget.slotIndex + 1})
+          </Text>
+          <TouchableOpacity
+            onPress={() => clearReplaceTarget()}
+            accessibilityRole="button"
+            accessibilityLabel="Отменить замену"
+          >
+            <Text style={[styles.replaceBannerCancel, { color: colors.paperDim }]}>Отменить</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
+
       <View style={styles.modeTabs} accessibilityRole="tablist">
         {(['gym', 'home'] as const).map((item) => {
           const active = mode === item;
@@ -337,6 +375,22 @@ const styles = StyleSheet.create({
   eyebrow: { fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1 },
   title: { fontSize: 30, fontFamily: fonts.mono },
   subtitle: { fontSize: 13, fontFamily: fonts.body, marginTop: 3 },
+  replaceBanner: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
+    borderWidth: 1,
+    borderRadius: radius.card,
+    padding: spacing.md,
+    gap: 4
+  },
+  replaceBannerTitle: { fontFamily: fonts.bodySemi, fontSize: 13 },
+  replaceBannerBody: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17 },
+  replaceBannerCancel: {
+    fontFamily: fonts.bodySemi,
+    fontSize: 12,
+    marginTop: 6,
+    textDecorationLine: 'underline'
+  },
   modeTabs: {
     flexDirection: 'row',
     gap: 8,
