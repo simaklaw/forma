@@ -8,34 +8,21 @@
 
 ---
 
-## Where we stopped
-
-### DeepSeek CR
+## DeepSeek CR status
 
 - Workflow: `.github/workflows/deepseek-review.yml`
-- Secret: `DEEPSEEK_API_KEY`
-- Smoke PR #50: monorepo CI green; DeepSeek job failed (likely exclude-patterns YAML) — config simplified on `fix/deepseek-cr-robust`
+- Secret name **must** be exactly `DEEPSEEK_API_KEY` (repository secret)
+- Model: `deepseek-flash` (current DeepSeek API)
+- Diagnostic steps: secret length + HTTP probe before review action
+- If probe fails with `authentication_error` → key invalid/expired/wrong secret name
 
-### Health Connect (in progress)
+## Health Connect
 
-Phase 1 on main: pure mappers + tests (`features/health/`).
-Phase 2 (this branch): `HealthConnectService` stub (Android-only status).
-Phase 3 next: `react-native-health-connect` + app.json permissions (minSdk 26) + Profile UI + write on session complete.
-
-**No Google Fit.**
-
-### Next backlog
-
-1. Finish Health Connect native write path
-2. ESLint monorepo gate
-3. Prettier reducer into gate
-4. APK only when owner says so
-
----
+Phase 1–2 on main (pure mappers + service stub).
+Phase 3 next: native `react-native-health-connect`.
 
 ## Rules
 
 1. No APK without owner go-ahead.
 2. No Google Fit.
-3. Frozen catalog ids 1–30.
-4. Never commit API keys.
+3. Never commit API keys.

@@ -4,9 +4,15 @@ name: DeepSeek Code Review
 on:
   pull_request:
     types: [opened, reopened, synchronize]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to review (required for manual runs)'
+        required: true
+        type: string
 
 concurrency:
-  group: deepseek-review-${{ github.event.pull_request.number }}
+  group: deepseek-review-${{ github.event.pull_request.number || github.event.inputs.pr_number || github.run_id }}
   cancel-in-progress: true
 
 jobs:
@@ -19,14 +25,58 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: Check secret is configured
+        env:
+          KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::Repository secret DEEPSEEK_API_KEY is empty or missing."
+            echo "Settings → Secrets and variables → Actions → Name must be exactly: DEEPSEEK_API_KEY"
+            exit 1
+          fi
+          echo "DEEPSEEK_API_KEY is set (length=${#KEY})"
+          case "$KEY" in
+            sk-*) echo "Key prefix looks like a DeepSeek token (sk-…)" ;;
+            *) echo "::warning::Key does not start with sk- — double-check the pasted value" ;;
+          esac
+
+      - name: Probe DeepSeek API (auth only)
+        env:
+          KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          code=$(curl -sS -o /tmp/ds.json -w "%{http_code}" \
+            https://api.deepseek.com/chat/completions \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${KEY}" \
+            -d '{"model":"deepseek-flash","messages":[{"role":"user","content":"ping"}],"max_tokens":5}')
+          echo "HTTP status: $code"
+          python3 - <<'PY'
+import json, re, sys
+try:
+    d=json.load(open("/tmp/ds.json"))
+except Exception as e:
+    print("body parse error", e)
+    sys.exit(1)
+err=(d.get("error") or {})
+if err:
+    print("error.type=", err.get("type"))
+    print("error.code=", err.get("code"))
+    msg=re.sub(r"sk-[A-Za-z0-9]+", "sk-***", str(err.get("message") or ""))
+    print("error.message=", msg[:300])
+    sys.exit(1)
+if not d.get("choices"):
+    print("no choices; keys=", list(d.keys())[:20])
+    sys.exit(1)
+print("DeepSeek API auth OK")
+PY
+
       - name: DeepSeek Code Review
         uses: hustcer/deepseek-review@v1
         with:
           chat-token: ${{ secrets.DEEPSEEK_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          model: deepseek-chat
+          model: deepseek-flash
           base-url: https://api.deepseek.com
-          # Single-line patterns (multiline YAML folding broke earlier runs)
           exclude-patterns: 'pnpm-lock.yaml,package-lock.json,*.lock,*.md,*.svg,*.png,*.jpg,*.webp,*.wav'
           sys-prompt: >-
             Ты senior-архитектор monorepo FitPulse/Forma (TypeScript, React Native/Expo,
