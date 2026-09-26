@@ -15,9 +15,11 @@ describe('catalog browser filters', () => {
     const hits = filterCatalogItems(gym, 'жим', null);
     expect(hits.length).toBeGreaterThan(0);
     expect(hits.some((item) => item.name.toLowerCase().includes('жим'))).toBe(true);
-    expect(filterCatalogItems(gym, 'ЖИМ', null).map((i) => i.id).sort()).toEqual(
-      hits.map((i) => i.id).sort()
-    );
+    expect(
+      filterCatalogItems(gym, 'ЖИМ', null)
+        .map((i) => i.id)
+        .sort()
+    ).toEqual(hits.map((i) => i.id).sort());
   });
 
   it('searches by note / description', () => {
