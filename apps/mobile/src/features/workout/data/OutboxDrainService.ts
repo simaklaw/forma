@@ -62,6 +62,15 @@ export class OutboxDrainService {
 
     return { accepted, failed, skipped };
   }
+
+  /** Drop accepted rows older than retentionDays. Call once per app session. */
+  async pruneAccepted(retentionDays = 14): Promise<number> {
+    return getSessionService().pruneOutbox(retentionDays, ['accepted']);
+  }
+
+  async pruneFailed(retentionDays = 90): Promise<number> {
+    return getSessionService().pruneOutbox(retentionDays, ['failed']);
+  }
 }
 
 export const outboxDrain = new OutboxDrainService();

@@ -19,7 +19,8 @@
 import React, { useRef, useState } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ResizeMode, Video, AVPlaybackStatus } from 'expo-av';
-import { colors, fonts } from '@/core/theme/tokens';
+import { fonts, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 
 interface Props {
   source?: { uri: string };
@@ -27,6 +28,8 @@ interface Props {
 }
 
 export default function ExerciseVideo({ source, label = 'ТЕХНИКА ВЫПОЛНЕНИЯ' }: Props) {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const [fullscreen, setFullscreen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const previewRef = useRef<Video>(null);
@@ -115,7 +118,8 @@ export default function ExerciseVideo({ source, label = 'ТЕХНИКА ВЫПО
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   hero: {
     height: 170,
     borderWidth: 1,
@@ -166,3 +170,4 @@ const styles = StyleSheet.create({
   },
   closeBtnText: { color: '#fff', fontSize: 20, lineHeight: 20 }
 });
+}

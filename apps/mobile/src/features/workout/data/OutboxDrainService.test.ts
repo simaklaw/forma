@@ -1,11 +1,21 @@
 import {
   configureSessionPersistence,
-  resetSessionServiceForTests
+  resetSessionServiceForTests,
+  getSessionService
 } from './createSessionService';
-import { getSessionService } from './createSessionService';
 import { OutboxDrainService, type OutboxTransport } from './OutboxDrainService';
 import type { ExerciseDef } from '../ExerciseSheet';
 import { ActiveSessionController } from '../session/ActiveSessionController';
+import { useFitPulseStore } from '@/state/useFitPulseStore';
+
+const TEST_PROFILE = {
+  sex: 'male' as const,
+  age: 28,
+  height: 178,
+  weight: 78,
+  pal: 1.375,
+  goal: 'recomp' as const
+};
 
 const exercises: ExerciseDef[] = [
   {
@@ -26,6 +36,7 @@ describe('OutboxDrainService', () => {
     resetSessionServiceForTests();
     configureSessionPersistence('memory');
     ActiveSessionController.resetForTests();
+    useFitPulseStore.setState({ profile: { ...TEST_PROFILE } });
   });
 
   it('lists pending rows after session commands', async () => {
@@ -48,5 +59,13 @@ describe('OutboxDrainService', () => {
     expect(result.failed).toBe(0);
     const still = await drain.listPending(100);
     expect(still).toHaveLength(0);
+  });
+
+  it('prunes accepted outbox rows older than retention', async () => {
+    await ActiveSessionController.ensureDaySession('legs', exercises);
+    const drain = new OutboxDrainService({ async send() { return 'accepted'; } });
+    await drain.drainOnce(100);
+    const pruned = await drain.pruneAccepted(0);
+    expect(pruned).toBeGreaterThan(0);
   });
 });

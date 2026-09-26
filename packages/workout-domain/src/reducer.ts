@@ -102,7 +102,8 @@ export function applyCommand(
       lastEventOrdinal: 0,
       rowVersion: 0,
       localStartDate: command.localStartDate,
-      timezone: command.timezone
+      timezone: command.timezone,
+      weightKgSnapshot: command.weightKgSnapshot
     };
 
     const event: SessionEvent = {
@@ -226,7 +227,8 @@ export function applyCommand(
         (stillWorkOnStep || moreSteps) &&
         !allRequiredDone({ ...next, steps });
 
-      if (shouldRest && stillWorkOnStep) {
+      // Rest between sets of one step AND after the last set when another step remains.
+      if (shouldRest) {
         if (!ctx.eventId2) {
           throw new DomainError(
             'invalid_transition',

@@ -17,23 +17,23 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version: 22
-
+      # pnpm MUST be on PATH before setup-node with cache: pnpm
       - name: Setup pnpm
-        run: npm install --global pnpm@9.15.0
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9.15.0
+          run_install: false
 
-      - name: Cache pnpm
+      - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
+      # package.json may list eslint-plugin-import before lock is regenerated
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Check diff whitespace
         run: git diff --check

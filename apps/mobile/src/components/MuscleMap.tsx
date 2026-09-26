@@ -21,7 +21,8 @@ import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, { Easing, useAnimatedProps, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import Svg, { Circle, Line, Rect } from 'react-native-svg';
-import { colors, fonts } from '@/core/theme/tokens';
+import { fonts, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 
 const WIDTH = 140;
 const HEIGHT = 220;
@@ -37,9 +38,10 @@ export type MuscleKey =
   | 'hamstrings'
   | 'glutes'
   | 'lowerback'
-  | 'back';
+  | 'back'
+  | 'calves';
 
-const MUSCLE_LABELS: Record<MuscleKey, string> = {
+export const MUSCLE_LABELS: Record<MuscleKey, string> = {
   chest: 'грудь',
   shoulders: 'плечи',
   biceps: 'бицепс',
@@ -49,7 +51,8 @@ const MUSCLE_LABELS: Record<MuscleKey, string> = {
   hamstrings: 'бицепс бедра',
   glutes: 'ягодицы',
   lowerback: 'поясница',
-  back: 'спина'
+  back: 'спина',
+  calves: 'икры'
 };
 
 // Pixel centers within the WIDTH×HEIGHT viewBox, ported from the Flutter
@@ -64,12 +67,13 @@ const MUSCLE_POSITIONS: Record<MuscleKey, { x: number; y: number }> = {
   hamstrings: { x: 81, y: 160 },
   glutes: { x: 70, y: 138 },
   lowerback: { x: 70, y: 116 },
-  back: { x: 70, y: 83 }
+  back: { x: 70, y: 83 },
+  calves: { x: 70, y: 190 }
 };
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
-function MuscleMarker({ x, y }: { x: number; y: number }) {
+function MuscleMarker({ x, y, color }: { x: number; y: number; color: string }) {
   const pulse = useSharedValue(0.4);
 
   useEffect(() => {
@@ -84,7 +88,7 @@ function MuscleMarker({ x, y }: { x: number; y: number }) {
       y={y - MARKER_SIZE / 2}
       width={MARKER_SIZE}
       height={MARKER_SIZE}
-      fill={colors.cyan}
+      fill={color}
       animatedProps={animatedProps}
     />
   );
@@ -95,8 +99,14 @@ interface Props {
 }
 
 export default function MuscleMap({ targetMuscles }: Props) {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   return (
-    <View style={styles.wrap}>
+    <View
+      style={styles.wrap}
+      accessible
+      accessibilityLabel={`Целевые мышцы: ${targetMuscles.map((k) => MUSCLE_LABELS[k]).join(', ')}`}
+    >
       <Svg width={WIDTH} height={HEIGHT} viewBox={`0 0 ${WIDTH} ${HEIGHT}`}>
         {/* Silhouette: head, torso, arms, hips, legs — stroke only, same
             layout as the Flutter reference's CustomPainter, drawn here with
@@ -111,7 +121,7 @@ export default function MuscleMap({ targetMuscles }: Props) {
 
         {targetMuscles.map((key) => {
           const pos = MUSCLE_POSITIONS[key];
-          return pos ? <MuscleMarker key={key} x={pos.x} y={pos.y} /> : null;
+          return pos ? <MuscleMarker key={key} x={pos.x} y={pos.y} color={colors.cyan} /> : null;
         })}
       </Svg>
       <Text style={styles.caption}>
@@ -122,8 +132,10 @@ export default function MuscleMap({ targetMuscles }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   wrap: { alignItems: 'center', marginTop: 4 },
   caption: { color: colors.paperFaint, fontSize: 12, marginTop: 8, textAlign: 'center', fontFamily: fonts.body },
   captionLabel: { color: colors.paperDim, fontFamily: fonts.bodySemi }
-});
+  });
+}

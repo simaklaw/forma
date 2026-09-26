@@ -131,6 +131,31 @@ describe('workout-domain applyCommand', () => {
     assert.equal(set2.session.currentStepIndex, 1);
   });
 
+  it('starts rest after the last set of a step when more steps remain', () => {
+    let s = prepare().session;
+    s = applyCommand(s, { type: 'start_session' }, ctx(2)).session;
+
+    s = applyCommand(
+      s,
+      { type: 'complete_set', weightKg: 80, reps: 8, autoStartRest: true },
+      ctx(3)
+    ).session;
+    s = applyCommand(s, { type: 'skip_rest' }, ctx(4)).session;
+
+    const afterLastSetOfStep = applyCommand(
+      s,
+      { type: 'complete_set', weightKg: 80, reps: 8, autoStartRest: true },
+      ctx(5)
+    );
+
+    assert.equal(afterLastSetOfStep.session.currentStepIndex, 1);
+    assert.ok(afterLastSetOfStep.session.restEndsAtMs !== null);
+    assert.equal(
+      afterLastSetOfStep.events.map((e) => e.type).join(','),
+      'set_completed,rest_started'
+    );
+  });
+
   it('pause and resume round-trip', () => {
     let s = prepare().session;
     s = applyCommand(s, { type: 'start_session' }, ctx(2)).session;

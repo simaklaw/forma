@@ -71,6 +71,10 @@ export class SessionCommandService {
     return this.repo.markOutbox(operationId, status);
   }
 
+  async pruneOutbox(retentionDays: number, statuses: OutboxStatus[]): Promise<number> {
+    return this.repo.pruneOutbox(retentionDays, statuses);
+  }
+
   async dispatch(
     sessionId: string | null,
     command: WorkoutCommand,

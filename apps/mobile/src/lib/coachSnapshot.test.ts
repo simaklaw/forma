@@ -28,6 +28,8 @@ describe('mobileCoachSnapshot', () => {
     expect(snap.userProfile.weightKg).toBe(76);
     expect(snap.dailyMetrics.targetCalories).toBe(2200);
     expect(snap.dailyMetrics.consumedCalories).toBe(0);
+    expect(snap.dailyMetrics.proteinConsumed).toBe(0);
+    expect(snap.dailyMetrics.proteinTarget).toBe(152);
     expect(snap.lastWorkout).toBeUndefined();
   });
 
@@ -43,6 +45,7 @@ describe('mobileCoachSnapshot', () => {
       lastWorkoutDate: '2026-09-14'
     });
     expect(snap.dailyMetrics.consumedCalories).toBe(300);
+    expect(snap.dailyMetrics.proteinConsumed).toBe(20);
     expect(snap.lastWorkout?.name).toBe('Ноги — сила');
   });
 });

@@ -293,6 +293,18 @@ export class SqliteSessionRepository implements SessionRepository {
     this.ensureSchema();
     this.db.runSync(`UPDATE outbox SET status = ? WHERE operation_id = ?`, [status, operationId]);
   }
+
+  async pruneOutbox(retentionDays: number, statuses: OutboxStatus[]): Promise<number> {
+    this.ensureSchema();
+    if (statuses.length === 0) return 0;
+    const cutoffMs = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
+    const placeholders = statuses.map(() => '?').join(', ');
+    const result = this.db.runSync(
+      `DELETE FROM outbox WHERE created_at_ms <= ? AND status IN (${placeholders})`,
+      [cutoffMs, ...statuses]
+    );
+    return result.changes;
+  }
 }
 
 export { WORKOUT_DB_NAME };
