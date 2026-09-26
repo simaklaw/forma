@@ -1,6 +1,6 @@
 name: DeepSeek Code Review
 
-# Auto-review on every PR open/update. Skip: put "skip cr" or "skip review" in PR title or body.
+# Skip: put "skip cr" or "skip review" in PR title or body.
 on:
   pull_request:
     types: [opened, reopened, synchronize]
@@ -19,32 +19,19 @@ jobs:
       pull-requests: write
 
     steps:
-      # Action loads the PR diff via GitHub API (no full clone required).
       - name: DeepSeek Code Review
         uses: hustcer/deepseek-review@v1
         with:
           chat-token: ${{ secrets.DEEPSEEK_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          # Official DeepSeek API models: deepseek-chat | deepseek-reasoner
           model: deepseek-chat
           base-url: https://api.deepseek.com
-          temperature: '0.2'
-          # Skip noise; focus on app/domain code
-          exclude-patterns: >-
-            pnpm-lock.yaml,package-lock.json,*.lock,*.md,*.json,
-            *.yml,*.yaml,*.svg,*.png,*.jpg,*.webp,*.wav,*.mp3,
-            dist/**,build/**,.turbo/**,coverage/**
+          # Single-line patterns (multiline YAML folding broke earlier runs)
+          exclude-patterns: 'pnpm-lock.yaml,package-lock.json,*.lock,*.md,*.svg,*.png,*.jpg,*.webp,*.wav'
           sys-prompt: >-
-            Ты senior-архитектор для monorepo FitPulse/Forma:
-            TypeScript, React Native (Expo), pnpm/turbo, event-sourced
-            workout-domain (чистый reducer applyCommand), offline-first,
-            SQLite outbox. Пиши СТРОГО на русском. Будь краток.
-            Указывай только: (1) реальные баги и падения в runtime,
-            (2) нарушения чистоты domain (side-effects в reducer),
-            (3) гонки/потеря данных offline/outbox,
-            (4) уязвимости и утечки секретов,
-            (5) критические регрессии UX тренировок/сессий.
-            Не придирайся к стилю, если CI/Prettier уже зелёный.
-            Не предлагай Google Fit — только Health Connect когда речь о health sync.
-            Формат: маркированный список; для каждого пункта — файл/симптом/риск/фикс в 1–2 строки.
-            Если критичных замечаний нет — одна фраза «Критических замечаний нет».
+            Ты senior-архитектор monorepo FitPulse/Forma (TypeScript, React Native/Expo,
+            event-sourced workout-domain, offline-first). Пиши строго на русском. Кратко.
+            Только реальные баги, утечки секретов, side-effects в domain reducer,
+            потеря offline-данных, критические UX-регрессии тренировок.
+            Не предлагай Google Fit — только Health Connect для health sync.
+            Если критичного нет: «Критических замечаний нет».
