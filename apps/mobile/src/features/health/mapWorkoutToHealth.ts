@@ -12,6 +12,7 @@ export interface SessionBurnInput {
 /**
  * Maps a completed FitPulse session into a Health Connect–ready payload.
  * Pure: no native modules, safe for Jest and web.
+ * (Smoke marker: deepseek-cr key refresh test)
  */
 export function mapSessionToHealthWorkout(
   input: SessionBurnInput,
