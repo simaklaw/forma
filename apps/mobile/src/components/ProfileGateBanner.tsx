@@ -2,7 +2,8 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 import type { TabParamList } from '@/navigation/types';
 
 type Props = {
@@ -18,6 +19,8 @@ export default function ProfileGateBanner({
   body,
   inset = false
 }: Props) {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
 
   return (
@@ -36,7 +39,8 @@ export default function ProfileGateBanner({
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   banner: {
     padding: spacing.lg,
     backgroundColor: colors.panelRaised,
@@ -60,3 +64,4 @@ const styles = StyleSheet.create({
   },
   ctaText: { color: colors.ink, fontFamily: fonts.bodySemi, fontSize: 13 }
 });
+}

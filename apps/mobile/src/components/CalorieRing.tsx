@@ -6,7 +6,8 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { colors, fonts } from '@/core/theme/tokens';
+import { fonts, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 
 interface Props {
   eaten: number;
@@ -22,6 +23,8 @@ export default function CalorieRing({
   size = 108,
   ready = true
 }: Props) {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const strokeWidth = 8;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -84,7 +87,8 @@ export default function CalorieRing({
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   value: { color: colors.paper, fontSize: 26, fontFamily: fonts.mono, lineHeight: 28 },
   valueMuted: { color: colors.paperFaint, fontSize: 26, fontFamily: fonts.mono, lineHeight: 28 },
@@ -93,3 +97,4 @@ const styles = StyleSheet.create({
   sub: { color: colors.paperFaint, fontSize: 10, fontFamily: fonts.body, marginTop: 1 },
   subOver: { color: colors.ember }
 });
+}

@@ -37,7 +37,8 @@ export type MuscleKey =
   | 'hamstrings'
   | 'glutes'
   | 'lowerback'
-  | 'back';
+  | 'back'
+  | 'calves';
 
 const MUSCLE_LABELS: Record<MuscleKey, string> = {
   chest: 'грудь',
@@ -49,7 +50,8 @@ const MUSCLE_LABELS: Record<MuscleKey, string> = {
   hamstrings: 'бицепс бедра',
   glutes: 'ягодицы',
   lowerback: 'поясница',
-  back: 'спина'
+  back: 'спина',
+  calves: 'икры'
 };
 
 // Pixel centers within the WIDTH×HEIGHT viewBox, ported from the Flutter
@@ -64,7 +66,8 @@ const MUSCLE_POSITIONS: Record<MuscleKey, { x: number; y: number }> = {
   hamstrings: { x: 81, y: 160 },
   glutes: { x: 70, y: 138 },
   lowerback: { x: 70, y: 116 },
-  back: { x: 70, y: 83 }
+  back: { x: 70, y: 83 },
+  calves: { x: 70, y: 190 }
 };
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);

@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, fonts, radius } from '@/core/theme/tokens';
+import { fonts, radius, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 
 interface Props {
   label: string;
@@ -10,6 +11,8 @@ interface Props {
 }
 
 export default function MacroBar({ label, value, target, color }: Props) {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const safeTarget = Math.max(1, target);
   const pct = Math.min(100, Math.round((value / safeTarget) * 100));
   const remaining = Math.round(target - value);
@@ -34,7 +37,8 @@ export default function MacroBar({ label, value, target, color }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
   dot: { width: 7, height: 7, borderRadius: radius.pill },
   tag: { width: 16, color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 12 },
@@ -55,3 +59,4 @@ const styles = StyleSheet.create({
   },
   valOver: { color: colors.ember }
 });
+}

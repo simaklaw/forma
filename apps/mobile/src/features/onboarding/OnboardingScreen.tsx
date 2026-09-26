@@ -1,17 +1,20 @@
 import React from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { ProfileForm } from './ProfileForm';
 
 export default function OnboardingScreen() {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const profile = useFitPulseStore((s) => s.profile);
   const updateProfile = useFitPulseStore((s) => s.updateProfile);
 
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.body}>
-        <Text style={styles.eyebrow}>FORMA</Text>
+        <Text style={styles.eyebrow}>FITPULSE</Text>
         <Text style={styles.title}>Профиль</Text>
         <Text style={styles.sub}>
           Чтобы считать нагрузку и калории по Миффлину–Сан Жеору, нужны ваши данные. Без них
@@ -41,7 +44,8 @@ export default function OnboardingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.ink },
   body: { flex: 1, justifyContent: 'center', paddingHorizontal: spacing.xl, gap: spacing.md },
   eyebrow: {
@@ -67,3 +71,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.panel
   }
 });
+}

@@ -1,8 +1,8 @@
 import {
   configureSessionPersistence,
-  resetSessionServiceForTests
+  resetSessionServiceForTests,
+  getSessionService
 } from './createSessionService';
-import { getSessionService } from './createSessionService';
 import { OutboxDrainService, type OutboxTransport } from './OutboxDrainService';
 import type { ExerciseDef } from '../ExerciseSheet';
 import { ActiveSessionController } from '../session/ActiveSessionController';

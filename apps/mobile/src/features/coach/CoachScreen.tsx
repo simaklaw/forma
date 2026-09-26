@@ -12,7 +12,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CoachEngine, estimateBurnFromSetLogs, isProfileComplete, toDateKey } from '@forma/core';
 import { getMobileTrainerProgress } from '@/ai/trainerProgress';
-import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 import ProfileGateBanner from '@/components/ProfileGateBanner';
 import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
 import { COACH_WELCOME, selectDailyTotals, useFitPulseStore } from '@/state/useFitPulseStore';
@@ -56,6 +57,8 @@ function toDomainProfile(profile: {
 }
 
 export default function CoachScreen() {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const profile = useFitPulseStore((s) => s.profile);
   const todayMeals = useFitPulseStore((s) => s.todayMeals);
   const setLogs = useFitPulseStore((s) => s.setLogs);
@@ -242,7 +245,8 @@ export default function CoachScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.ink },
   flex: { flex: 1 },
   header: {
@@ -351,3 +355,4 @@ const styles = StyleSheet.create({
   sendDisabled: { opacity: 0.4 },
   sendText: { color: colors.ink, fontFamily: fonts.bodySemi, fontSize: 14 }
 });
+}

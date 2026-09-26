@@ -3,7 +3,8 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { isProfileComplete } from '@forma/core';
-import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useFitPulseStore, selectDailyTotals, DayMeals } from '@/state/useFitPulseStore';
 import CalorieRing from '@/components/CalorieRing';
 import DailyTipCard from '@/components/DailyTipCard';
@@ -27,6 +28,8 @@ function formatClockTime(ms?: number): string {
 }
 
 export default function NutritionScreen() {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const sheetRef = useRef<GorhomBottomSheet>(null);
   const [activeMeal, setActiveMeal] = React.useState<keyof DayMeals>('breakfast');
 
@@ -184,7 +187,8 @@ export default function NutritionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.ink },
   header: {
     paddingHorizontal: spacing.xxl,
@@ -285,3 +289,4 @@ const styles = StyleSheet.create({
   },
   foodDel: { width: 22, textAlign: 'center', color: colors.paperFaint, fontSize: 16 }
 });
+}

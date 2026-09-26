@@ -1,9 +1,9 @@
 # HANDOFF — FitPulse / Forma
 
-**Checkpoint date:** 2026-09-25  
-**Active branch:** `fix/profile-gate-weightkg`  
-**Repo:** https://github.com/simaklaw/forma  
-**Product name:** FitPulse (mobile), monorepo still called Forma  
+**Checkpoint date:** 2026-09-26
+**Active branch:** `fix/profile-gate-weightkg`
+**Repo:** https://github.com/simaklaw/forma
+**Product name:** FitPulse (mobile), monorepo still called Forma
 **APK:** do **not** build until product backlog below is closed (owner decision).
 
 This file is the **single source of truth** for handoff between AI agents and the human owner. Read it before changing code.
@@ -11,6 +11,15 @@ This file is the **single source of truth** for handoff between AI agents and th
 ---
 
 ## Where we stopped (done recently)
+
+### Catalog browser + MuscleMap follow-up (2026-09-26)
+
+- Added `apps/mobile/src/features/workout/CatalogScreen.tsx`: offline exercise browser with home/gym mode, text search, muscle chips, load metadata, and empty state.
+- Added a `Каталог` bottom-tab route and a shortcut from the Workout header; no network dependency was introduced.
+- Added `calves` to `MuscleKey`, labels, marker position, and the gym standing calf-raise exercise. Existing numeric exercise ids remain unchanged.
+- Rolled dynamic theme styles into the catalog, onboarding, Progress, Coach, Nutrition, and shared profile/nutrition cards; onboarding branding now says FitPulse.
+- Validation: mobile TypeScript check passed; 19 Jest suites / 104 tests passed; `git diff --check` passed.
+- Known follow-up: legacy styles in the exercise sheet/video and a few workout utility components still use static dark tokens and should be migrated before calling the light-theme backlog fully closed.
 
 ### Catalog expansion (wger-aligned, offline-first)
 
@@ -33,9 +42,9 @@ This file is the **single source of truth** for handoff between AI agents and th
 
 ## Next backlog (owner-requested, in order)
 
-1. **Catalog browser screen** — list/search exercises with **filter home | gym** (and ideally category chips). Wire from Workout tab / Today.
-2. **`calves` in MuscleMap** — add `calves` to `MuscleKey`, labels, positions in `apps/mobile/src/components/MuscleMap.tsx`; then use `targetMuscles: ['calves']` where appropriate (e.g. calf raises).
-3. **Light theme on remaining screens** — sporty light palette, same toggle; no pure gray Material defaults; keep FitPulse identity.
+1. ~~**Catalog browser screen** — list/search exercises with **filter home | gym** (and ideally category chips). Wire from Workout tab / Today.~~ **Done 2026-09-26.**
+2. ~~**`calves` in MuscleMap** — add `calves` to `MuscleKey`, labels, positions in `apps/mobile/src/components/MuscleMap.tsx`; then use `targetMuscles: ['calves']` where appropriate (e.g. calf raises).~~ **Done 2026-09-26.**
+3. **Light theme on remaining screens** — primary screens and shared cards migrated; exercise sheet/video and a few workout utility components remain to migrate. No pure gray Material defaults; keep FitPulse identity.
 
 ### Deferred / later (not blocking APK when backlog 1–3 done)
 

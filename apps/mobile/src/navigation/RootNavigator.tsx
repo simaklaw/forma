@@ -7,16 +7,19 @@ import { useThemeColors, useThemeMode } from '@/core/theme/useThemeColors';
 import { RestTimerEngine } from '@/engines/RestTimerEngine';
 
 import WorkoutScreen from '@/features/workout/WorkoutScreen';
+import CatalogScreen from '@/features/workout/CatalogScreen';
 import NutritionScreen from '@/features/nutrition/NutritionScreen';
 import CoachScreen from '@/features/coach/CoachScreen';
 import ProgressScreen from '@/features/analytics/ProgressScreen';
 import ProfileScreen from '@/features/profile/ProfileScreen';
+import type { TabParamList } from './types';
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<TabParamList>();
 
 /** Letter marks — no emoji chrome on the tab bar. */
 const ICONS: Record<string, string> = {
   Тренировки: 'Тр',
+  Каталог: 'Ка',
   Питание: 'Пт',
   Тренер: 'Тн',
   Прогресс: 'Пр',
@@ -107,6 +110,7 @@ export default function RootNavigator() {
         }}
       >
         <Tab.Screen name="Тренировки" component={WorkoutScreen} />
+        <Tab.Screen name="Каталог" component={CatalogScreen} />
         <Tab.Screen name="Питание" component={NutritionScreen} />
         <Tab.Screen name="Тренер" component={CoachScreen} />
         <Tab.Screen name="Прогресс" component={ProgressScreen} />

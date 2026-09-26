@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { isProfileComplete } from '@forma/core';
-import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 import type { Sex } from '@/engines/MetabolicEngine';
 
 export type ProfileFormValues = {
@@ -18,6 +19,8 @@ type Props = {
 };
 
 export function ProfileForm({ initial, submitLabel, onSubmit }: Props) {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const [weight, setWeight] = useState(initial.weight != null ? String(initial.weight) : '');
   const [height, setHeight] = useState(initial.height != null ? String(initial.height) : '');
   const [age, setAge] = useState(initial.age != null ? String(initial.age) : '');
@@ -86,6 +89,8 @@ function Field({
   onChange: (v: string) => void;
   placeholder: string;
 }) {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
@@ -101,7 +106,8 @@ function Field({
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   wrap: { gap: spacing.md },
   sexRow: { flexDirection: 'row', gap: spacing.sm },
   sexBtn: {
@@ -144,4 +150,5 @@ const styles = StyleSheet.create({
   },
   ctaDisabled: { opacity: 0.4 },
   ctaText: { color: colors.ink, fontFamily: fonts.mono, fontSize: 18 }
-});
+  });
+}

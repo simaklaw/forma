@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 import { tipForDate } from '@/lib/dailyTips';
 
 type Props = {
@@ -10,18 +11,21 @@ type Props = {
 
 /** Offline «совет дня» — same tip as Progress (day-of-year rotation). */
 export default function DailyTipCard({ inset = false }: Props) {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const tip = useMemo(() => tipForDate(new Date()), []);
 
   return (
     <View style={[styles.card, inset && styles.inset]}>
-      <Text style={styles.eyebrow}>FORMA · совет дня</Text>
+      <Text style={styles.eyebrow}>FITPULSE · совет дня</Text>
       <Text style={styles.title}>{tip.title}</Text>
       <Text style={styles.body}>{tip.body}</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   card: {
     padding: spacing.lg,
     backgroundColor: colors.panel,
@@ -43,3 +47,4 @@ const styles = StyleSheet.create({
   title: { color: colors.paper, fontFamily: fonts.bodySemi, fontSize: 15, marginBottom: 6 },
   body: { color: colors.paperDim, fontFamily: fonts.body, fontSize: 13, lineHeight: 19 }
 });
+}

@@ -2,7 +2,8 @@ import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { estimateBurnFromSetLogs, estimateDailyBurns, toDateKey } from '@forma/core';
-import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 import DailyTipCard from '@/components/DailyTipCard';
 import ProfileGateBanner from '@/components/ProfileGateBanner';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
@@ -10,6 +11,8 @@ import { lastNDays, selectWeeklyVolume, weekdayRuShort } from '@/engines/Workout
 import WeightChart from '@/components/WeightChart';
 
 export default function ProgressScreen() {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const weightHistory = useFitPulseStore((s) => s.weightHistory);
   const setLogs = useFitPulseStore((s) => s.setLogs);
   const profileWeight = useFitPulseStore((s) => s.profile.weight);
@@ -164,7 +167,8 @@ export default function ProgressScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.ink },
   header: {
     paddingHorizontal: spacing.xxl,
@@ -208,3 +212,4 @@ const styles = StyleSheet.create({
   barLabel: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 11 },
   emptyState: { color: colors.paperFaint, fontFamily: fonts.body, fontSize: 12.5, lineHeight: 18 }
 });
+}

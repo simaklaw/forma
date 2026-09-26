@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { estimateBurnFromSetLogs, toDateKey as coreToDateKey } from '@forma/core';
 import { colors as staticColors, fonts, radius, spacing } from '@/core/theme/tokens';
@@ -22,6 +24,7 @@ import {
   type TrainingMode,
   type WorkoutDay
 } from './catalog';
+import type { TabParamList } from '@/navigation/types';
 
 const WEEKDAY_RU_FULL = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 
@@ -84,6 +87,7 @@ function selectPlanStreakDays(
 
 export default function WorkoutScreen() {
   const colors = useThemeColors();
+  const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const sheetRef = useRef<GorhomBottomSheet>(null);
   const [selectedDayId, setSelectedDayId] = useState<string | null>(null);
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
@@ -211,7 +215,17 @@ export default function WorkoutScreen() {
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]} edges={['top']}>
       <View style={[styles.header, { borderBottomColor: colors.line }]}>
         <Text style={[styles.eyebrow, { color: colors.lime }]}>FITPULSE · {todayLabel}</Text>
-        <Text style={[styles.title, { color: colors.paper }]}>Тренировка</Text>
+        <View style={styles.titleRow}>
+          <Text style={[styles.title, { color: colors.paper }]}>Тренировка</Text>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Каталог')}
+            style={[styles.catalogButton, { borderColor: colors.lineStrong, backgroundColor: colors.panel }]}
+            accessibilityRole="button"
+            accessibilityLabel="Открыть каталог упражнений"
+          >
+            <Text style={[styles.catalogButtonText, { color: colors.lime }]}>Каталог</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.modeTabs} accessibilityRole="tablist">
@@ -508,7 +522,10 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   header: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, paddingBottom: spacing.sm, borderBottomWidth: 1 },
   eyebrow: { fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   title: { fontSize: 30, fontFamily: fonts.mono },
+  catalogButton: { borderWidth: 1, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 7 },
+  catalogButtonText: { fontFamily: fonts.bodySemi, fontSize: 12 },
   modeTabs: { flexDirection: 'row', gap: 8, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
   modeTab: { flex: 1, paddingVertical: 12, borderRadius: radius.pill, borderWidth: 1, alignItems: 'center' },
   modeTabText: { fontFamily: fonts.bodySemi, fontSize: 14 },
