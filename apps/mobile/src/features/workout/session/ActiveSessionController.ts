@@ -5,18 +5,21 @@ import {
   newSessionId
 } from '@/features/workout/data';
 import type { ExerciseDef } from '../ExerciseSheet';
-import { contentHashForExercises, exercisesToSnapshots } from './planToSnapshots';
+import { contentHashForExercises, exercisesToSnapshots, PLAN_REVISION } from './planToSnapshots';
 import { LOCAL_USER_ID } from './currentUser';
 import { projectSessionEvents } from '@/features/workout/data/sessionProjections';
 import { clearDayReadModel } from './clearDayReadModel';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 
+/** Template id includes plan revision so plan edits do not resume stale sessions. */
 export function dayTemplateId(dayId: string): string {
-  return `day-${dayId}`;
+  return `day-${dayId}@${PLAN_REVISION}`;
 }
 
+/** Accepts `day-{id}` (legacy) and `day-{id}@{revision}`. */
 export function dayIdFromTemplate(templateRevisionId: string): string | null {
-  return templateRevisionId.startsWith('day-') ? templateRevisionId.slice(4) : null;
+  const match = /^day-([^@]+)(?:@.*)?$/.exec(templateRevisionId);
+  return match ? match[1] : null;
 }
 
 function isResumable(s: WorkoutSession): boolean {
@@ -111,7 +114,7 @@ class ActiveSessionControllerImpl {
 
     if (this.sessionId && this.dayId === dayId) {
       const existing = await svc.getSession(this.sessionId);
-      if (existing && isResumable(existing)) {
+      if (existing && isResumable(existing) && existing.templateRevisionId === templateId) {
         return existing;
       }
     }
