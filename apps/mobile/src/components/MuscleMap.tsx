@@ -21,7 +21,8 @@ import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, { Easing, useAnimatedProps, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import Svg, { Circle, Line, Rect } from 'react-native-svg';
-import { colors, fonts } from '@/core/theme/tokens';
+import { fonts, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 
 const WIDTH = 140;
 const HEIGHT = 220;
@@ -72,7 +73,7 @@ const MUSCLE_POSITIONS: Record<MuscleKey, { x: number; y: number }> = {
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
-function MuscleMarker({ x, y }: { x: number; y: number }) {
+function MuscleMarker({ x, y, color }: { x: number; y: number; color: string }) {
   const pulse = useSharedValue(0.4);
 
   useEffect(() => {
@@ -87,7 +88,7 @@ function MuscleMarker({ x, y }: { x: number; y: number }) {
       y={y - MARKER_SIZE / 2}
       width={MARKER_SIZE}
       height={MARKER_SIZE}
-      fill={colors.cyan}
+      fill={color}
       animatedProps={animatedProps}
     />
   );
@@ -98,6 +99,8 @@ interface Props {
 }
 
 export default function MuscleMap({ targetMuscles }: Props) {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   return (
     <View style={styles.wrap}>
       <Svg width={WIDTH} height={HEIGHT} viewBox={`0 0 ${WIDTH} ${HEIGHT}`}>
@@ -114,7 +117,7 @@ export default function MuscleMap({ targetMuscles }: Props) {
 
         {targetMuscles.map((key) => {
           const pos = MUSCLE_POSITIONS[key];
-          return pos ? <MuscleMarker key={key} x={pos.x} y={pos.y} /> : null;
+          return pos ? <MuscleMarker key={key} x={pos.x} y={pos.y} color={colors.cyan} /> : null;
         })}
       </Svg>
       <Text style={styles.caption}>
@@ -125,8 +128,10 @@ export default function MuscleMap({ targetMuscles }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   wrap: { alignItems: 'center', marginTop: 4 },
   caption: { color: colors.paperFaint, fontSize: 12, marginTop: 8, textAlign: 'center', fontFamily: fonts.body },
   captionLabel: { color: colors.paperDim, fontFamily: fonts.bodySemi }
-});
+  });
+}

@@ -3,7 +3,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { CoachEngine, estimateBurnFromSetLogs, isProfileComplete, toDateKey } from '@forma/core';
-import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
 import type { TabParamList } from '@/navigation/types';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
@@ -16,6 +17,8 @@ type Props = {
 
 /** On-device coach strip — shows gate / loading / advice (never silent null when mounted). */
 export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames }: Props) {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const profile = useFitPulseStore((s) => s.profile);
   const todayMeals = useFitPulseStore((s) => s.todayMeals);
@@ -104,7 +107,7 @@ export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames }: Props
     };
   }, [snapshot, anyDoneToday]);
 
-  const labelBits = ['FORMA · Тренер'];
+  const labelBits = ['FITPULSE · Тренер'];
   if (burned > 0) labelBits.push(`~${burned} ккал`);
 
   let body: string;
@@ -142,7 +145,8 @@ export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames }: Props
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   card: {
     marginBottom: spacing.md,
     marginTop: spacing.sm,
@@ -185,3 +189,4 @@ const styles = StyleSheet.create({
     fontSize: 13
   }
 });
+}

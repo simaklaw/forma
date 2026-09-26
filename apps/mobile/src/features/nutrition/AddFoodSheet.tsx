@@ -3,7 +3,8 @@ import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import Slider from '@react-native-community/slider';
 import AppBottomSheet from '@/components/BottomSheet';
-import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useFitPulseStore, DayMeals } from '@/state/useFitPulseStore';
 import { OpenFoodFactsService, NormalizedFood } from '@/services/OpenFoodFactsService';
 
@@ -69,6 +70,8 @@ interface Props {
 }
 
 const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel, onClose }, ref) => {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const addFoodItem = useFitPulseStore((s) => s.addFoodItem);
   const customFoods = useFitPulseStore((s) => s.customFoods);
   const addCustomFood = useFitPulseStore((s) => s.addCustomFood);
@@ -309,7 +312,8 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
 AddFoodSheet.displayName = 'AddFoodSheet';
 export default AddFoodSheet;
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   tabs: {
     flexDirection: 'row',
     backgroundColor: colors.panel,
@@ -366,3 +370,4 @@ const styles = StyleSheet.create({
   cta: { marginTop: 10, marginBottom: 30, padding: 14, backgroundColor: colors.lime, alignItems: 'center' },
   ctaText: { color: colors.ink, fontSize: 16, fontFamily: fonts.mono }
 });
+}

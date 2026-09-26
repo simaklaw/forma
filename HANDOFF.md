@@ -19,7 +19,13 @@ This file is the **single source of truth** for handoff between AI agents and th
 - Added `calves` to `MuscleKey`, labels, marker position, and the gym standing calf-raise exercise. Existing numeric exercise ids remain unchanged.
 - Rolled dynamic theme styles into the catalog, onboarding, Progress, Coach, Nutrition, and shared profile/nutrition cards; onboarding branding now says FitPulse.
 - Validation: mobile TypeScript check passed; 19 Jest suites / 104 tests passed; `git diff --check` passed.
-- Known follow-up: legacy styles in the exercise sheet/video and a few workout utility components still use static dark tokens and should be migrated before calling the light-theme backlog fully closed.
+- The previously identified legacy theme surfaces are addressed in the Light theme completion chunk below.
+
+### Light theme completion (2026-09-26)
+
+- Migrated `ExerciseSheet`, `BottomSheet`, `ExerciseVideo`, `AddFoodSheet`, `MuscleMap`, `WorkoutCoachCard`, `WorkoutErrorBoundary`, `ProtocolBanner`, and `WeightChart` to `useThemeColors()`.
+- Removed remaining `FORMA` UI labels from the touched workout/metabolism surfaces. The only intentional hardcoded black is the fullscreen video canvas.
+- Validation: mobile typecheck passed; 19 Jest suites / 104 tests passed; lint has 0 errors (repository-wide Prettier warnings only); `git diff --check` passed.
 
 ### Catalog expansion (wger-aligned, offline-first)
 
@@ -44,7 +50,7 @@ This file is the **single source of truth** for handoff between AI agents and th
 
 1. ~~**Catalog browser screen** — list/search exercises with **filter home | gym** (and ideally category chips). Wire from Workout tab / Today.~~ **Done 2026-09-26.**
 2. ~~**`calves` in MuscleMap** — add `calves` to `MuscleKey`, labels, positions in `apps/mobile/src/components/MuscleMap.tsx`; then use `targetMuscles: ['calves']` where appropriate (e.g. calf raises).~~ **Done 2026-09-26.**
-3. **Light theme on remaining screens** — primary screens and shared cards migrated; exercise sheet/video and a few workout utility components remain to migrate. No pure gray Material defaults; keep FitPulse identity.
+3. ~~**Light theme on remaining screens** — sporty light palette, same toggle; no pure gray Material defaults; keep FitPulse identity.~~ **Done 2026-09-26.**
 
 ### Deferred / later (not blocking APK when backlog 1–3 done)
 

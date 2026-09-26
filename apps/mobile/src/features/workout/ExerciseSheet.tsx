@@ -5,7 +5,8 @@ import type { WorkoutSession } from '@forma/workout-domain';
 import AppBottomSheet from '@/components/BottomSheet';
 import ExerciseVideo from '@/components/ExerciseVideo';
 import MuscleMap, { MuscleKey } from '@/components/MuscleMap';
-import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 import { estimateOneRepMax, rpeFromRir } from '@/engines/MetabolicEngine';
 import { RestTimerEngine } from '@/engines/RestTimerEngine';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
@@ -49,6 +50,8 @@ function remainingRestSeconds(restEndsAtMs: number | null | undefined, nowMs = D
 
 const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
   ({ exercise, dayId, dayExercises, onFinished, onGoToExpected }, ref) => {
+    const colors = useThemeColors();
+    const styles = createStyles(colors);
     const completedSetsToday = useFitPulseStore((s) => s.completedSetsToday);
     const setLogs = useFitPulseStore((s) => s.setLogs);
     const profileWeight = useFitPulseStore((s) => s.profile.weight);
@@ -409,7 +412,8 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 ExerciseSheet.displayName = 'ExerciseSheet';
 export default ExerciseSheet;
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   currentChip: {
     alignSelf: 'flex-start',
     marginBottom: spacing.sm,
@@ -556,3 +560,4 @@ const styles = StyleSheet.create({
   ctaDisabled: { opacity: 0.5 },
   ctaText: { color: colors.ink, fontSize: 16, fontFamily: fonts.mono }
 });
+}

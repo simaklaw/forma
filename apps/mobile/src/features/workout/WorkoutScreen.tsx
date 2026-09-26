@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { estimateBurnFromSetLogs, toDateKey as coreToDateKey } from '@forma/core';
-import { colors as staticColors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import ExerciseSheet, { ExerciseDef } from './ExerciseSheet';
 import { WorkoutCoachCard } from './WorkoutCoachCard';

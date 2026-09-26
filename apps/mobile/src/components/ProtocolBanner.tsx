@@ -1,10 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors, fonts, radius, spacing } from '@/core/theme/tokens';
+import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { isProtocolActive, detectWeightPlateau } from '@/engines/MetabolicEngine';
 
 export default function ProtocolBanner() {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const metabolic = useFitPulseStore((s) => s.metabolic);
   const weightHistory = useFitPulseStore((s) => s.weightHistory);
   const goal = useFitPulseStore((s) => s.profile.goal);
@@ -27,7 +30,7 @@ export default function ProtocolBanner() {
   return (
     <View>
       <View style={[styles.status, (active || suspected) && styles.statusActive]}>
-        <Text style={styles.eyebrow}>FORMA · метаболизм</Text>
+        <Text style={styles.eyebrow}>FITPULSE · метаболизм</Text>
         <Text style={[styles.statusText, (active || suspected) && styles.statusTextActive]}>
           {statusText}
         </Text>
@@ -56,7 +59,8 @@ export default function ProtocolBanner() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ColorTokens) {
+  return StyleSheet.create({
   status: {
     borderWidth: 1,
     borderColor: colors.line,
@@ -88,3 +92,4 @@ const styles = StyleSheet.create({
   btnTitle: { color: colors.paper, fontSize: 12.5, fontFamily: fonts.bodySemi, marginBottom: 4 },
   btnSub: { color: colors.paperFaint, fontSize: 10, fontFamily: fonts.body }
 });
+}
