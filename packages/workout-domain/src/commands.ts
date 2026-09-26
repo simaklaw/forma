@@ -31,13 +31,13 @@ export type WorkoutCommand =
   | { type: 'skip_step'; reason: SkipReason }
   | { type: 'pause_session' }
   | { type: 'resume_session' }
-  | { type: 'complete_session'; reason?: Extract<TerminalReason, 'all_sets_done' | 'user_finished_partial'> }
+  | {
+      type: 'complete_session';
+      reason?: Extract<TerminalReason, 'all_sets_done' | 'user_finished_partial'>;
+    }
   | {
       type: 'abandon_session';
-      reason?: Extract<
-        TerminalReason,
-        'user_left' | 'replaced_by_new_session' | 'user_restarted'
-      >;
+      reason?: Extract<TerminalReason, 'user_left' | 'replaced_by_new_session' | 'user_restarted'>;
     };
 
 export interface ApplyOptions {
