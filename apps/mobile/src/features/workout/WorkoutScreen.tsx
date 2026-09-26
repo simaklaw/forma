@@ -24,6 +24,12 @@ import {
   type TrainingMode,
   type WorkoutDay
 } from './catalog';
+import {
+  clearDayOverride,
+  loadDayOverrideIds,
+  resolveDayExercises
+} from './dayPlanOverrides';
+import { setReplaceTarget } from './replaceTarget';
 import type { TabParamList } from '@/navigation/types';
 
 const WEEKDAY_RU_FULL = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
@@ -107,6 +113,28 @@ export default function WorkoutScreen() {
   const activeDay =
     plan.find((d) => d.id === (selectedDayId ?? plan[0]?.id)) ?? plan[0];
 
+  const [overrideIds, setOverrideIds] = useState<number[] | null>(null);
+  const [overrideTick, setOverrideTick] = useState(0);
+
+  useEffect(() => {
+    if (!activeDay) {
+      setOverrideIds(null);
+      return;
+    }
+    let cancelled = false;
+    void loadDayOverrideIds(trainingMode, activeDay.id).then((ids) => {
+      if (!cancelled) setOverrideIds(ids);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeDay?.id, trainingMode, overrideTick]);
+
+  const effectiveExercises = useMemo(() => {
+    if (!activeDay) return [];
+    return resolveDayExercises(trainingMode, activeDay.exercises, overrideIds);
+  }, [activeDay, trainingMode, overrideIds]);
+
   useEffect(() => {
     if (!plan.some((d) => d.id === selectedDayId)) {
       setSelectedDayId(plan[0]?.id ?? null);
@@ -140,11 +168,11 @@ export default function WorkoutScreen() {
   }, [refreshResumable]);
 
   const selectedExercise =
-    activeDay?.exercises.find((e) => e.id === selectedExerciseId) ?? null;
+    effectiveExercises.find((e) => e.id === selectedExerciseId) ?? null;
   const todayLabel = WEEKDAY_RU_FULL[new Date().getDay()];
 
-  const todayDoneCount = activeDay
-    ? activeDay.exercises.filter((ex) => completedSetsToday(ex.id) >= ex.totalSets).length
+  const todayDoneCount = effectiveExercises.length
+    ? effectiveExercises.filter((ex) => completedSetsToday(ex.id) >= ex.totalSets).length
     : 0;
   const anyDoneToday = useMemo(
     () => isAnyPlanComplete(plan, dayProgress, toDateKey(new Date())),
@@ -283,7 +311,7 @@ export default function WorkoutScreen() {
               <Text style={[styles.ticketLabel, { color: colors.paperFaint }]}>План дня · {trainingMode === 'gym' ? 'зал' : 'дом'}</Text>
               <Text style={[styles.ticketName, { color: colors.paper }]}>{activeDay.name}</Text>
               <Text style={[styles.ticketMeta, { color: colors.paperDim }]}>
-                {activeDay.exercises.length} упражнения · {activeDay.meta}
+                {effectiveExercises.length} упражнения · {activeDay.meta}
                 {burnedToday > 0 ? ` · ~${burnedToday} ккал` : ''}
               </Text>
               {resumable && dayIdFromTemplate(resumable.templateRevisionId) === activeDay.id ? (
@@ -300,7 +328,7 @@ export default function WorkoutScreen() {
                       onPress={() => {
                         void ActiveSessionController.ensureDaySession(
                           activeDay.id,
-                          activeDay.exercises
+                          effectiveExercises
                         )
                           .then((session) => {
                             if (!session) return;
@@ -308,7 +336,7 @@ export default function WorkoutScreen() {
                             const step = session.steps[session.currentStepIndex];
                             const exId = step
                               ? Number(step.snapshot.exerciseId)
-                              : activeDay.exercises[0]?.id;
+                              : effectiveExercises[0]?.id;
                             if (exId) openExercise(exId);
                           })
                           .catch(() => {});
@@ -323,7 +351,7 @@ export default function WorkoutScreen() {
                       onPress={() => {
                         void ActiveSessionController.restartDaySession(
                           activeDay.id,
-                          activeDay.exercises
+                          effectiveExercises
                         )
                           .then((session) => {
                             if (!session) return;
@@ -331,7 +359,7 @@ export default function WorkoutScreen() {
                             const first = session.steps[0];
                             const exId = first
                               ? Number(first.snapshot.exerciseId)
-                              : activeDay.exercises[0]?.id;
+                              : effectiveExercises[0]?.id;
                             if (exId) openExercise(exId);
                           })
                           .catch(() => {});
@@ -349,12 +377,12 @@ export default function WorkoutScreen() {
                   onPress={() => {
                     void ActiveSessionController.ensureDaySession(
                       activeDay.id,
-                      activeDay.exercises
+                      effectiveExercises
                     )
                       .then((session) => {
                         if (!session) return;
                         void refreshResumable();
-                        const first = activeDay.exercises[0];
+                        const first = effectiveExercises[0];
                         if (first) openExercise(first.id);
                       })
                       .catch(() => {});
@@ -423,9 +451,27 @@ export default function WorkoutScreen() {
         <View style={styles.sectionHead}>
           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>Упражнения дня</Text>
           <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>
-            {todayDoneCount}/{activeDay.exercises.length} готово
+            {todayDoneCount}/{effectiveExercises.length} готово
           </Text>
         </View>
+
+        {overrideIds ? (
+          <TouchableOpacity
+            style={[styles.resetOverride, { borderColor: colors.lineStrong }]}
+            onPress={() => {
+              if (!activeDay) return;
+              void clearDayOverride(trainingMode, activeDay.id).then(() => {
+                setOverrideTick((n) => n + 1);
+              });
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Сбросить замены упражнений дня"
+          >
+            <Text style={[styles.resetOverrideText, { color: colors.paperDim }]}>
+              Сбросить замены · план по умолчанию
+            </Text>
+          </TouchableOpacity>
+        ) : null}
 
         {resumable && dayIdFromTemplate(resumable.templateRevisionId) === activeDay.id ? (
           <View style={styles.sessionBar} accessibilityRole="progressbar">
@@ -454,7 +500,7 @@ export default function WorkoutScreen() {
           </View>
         ) : null}
 
-        {activeDay.exercises.map((ex, i) => {
+        {effectiveExercises.map((ex, i) => {
           const done = completedSetsToday(ex.id) >= ex.totalSets;
           const inProgress = !done && completedSetsToday(ex.id) > 0;
           const isCurrentStep = currentStepExerciseId === ex.id && !done;
@@ -473,6 +519,17 @@ export default function WorkoutScreen() {
               accessibilityLabel={
                 isCurrentStep ? `${ex.name}, текущий шаг` : ex.name
               }
+              onLongPress={() => {
+                setReplaceTarget({
+                  mode: trainingMode,
+                  dayId: activeDay.id,
+                  dayName: activeDay.name,
+                  slotIndex: i,
+                  currentExerciseId: ex.id,
+                  currentName: ex.name
+                });
+                navigation.navigate('Каталог');
+              }}
               onPress={() => openExercise(ex.id)}
             >
               <Text style={[styles.logIndex, { color: colors.paperFaint }, isCurrentStep && { color: colors.lime }]}>
@@ -510,7 +567,7 @@ export default function WorkoutScreen() {
         ref={sheetRef}
         exercise={selectedExercise}
         dayId={activeDay.id}
-        dayExercises={activeDay.exercises}
+        dayExercises={effectiveExercises}
         onFinished={() => void refreshResumable()}
         onGoToExpected={(id) => openExercise(id)}
       />
@@ -568,5 +625,22 @@ const styles = StyleSheet.create({
   nowBadgeText: { fontSize: 10, fontFamily: fonts.bodySemi },
   logSpec: { fontSize: 12, fontFamily: fonts.body, marginTop: 2 },
   logPr: { fontFamily: fonts.mono, fontSize: 14 },
-  logPrLbl: { fontSize: 10, marginTop: 2 }
+  logPrLbl: { fontSize: 10, marginTop: 2 },
+  resetOverride: {
+    marginBottom: spacing.sm,
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingVertical: 8,
+    alignItems: 'center'
+  },
+  resetOverrideText: { fontFamily: fonts.bodySemi, fontSize: 12 },
+  replaceBtn: {
+    marginTop: 6,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radius.pill,
+    borderWidth: 1
+  },
+  replaceBtnText: { fontFamily: fonts.bodySemi, fontSize: 11 }
 });
