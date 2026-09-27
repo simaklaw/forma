@@ -56,7 +56,7 @@ function estimateSessionBurnKcal(session: WorkoutSession): number {
   return Math.round(0.0175 * 6 * body * minutes);
 }
 
-/** Best-effort HC export — dynamic import keeps Jest free of react-native. */
+/** Best-effort HC export — require keeps ActiveSessionController free of RN at load time. */
 function scheduleHealthExport(session: WorkoutSession, dayId: string | null): void {
   const payload = {
     sessionId: session.sessionId,
@@ -65,11 +65,17 @@ function scheduleHealthExport(session: WorkoutSession, dayId: string | null): vo
     completedAtMs: session.completedAtMs ?? Date.now(),
     burnedKcal: estimateSessionBurnKcal(session)
   };
-  void import('@/features/health/HealthConnectService')
-    .then(({ HealthConnectService }) => HealthConnectService.exportCompletedSession(payload))
-    .catch(() => {
-      /* Expo Go / Jest / missing native */
-    });
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { HealthConnectService } = require('@/features/health/HealthConnectService') as {
+      HealthConnectService: {
+        exportCompletedSession: (p: typeof payload) => Promise<void>;
+      };
+    };
+    void HealthConnectService.exportCompletedSession(payload);
+  } catch {
+    /* Jest / Expo Go / missing native */
+  }
 }
 
 class ActiveSessionControllerImpl {
