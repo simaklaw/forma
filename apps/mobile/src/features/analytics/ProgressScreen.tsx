@@ -6,6 +6,7 @@ import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import DailyTipCard from '@/components/DailyTipCard';
 import ProfileGateBanner from '@/components/ProfileGateBanner';
+import ScreenHeader from '@/components/ScreenHeader';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import {
   lastNDays,
@@ -122,10 +123,7 @@ export default function ProgressScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.eyebrow}>FITPULSE · последние 7 дней</Text>
-        <Text style={styles.title}>Прогресс</Text>
-      </View>
+      <ScreenHeader eyebrow="Последние 7 дней" title="Прогресс" />
 
       <ScrollView contentContainerStyle={styles.body}>
         {weightKg <= 0 ? (
@@ -274,14 +272,6 @@ export default function ProgressScreen() {
 function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.ink },
-    header: {
-      paddingHorizontal: spacing.xxl,
-      paddingBottom: spacing.lg,
-      borderBottomWidth: 1,
-      borderColor: colors.line
-    },
-    eyebrow: { color: colors.lime, fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 0.8 },
-    title: { color: colors.paper, fontSize: 30, fontFamily: fonts.mono, marginTop: 2 },
     body: { paddingBottom: 120 },
     statsRow: {
       flexDirection: 'row',

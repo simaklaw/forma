@@ -1,22 +1,23 @@
 # HANDOFF — FitPulse / Forma
 
 **Checkpoint:** 2026-09-27
-**Branch in flight:** `feat/rest-timer-technique-guide`
+**Branch in flight:** `polish/tabs-nutrition-brand`
 **APK:** do not build until owner says so.
 
 ## On main
 
-- HC, nutrition burn, catalog, progress, coach context
+- Full stack: HC, nutrition, catalog, progress, coach, rest timer, technique guide
 
-## In flight
+## In flight (polish)
 
-- Technique step guide (no copyright video assets)
-- Rest timer mm:ss + progress bar; fallback rest when no session
+- ScreenHeader FP mark on Nutrition + Progress
+- Clearer tab icons, start on Тренировки
+- Nutrition: «+ Добавить», full macro labels
 
 ## Next
 
 1. Merge when CI green
-2. APK only on owner request
+2. More header roll-out / APK on request
 
 ## Rules
 
