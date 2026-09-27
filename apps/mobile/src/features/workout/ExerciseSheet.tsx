@@ -11,6 +11,7 @@ import { estimateOneRepMax, rpeFromRir } from '@/engines/MetabolicEngine';
 import { RestTimerEngine } from '@/engines/RestTimerEngine';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { toDateKey, roundToStep } from '@/engines/WorkoutStats';
+import { formatRestClock, techniqueCuesFromNote } from '@/lib/techniqueCues';
 import { useExerciseReference } from './useExerciseReference';
 import { ActiveSessionController } from './session/ActiveSessionController';
 import { sequentialStepInfo } from './session/sequentialStep';
@@ -120,7 +121,13 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const seq =
       dayId && dayExercises?.length
         ? sequentialStepInfo(sessionSnap, exercise.id, nameById)
-        : { isCurrent: true, expectedName: null, expectedExerciseId: null, currentStepIndex: 0, totalSteps: 0 };
+        : {
+            isCurrent: true,
+            expectedName: null,
+            expectedExerciseId: null,
+            currentStepIndex: 0,
+            totalSteps: 0
+          };
 
     const weightStep = exercise.weightStep ?? 2.5;
     const oneRm =
@@ -133,6 +140,10 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
     const todayKey = toDateKey(new Date());
     const loggedToday = setLogs.filter((e) => e.exerciseId === exercise.id && e.dateKey === todayKey);
+
+    const restTotal = Math.max(1, exercise.restSeconds);
+    const restPct =
+      restRemaining != null ? Math.min(100, Math.round((restRemaining / restTotal) * 100)) : 0;
 
     function recordNextSet() {
       if (!exercise || completedSets >= exercise.totalSets || blockedBySequence) return;
@@ -180,6 +191,12 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       }
 
       RestTimerEngine.hapticSetComplete();
+      RestTimerEngine.startTimer(
+        exercise.restSeconds,
+        (remaining) => setRestRemaining(remaining),
+        () => setRestRemaining(null),
+        beepSource
+      );
     }
 
     function skipRest() {
@@ -197,6 +214,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     }
 
     const ctaDisabled = finished || restRemaining !== null || blockedBySequence;
+    const cues = techniqueCuesFromNote(exercise.note);
 
     return (
       <AppBottomSheet
@@ -233,7 +251,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           </View>
         )}
 
-        <ExerciseVideo />
+        <ExerciseVideo posterUri={reference?.imageUrl} cues={cues} />
 
         {reference && (
           <View style={styles.refPhotoWrap}>
@@ -357,10 +375,13 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         </View>
 
         {restRemaining !== null && (
-          <View style={styles.restTimer}>
-            <Text style={styles.restLabel}>Отдых</Text>
-            <Text style={styles.restVal}>{restRemaining}</Text>
-            <TouchableOpacity onPress={skipRest}>
+          <View style={styles.restTimer} accessibilityLiveRegion="polite">
+            <Text style={styles.restLabel}>Отдых между подходами</Text>
+            <Text style={styles.restVal}>{formatRestClock(restRemaining)}</Text>
+            <View style={styles.restBarTrack}>
+              <View style={[styles.restBarFill, { width: `${restPct}%` }]} />
+            </View>
+            <TouchableOpacity onPress={skipRest} accessibilityRole="button">
               <Text style={styles.restSkip}>пропустить</Text>
             </TouchableOpacity>
           </View>
@@ -401,7 +422,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
               ? 'Упражнение завершено'
               : blockedBySequence
                 ? 'Сначала предыдущее'
-                : `Записать подход ${completedSets + 1}`}
+                : restRemaining !== null
+                  ? `Отдых ${formatRestClock(restRemaining)}`
+                  : `Записать подход ${completedSets + 1}`}
           </Text>
         </TouchableOpacity>
       </AppBottomSheet>
@@ -414,150 +437,177 @@ export default ExerciseSheet;
 
 function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
-  currentChip: {
-    alignSelf: 'flex-start',
-    marginBottom: spacing.sm,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: radius.pill,
-    backgroundColor: colors.limeDim,
-    borderWidth: 1,
-    borderColor: colors.lime
-  },
-  currentChipText: { color: colors.lime, fontFamily: fonts.mono, fontSize: 11 },
-  seqBanner: {
-    marginBottom: spacing.md,
-    padding: 12,
-    borderRadius: radius.control,
-    borderWidth: 1,
-    borderColor: colors.ember,
-    backgroundColor: 'rgba(255,107,74,0.1)'
-  },
-  seqBannerTitle: {
-    color: colors.ember,
-    fontFamily: fonts.mono,
-    fontSize: 13,
-    marginBottom: 4
-  },
-  seqBannerBody: {
-    color: colors.paperDim,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    lineHeight: 17
-  },
-  seqBannerCta: { marginTop: 10 },
-  seqBannerCtaText: {
-    color: colors.lime,
-    fontFamily: fonts.mono,
-    fontSize: 13,
-    textDecorationLine: 'underline'
-  },
-  grid: {
-    flexDirection: 'row',
-    borderRadius: radius.control,
-    borderWidth: 1,
-    borderColor: colors.line,
-    overflow: 'hidden',
-    backgroundColor: colors.panel
-  },
-  gridCell: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRightWidth: 1,
-    borderColor: colors.line
-  },
-  refPhotoWrap: { marginTop: spacing.md },
-  refPhoto: {
-    width: '100%',
-    height: 160,
-    backgroundColor: colors.panel,
-    borderRadius: radius.control
-  },
-  refPhotoCaption: { color: colors.paperFaint, fontSize: 10, marginTop: 4, fontFamily: fonts.body },
-  gridVal: { color: colors.paper, fontSize: 20, fontFamily: fonts.mono },
-  gridLbl: { color: colors.paperFaint, fontSize: 10, marginTop: 2 },
-  note: {
-    marginTop: 10,
-    padding: 12,
-    borderLeftWidth: 2,
-    borderColor: colors.cyan,
-    borderRadius: radius.control,
-    backgroundColor: 'rgba(45,212,191,0.08)'
-  },
-  noteText: { color: colors.paperDim, fontSize: 11.5, lineHeight: 17, fontFamily: fonts.body },
-  rirLabel: { color: colors.paperFaint, fontSize: 11.5, marginTop: 14, marginBottom: 8 },
-  stepperRow: { flexDirection: 'row', gap: 10 },
-  stepperBlock: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.lineStrong,
-    borderRadius: radius.control,
-    overflow: 'hidden',
-    backgroundColor: colors.panel
-  },
-  stepperBtn: {
-    width: 40,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.ink
-  },
-  stepperBtnText: { color: colors.paper, fontSize: 20, fontFamily: fonts.mono },
-  stepperValueWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },
-  stepperValue: { color: colors.paper, fontSize: 18, fontFamily: fonts.mono },
-  stepperUnit: { color: colors.paperFaint, fontSize: 9.5, marginTop: 1 },
-  rirRow: { flexDirection: 'row', gap: 8 },
-  rirBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: colors.lineStrong,
-    borderRadius: radius.control,
-    alignItems: 'center',
-    backgroundColor: colors.panel
-  },
-  rirBtnActive: { borderColor: colors.lime, backgroundColor: colors.limeDim },
-  rirBtnText: { color: colors.paperDim, fontFamily: fonts.mono, fontSize: 15, fontWeight: '700' },
-  rirBtnTextActive: { color: colors.lime },
-  restTimer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 10,
-    marginTop: 14,
-    padding: 12,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderRadius: radius.control,
-    borderColor: colors.lineStrong
-  },
-  restLabel: { flex: 1, color: colors.paperFaint, fontSize: 11 },
-  restVal: { color: colors.ember, fontSize: 26, fontFamily: fonts.mono },
-  restSkip: { color: colors.lime, fontSize: 12, fontFamily: fonts.mono },
-  sets: { marginTop: spacing.lg, gap: 6 },
-  setRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderColor: colors.line
-  },
-  setNum: { width: 20, color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 13 },
-  setSpec: { flex: 1, color: colors.paperDim, fontFamily: fonts.body, fontSize: 13 },
-  setDone: { color: colors.lime, fontFamily: fonts.mono },
-  setPending: { color: colors.paperFaint, fontFamily: fonts.mono },
-  cta: {
-    marginTop: 18,
-    marginBottom: 24,
-    padding: 14,
-    backgroundColor: colors.lime,
-    alignItems: 'center',
-    borderRadius: radius.control
-  },
-  ctaDisabled: { opacity: 0.5 },
-  ctaText: { color: colors.ink, fontSize: 16, fontFamily: fonts.mono }
-});
+    currentChip: {
+      alignSelf: 'flex-start',
+      marginBottom: spacing.sm,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: radius.pill,
+      backgroundColor: colors.limeDim,
+      borderWidth: 1,
+      borderColor: colors.lime
+    },
+    currentChipText: { color: colors.lime, fontFamily: fonts.mono, fontSize: 11 },
+    seqBanner: {
+      marginBottom: spacing.md,
+      padding: 12,
+      borderRadius: radius.control,
+      borderWidth: 1,
+      borderColor: colors.ember,
+      backgroundColor: 'rgba(255,107,74,0.1)'
+    },
+    seqBannerTitle: {
+      color: colors.ember,
+      fontFamily: fonts.mono,
+      fontSize: 13,
+      marginBottom: 4
+    },
+    seqBannerBody: {
+      color: colors.paperDim,
+      fontFamily: fonts.body,
+      fontSize: 12,
+      lineHeight: 17
+    },
+    seqBannerCta: { marginTop: 10 },
+    seqBannerCtaText: {
+      color: colors.lime,
+      fontFamily: fonts.mono,
+      fontSize: 13,
+      textDecorationLine: 'underline'
+    },
+    grid: {
+      flexDirection: 'row',
+      borderRadius: radius.control,
+      borderWidth: 1,
+      borderColor: colors.line,
+      overflow: 'hidden',
+      backgroundColor: colors.panel
+    },
+    gridCell: {
+      flex: 1,
+      paddingVertical: 12,
+      paddingHorizontal: 8,
+      borderRightWidth: 1,
+      borderColor: colors.line
+    },
+    refPhotoWrap: { marginTop: spacing.md },
+    refPhoto: {
+      width: '100%',
+      height: 160,
+      backgroundColor: colors.panel,
+      borderRadius: radius.control
+    },
+    refPhotoCaption: { color: colors.paperFaint, fontSize: 10, marginTop: 4, fontFamily: fonts.body },
+    gridVal: { color: colors.paper, fontSize: 20, fontFamily: fonts.mono },
+    gridLbl: { color: colors.paperFaint, fontSize: 10, marginTop: 2 },
+    note: {
+      marginTop: 10,
+      padding: 12,
+      borderLeftWidth: 2,
+      borderColor: colors.cyan,
+      borderRadius: radius.control,
+      backgroundColor: 'rgba(45,212,191,0.08)'
+    },
+    noteText: { color: colors.paperDim, fontSize: 11.5, lineHeight: 17, fontFamily: fonts.body },
+    rirLabel: { color: colors.paperFaint, fontSize: 11.5, marginTop: 14, marginBottom: 8 },
+    stepperRow: { flexDirection: 'row', gap: 10 },
+    stepperBlock: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.lineStrong,
+      borderRadius: radius.control,
+      overflow: 'hidden',
+      backgroundColor: colors.panel
+    },
+    stepperBtn: {
+      width: 40,
+      height: 44,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.ink
+    },
+    stepperBtnText: { color: colors.paper, fontSize: 20, fontFamily: fonts.mono },
+    stepperValueWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },
+    stepperValue: { color: colors.paper, fontSize: 18, fontFamily: fonts.mono },
+    stepperUnit: { color: colors.paperFaint, fontSize: 9.5, marginTop: 1 },
+    rirRow: { flexDirection: 'row', gap: 8 },
+    rirBtn: {
+      flex: 1,
+      height: 40,
+      borderWidth: 1,
+      borderColor: colors.lineStrong,
+      borderRadius: radius.control,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.panel
+    },
+    rirBtnActive: { borderColor: colors.lime, backgroundColor: colors.limeDim },
+    rirBtnText: { color: colors.paperDim, fontFamily: fonts.mono, fontSize: 16 },
+    rirBtnTextActive: { color: colors.lime },
+    restTimer: {
+      marginTop: spacing.lg,
+      padding: spacing.lg,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: colors.lime,
+      backgroundColor: colors.limeDim,
+      alignItems: 'center'
+    },
+    restLabel: {
+      color: colors.paperDim,
+      fontFamily: fonts.bodySemi,
+      fontSize: 12,
+      letterSpacing: 0.6
+    },
+    restVal: {
+      color: colors.lime,
+      fontFamily: fonts.mono,
+      fontSize: 42,
+      marginTop: 4
+    },
+    restBarTrack: {
+      width: '100%',
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: colors.lineStrong,
+      marginTop: 12,
+      overflow: 'hidden'
+    },
+    restBarFill: {
+      height: '100%',
+      backgroundColor: colors.lime,
+      borderRadius: 3
+    },
+    restSkip: {
+      color: colors.paperDim,
+      fontFamily: fonts.mono,
+      fontSize: 13,
+      marginTop: 12,
+      textDecorationLine: 'underline'
+    },
+    sets: { marginTop: spacing.lg, gap: 8 },
+    setRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      paddingVertical: 8,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.line
+    },
+    setNum: { width: 22, color: colors.lime, fontFamily: fonts.mono, fontSize: 14 },
+    setSpec: { flex: 1, color: colors.paper, fontFamily: fonts.body, fontSize: 13 },
+    setDone: { color: colors.lime, fontFamily: fonts.mono, fontSize: 11 },
+    setPending: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 11 },
+    cta: {
+      marginTop: spacing.lg,
+      backgroundColor: colors.lime,
+      borderRadius: radius.control,
+      paddingVertical: 16,
+      alignItems: 'center'
+    },
+    ctaDisabled: { opacity: 0.45 },
+    ctaText: { color: colors.ink, fontFamily: fonts.bodySemi, fontSize: 15 }
+  });
 }

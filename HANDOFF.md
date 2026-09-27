@@ -1,16 +1,17 @@
 # HANDOFF — FitPulse / Forma
 
 **Checkpoint:** 2026-09-27
-**Branch in flight:** `feat/coach-context-progress`
+**Branch in flight:** `feat/rest-timer-technique-guide`
 **APK:** do not build until owner says so.
 
 ## On main
 
-- Health Connect (workouts + weight), nutrition burn, catalog, progress polish, PR names
+- HC, nutrition burn, catalog, progress, coach context
 
 ## In flight
 
-Coach context: last workout from setLogs + exercise names; progress chip; water in metrics.
+- Technique step guide (no copyright video assets)
+- Rest timer mm:ss + progress bar; fallback rest when no session
 
 ## Next
 
