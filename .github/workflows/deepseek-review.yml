@@ -1,6 +1,11 @@
 name: DeepSeek Code Review
 
-# Only on PRs (no push) — avoids empty red runs when the workflow file is edited.
+# Secret DEEPSEEK_API_KEY accepts either:
+#   sk-or-…  → OpenRouter  (https://openrouter.ai/api/v1, model deepseek/deepseek-chat)
+#   sk-…     → DeepSeek    (https://api.deepseek.com, model deepseek-flash)
+# Optional override: OPENROUTER_API_KEY (wins if set).
+#
+# Skip: "skip cr" or "skip review" in PR title/body.
 on:
   pull_request:
     types: [opened, reopened, synchronize]
@@ -18,7 +23,6 @@ jobs:
     name: DeepSeek CR
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Do not fail the whole PR check suite if review is unavailable
     continue-on-error: true
 
     steps:
@@ -27,29 +31,53 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check DEEPSEEK_API_KEY
-        id: key
+      - name: Resolve API provider
+        id: provider
         env:
-          KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
-          if [ -z "$KEY" ]; then
-            echo "ok=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Secret DEEPSEEK_API_KEY is missing. Add it under Settings → Secrets → Actions."
+          # Prefer dedicated OpenRouter secret
+          if [ -n "$OPENROUTER_API_KEY" ]; then
+            echo "name=openrouter" >> "$GITHUB_OUTPUT"
+            echo "base_url=https://openrouter.ai/api/v1" >> "$GITHUB_OUTPUT"
+            echo "model=deepseek/deepseek-chat" >> "$GITHUB_OUTPUT"
+            echo "key_source=OPENROUTER_API_KEY" >> "$GITHUB_OUTPUT"
+            echo "Using OpenRouter (secret OPENROUTER_API_KEY)"
             exit 0
           fi
-          echo "ok=true" >> "$GITHUB_OUTPUT"
-          echo "Secret present (length=${#KEY}, prefix=${KEY:0:3}…)"
+
+          if [ -z "$DEEPSEEK_API_KEY" ]; then
+            echo "name=none" >> "$GITHUB_OUTPUT"
+            echo "::warning::No DEEPSEEK_API_KEY / OPENROUTER_API_KEY secret."
+            exit 0
+          fi
+
+          # Auto-detect: OpenRouter keys start with sk-or-
+          case "$DEEPSEEK_API_KEY" in
+            sk-or-*)
+              echo "name=openrouter" >> "$GITHUB_OUTPUT"
+              echo "base_url=https://openrouter.ai/api/v1" >> "$GITHUB_OUTPUT"
+              echo "model=deepseek/deepseek-chat" >> "$GITHUB_OUTPUT"
+              echo "key_source=DEEPSEEK_API_KEY" >> "$GITHUB_OUTPUT"
+              echo "Using OpenRouter (DEEPSEEK_API_KEY starts with sk-or-)"
+              ;;
+            *)
+              echo "name=deepseek" >> "$GITHUB_OUTPUT"
+              echo "base_url=https://api.deepseek.com" >> "$GITHUB_OUTPUT"
+              echo "model=deepseek-flash" >> "$GITHUB_OUTPUT"
+              echo "key_source=DEEPSEEK_API_KEY" >> "$GITHUB_OUTPUT"
+              echo "Using official DeepSeek API"
+              ;;
+          esac
 
       - name: Collect PR diff
-        if: steps.key.outputs.ok == 'true'
+        if: steps.provider.outputs.name != 'none'
         id: diff
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BASE="${{ github.event.pull_request.base.sha }}"
           HEAD="${{ github.event.pull_request.head.sha }}"
           git fetch --no-tags origin "$BASE" "$HEAD" 2>/dev/null || true
-          # Prefer code files; cap size for the model
           DIFF=$(git diff "$BASE...$HEAD" -- \
             ':(exclude)*.md' ':(exclude)*.lock' ':(exclude)*.yml' ':(exclude)*.yaml' \
             ':(exclude)*.json' ':(exclude)*.svg' ':(exclude)*.png' \
@@ -66,10 +94,15 @@ jobs:
           printf '%s' "$DIFF" > /tmp/pr.diff
           echo "Diff bytes: $(wc -c < /tmp/pr.diff)"
 
-      - name: Call DeepSeek API and comment on PR
-        if: steps.key.outputs.ok == 'true' && steps.diff.outputs.has_diff == 'true'
+      - name: Call model and comment on PR
+        if: steps.provider.outputs.name != 'none' && steps.diff.outputs.has_diff == 'true'
         env:
-          KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          PROVIDER: ${{ steps.provider.outputs.name }}
+          BASE_URL: ${{ steps.provider.outputs.base_url }}
+          MODEL: ${{ steps.provider.outputs.model }}
+          KEY_SOURCE: ${{ steps.provider.outputs.key_source }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
@@ -78,9 +111,17 @@ jobs:
           python3 <<'PY'
           import json, os, subprocess, urllib.request, urllib.error
 
-          key = os.environ["KEY"]
+          provider = os.environ["PROVIDER"]
+          base_url = os.environ["BASE_URL"].rstrip("/")
+          model = os.environ["MODEL"]
+          key_source = os.environ.get("KEY_SOURCE", "")
           pr = os.environ["PR"]
           repo = os.environ["REPO"]
+
+          if key_source == "OPENROUTER_API_KEY":
+              key = os.environ.get("OPENROUTER_API_KEY") or ""
+          else:
+              key = os.environ.get("DEEPSEEK_API_KEY") or ""
 
           with open("/tmp/pr.diff", "r", encoding="utf-8", errors="replace") as f:
               diff = f.read()
@@ -99,66 +140,71 @@ jobs:
               f"```diff\n{diff}\n```"
           )
 
-          # Prefer current model; fall back to legacy alias
-          models = ["deepseek-flash", "deepseek-chat"]
+          body = {
+              "model": model,
+              "messages": [
+                  {"role": "system", "content": system},
+                  {"role": "user", "content": user},
+              ],
+              "temperature": 0.2,
+              "max_tokens": 1200,
+          }
+
+          headers = {
+              "Content-Type": "application/json",
+              "Authorization": f"Bearer {key}",
+          }
+          if provider == "openrouter":
+              headers["HTTP-Referer"] = f"https://github.com/{repo}"
+              headers["X-Title"] = "FitPulse Forma DeepSeek CR"
+
+          url = f"{base_url}/chat/completions"
+          req = urllib.request.Request(
+              url,
+              data=json.dumps(body).encode("utf-8"),
+              headers=headers,
+              method="POST",
+          )
+
           review = None
           last_err = None
-          for model in models:
-              body = {
-                  "model": model,
-                  "messages": [
-                      {"role": "system", "content": system},
-                      {"role": "user", "content": user},
-                  ],
-                  "temperature": 0.2,
-                  "max_tokens": 1200,
-              }
-              req = urllib.request.Request(
-                  "https://api.deepseek.com/chat/completions",
-                  data=json.dumps(body).encode("utf-8"),
-                  headers={
-                      "Content-Type": "application/json",
-                      "Authorization": f"Bearer {key}",
-                  },
-                  method="POST",
-              )
-              try:
-                  with urllib.request.urlopen(req, timeout=90) as resp:
-                      data = json.loads(resp.read().decode("utf-8"))
-                  choices = data.get("choices") or []
-                  if choices:
-                      review = choices[0]["message"]["content"].strip()
-                      print(f"OK model={model} chars={len(review)}")
-                      break
-                  last_err = f"model={model} empty choices keys={list(data.keys())}"
-              except urllib.error.HTTPError as e:
-                  err_body = e.read().decode("utf-8", errors="replace")[:400]
-                  last_err = f"model={model} HTTP {e.code}: {err_body}"
-                  print(last_err)
-                  if e.code in (401, 403):
-                      break  # bad key — no point trying other models
-              except Exception as e:
-                  last_err = f"model={model} {type(e).__name__}: {e}"
-                  print(last_err)
+          try:
+              with urllib.request.urlopen(req, timeout=90) as resp:
+                  data = json.loads(resp.read().decode("utf-8"))
+              choices = data.get("choices") or []
+              if choices:
+                  msg = choices[0].get("message") or {}
+                  review = (msg.get("content") or "").strip()
+                  print(f"OK provider={provider} model={model} chars={len(review)}")
+              else:
+                  last_err = f"empty choices keys={list(data.keys())} body={json.dumps(data)[:300]}"
+          except urllib.error.HTTPError as e:
+              err_body = e.read().decode("utf-8", errors="replace")[:500]
+              last_err = f"HTTP {e.code}: {err_body}"
+              print(last_err)
+          except Exception as e:
+              last_err = f"{type(e).__name__}: {e}"
+              print(last_err)
 
           if not review:
               review = (
-                  "⚠️ DeepSeek CR не смог получить ответ от API.\n\n"
+                  "⚠️ Code review API не ответил.\n\n"
+                  f"Provider: `{provider}` · model: `{model}` · key: `{key_source}`\n\n"
                   f"```\n{last_err}\n```\n\n"
-                  "Проверь секрет `DEEPSEEK_API_KEY` и баланс на platform.deepseek.com."
+                  "OpenRouter key (`sk-or-…`): баланс openrouter.ai\n"
+                  "DeepSeek key: баланс platform.deepseek.com"
               )
-              print("REVIEW FAILED:", last_err)
 
           md = (
-              "## DeepSeek Code Review\n\n"
+              f"## DeepSeek Code Review\n\n"
+              f"_via `{provider}` · `{model}`_\n\n"
               + review
-              + "\n\n---\n_Авто-ревью · модель DeepSeek · FitPulse/Forma_"
+              + "\n\n---\n_Авто-ревью · FitPulse/Forma_"
           )
           path = "/tmp/review.md"
           with open(path, "w", encoding="utf-8") as f:
               f.write(md)
 
-          # Delete previous bot review comments with same marker (best-effort)
           subprocess.run(
               ["gh", "pr", "comment", pr, "--body-file", path],
               check=True,

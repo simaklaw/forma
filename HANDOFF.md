@@ -1,25 +1,26 @@
 # HANDOFF — FitPulse / Forma
 
-**Checkpoint date:** 2026-09-26
-**Active branch:** `main`
+**Checkpoint:** 2026-09-27
 **Repo:** https://github.com/simaklaw/forma
-**Product name:** FitPulse (mobile)
-**APK:** do **not** build until owner says so.
+**APK:** do not build until owner says so.
 
----
+## DeepSeek CR
 
-## DeepSeek CR status
+Workflow: `.github/workflows/deepseek-review.yml`
 
-- Workflow: `.github/workflows/deepseek-review.yml`
-- Secret name **must** be exactly `DEEPSEEK_API_KEY` (repository secret)
-- Model: `deepseek-flash` (current DeepSeek API)
-- Diagnostic steps: secret length + HTTP probe before review action
-- If probe fails with `authentication_error` → key invalid/expired/wrong secret name
+| Priority | Secret | Endpoint | Model |
+|----------|--------|----------|-------|
+| 1 | `OPENROUTER_API_KEY` | `https://openrouter.ai/api/v1` | `deepseek/deepseek-chat` |
+| 2 | `DEEPSEEK_API_KEY` | `https://api.deepseek.com` | `deepseek-flash` |
+
+- Official DeepSeek returned **402 Insufficient Balance** (key ok, no credit).
+- **FreeDeepseekAPI** (ForgetMeAI) is a *local browser proxy* for chat.deepseek.com — not usable in GitHub Actions.
+- Prefer OpenRouter for CI: Settings → Secrets → `OPENROUTER_API_KEY`.
 
 ## Health Connect
 
 Phase 1–2 on main (pure mappers + service stub).
-Phase 3 next: native `react-native-health-connect`.
+Phase 3 next: `react-native-health-connect` + Profile UI.
 
 ## Rules
 
