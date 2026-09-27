@@ -11,6 +11,7 @@ import CalorieRing from '@/components/CalorieRing';
 import DailyTipCard from '@/components/DailyTipCard';
 import MacroBar from '@/components/MacroBar';
 import ProfileGateBanner from '@/components/ProfileGateBanner';
+import ScreenHeader from '@/components/ScreenHeader';
 import AddFoodSheet from './AddFoodSheet';
 
 const MEAL_LABELS: Record<keyof DayMeals, string> = {
@@ -71,10 +72,7 @@ export default function NutritionScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.eyebrow}>FITPULSE · Сегодня</Text>
-        <Text style={styles.title}>Питание</Text>
-      </View>
+      <ScreenHeader eyebrow="Сегодня" title="Питание" />
 
       <ScrollView contentContainerStyle={styles.body}>
         {!complete ? (
@@ -93,19 +91,19 @@ export default function NutritionScreen() {
           />
           <View style={styles.macroCol}>
             <MacroBar
-              label="Б"
+              label="Белок"
               value={totals.protein}
               target={targets.proteinTarget || 0}
               color={colors.macroProtein}
             />
             <MacroBar
-              label="Ж"
+              label="Жиры"
               value={totals.fat}
               target={targets.fatTarget || 0}
               color={colors.macroFat}
             />
             <MacroBar
-              label="У"
+              label="Углев."
               value={totals.carbs}
               target={targets.carbTarget || 0}
               color={colors.macroCarb}
@@ -147,6 +145,9 @@ export default function NutritionScreen() {
                   key={i}
                   style={[styles.waterCell, filled && styles.waterCellFilled]}
                   onPress={() => toggleWater(i)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Стакан ${i + 1}`}
+                  accessibilityState={{ selected: filled }}
                 />
               );
             })}
@@ -165,12 +166,19 @@ export default function NutritionScreen() {
               <Text style={styles.mealKcal}>
                 {meals[key].reduce((sum, i) => sum + i.kcal, 0)} ккал
               </Text>
-              <TouchableOpacity style={styles.addBtn} onPress={() => openAddFood(key)}>
-                <Text style={styles.addBtnText}>+</Text>
+              <TouchableOpacity
+                style={styles.addBtn}
+                onPress={() => openAddFood(key)}
+                accessibilityRole="button"
+                accessibilityLabel={`Добавить в ${MEAL_LABELS[key]}`}
+              >
+                <Text style={styles.addBtnText}>+ Добавить</Text>
               </TouchableOpacity>
             </View>
             {meals[key].length === 0 ? (
-              <Text style={styles.empty}>Нет записей</Text>
+              <TouchableOpacity onPress={() => openAddFood(key)} accessibilityRole="button">
+                <Text style={styles.empty}>Нет записей · нажмите «Добавить»</Text>
+              </TouchableOpacity>
             ) : (
               meals[key].map((item) => (
                 <View key={item.id} style={styles.foodRow}>
@@ -182,7 +190,11 @@ export default function NutritionScreen() {
                     Б{item.protein} Ж{item.fat} У{item.carbs}
                   </Text>
                   <Text style={styles.foodKcal}>{item.kcal}</Text>
-                  <TouchableOpacity onPress={() => removeFoodItem(key, item.id)}>
+                  <TouchableOpacity
+                    onPress={() => removeFoodItem(key, item.id)}
+                    accessibilityRole="button"
+                    accessibilityLabel="Удалить"
+                  >
                     <Text style={styles.foodDel}>×</Text>
                   </TouchableOpacity>
                 </View>
@@ -205,14 +217,6 @@ export default function NutritionScreen() {
 function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.ink },
-    header: {
-      paddingHorizontal: spacing.xxl,
-      paddingBottom: spacing.lg,
-      borderBottomWidth: 1,
-      borderColor: colors.line
-    },
-    eyebrow: { color: colors.lime, fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1 },
-    title: { color: colors.paper, fontSize: 30, fontFamily: fonts.mono },
     body: { paddingBottom: 120 },
     heroCard: {
       flexDirection: 'row',
@@ -262,7 +266,8 @@ function createStyles(colors: ColorTokens) {
       backgroundColor: colors.ink
     },
     waterCellFilled: {
-      backgroundColor: 'rgba(45,212,191,0.35)',
+      backgroundColor: colors.cyan,
+      opacity: 0.85,
       borderColor: colors.cyan
     },
     sectionHead: {
@@ -283,21 +288,21 @@ function createStyles(colors: ColorTokens) {
       borderWidth: 1,
       borderColor: colors.line
     },
-    mealHead: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
+    mealHead: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
     mealName: { flex: 1, color: colors.paper, fontSize: 15, fontFamily: fonts.bodySemi },
-    mealKcal: { color: colors.paperDim, fontFamily: fonts.mono, fontSize: 14 },
+    mealKcal: { color: colors.paperDim, fontFamily: fonts.mono, fontSize: 13 },
     addBtn: {
-      width: 28,
-      height: 28,
+      paddingHorizontal: 12,
+      height: 32,
       borderRadius: radius.control,
       borderWidth: 1,
-      borderColor: colors.lineStrong,
+      borderColor: colors.lime,
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: colors.limeDim
     },
-    addBtnText: { color: colors.lime, fontSize: 16, lineHeight: 18, fontFamily: fonts.bodySemi },
-    empty: { color: colors.paperFaint, fontSize: 12, fontStyle: 'italic', paddingVertical: 4 },
+    addBtnText: { color: colors.lime, fontSize: 12, fontFamily: fonts.bodySemi },
+    empty: { color: colors.paperFaint, fontSize: 12, paddingVertical: 4 },
     foodRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
     foodTime: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 11, width: 34 },
     foodName: { flex: 1, color: colors.paper, fontSize: 13 },

@@ -16,25 +16,35 @@ import type { TabParamList } from './types';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
-/** Letter marks — no emoji chrome on the tab bar. */
+/** Readable tab marks (not cryptic two-letter codes). */
 const ICONS: Record<string, string> = {
-  Тренировки: 'Тр',
-  Каталог: 'Ка',
-  Питание: 'Пт',
-  Тренер: 'Тн',
-  Прогресс: 'Пр',
-  Профиль: 'Пф'
+  Тренировки: '🏋',
+  Каталог: '☰',
+  Питание: '🍽',
+  Тренер: '◎',
+  Прогресс: '↗',
+  Профиль: '◉'
 };
 
-function TabIcon({ name, focused, active, inactive }: { name: string; focused: boolean; active: string; inactive: string }) {
+function TabIcon({
+  name,
+  focused,
+  active,
+  inactive
+}: {
+  name: string;
+  focused: boolean;
+  active: string;
+  inactive: string;
+}) {
   return (
     <View style={{ alignItems: 'center', gap: 2 }}>
       <Text
         style={{
-          fontSize: 11,
-          fontFamily: fonts.mono,
+          fontSize: 16,
+          lineHeight: 18,
           color: focused ? active : inactive,
-          letterSpacing: 0.4
+          opacity: focused ? 1 : 0.75
         }}
       >
         {ICONS[name] ?? '·'}
@@ -78,7 +88,7 @@ export default function RootNavigator() {
   return (
     <NavigationContainer theme={navTheme}>
       <Tab.Navigator
-        initialRouteName="Профиль"
+        initialRouteName="Тренировки"
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarStyle: {
