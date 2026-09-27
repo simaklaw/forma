@@ -1,25 +1,44 @@
 import { Platform } from 'react-native';
 import { createLogger } from '@/core/logger';
 import { mapSessionToHealthWorkout, type SessionBurnInput } from './mapWorkoutToHealth';
+import {
+  getHealthConnectNative,
+  WRITE_WORKOUT_PERMISSIONS
+} from './nativeClient';
+import { isHealthExportEnabled } from './healthSyncPrefs';
 import type { HealthSyncStatus, HealthWorkoutExport } from './types';
 
 const log = createLogger('health-connect');
 
 /**
- * Health Connect facade (Android). iOS/web → unsupported.
- * Native bridge (react-native-health-connect) is wired in a later step;
- * for now we validate payloads and report availability honestly.
+ * Health Connect facade (Android only). No Google Fit.
+ * Native path requires react-native-health-connect + dev/EAS build (not Expo Go).
  */
 export class HealthConnectService {
   static async getStatus(): Promise<HealthSyncStatus> {
     if (Platform.OS !== 'android') return 'unsupported';
-    // Native module not linked in this phase — device still needs Health Connect app.
-    return 'unavailable';
+
+    const native = getHealthConnectNative();
+    if (!native) return 'unavailable';
+
+    try {
+      const ok = await native.initialize();
+      if (!ok) return 'unavailable';
+
+      const status = await native.getSdkStatus();
+      const avail = native.SdkAvailabilityStatus?.SDK_AVAILABLE;
+      if (typeof avail === 'number' && status !== avail) {
+        return 'unavailable';
+      }
+      return 'ready';
+    } catch (err) {
+      log.warn('getStatus failed', {
+        err: err instanceof Error ? err.message : String(err)
+      });
+      return 'error';
+    }
   }
 
-  /**
-   * Build export payload for a completed session. Does not write to Health Connect yet.
-   */
   static buildWorkoutExport(input: SessionBurnInput): HealthWorkoutExport | null {
     const payload = mapSessionToHealthWorkout(input);
     if (!payload) {
@@ -29,15 +48,94 @@ export class HealthConnectService {
     return payload;
   }
 
+  /** Request write permissions for exercise + active calories. */
+  static async requestWriteAccess(): Promise<boolean> {
+    if (Platform.OS !== 'android') return false;
+    const native = getHealthConnectNative();
+    if (!native) return false;
+
+    try {
+      await native.initialize();
+      const granted = await native.requestPermission(WRITE_WORKOUT_PERMISSIONS);
+      const ok =
+        Array.isArray(granted) &&
+        granted.some((p) => p.recordType === 'ExerciseSession' && p.accessType === 'write');
+      log.info('requestWriteAccess', { granted: ok, count: granted?.length ?? 0 });
+      return ok;
+    } catch (err) {
+      log.warn('requestWriteAccess failed', {
+        err: err instanceof Error ? err.message : String(err)
+      });
+      return false;
+    }
+  }
+
   /**
-   * Placeholder write — returns false until native client is integrated.
+   * Write exercise session + active calories to Health Connect.
+   * No-op when disabled in prefs, unsupported, or native missing.
    */
-  static async writeWorkout(_payload: HealthWorkoutExport): Promise<boolean> {
+  static async writeWorkout(payload: HealthWorkoutExport): Promise<boolean> {
+    if (!(await isHealthExportEnabled())) {
+      log.debug('writeWorkout skipped: export disabled in prefs');
+      return false;
+    }
+
     const status = await HealthConnectService.getStatus();
     if (status !== 'ready') {
       log.info(`writeWorkout skipped, status=${status}`);
       return false;
     }
-    return false;
+
+    const native = getHealthConnectNative();
+    if (!native) return false;
+
+    try {
+      const records = [
+        {
+          recordType: 'ExerciseSession',
+          startTime: payload.startTime,
+          endTime: payload.endTime,
+          exerciseType: 0, // OTHER
+          title: payload.title,
+          metadata: {
+            clientRecordId: `fitpulse-${payload.sessionId}`
+          }
+        },
+        {
+          recordType: 'ActiveCaloriesBurned',
+          startTime: payload.startTime,
+          endTime: payload.endTime,
+          energy: {
+            value: payload.activeCaloriesKcal,
+            unit: 'kilocalorie'
+          },
+          metadata: {
+            clientRecordId: `fitpulse-kcal-${payload.sessionId}`
+          }
+        }
+      ];
+
+      await native.insertRecords(records);
+      log.info('writeWorkout ok', { sessionId: payload.sessionId });
+      return true;
+    } catch (err) {
+      log.warn('writeWorkout failed', {
+        err: err instanceof Error ? err.message : String(err)
+      });
+      return false;
+    }
+  }
+
+  /** Map completed session → HC write (best-effort, never throws). */
+  static async exportCompletedSession(input: SessionBurnInput): Promise<void> {
+    try {
+      const payload = HealthConnectService.buildWorkoutExport(input);
+      if (!payload) return;
+      await HealthConnectService.writeWorkout(payload);
+    } catch (err) {
+      log.debug('exportCompletedSession swallowed', {
+        err: err instanceof Error ? err.message : String(err)
+      });
+    }
   }
 }

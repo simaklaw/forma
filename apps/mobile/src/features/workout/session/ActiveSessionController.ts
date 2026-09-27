@@ -11,6 +11,7 @@ import { LOCAL_USER_ID } from './currentUser';
 import { projectSessionEvents } from '@/features/workout/data/sessionProjections';
 import { clearDayReadModel } from './clearDayReadModel';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
+import { HealthConnectService } from '@/features/health';
 
 const log = createLogger('session');
 
@@ -45,6 +46,16 @@ function profileBodyKg(): number | null {
   const w = profile.weight;
   if (typeof w !== 'number' || !Number.isFinite(w) || w <= 0) return null;
   return w;
+}
+
+function estimateSessionBurnKcal(session: WorkoutSession): number {
+  // Prefer projection metadata when present; otherwise rough MET-style floor.
+  const started = session.startedAtMs ?? session.preparedAtMs ?? Date.now();
+  const ended = session.completedAtMs ?? Date.now();
+  const minutes = Math.max(1, (ended - started) / 60000);
+  const body = session.weightKgSnapshot ?? 70;
+  // ~6 MET resistance training ≈ 0.0175 * MET * kg * min
+  return Math.round(0.0175 * 6 * body * minutes);
 }
 
 class ActiveSessionControllerImpl {
@@ -243,11 +254,22 @@ class ActiveSessionControllerImpl {
     );
     if (!allDone) return;
 
-    await svc.dispatch(this.sessionId, {
+    const completed = await svc.dispatch(this.sessionId, {
       type: 'complete_session',
       reason: 'all_sets_done'
     });
     log.info('completed day session', { sessionId: this.sessionId });
+
+    // Best-effort Health Connect export — never blocks session completion.
+    const s = completed.session;
+    void HealthConnectService.exportCompletedSession({
+      sessionId: s.sessionId,
+      title: this.dayId ? `FitPulse · день ${this.dayId}` : 'FitPulse workout',
+      startedAtMs: s.startedAtMs ?? s.preparedAtMs ?? null,
+      completedAtMs: s.completedAtMs ?? Date.now(),
+      burnedKcal: estimateSessionBurnKcal(s)
+    });
+
     this.emit();
   }
 
