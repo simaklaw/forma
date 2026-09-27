@@ -11,7 +11,6 @@ import { LOCAL_USER_ID } from './currentUser';
 import { projectSessionEvents } from '@/features/workout/data/sessionProjections';
 import { clearDayReadModel } from './clearDayReadModel';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
-import { HealthConnectService } from '@/features/health';
 
 const log = createLogger('session');
 
@@ -55,6 +54,22 @@ function estimateSessionBurnKcal(session: WorkoutSession): number {
   const body = session.weightKgSnapshot ?? 70;
   // ~6 MET resistance training ≈ 0.0175 * MET * kg * min
   return Math.round(0.0175 * 6 * body * minutes);
+}
+
+/** Best-effort HC export — dynamic import keeps Jest free of react-native. */
+function scheduleHealthExport(session: WorkoutSession, dayId: string | null): void {
+  const payload = {
+    sessionId: session.sessionId,
+    title: dayId ? `FitPulse · день ${dayId}` : 'FitPulse workout',
+    startedAtMs: session.startedAtMs,
+    completedAtMs: session.completedAtMs ?? Date.now(),
+    burnedKcal: estimateSessionBurnKcal(session)
+  };
+  void import('@/features/health/HealthConnectService')
+    .then(({ HealthConnectService }) => HealthConnectService.exportCompletedSession(payload))
+    .catch(() => {
+      /* Expo Go / Jest / missing native */
+    });
 }
 
 class ActiveSessionControllerImpl {
@@ -255,14 +270,7 @@ class ActiveSessionControllerImpl {
     });
     log.info('completed day session', { sessionId: this.sessionId });
 
-    const s = completed.session;
-    void HealthConnectService.exportCompletedSession({
-      sessionId: s.sessionId,
-      title: this.dayId ? `FitPulse · день ${this.dayId}` : 'FitPulse workout',
-      startedAtMs: s.startedAtMs,
-      completedAtMs: s.completedAtMs ?? Date.now(),
-      burnedKcal: estimateSessionBurnKcal(s)
-    });
+    scheduleHealthExport(completed.session, this.dayId);
 
     this.emit();
   }
