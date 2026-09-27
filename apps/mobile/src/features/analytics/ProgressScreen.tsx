@@ -14,6 +14,7 @@ import {
   selectWeeklyVolume,
   weekdayRuShort
 } from '@/engines/WorkoutStats';
+import { allExerciseNames } from '@/features/workout/catalog';
 import WeightChart from '@/components/WeightChart';
 
 /** Consecutive days (ending today or yesterday) with ≥1 logged set. */
@@ -44,6 +45,8 @@ export default function ProgressScreen() {
   const profileWeight = useFitPulseStore((s) => s.profile.weight);
   const dayProgress = useFitPulseStore((s) => s.dayProgress);
   const personalRecords = useFitPulseStore((s) => s.personalRecords);
+
+  const exerciseNames = useMemo(() => allExerciseNames(), []);
 
   const weightKg =
     typeof profileWeight === 'number' && Number.isFinite(profileWeight) && profileWeight > 0
@@ -77,28 +80,41 @@ export default function ProgressScreen() {
 
   const topPrs = useMemo(() => {
     return Object.entries(personalRecords)
-      .map(([id, w]) => ({ exerciseId: Number(id), weight: w }))
+      .map(([id, w]) => {
+        const exerciseId = Number(id);
+        return {
+          exerciseId,
+          weight: w,
+          name: exerciseNames[exerciseId] ?? `Упр. #${exerciseId}`
+        };
+      })
       .filter((r) => Number.isFinite(r.weight) && r.weight > 0)
       .sort((a, b) => b.weight - a.weight)
       .slice(0, 5);
-  }, [personalRecords]);
+  }, [personalRecords, exerciseNames]);
 
   const burnSeries = useMemo(() => {
     const days = lastNDays(7);
     const keys = days.map((d) => toDateKey(d));
-    const burns = estimateDailyBurns({ weightKg, setLogs, dateKeys: keys });
+    const burns = estimateDailyBurns({
+      weightKg,
+      setLogs,
+      dateKeys: keys,
+      exerciseNames
+    });
     const max = Math.max(1, ...burns.map((b) => b.kcal));
     return burns.map((b, i) => ({
       ...b,
       label: weekdayRuShort(days[i]),
       pct: Math.round((b.kcal / max) * 100)
     }));
-  }, [weightKg, setLogs]);
+  }, [weightKg, setLogs, exerciseNames]);
 
   const burnedToday = estimateBurnFromSetLogs({
     weightKg,
     setLogs,
-    dateKey: toDateKey(new Date())
+    dateKey: toDateKey(new Date()),
+    exerciseNames
   });
   const burnedWeek = burnSeries.reduce((sum, b) => sum + b.kcal, 0);
   const hasAnyBurn = burnSeries.some((b) => b.kcal > 0);
@@ -231,7 +247,9 @@ export default function ProgressScreen() {
             {topPrs.map((r, i) => (
               <View key={r.exerciseId} style={styles.prRow}>
                 <Text style={styles.prRank}>{String(i + 1).padStart(2, '0')}</Text>
-                <Text style={styles.prName}>Упр. #{r.exerciseId}</Text>
+                <Text style={styles.prName} numberOfLines={1}>
+                  {r.name}
+                </Text>
                 <Text style={styles.prWeight}>{r.weight} кг</Text>
               </View>
             ))}
