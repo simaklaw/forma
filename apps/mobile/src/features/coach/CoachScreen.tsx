@@ -16,6 +16,8 @@ import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import ProfileGateBanner from '@/components/ProfileGateBanner';
 import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
+import { lastWorkoutFromLogs } from '@/lib/lastWorkoutFromLogs';
+import { allExerciseNames } from '@/features/workout/catalog';
 import { COACH_WELCOME, selectDailyTotals, useFitPulseStore } from '@/state/useFitPulseStore';
 import type { ProfileState, Sex } from '@/engines/MetabolicEngine';
 
@@ -23,6 +25,7 @@ const CHIPS = [
   'Сколько белка?',
   'Калории сегодня',
   'Совет на тренировку',
+  'Мой прогресс за неделю',
   'Восстановление',
   'Сон и восстановление',
   'Вода сегодня'
@@ -62,6 +65,7 @@ export default function CoachScreen() {
   const profile = useFitPulseStore((s) => s.profile);
   const todayMeals = useFitPulseStore((s) => s.todayMeals);
   const setLogs = useFitPulseStore((s) => s.setLogs);
+  const waterGlasses = useFitPulseStore((s) => s.waterGlasses);
   const messages = useFitPulseStore((s) => s.coachMessages);
   const setCoachMessages = useFitPulseStore((s) => s.setCoachMessages);
   const clearCoachMessages = useFitPulseStore((s) => s.clearCoachMessages);
@@ -71,6 +75,12 @@ export default function CoachScreen() {
     if (!domainProfile) return null;
     return useFitPulseStore.getState().calculateTargets();
   }, [domainProfile]);
+
+  const exerciseNames = useMemo(() => allExerciseNames(), []);
+  const lastWorkout = useMemo(
+    () => lastWorkoutFromLogs(setLogs, exerciseNames),
+    [setLogs, exerciseNames]
+  );
 
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
@@ -95,10 +105,23 @@ export default function CoachScreen() {
       burnedCalories: estimateBurnFromSetLogs({
         weightKg: safeWeightKg,
         setLogs,
-        dateKey: toDateKey(new Date())
-      })
+        dateKey: toDateKey(new Date()),
+        exerciseNames
+      }),
+      lastWorkoutName: lastWorkout
+        ? `${lastWorkout.name} (${lastWorkout.sets} подх.)`
+        : undefined,
+      lastWorkoutDate: lastWorkout?.completedAt
     });
-  }, [domainProfile, todayMeals, targets, safeWeightKg, setLogs]);
+  }, [
+    domainProfile,
+    todayMeals,
+    targets,
+    safeWeightKg,
+    setLogs,
+    exerciseNames,
+    lastWorkout
+  ]);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -140,8 +163,12 @@ export default function CoachScreen() {
 
   const proteinLine =
     targets != null
-      ? `Белок ${Math.round(mealTotals.protein)} / ${targets.proteinTarget} г · ${targets.target} ккал`
+      ? `Белок ${Math.round(mealTotals.protein)} / ${targets.proteinTarget} г · ${targets.target} ккал · вода ${waterGlasses}/8`
       : null;
+
+  const workoutLine = lastWorkout
+    ? `Последняя: ${lastWorkout.name} · ${lastWorkout.completedAt} · ${lastWorkout.sets} подх.`
+    : 'Пока нет подходов в журнале';
 
   const visible = messages.filter((m) => m.text.length > 0);
   const canClear = messages.some((m) => m.id !== 'welcome' && m.text.length > 0);
@@ -180,6 +207,7 @@ export default function CoachScreen() {
               <Text style={styles.title}>Тренер</Text>
               <Text style={styles.sub}>{status}</Text>
               {proteinLine ? <Text style={styles.metrics}>{proteinLine}</Text> : null}
+              <Text style={styles.metrics}>{workoutLine}</Text>
             </View>
             {canClear && (
               <Pressable
@@ -209,13 +237,24 @@ export default function CoachScreen() {
 
         <FlatList
           ref={listRef}
-          data={visible.length ? visible : [{ id: 'welcome', role: 'coach' as const, text: COACH_WELCOME }]}
+          data={
+            visible.length
+              ? visible
+              : [{ id: 'welcome', role: 'coach' as const, text: COACH_WELCOME }]
+          }
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
           renderItem={({ item }) => (
-            <View style={[styles.bubble, item.role === 'user' ? styles.userBubble : styles.coachBubble]}>
-              <Text style={item.role === 'user' ? styles.userBubbleText : styles.bubbleText}>{item.text}</Text>
+            <View
+              style={[
+                styles.bubble,
+                item.role === 'user' ? styles.userBubble : styles.coachBubble
+              ]}
+            >
+              <Text style={item.role === 'user' ? styles.userBubbleText : styles.bubbleText}>
+                {item.text}
+              </Text>
             </View>
           )}
           ListFooterComponent={busy ? <Text style={styles.thinking}>Думаю…</Text> : null}
@@ -247,112 +286,112 @@ export default function CoachScreen() {
 
 function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.ink },
-  flex: { flex: 1 },
-  header: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.line
-  },
-  headerRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  eyebrow: { color: colors.lime, fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1.2 },
-  title: {
-    color: colors.paper,
-    fontSize: 30,
-    fontFamily: fonts.mono,
-    marginTop: 2
-  },
-  sub: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.body, marginTop: 4, lineHeight: 18 },
-  metrics: {
-    color: colors.paperFaint,
-    fontSize: 12,
-    fontFamily: fonts.mono,
-    marginTop: 6
-  },
-  clearBtn: {
-    marginTop: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: radius.control,
-    borderWidth: 1,
-    borderColor: colors.lineStrong,
-    backgroundColor: colors.panel
-  },
-  clear: { color: colors.paperDim, fontSize: 12, fontFamily: fonts.bodySemi },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.md,
-    marginBottom: spacing.sm
-  },
-  chip: {
-    borderWidth: 1,
-    borderColor: colors.lineStrong,
-    backgroundColor: colors.panel,
-    borderRadius: radius.pill,
-    paddingHorizontal: 14,
-    paddingVertical: 8
-  },
-  chipDisabled: { opacity: 0.5 },
-  chipText: { color: colors.paperDim, fontSize: 12, fontFamily: fonts.bodySemi },
-  list: { paddingHorizontal: spacing.xl, paddingBottom: spacing.md, paddingTop: spacing.sm },
-  bubble: {
-    maxWidth: '88%',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: spacing.sm,
-    borderRadius: radius.card
-  },
-  userBubble: { alignSelf: 'flex-end', backgroundColor: colors.lime },
-  coachBubble: {
-    alignSelf: 'flex-start',
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.line
-  },
-  bubbleText: { color: colors.paper, fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
-  userBubbleText: { color: colors.ink, fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
-  thinking: {
-    color: colors.paperFaint,
-    fontSize: 12,
-    fontFamily: fonts.body,
-    marginTop: 4,
-    marginLeft: 4
-  },
-  composer: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-    backgroundColor: colors.ink
-  },
-  input: {
-    flex: 1,
-    minHeight: 44,
-    borderWidth: 1,
-    borderColor: colors.lineStrong,
-    borderRadius: radius.control,
-    backgroundColor: colors.panel,
-    color: colors.paper,
-    paddingHorizontal: 14,
-    fontFamily: fonts.body,
-    fontSize: 14
-  },
-  send: {
-    minWidth: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.lime,
-    borderRadius: radius.control,
-    paddingHorizontal: 14
-  },
-  sendDisabled: { opacity: 0.4 },
-  sendText: { color: colors.ink, fontFamily: fonts.bodySemi, fontSize: 14 }
-});
+    safe: { flex: 1, backgroundColor: colors.ink },
+    flex: { flex: 1 },
+    header: {
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.lg,
+      paddingBottom: spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.line
+    },
+    headerRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+    eyebrow: { color: colors.lime, fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1.2 },
+    title: {
+      color: colors.paper,
+      fontSize: 30,
+      fontFamily: fonts.mono,
+      marginTop: 2
+    },
+    sub: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.body, marginTop: 4, lineHeight: 18 },
+    metrics: {
+      color: colors.paperFaint,
+      fontSize: 12,
+      fontFamily: fonts.mono,
+      marginTop: 6
+    },
+    clearBtn: {
+      marginTop: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: radius.control,
+      borderWidth: 1,
+      borderColor: colors.lineStrong,
+      backgroundColor: colors.panel
+    },
+    clear: { color: colors.paperDim, fontSize: 12, fontFamily: fonts.bodySemi },
+    chips: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.md,
+      marginBottom: spacing.sm
+    },
+    chip: {
+      borderWidth: 1,
+      borderColor: colors.lineStrong,
+      backgroundColor: colors.panel,
+      borderRadius: radius.pill,
+      paddingHorizontal: 14,
+      paddingVertical: 8
+    },
+    chipDisabled: { opacity: 0.5 },
+    chipText: { color: colors.paperDim, fontSize: 12, fontFamily: fonts.bodySemi },
+    list: { paddingHorizontal: spacing.xl, paddingBottom: spacing.md, paddingTop: spacing.sm },
+    bubble: {
+      maxWidth: '88%',
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      marginBottom: spacing.sm,
+      borderRadius: radius.card
+    },
+    userBubble: { alignSelf: 'flex-end', backgroundColor: colors.lime },
+    coachBubble: {
+      alignSelf: 'flex-start',
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.line
+    },
+    bubbleText: { color: colors.paper, fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
+    userBubbleText: { color: colors.ink, fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
+    thinking: {
+      color: colors.paperFaint,
+      fontSize: 12,
+      fontFamily: fonts.body,
+      marginTop: 4,
+      marginLeft: 4
+    },
+    composer: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      paddingHorizontal: spacing.xl,
+      paddingVertical: spacing.md,
+      borderTopWidth: 1,
+      borderTopColor: colors.line,
+      backgroundColor: colors.ink
+    },
+    input: {
+      flex: 1,
+      minHeight: 44,
+      borderWidth: 1,
+      borderColor: colors.lineStrong,
+      borderRadius: radius.control,
+      backgroundColor: colors.panel,
+      color: colors.paper,
+      paddingHorizontal: 14,
+      fontFamily: fonts.body,
+      fontSize: 14
+    },
+    send: {
+      minWidth: 52,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.lime,
+      borderRadius: radius.control,
+      paddingHorizontal: 14
+    },
+    sendDisabled: { opacity: 0.4 },
+    sendText: { color: colors.ink, fontFamily: fonts.bodySemi, fontSize: 14 }
+  });
 }
