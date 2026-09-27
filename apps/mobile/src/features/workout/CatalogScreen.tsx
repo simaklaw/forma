@@ -3,6 +3,7 @@ import { FlatList, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, 
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { MUSCLE_LABELS, type MuscleKey } from '@/components/MuscleMap';
+import ScreenHeader from '@/components/ScreenHeader';
 import { type TrainingMode } from './catalog';
 import {
   buildCatalogItems,
@@ -113,13 +114,11 @@ export default function CatalogScreen() {
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]}>
-      <View style={[styles.header, { borderBottomColor: colors.line }]}>
-        <Text style={[styles.eyebrow, { color: colors.lime }]}>FITPULSE · БИБЛИОТЕКА</Text>
-        <Text style={[styles.title, { color: colors.paper }]}>Каталог</Text>
-        <Text style={[styles.subtitle, { color: colors.paperDim }]}>
-          Офлайн-список · дом и зал · {filtered.length} из {items.length}
-        </Text>
-      </View>
+      <ScreenHeader
+        eyebrow="Библиотека"
+        title="Каталог"
+        subtitle={`Офлайн · дом и зал · ${filtered.length} из ${items.length}`}
+      />
 
       {replaceTarget ? (
         <View
@@ -376,15 +375,6 @@ export default function CatalogScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
-    borderBottomWidth: 1
-  },
-  eyebrow: { fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1 },
-  title: { fontSize: 30, fontFamily: fonts.mono },
-  subtitle: { fontSize: 13, fontFamily: fonts.body, marginTop: 3 },
   replaceBanner: {
     marginHorizontal: spacing.lg,
     marginTop: spacing.sm,
