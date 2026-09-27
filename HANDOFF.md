@@ -1,18 +1,16 @@
 # HANDOFF — FitPulse / Forma
 
 **Checkpoint:** 2026-09-27
-**Branch in flight:** `feat/progress-names-hc-weight`
+**Branch in flight:** `feat/coach-context-progress`
 **APK:** do not build until owner says so.
 
 ## On main
 
-- Health Connect workouts, nutrition burn, catalog counts, progress polish
+- Health Connect (workouts + weight), nutrition burn, catalog, progress polish, PR names
 
 ## In flight
 
-- Progress PR list uses `allExerciseNames()`
-- Burn MET uses exercise names for better mapping
-- HC `writeWeightKg` on `logWeight` when export enabled
+Coach context: last workout from setLogs + exercise names; progress chip; water in metrics.
 
 ## Next
 
