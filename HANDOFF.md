@@ -1,25 +1,23 @@
 # HANDOFF — FitPulse / Forma
 
 **Checkpoint:** 2026-09-27
-**Branch in flight:** `feat/progress-polish`
+**Branch in flight:** `feat/progress-names-hc-weight`
 **APK:** do not build until owner says so.
 
 ## On main
 
-- Health Connect phase 3
-- Nutrition burn in calorie ring
-- Catalog gym/home counts
-- DeepSeek CR via OpenRouter
+- Health Connect workouts, nutrition burn, catalog counts, progress polish
 
 ## In flight
 
-Progress polish: activity streak, active days, week volume, top PRs, volume bar labels.
+- Progress PR list uses `allExerciseNames()`
+- Burn MET uses exercise names for better mapping
+- HC `writeWeightKg` on `logWeight` when export enabled
 
 ## Next
 
-1. Merge progress polish when CI green
-2. Optional HC weight write
-3. APK only on owner request
+1. Merge when CI green
+2. APK only on owner request
 
 ## Rules
 

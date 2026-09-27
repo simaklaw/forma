@@ -4,8 +4,6 @@
  * all methods resolve to null / false.
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 export type HcPermission = { accessType: 'read' | 'write'; recordType: string };
 
 export interface HealthConnectNative {
@@ -42,4 +40,8 @@ export function getHealthConnectNative(): HealthConnectNative | null {
 export const WRITE_WORKOUT_PERMISSIONS: HcPermission[] = [
   { accessType: 'write', recordType: 'ExerciseSession' },
   { accessType: 'write', recordType: 'ActiveCaloriesBurned' }
+];
+
+export const WRITE_WEIGHT_PERMISSIONS: HcPermission[] = [
+  { accessType: 'write', recordType: 'Weight' }
 ];

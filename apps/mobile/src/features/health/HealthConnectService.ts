@@ -3,6 +3,7 @@ import { createLogger } from '@/core/logger';
 import { mapSessionToHealthWorkout, type SessionBurnInput } from './mapWorkoutToHealth';
 import {
   getHealthConnectNative,
+  WRITE_WEIGHT_PERMISSIONS,
   WRITE_WORKOUT_PERMISSIONS
 } from './nativeClient';
 import { isHealthExportEnabled } from './healthSyncPrefs';
@@ -48,7 +49,7 @@ export class HealthConnectService {
     return payload;
   }
 
-  /** Request write permissions for exercise + active calories. */
+  /** Request write permissions for exercise + active calories (+ weight). */
   static async requestWriteAccess(): Promise<boolean> {
     if (Platform.OS !== 'android') return false;
     const native = getHealthConnectNative();
@@ -56,7 +57,10 @@ export class HealthConnectService {
 
     try {
       await native.initialize();
-      const granted = await native.requestPermission(WRITE_WORKOUT_PERMISSIONS);
+      const granted = await native.requestPermission([
+        ...WRITE_WORKOUT_PERMISSIONS,
+        ...WRITE_WEIGHT_PERMISSIONS
+      ]);
       const ok =
         Array.isArray(granted) &&
         granted.some((p) => p.recordType === 'ExerciseSession' && p.accessType === 'write');
@@ -120,6 +124,42 @@ export class HealthConnectService {
       return true;
     } catch (err) {
       log.warn('writeWorkout failed', {
+        err: err instanceof Error ? err.message : String(err)
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Best-effort body weight sample. No-op if export disabled or native missing.
+   * Never throws.
+   */
+  static async writeWeightKg(weightKg: number, atMs: number = Date.now()): Promise<boolean> {
+    try {
+      if (!(await isHealthExportEnabled())) return false;
+      if (typeof weightKg !== 'number' || !Number.isFinite(weightKg) || weightKg <= 0) return false;
+
+      const status = await HealthConnectService.getStatus();
+      if (status !== 'ready') return false;
+
+      const native = getHealthConnectNative();
+      if (!native) return false;
+
+      const time = new Date(atMs).toISOString();
+      await native.insertRecords([
+        {
+          recordType: 'Weight',
+          time,
+          weight: { value: weightKg, unit: 'kilograms' },
+          metadata: {
+            clientRecordId: `fitpulse-weight-${atMs}`
+          }
+        }
+      ]);
+      log.info('writeWeightKg ok', { weightKg });
+      return true;
+    } catch (err) {
+      log.debug('writeWeightKg swallowed', {
         err: err instanceof Error ? err.message : String(err)
       });
       return false;
