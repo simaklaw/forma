@@ -59,6 +59,8 @@ export default function CatalogScreen() {
     void refreshLists();
   }, [refreshLists]);
 
+  const gymCount = useMemo(() => buildCatalogItems('gym').length, []);
+  const homeCount = useMemo(() => buildCatalogItems('home').length, []);
   const items = useMemo(() => buildCatalogItems(mode), [mode]);
   const muscles = useMemo(
     () => Array.from(new Set(items.flatMap((item) => item.targetMuscles))),
@@ -115,7 +117,7 @@ export default function CatalogScreen() {
         <Text style={[styles.eyebrow, { color: colors.lime }]}>FITPULSE · БИБЛИОТЕКА</Text>
         <Text style={[styles.title, { color: colors.paper }]}>Каталог</Text>
         <Text style={[styles.subtitle, { color: colors.paperDim }]}>
-          Офлайн-список упражнений для дома и зала
+          Офлайн-список · дом и зал · {filtered.length} из {items.length}
         </Text>
       </View>
 
@@ -144,12 +146,17 @@ export default function CatalogScreen() {
       ) : null}
 
       <View style={styles.modeTabs} accessibilityRole="tablist">
-        {(['gym', 'home'] as const).map((item) => {
-          const active = mode === item;
+        {(
+          [
+            { id: 'gym' as const, label: 'Зал', count: gymCount },
+            { id: 'home' as const, label: 'Дом', count: homeCount }
+          ] as const
+        ).map((item) => {
+          const active = mode === item.id;
           return (
             <TouchableOpacity
-              key={item}
-              onPress={() => changeMode(item)}
+              key={item.id}
+              onPress={() => changeMode(item.id)}
               style={[
                 styles.modeTab,
                 { borderColor: colors.lineStrong, backgroundColor: colors.panel },
@@ -159,7 +166,10 @@ export default function CatalogScreen() {
               accessibilityState={{ selected: active }}
             >
               <Text style={[styles.modeText, { color: active ? colors.lime : colors.paperDim }]}>
-                {item === 'gym' ? 'Зал' : 'Дом'}
+                {item.label}
+              </Text>
+              <Text style={[styles.modeCount, { color: active ? colors.lime : colors.paperFaint }]}>
+                {item.count}
               </Text>
             </TouchableOpacity>
           );
@@ -402,9 +412,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: radius.pill,
     alignItems: 'center',
-    paddingVertical: 11
+    paddingVertical: 10
   },
   modeText: { fontFamily: fonts.bodySemi, fontSize: 14 },
+  modeCount: { fontFamily: fonts.mono, fontSize: 11, marginTop: 2 },
   search: {
     marginHorizontal: spacing.lg,
     borderWidth: 1,

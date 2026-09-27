@@ -1,28 +1,24 @@
 # HANDOFF — FitPulse / Forma
 
 **Checkpoint:** 2026-09-27
-**Branch in flight:** `feat/health-connect-phase3`
+**Branch in flight:** `feat/nutrition-burn-catalog`
 **APK:** do not build until owner says so.
 
-## Done recently
+## Done on main
 
-- DeepSeek CR via OpenRouter (`sk-or-` auto-detect in `DEEPSEEK_API_KEY`)
-- Health Connect phase 3 (this branch):
-  - `nativeClient` dynamic require of `react-native-health-connect`
-  - prefs + Profile `HealthConnectCard`
-  - export on `completeDayIfDone`
-  - minSdk 26 + HC permissions in `app.json`
+- DeepSeek CR (OpenRouter `sk-or-` auto-detect)
+- Health Connect phase 3 (native bridge, Profile card, export on complete)
 
-## Tandem agents
+## In flight
 
-See `docs/AGENT_TANDEM.md` — Grok orchestrates; Gemini / Free Claude Code optional co-reviewers; DeepSeek CR on every PR.
+- Nutrition ring: dietary target **+** workout burn (`estimateBurnFromSetLogs`)
+- Catalog: gym/home counts + filtered total in subtitle
 
-## Next
+## Next after merge
 
-1. Merge phase 3 when CI green
-2. Wire real kcal from WorkoutStats if available
-3. Optional: weight write to HC
-4. APK only when owner asks
+1. Progress screen: show weekly burn from set logs
+2. Optional HC weight write
+3. APK only when owner asks
 
 ## Rules
 
