@@ -1,10 +1,11 @@
 name: DeepSeek Code Review
 
-# Providers (first available wins):
-#   1) OPENROUTER_API_KEY  → https://openrouter.ai/api/v1  model deepseek/deepseek-chat
-#   2) DEEPSEEK_API_KEY    → https://api.deepseek.com       model deepseek-flash
+# Secret DEEPSEEK_API_KEY accepts either:
+#   sk-or-…  → OpenRouter  (https://openrouter.ai/api/v1, model deepseek/deepseek-chat)
+#   sk-…     → DeepSeek    (https://api.deepseek.com, model deepseek-flash)
+# Optional override: OPENROUTER_API_KEY (wins if set).
 #
-# Skip: put "skip cr" or "skip review" in PR title or body.
+# Skip: "skip cr" or "skip review" in PR title/body.
 on:
   pull_request:
     types: [opened, reopened, synchronize]
@@ -36,20 +37,39 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
+          # Prefer dedicated OpenRouter secret
           if [ -n "$OPENROUTER_API_KEY" ]; then
             echo "name=openrouter" >> "$GITHUB_OUTPUT"
             echo "base_url=https://openrouter.ai/api/v1" >> "$GITHUB_OUTPUT"
             echo "model=deepseek/deepseek-chat" >> "$GITHUB_OUTPUT"
-            echo "Using OpenRouter (deepseek/deepseek-chat)"
-          elif [ -n "$DEEPSEEK_API_KEY" ]; then
-            echo "name=deepseek" >> "$GITHUB_OUTPUT"
-            echo "base_url=https://api.deepseek.com" >> "$GITHUB_OUTPUT"
-            echo "model=deepseek-flash" >> "$GITHUB_OUTPUT"
-            echo "Using official DeepSeek API (deepseek-flash)"
-          else
-            echo "name=none" >> "$GITHUB_OUTPUT"
-            echo "::warning::Neither OPENROUTER_API_KEY nor DEEPSEEK_API_KEY is set."
+            echo "key_source=OPENROUTER_API_KEY" >> "$GITHUB_OUTPUT"
+            echo "Using OpenRouter (secret OPENROUTER_API_KEY)"
+            exit 0
           fi
+
+          if [ -z "$DEEPSEEK_API_KEY" ]; then
+            echo "name=none" >> "$GITHUB_OUTPUT"
+            echo "::warning::No DEEPSEEK_API_KEY / OPENROUTER_API_KEY secret."
+            exit 0
+          fi
+
+          # Auto-detect: OpenRouter keys start with sk-or-
+          case "$DEEPSEEK_API_KEY" in
+            sk-or-*)
+              echo "name=openrouter" >> "$GITHUB_OUTPUT"
+              echo "base_url=https://openrouter.ai/api/v1" >> "$GITHUB_OUTPUT"
+              echo "model=deepseek/deepseek-chat" >> "$GITHUB_OUTPUT"
+              echo "key_source=DEEPSEEK_API_KEY" >> "$GITHUB_OUTPUT"
+              echo "Using OpenRouter (DEEPSEEK_API_KEY starts with sk-or-)"
+              ;;
+            *)
+              echo "name=deepseek" >> "$GITHUB_OUTPUT"
+              echo "base_url=https://api.deepseek.com" >> "$GITHUB_OUTPUT"
+              echo "model=deepseek-flash" >> "$GITHUB_OUTPUT"
+              echo "key_source=DEEPSEEK_API_KEY" >> "$GITHUB_OUTPUT"
+              echo "Using official DeepSeek API"
+              ;;
+          esac
 
       - name: Collect PR diff
         if: steps.provider.outputs.name != 'none'
@@ -82,6 +102,7 @@ jobs:
           PROVIDER: ${{ steps.provider.outputs.name }}
           BASE_URL: ${{ steps.provider.outputs.base_url }}
           MODEL: ${{ steps.provider.outputs.model }}
+          KEY_SOURCE: ${{ steps.provider.outputs.key_source }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
@@ -93,10 +114,11 @@ jobs:
           provider = os.environ["PROVIDER"]
           base_url = os.environ["BASE_URL"].rstrip("/")
           model = os.environ["MODEL"]
+          key_source = os.environ.get("KEY_SOURCE", "")
           pr = os.environ["PR"]
           repo = os.environ["REPO"]
 
-          if provider == "openrouter":
+          if key_source == "OPENROUTER_API_KEY":
               key = os.environ.get("OPENROUTER_API_KEY") or ""
           else:
               key = os.environ.get("DEEPSEEK_API_KEY") or ""
@@ -167,10 +189,10 @@ jobs:
           if not review:
               review = (
                   "⚠️ Code review API не ответил.\n\n"
-                  f"Provider: `{provider}` · model: `{model}`\n\n"
+                  f"Provider: `{provider}` · model: `{model}` · key: `{key_source}`\n\n"
                   f"```\n{last_err}\n```\n\n"
-                  "OpenRouter: секреты `OPENROUTER_API_KEY` + баланс на openrouter.ai\n"
-                  "DeepSeek direct: секрет `DEEPSEEK_API_KEY` + баланс на platform.deepseek.com"
+                  "OpenRouter key (`sk-or-…`): баланс openrouter.ai\n"
+                  "DeepSeek key: баланс platform.deepseek.com"
               )
 
           md = (
