@@ -1,26 +1,28 @@
 # HANDOFF — FitPulse / Forma
 
 **Checkpoint:** 2026-09-27
-**Repo:** https://github.com/simaklaw/forma
+**Branch in flight:** `feat/health-connect-phase3`
 **APK:** do not build until owner says so.
 
-## DeepSeek CR
+## Done recently
 
-Workflow: `.github/workflows/deepseek-review.yml`
+- DeepSeek CR via OpenRouter (`sk-or-` auto-detect in `DEEPSEEK_API_KEY`)
+- Health Connect phase 3 (this branch):
+  - `nativeClient` dynamic require of `react-native-health-connect`
+  - prefs + Profile `HealthConnectCard`
+  - export on `completeDayIfDone`
+  - minSdk 26 + HC permissions in `app.json`
 
-| Priority | Secret | Endpoint | Model |
-|----------|--------|----------|-------|
-| 1 | `OPENROUTER_API_KEY` | `https://openrouter.ai/api/v1` | `deepseek/deepseek-chat` |
-| 2 | `DEEPSEEK_API_KEY` | `https://api.deepseek.com` | `deepseek-flash` |
+## Tandem agents
 
-- Official DeepSeek returned **402 Insufficient Balance** (key ok, no credit).
-- **FreeDeepseekAPI** (ForgetMeAI) is a *local browser proxy* for chat.deepseek.com — not usable in GitHub Actions.
-- Prefer OpenRouter for CI: Settings → Secrets → `OPENROUTER_API_KEY`.
+See `docs/AGENT_TANDEM.md` — Grok orchestrates; Gemini / Free Claude Code optional co-reviewers; DeepSeek CR on every PR.
 
-## Health Connect
+## Next
 
-Phase 1–2 on main (pure mappers + service stub).
-Phase 3 next: `react-native-health-connect` + Profile UI.
+1. Merge phase 3 when CI green
+2. Wire real kcal from WorkoutStats if available
+3. Optional: weight write to HC
+4. APK only when owner asks
 
 ## Rules
 

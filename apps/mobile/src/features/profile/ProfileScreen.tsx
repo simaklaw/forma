@@ -11,6 +11,7 @@ import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { useThemeStore } from '@/state/useThemeStore';
 import { Goal, Sex } from '@/engines/MetabolicEngine';
 import ProtocolBanner from '@/components/ProtocolBanner';
+import HealthConnectCard from '@/features/health/HealthConnectCard';
 
 function numStr(v: number | null | undefined): string {
   return typeof v === 'number' && Number.isFinite(v) ? String(v) : '';
@@ -385,6 +386,12 @@ export default function ProfileScreen() {
         <ProtocolBanner />
 
         <View style={styles.sectionHead}>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>Здоровье</Text>
+          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>Health Connect</Text>
+        </View>
+        <HealthConnectCard />
+
+        <View style={styles.sectionHead}>
           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>Данные</Text>
         </View>
         <TouchableOpacity
@@ -448,77 +455,77 @@ const styles = StyleSheet.create({
   identityCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: 12,
     padding: spacing.lg,
     borderRadius: radius.card,
     borderWidth: 1,
     marginBottom: spacing.md
   },
   avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: radius.control,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center'
   },
-  avatarText: { fontFamily: fonts.mono, fontSize: 20 },
-  identityTitle: { fontSize: 15, fontFamily: fonts.bodySemi },
-  identitySub: { fontSize: 12, marginTop: 4, fontFamily: fonts.body },
+  avatarText: { fontFamily: fonts.bodySemi, fontSize: 16 },
+  identityTitle: { fontFamily: fonts.bodySemi, fontSize: 14 },
+  identitySub: { fontFamily: fonts.body, fontSize: 12, marginTop: 4 },
   sectionHead: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: spacing.lg,
-    marginBottom: 10
+    alignItems: 'baseline',
+    marginBottom: spacing.sm,
+    marginTop: spacing.sm
   },
-  sectionTitle: { fontSize: 13, fontFamily: fonts.bodySemi },
-  sectionCount: { fontFamily: fonts.mono, fontSize: 13 },
+  sectionTitle: { fontFamily: fonts.bodySemi, fontSize: 12, letterSpacing: 0.5 },
+  sectionCount: { fontFamily: fonts.body, fontSize: 11 },
   card: {
+    padding: spacing.lg,
     borderRadius: radius.card,
     borderWidth: 1,
-    padding: spacing.md
+    marginBottom: spacing.md
   },
-  calcGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 14 },
-  calcField: { width: '47%' },
-  label: { fontSize: 10.5, marginBottom: 4 },
+  calcGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  calcField: { width: '48%' },
+  label: { fontFamily: fonts.body, fontSize: 11, marginBottom: 6 },
   input: {
     borderWidth: 1,
     borderRadius: radius.control,
-    padding: 10,
-    fontFamily: fonts.mono,
-    fontSize: 13.5
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontFamily: fonts.body,
+    fontSize: 15
   },
-  segmentRow: { flexDirection: 'row', gap: 8 },
+  segmentRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   segmentBtn: {
-    flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderRadius: radius.control,
-    borderWidth: 1,
-    alignItems: 'center'
+    borderWidth: 1
   },
-  segmentText: { fontFamily: fonts.bodySemi, fontSize: 12, textAlign: 'center' },
+  segmentText: { fontFamily: fonts.bodySemi, fontSize: 12 },
   calcResult: {
     flexDirection: 'row',
-    borderWidth: 1,
-    borderRadius: radius.control,
-    overflow: 'hidden',
-    marginBottom: 8
+    borderTopWidth: 1,
+    marginTop: spacing.lg,
+    paddingTop: spacing.md
   },
-  macroNote: { fontSize: 11, lineHeight: 16, fontFamily: fonts.body },
   resultCell: {
     flex: 1,
-    padding: 12,
     alignItems: 'center',
     borderRightWidth: 1
   },
-  resultVal: { fontSize: 19, fontFamily: fonts.mono },
-  resultLbl: { fontSize: 9.5, marginTop: 2 },
+  resultVal: { fontFamily: fonts.mono, fontSize: 20 },
+  resultLbl: { fontFamily: fonts.body, fontSize: 11, marginTop: 4 },
+  macroNote: { fontFamily: fonts.body, fontSize: 12, marginTop: spacing.md, lineHeight: 18 },
   settingRow: {
-    padding: 14,
-    marginBottom: 8,
+    padding: spacing.lg,
     borderRadius: radius.card,
-    borderWidth: 1
+    borderWidth: 1,
+    marginBottom: spacing.sm
   },
-  settingName: { fontSize: 14, fontFamily: fonts.bodySemi },
-  settingDesc: { fontSize: 11.5, marginTop: 2 }
+  settingName: { fontFamily: fonts.bodySemi, fontSize: 14 },
+  settingDesc: { fontFamily: fonts.body, fontSize: 12, marginTop: 4 }
 });

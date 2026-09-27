@@ -47,6 +47,37 @@ function profileBodyKg(): number | null {
   return w;
 }
 
+function estimateSessionBurnKcal(session: WorkoutSession): number {
+  const started = session.startedAtMs ?? Date.now() - 30 * 60 * 1000;
+  const ended = session.completedAtMs ?? Date.now();
+  const minutes = Math.max(1, (ended - started) / 60000);
+  const body = session.weightKgSnapshot ?? 70;
+  // ~6 MET resistance training ≈ 0.0175 * MET * kg * min
+  return Math.round(0.0175 * 6 * body * minutes);
+}
+
+/** Best-effort HC export — require keeps ActiveSessionController free of RN at load time. */
+function scheduleHealthExport(session: WorkoutSession, dayId: string | null): void {
+  const payload = {
+    sessionId: session.sessionId,
+    title: dayId ? `FitPulse · день ${dayId}` : 'FitPulse workout',
+    startedAtMs: session.startedAtMs,
+    completedAtMs: session.completedAtMs ?? Date.now(),
+    burnedKcal: estimateSessionBurnKcal(session)
+  };
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { HealthConnectService } = require('@/features/health/HealthConnectService') as {
+      HealthConnectService: {
+        exportCompletedSession: (p: typeof payload) => Promise<void>;
+      };
+    };
+    void HealthConnectService.exportCompletedSession(payload);
+  } catch {
+    /* Jest / Expo Go / missing native */
+  }
+}
+
 class ActiveSessionControllerImpl {
   private sessionId: string | null = null;
   private dayId: string | null = null;
@@ -108,10 +139,6 @@ class ActiveSessionControllerImpl {
     return null;
   }
 
-  /**
-   * Prepare+start (or resume) a day session.
-   * Returns null when profile biometrics are incomplete — never throws for that boundary.
-   */
   async ensureDaySession(dayId: string, exercises: ExerciseDef[]): Promise<WorkoutSession | null> {
     const bodyKg = profileBodyKg();
     if (bodyKg == null) {
@@ -243,11 +270,14 @@ class ActiveSessionControllerImpl {
     );
     if (!allDone) return;
 
-    await svc.dispatch(this.sessionId, {
+    const completed = await svc.dispatch(this.sessionId, {
       type: 'complete_session',
       reason: 'all_sets_done'
     });
     log.info('completed day session', { sessionId: this.sessionId });
+
+    scheduleHealthExport(completed.session, this.dayId);
+
     this.emit();
   }
 
