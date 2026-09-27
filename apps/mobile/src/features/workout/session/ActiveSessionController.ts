@@ -49,8 +49,7 @@ function profileBodyKg(): number | null {
 }
 
 function estimateSessionBurnKcal(session: WorkoutSession): number {
-  // Prefer projection metadata when present; otherwise rough MET-style floor.
-  const started = session.startedAtMs ?? session.preparedAtMs ?? Date.now();
+  const started = session.startedAtMs ?? Date.now() - 30 * 60 * 1000;
   const ended = session.completedAtMs ?? Date.now();
   const minutes = Math.max(1, (ended - started) / 60000);
   const body = session.weightKgSnapshot ?? 70;
@@ -119,10 +118,6 @@ class ActiveSessionControllerImpl {
     return null;
   }
 
-  /**
-   * Prepare+start (or resume) a day session.
-   * Returns null when profile biometrics are incomplete — never throws for that boundary.
-   */
   async ensureDaySession(dayId: string, exercises: ExerciseDef[]): Promise<WorkoutSession | null> {
     const bodyKg = profileBodyKg();
     if (bodyKg == null) {
@@ -260,12 +255,11 @@ class ActiveSessionControllerImpl {
     });
     log.info('completed day session', { sessionId: this.sessionId });
 
-    // Best-effort Health Connect export — never blocks session completion.
     const s = completed.session;
     void HealthConnectService.exportCompletedSession({
       sessionId: s.sessionId,
       title: this.dayId ? `FitPulse · день ${this.dayId}` : 'FitPulse workout',
-      startedAtMs: s.startedAtMs ?? s.preparedAtMs ?? null,
+      startedAtMs: s.startedAtMs,
       completedAtMs: s.completedAtMs ?? Date.now(),
       burnedKcal: estimateSessionBurnKcal(s)
     });
