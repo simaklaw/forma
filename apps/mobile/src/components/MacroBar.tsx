@@ -21,7 +21,9 @@ export default function MacroBar({ label, value, target, color }: Props) {
   return (
     <View style={styles.row}>
       <View style={[styles.dot, { backgroundColor: color }]} />
-      <Text style={styles.tag}>{label}</Text>
+      <Text style={styles.tag} numberOfLines={1}>
+        {label}
+      </Text>
       <View style={styles.track}>
         <View
           style={[
@@ -39,24 +41,29 @@ export default function MacroBar({ label, value, target, color }: Props) {
 
 function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  dot: { width: 7, height: 7, borderRadius: radius.pill },
-  tag: { width: 16, color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 12 },
-  track: {
-    flex: 1,
-    height: 6,
-    backgroundColor: colors.lineStrong,
-    borderRadius: radius.pill,
-    overflow: 'hidden'
-  },
-  fill: { height: '100%', borderRadius: radius.pill },
-  val: {
-    minWidth: 72,
-    textAlign: 'right',
-    color: colors.paperDim,
-    fontFamily: fonts.mono,
-    fontSize: 12.5
-  },
-  valOver: { color: colors.ember }
-});
+    row: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
+    dot: { width: 7, height: 7, borderRadius: radius.pill },
+    tag: {
+      width: 48,
+      color: colors.paperFaint,
+      fontFamily: fonts.mono,
+      fontSize: 11
+    },
+    track: {
+      flex: 1,
+      height: 6,
+      backgroundColor: colors.lineStrong,
+      borderRadius: radius.pill,
+      overflow: 'hidden'
+    },
+    fill: { height: '100%', borderRadius: radius.pill },
+    val: {
+      minWidth: 72,
+      textAlign: 'right',
+      color: colors.paperDim,
+      fontFamily: fonts.mono,
+      fontSize: 12.5
+    },
+    valOver: { color: colors.ember }
+  });
 }
