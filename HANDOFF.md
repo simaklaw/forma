@@ -1,24 +1,25 @@
 # HANDOFF — FitPulse / Forma
 
 **Checkpoint:** 2026-09-27
-**Branch in flight:** `feat/nutrition-burn-catalog`
+**Branch in flight:** `feat/progress-polish`
 **APK:** do not build until owner says so.
 
-## Done on main
+## On main
 
-- DeepSeek CR (OpenRouter `sk-or-` auto-detect)
-- Health Connect phase 3 (native bridge, Profile card, export on complete)
+- Health Connect phase 3
+- Nutrition burn in calorie ring
+- Catalog gym/home counts
+- DeepSeek CR via OpenRouter
 
 ## In flight
 
-- Nutrition ring: dietary target **+** workout burn (`estimateBurnFromSetLogs`)
-- Catalog: gym/home counts + filtered total in subtitle
+Progress polish: activity streak, active days, week volume, top PRs, volume bar labels.
 
-## Next after merge
+## Next
 
-1. Progress screen: show weekly burn from set logs
+1. Merge progress polish when CI green
 2. Optional HC weight write
-3. APK only when owner asks
+3. APK only on owner request
 
 ## Rules
 
