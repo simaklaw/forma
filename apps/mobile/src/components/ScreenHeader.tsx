@@ -7,13 +7,15 @@ interface Props {
   /** Small brand line under the mark, e.g. «Сегодня» */
   eyebrow?: string;
   title: string;
+  /** Optional second line under title */
+  subtitle?: string;
   /** Optional right-side control (button, badge). */
   right?: React.ReactNode;
   style?: ViewStyle;
 }
 
 /** FitPulse screen chrome: mint FP mark + title. */
-export default function ScreenHeader({ eyebrow, title, right, style }: Props) {
+export default function ScreenHeader({ eyebrow, title, subtitle, right, style }: Props) {
   const colors = useThemeColors();
   const styles = createStyles(colors);
 
@@ -26,6 +28,7 @@ export default function ScreenHeader({ eyebrow, title, right, style }: Props) {
         <View style={styles.titles}>
           {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
           <Text style={styles.title}>{title}</Text>
+          {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
         </View>
         {right ? <View style={styles.right}>{right}</View> : null}
       </View>
@@ -71,6 +74,13 @@ function createStyles(colors: ColorTokens) {
       fontSize: 28,
       fontFamily: fonts.mono,
       lineHeight: 32
+    },
+    subtitle: {
+      color: colors.paperDim,
+      fontSize: 13,
+      fontFamily: fonts.body,
+      marginTop: 3,
+      lineHeight: 18
     },
     right: { marginLeft: 4 }
   });

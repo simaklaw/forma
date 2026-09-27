@@ -1,23 +1,22 @@
 # HANDOFF — FitPulse / Forma
 
 **Checkpoint:** 2026-09-27
-**Branch in flight:** `polish/tabs-nutrition-brand`
+**Branch in flight:** `polish/headers-catalog-coach`
 **APK:** do not build until owner says so.
 
 ## On main
 
-- Full stack: HC, nutrition, catalog, progress, coach, rest timer, technique guide
+- Product features + first polish wave (tabs, nutrition, ScreenHeader)
 
-## In flight (polish)
+## In flight
 
-- ScreenHeader FP mark on Nutrition + Progress
-- Clearer tab icons, start on Тренировки
-- Nutrition: «+ Добавить», full macro labels
+- ScreenHeader subtitle; Catalog + Coach FP headers; coach «Отправить»
 
 ## Next
 
 1. Merge when CI green
-2. More header roll-out / APK on request
+2. Profile / Workout header roll-out optional
+3. APK on owner request
 
 ## Rules
 
