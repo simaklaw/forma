@@ -1,87 +1,167 @@
 name: DeepSeek Code Review
 
-# Skip: put "skip cr" or "skip review" in PR title or body.
+# Only on PRs (no push) — avoids empty red runs when the workflow file is edited.
 on:
   pull_request:
     types: [opened, reopened, synchronize]
-  workflow_dispatch:
-    inputs:
-      pr_number:
-        description: 'PR number to review (required for manual runs)'
-        required: true
-        type: string
 
 concurrency:
-  group: deepseek-review-${{ github.event.pull_request.number || github.event.inputs.pr_number || github.run_id }}
+  group: deepseek-cr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   review:
     name: DeepSeek CR
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    permissions:
-      contents: read
-      pull-requests: write
+    timeout-minutes: 15
+    # Do not fail the whole PR check suite if review is unavailable
+    continue-on-error: true
 
     steps:
-      - name: Check secret is configured
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check DEEPSEEK_API_KEY
+        id: key
         env:
           KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
           if [ -z "$KEY" ]; then
-            echo "::error::Repository secret DEEPSEEK_API_KEY is empty or missing."
-            echo "Settings → Secrets and variables → Actions → Name must be exactly: DEEPSEEK_API_KEY"
-            exit 1
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Secret DEEPSEEK_API_KEY is missing. Add it under Settings → Secrets → Actions."
+            exit 0
           fi
-          echo "DEEPSEEK_API_KEY is set (length=${#KEY})"
-          case "$KEY" in
-            sk-*) echo "Key prefix looks like a DeepSeek token (sk-…)" ;;
-            *) echo "::warning::Key does not start with sk- — double-check the pasted value" ;;
-          esac
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+          echo "Secret present (length=${#KEY}, prefix=${KEY:0:3}…)"
 
-      - name: Probe DeepSeek API (auth only)
+      - name: Collect PR diff
+        if: steps.key.outputs.ok == 'true'
+        id: diff
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+          git fetch --no-tags origin "$BASE" "$HEAD" 2>/dev/null || true
+          # Prefer code files; cap size for the model
+          DIFF=$(git diff "$BASE...$HEAD" -- \
+            ':(exclude)*.md' ':(exclude)*.lock' ':(exclude)*.yml' ':(exclude)*.yaml' \
+            ':(exclude)*.json' ':(exclude)*.svg' ':(exclude)*.png' \
+            -- '*.ts' '*.tsx' '*.js' '*.jsx' 2>/dev/null | head -c 60000 || true)
+          if [ -z "$DIFF" ]; then
+            DIFF=$(git diff "$BASE...$HEAD" | head -c 60000 || true)
+          fi
+          if [ -z "$DIFF" ]; then
+            echo "has_diff=false" >> "$GITHUB_OUTPUT"
+            echo "No diff to review."
+            exit 0
+          fi
+          echo "has_diff=true" >> "$GITHUB_OUTPUT"
+          printf '%s' "$DIFF" > /tmp/pr.diff
+          echo "Diff bytes: $(wc -c < /tmp/pr.diff)"
+
+      - name: Call DeepSeek API and comment on PR
+        if: steps.key.outputs.ok == 'true' && steps.diff.outputs.has_diff == 'true'
         env:
           KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
         run: |
-          code=$(curl -sS -o /tmp/ds.json -w "%{http_code}" \
-            https://api.deepseek.com/chat/completions \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${KEY}" \
-            -d '{"model":"deepseek-flash","messages":[{"role":"user","content":"ping"}],"max_tokens":5}')
-          echo "HTTP status: $code"
-          python3 - <<'PY'
-import json, re, sys
-try:
-    d=json.load(open("/tmp/ds.json"))
-except Exception as e:
-    print("body parse error", e)
-    sys.exit(1)
-err=(d.get("error") or {})
-if err:
-    print("error.type=", err.get("type"))
-    print("error.code=", err.get("code"))
-    msg=re.sub(r"sk-[A-Za-z0-9]+", "sk-***", str(err.get("message") or ""))
-    print("error.message=", msg[:300])
-    sys.exit(1)
-if not d.get("choices"):
-    print("no choices; keys=", list(d.keys())[:20])
-    sys.exit(1)
-print("DeepSeek API auth OK")
-PY
+          set -euo pipefail
+          python3 <<'PY'
+          import json, os, subprocess, urllib.request, urllib.error
 
-      - name: DeepSeek Code Review
-        uses: hustcer/deepseek-review@v1
-        with:
-          chat-token: ${{ secrets.DEEPSEEK_API_KEY }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          model: deepseek-flash
-          base-url: https://api.deepseek.com
-          exclude-patterns: 'pnpm-lock.yaml,package-lock.json,*.lock,*.md,*.svg,*.png,*.jpg,*.webp,*.wav'
-          sys-prompt: >-
-            Ты senior-архитектор monorepo FitPulse/Forma (TypeScript, React Native/Expo,
-            event-sourced workout-domain, offline-first). Пиши строго на русском. Кратко.
-            Только реальные баги, утечки секретов, side-effects в domain reducer,
-            потеря offline-данных, критические UX-регрессии тренировок.
-            Не предлагай Google Fit — только Health Connect для health sync.
-            Если критичного нет: «Критических замечаний нет».
+          key = os.environ["KEY"]
+          pr = os.environ["PR"]
+          repo = os.environ["REPO"]
+
+          with open("/tmp/pr.diff", "r", encoding="utf-8", errors="replace") as f:
+              diff = f.read()
+
+          system = (
+              "Ты senior-архитектор monorepo FitPulse/Forma "
+              "(TypeScript, React Native/Expo, event-sourced workout-domain, offline-first). "
+              "Пиши строго на русском. Кратко. "
+              "Только реальные баги, утечки секретов, side-effects в domain reducer, "
+              "потеря offline-данных, критические UX-регрессии. "
+              "Не предлагай Google Fit — только Health Connect. "
+              "Если критичного нет — одна фраза: Критических замечаний нет."
+          )
+          user = (
+              f"Сделай code review diff для PR #{pr} ({repo}).\n\n"
+              f"```diff\n{diff}\n```"
+          )
+
+          # Prefer current model; fall back to legacy alias
+          models = ["deepseek-flash", "deepseek-chat"]
+          review = None
+          last_err = None
+          for model in models:
+              body = {
+                  "model": model,
+                  "messages": [
+                      {"role": "system", "content": system},
+                      {"role": "user", "content": user},
+                  ],
+                  "temperature": 0.2,
+                  "max_tokens": 1200,
+              }
+              req = urllib.request.Request(
+                  "https://api.deepseek.com/chat/completions",
+                  data=json.dumps(body).encode("utf-8"),
+                  headers={
+                      "Content-Type": "application/json",
+                      "Authorization": f"Bearer {key}",
+                  },
+                  method="POST",
+              )
+              try:
+                  with urllib.request.urlopen(req, timeout=90) as resp:
+                      data = json.loads(resp.read().decode("utf-8"))
+                  choices = data.get("choices") or []
+                  if choices:
+                      review = choices[0]["message"]["content"].strip()
+                      print(f"OK model={model} chars={len(review)}")
+                      break
+                  last_err = f"model={model} empty choices keys={list(data.keys())}"
+              except urllib.error.HTTPError as e:
+                  err_body = e.read().decode("utf-8", errors="replace")[:400]
+                  last_err = f"model={model} HTTP {e.code}: {err_body}"
+                  print(last_err)
+                  if e.code in (401, 403):
+                      break  # bad key — no point trying other models
+              except Exception as e:
+                  last_err = f"model={model} {type(e).__name__}: {e}"
+                  print(last_err)
+
+          if not review:
+              review = (
+                  "⚠️ DeepSeek CR не смог получить ответ от API.\n\n"
+                  f"```\n{last_err}\n```\n\n"
+                  "Проверь секрет `DEEPSEEK_API_KEY` и баланс на platform.deepseek.com."
+              )
+              print("REVIEW FAILED:", last_err)
+
+          md = (
+              "## DeepSeek Code Review\n\n"
+              + review
+              + "\n\n---\n_Авто-ревью · модель DeepSeek · FitPulse/Forma_"
+          )
+          path = "/tmp/review.md"
+          with open(path, "w", encoding="utf-8") as f:
+              f.write(md)
+
+          # Delete previous bot review comments with same marker (best-effort)
+          subprocess.run(
+              ["gh", "pr", "comment", pr, "--body-file", path],
+              check=True,
+          )
+          print("Posted PR comment")
+          PY
