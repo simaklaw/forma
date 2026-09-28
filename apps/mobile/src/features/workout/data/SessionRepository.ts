@@ -55,6 +55,9 @@ export interface SessionRepository {
   listPendingOutbox(limit?: number): Promise<OutboxRow[]>;
 
   markOutbox(operationId: string, status: OutboxStatus): Promise<void>;
+
+  /** Deletes outbox rows older than retentionDays with a final status. */
+  pruneOutbox(retentionDays: number, statuses: OutboxStatus[]): Promise<number>;
 }
 
 export function hashPayload(payload: unknown): string {

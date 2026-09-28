@@ -127,6 +127,16 @@ export class MemorySessionRepository implements SessionRepository {
     if (row) row.status = status;
   }
 
+  async pruneOutbox(retentionDays: number, statuses: OutboxStatus[]): Promise<number> {
+    if (statuses.length === 0) return 0;
+    const cutoffMs = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
+    const before = this.outbox.length;
+    this.outbox = this.outbox.filter(
+      (row) => !(statuses.includes(row.status) && row.createdAtMs <= cutoffMs)
+    );
+    return before - this.outbox.length;
+  }
+
   dump() {
     return {
       sessions: [...this.sessions.values()],

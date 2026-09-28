@@ -157,6 +157,8 @@ export async function domainCompleteSet(input: {
 
     const result = await svc.dispatch(sessionId, {
       type: "complete_set",
+      // Web catalog is bodyweight-only (Exercise has no external load). 0 is the
+      // domain convention for bodyweight, not missing data. See workout-domain types.
       weightKg: 0,
       reps: input.reps,
       autoStartRest: true,

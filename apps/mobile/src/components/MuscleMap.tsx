@@ -41,7 +41,7 @@ export type MuscleKey =
   | 'back'
   | 'calves';
 
-const MUSCLE_LABELS: Record<MuscleKey, string> = {
+export const MUSCLE_LABELS: Record<MuscleKey, string> = {
   chest: 'грудь',
   shoulders: 'плечи',
   biceps: 'бицепс',
@@ -102,7 +102,11 @@ export default function MuscleMap({ targetMuscles }: Props) {
   const colors = useThemeColors();
   const styles = createStyles(colors);
   return (
-    <View style={styles.wrap}>
+    <View
+      style={styles.wrap}
+      accessible
+      accessibilityLabel={`Целевые мышцы: ${targetMuscles.map((k) => MUSCLE_LABELS[k]).join(', ')}`}
+    >
       <Svg width={WIDTH} height={HEIGHT} viewBox={`0 0 ${WIDTH} ${HEIGHT}`}>
         {/* Silhouette: head, torso, arms, hips, legs — stroke only, same
             layout as the Flutter reference's CustomPainter, drawn here with
