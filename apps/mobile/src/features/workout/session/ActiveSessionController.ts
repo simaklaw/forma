@@ -1,22 +1,28 @@
 import { isProfileComplete } from '@forma/core';
 import type { WorkoutSession } from '@forma/workout-domain';
+import { createLogger } from '@/core/logger';
 import {
   getSessionService,
   newSessionId
 } from '@/features/workout/data';
 import type { ExerciseDef } from '../ExerciseSheet';
-import { contentHashForExercises, exercisesToSnapshots } from './planToSnapshots';
+import { contentHashForExercises, exercisesToSnapshots, PLAN_REVISION } from './planToSnapshots';
 import { LOCAL_USER_ID } from './currentUser';
 import { projectSessionEvents } from '@/features/workout/data/sessionProjections';
 import { clearDayReadModel } from './clearDayReadModel';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 
+const log = createLogger('session');
+
+/** Template id includes plan revision so plan edits do not resume stale sessions. */
 export function dayTemplateId(dayId: string): string {
-  return `day-${dayId}`;
+  return `day-${dayId}@${PLAN_REVISION}`;
 }
 
+/** Accepts `day-{id}` (legacy) and `day-{id}@{revision}`. */
 export function dayIdFromTemplate(templateRevisionId: string): string | null {
-  return templateRevisionId.startsWith('day-') ? templateRevisionId.slice(4) : null;
+  const match = /^day-([^@]+)(?:@.*)?$/.exec(templateRevisionId);
+  return match ? match[1] : null;
 }
 
 function isResumable(s: WorkoutSession): boolean {
@@ -39,6 +45,37 @@ function profileBodyKg(): number | null {
   const w = profile.weight;
   if (typeof w !== 'number' || !Number.isFinite(w) || w <= 0) return null;
   return w;
+}
+
+function estimateSessionBurnKcal(session: WorkoutSession): number {
+  const started = session.startedAtMs ?? Date.now() - 30 * 60 * 1000;
+  const ended = session.completedAtMs ?? Date.now();
+  const minutes = Math.max(1, (ended - started) / 60000);
+  const body = session.weightKgSnapshot ?? 70;
+  // ~6 MET resistance training ≈ 0.0175 * MET * kg * min
+  return Math.round(0.0175 * 6 * body * minutes);
+}
+
+/** Best-effort HC export — require keeps ActiveSessionController free of RN at load time. */
+function scheduleHealthExport(session: WorkoutSession, dayId: string | null): void {
+  const payload = {
+    sessionId: session.sessionId,
+    title: dayId ? `FitPulse · день ${dayId}` : 'FitPulse workout',
+    startedAtMs: session.startedAtMs,
+    completedAtMs: session.completedAtMs ?? Date.now(),
+    burnedKcal: estimateSessionBurnKcal(session)
+  };
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { HealthConnectService } = require('@/features/health/HealthConnectService') as {
+      HealthConnectService: {
+        exportCompletedSession: (p: typeof payload) => Promise<void>;
+      };
+    };
+    void HealthConnectService.exportCompletedSession(payload);
+  } catch {
+    /* Jest / Expo Go / missing native */
+  }
 }
 
 class ActiveSessionControllerImpl {
@@ -90,19 +127,22 @@ class ActiveSessionControllerImpl {
         type: 'abandon_session',
         reason: 'replaced_by_new_session'
       });
-    } catch {
-      // already terminal or race
+      log.info('abandoned previous day session', {
+        fromTemplate: previous.templateRevisionId,
+        nextDayId
+      });
+    } catch (err) {
+      log.debug('abandon previous session ignored', {
+        err: err instanceof Error ? err.message : String(err)
+      });
     }
     return null;
   }
 
-  /**
-   * Prepare+start (or resume) a day session.
-   * Returns null when profile biometrics are incomplete — never throws for that boundary.
-   */
   async ensureDaySession(dayId: string, exercises: ExerciseDef[]): Promise<WorkoutSession | null> {
     const bodyKg = profileBodyKg();
     if (bodyKg == null) {
+      log.debug('ensureDaySession blocked: incomplete profile', { dayId });
       return null;
     }
 
@@ -111,13 +151,14 @@ class ActiveSessionControllerImpl {
 
     if (this.sessionId && this.dayId === dayId) {
       const existing = await svc.getSession(this.sessionId);
-      if (existing && isResumable(existing)) {
+      if (existing && isResumable(existing) && existing.templateRevisionId === templateId) {
         return existing;
       }
     }
 
     const sameDayOrNull = await this.abandonIfDifferentDay(dayId);
     if (sameDayOrNull) {
+      log.debug('resumed same-day session', { dayId, sessionId: sameDayOrNull.sessionId });
       return this.bind(sameDayOrNull, dayId);
     }
 
@@ -139,6 +180,7 @@ class ActiveSessionControllerImpl {
     });
 
     const started = await svc.dispatch(sessionId, { type: 'start_session' });
+    log.info('started day session', { dayId, sessionId, steps: steps.length });
     return this.bind(started.session, dayId);
   }
 
@@ -154,8 +196,11 @@ class ActiveSessionControllerImpl {
           type: 'abandon_session',
           reason: 'user_restarted'
         });
-      } catch {
-        // ignore
+        log.info('restart: abandoned previous session', { sessionId: previous.sessionId });
+      } catch (err) {
+        log.debug('restart abandon ignored', {
+          err: err instanceof Error ? err.message : String(err)
+        });
       }
     } else {
       dateKeyToClear = new Date().toISOString().slice(0, 10);
@@ -185,6 +230,10 @@ class ActiveSessionControllerImpl {
     if (!session) return null;
     const step = session.steps[session.currentStepIndex];
     if (!step || step.snapshot.exerciseId !== String(input.exerciseId)) {
+      log.debug('recordSet rejected: out of order or missing step', {
+        expected: step?.snapshot.exerciseId,
+        got: input.exerciseId
+      });
       return null;
     }
 
@@ -221,10 +270,14 @@ class ActiveSessionControllerImpl {
     );
     if (!allDone) return;
 
-    await svc.dispatch(this.sessionId, {
+    const completed = await svc.dispatch(this.sessionId, {
       type: 'complete_session',
       reason: 'all_sets_done'
     });
+    log.info('completed day session', { sessionId: this.sessionId });
+
+    scheduleHealthExport(completed.session, this.dayId);
+
     this.emit();
   }
 

@@ -1,0 +1,213 @@
+name: DeepSeek Code Review
+
+# Secret DEEPSEEK_API_KEY accepts either:
+#   sk-or-…  → OpenRouter  (https://openrouter.ai/api/v1, model deepseek/deepseek-chat)
+#   sk-…     → DeepSeek    (https://api.deepseek.com, model deepseek-flash)
+# Optional override: OPENROUTER_API_KEY (wins if set).
+#
+# Skip: "skip cr" or "skip review" in PR title/body.
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+concurrency:
+  group: deepseek-cr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    name: DeepSeek CR
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve API provider
+        id: provider
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          # Prefer dedicated OpenRouter secret
+          if [ -n "$OPENROUTER_API_KEY" ]; then
+            echo "name=openrouter" >> "$GITHUB_OUTPUT"
+            echo "base_url=https://openrouter.ai/api/v1" >> "$GITHUB_OUTPUT"
+            echo "model=deepseek/deepseek-chat" >> "$GITHUB_OUTPUT"
+            echo "key_source=OPENROUTER_API_KEY" >> "$GITHUB_OUTPUT"
+            echo "Using OpenRouter (secret OPENROUTER_API_KEY)"
+            exit 0
+          fi
+
+          if [ -z "$DEEPSEEK_API_KEY" ]; then
+            echo "name=none" >> "$GITHUB_OUTPUT"
+            echo "::warning::No DEEPSEEK_API_KEY / OPENROUTER_API_KEY secret."
+            exit 0
+          fi
+
+          # Auto-detect: OpenRouter keys start with sk-or-
+          case "$DEEPSEEK_API_KEY" in
+            sk-or-*)
+              echo "name=openrouter" >> "$GITHUB_OUTPUT"
+              echo "base_url=https://openrouter.ai/api/v1" >> "$GITHUB_OUTPUT"
+              echo "model=deepseek/deepseek-chat" >> "$GITHUB_OUTPUT"
+              echo "key_source=DEEPSEEK_API_KEY" >> "$GITHUB_OUTPUT"
+              echo "Using OpenRouter (DEEPSEEK_API_KEY starts with sk-or-)"
+              ;;
+            *)
+              echo "name=deepseek" >> "$GITHUB_OUTPUT"
+              echo "base_url=https://api.deepseek.com" >> "$GITHUB_OUTPUT"
+              echo "model=deepseek-flash" >> "$GITHUB_OUTPUT"
+              echo "key_source=DEEPSEEK_API_KEY" >> "$GITHUB_OUTPUT"
+              echo "Using official DeepSeek API"
+              ;;
+          esac
+
+      - name: Collect PR diff
+        if: steps.provider.outputs.name != 'none'
+        id: diff
+        run: |
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+          git fetch --no-tags origin "$BASE" "$HEAD" 2>/dev/null || true
+          DIFF=$(git diff "$BASE...$HEAD" -- \
+            ':(exclude)*.md' ':(exclude)*.lock' ':(exclude)*.yml' ':(exclude)*.yaml' \
+            ':(exclude)*.json' ':(exclude)*.svg' ':(exclude)*.png' \
+            -- '*.ts' '*.tsx' '*.js' '*.jsx' 2>/dev/null | head -c 60000 || true)
+          if [ -z "$DIFF" ]; then
+            DIFF=$(git diff "$BASE...$HEAD" | head -c 60000 || true)
+          fi
+          if [ -z "$DIFF" ]; then
+            echo "has_diff=false" >> "$GITHUB_OUTPUT"
+            echo "No diff to review."
+            exit 0
+          fi
+          echo "has_diff=true" >> "$GITHUB_OUTPUT"
+          printf '%s' "$DIFF" > /tmp/pr.diff
+          echo "Diff bytes: $(wc -c < /tmp/pr.diff)"
+
+      - name: Call model and comment on PR
+        if: steps.provider.outputs.name != 'none' && steps.diff.outputs.has_diff == 'true'
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          PROVIDER: ${{ steps.provider.outputs.name }}
+          BASE_URL: ${{ steps.provider.outputs.base_url }}
+          MODEL: ${{ steps.provider.outputs.model }}
+          KEY_SOURCE: ${{ steps.provider.outputs.key_source }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          import json, os, subprocess, urllib.request, urllib.error
+
+          provider = os.environ["PROVIDER"]
+          base_url = os.environ["BASE_URL"].rstrip("/")
+          model = os.environ["MODEL"]
+          key_source = os.environ.get("KEY_SOURCE", "")
+          pr = os.environ["PR"]
+          repo = os.environ["REPO"]
+
+          if key_source == "OPENROUTER_API_KEY":
+              key = os.environ.get("OPENROUTER_API_KEY") or ""
+          else:
+              key = os.environ.get("DEEPSEEK_API_KEY") or ""
+
+          with open("/tmp/pr.diff", "r", encoding="utf-8", errors="replace") as f:
+              diff = f.read()
+
+          system = (
+              "Ты senior-архитектор monorepo FitPulse/Forma "
+              "(TypeScript, React Native/Expo, event-sourced workout-domain, offline-first). "
+              "Пиши строго на русском. Кратко. "
+              "Только реальные баги, утечки секретов, side-effects в domain reducer, "
+              "потеря offline-данных, критические UX-регрессии. "
+              "Не предлагай Google Fit — только Health Connect. "
+              "Если критичного нет — одна фраза: Критических замечаний нет."
+          )
+          user = (
+              f"Сделай code review diff для PR #{pr} ({repo}).\n\n"
+              f"```diff\n{diff}\n```"
+          )
+
+          body = {
+              "model": model,
+              "messages": [
+                  {"role": "system", "content": system},
+                  {"role": "user", "content": user},
+              ],
+              "temperature": 0.2,
+              "max_tokens": 1200,
+          }
+
+          headers = {
+              "Content-Type": "application/json",
+              "Authorization": f"Bearer {key}",
+          }
+          if provider == "openrouter":
+              headers["HTTP-Referer"] = f"https://github.com/{repo}"
+              headers["X-Title"] = "FitPulse Forma DeepSeek CR"
+
+          url = f"{base_url}/chat/completions"
+          req = urllib.request.Request(
+              url,
+              data=json.dumps(body).encode("utf-8"),
+              headers=headers,
+              method="POST",
+          )
+
+          review = None
+          last_err = None
+          try:
+              with urllib.request.urlopen(req, timeout=90) as resp:
+                  data = json.loads(resp.read().decode("utf-8"))
+              choices = data.get("choices") or []
+              if choices:
+                  msg = choices[0].get("message") or {}
+                  review = (msg.get("content") or "").strip()
+                  print(f"OK provider={provider} model={model} chars={len(review)}")
+              else:
+                  last_err = f"empty choices keys={list(data.keys())} body={json.dumps(data)[:300]}"
+          except urllib.error.HTTPError as e:
+              err_body = e.read().decode("utf-8", errors="replace")[:500]
+              last_err = f"HTTP {e.code}: {err_body}"
+              print(last_err)
+          except Exception as e:
+              last_err = f"{type(e).__name__}: {e}"
+              print(last_err)
+
+          if not review:
+              review = (
+                  "⚠️ Code review API не ответил.\n\n"
+                  f"Provider: `{provider}` · model: `{model}` · key: `{key_source}`\n\n"
+                  f"```\n{last_err}\n```\n\n"
+                  "OpenRouter key (`sk-or-…`): баланс openrouter.ai\n"
+                  "DeepSeek key: баланс platform.deepseek.com"
+              )
+
+          md = (
+              f"## DeepSeek Code Review\n\n"
+              f"_via `{provider}` · `{model}`_\n\n"
+              + review
+              + "\n\n---\n_Авто-ревью · FitPulse/Forma_"
+          )
+          path = "/tmp/review.md"
+          with open(path, "w", encoding="utf-8") as f:
+              f.write(md)
+
+          subprocess.run(
+              ["gh", "pr", "comment", pr, "--body-file", path],
+              check=True,
+          )
+          print("Posted PR comment")
+          PY

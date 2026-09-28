@@ -127,6 +127,19 @@ function mergeProfile(base: StoredProfile, patch: unknown): StoredProfile {
   };
 }
 
+/** Best-effort HC weight export without static RN import at module load. */
+function scheduleWeightExport(weightKg: number): void {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { HealthConnectService } = require('@/features/health/HealthConnectService') as {
+      HealthConnectService: { writeWeightKg: (w: number) => Promise<boolean> };
+    };
+    void HealthConnectService.writeWeightKg(weightKg);
+  } catch {
+    /* Jest / missing native */
+  }
+}
+
 interface AppStore {
   profile: StoredProfile;
   metabolic: MetabolicStatus;
@@ -199,7 +212,10 @@ export const useFitPulseStore = create<AppStore>()(
         set((state) => ({
           todayMeals: {
             ...state.todayMeals,
-            [mealType]: [...state.todayMeals[mealType], { ...item, id: generateId(), loggedAt: Date.now() }]
+            [mealType]: [
+              ...state.todayMeals[mealType],
+              { ...item, id: generateId(), loggedAt: Date.now() }
+            ]
           }
         })),
 
@@ -228,15 +244,27 @@ export const useFitPulseStore = create<AppStore>()(
 
       setWater: (count) => set({ waterGlasses: count }),
 
-      logWeight: (weight) =>
+      logWeight: (weight) => {
+        const w = asPositiveNumber(weight);
         set((state) => ({
-          profile: { ...state.profile, weight: asPositiveNumber(weight) },
-          weightHistory: [...state.weightHistory, weight].filter((n) => Number.isFinite(n) && n > 0).slice(-30)
-        })),
+          profile: { ...state.profile, weight: w },
+          weightHistory: [...state.weightHistory, weight]
+            .filter((n) => Number.isFinite(n) && n > 0)
+            .slice(-30)
+        }));
+        if (w != null) scheduleWeightExport(w);
+      },
 
       recordSet: (exerciseId, weight, reps, rir) => {
         const todayKey = toDateKey(new Date());
-        const entry: SetLogEntry = { id: generateId(), exerciseId, dateKey: todayKey, weight, reps, rir };
+        const entry: SetLogEntry = {
+          id: generateId(),
+          exerciseId,
+          dateKey: todayKey,
+          weight,
+          reps,
+          rir
+        };
         const state = get();
         const todayForDay = state.dayProgress[todayKey] ?? {};
         const nextCount = (todayForDay[exerciseId] ?? 0) + 1;
@@ -307,13 +335,20 @@ export const useFitPulseStore = create<AppStore>()(
           next.customFoods = data.customFoods as CustomFoodDef[];
         }
         if (typeof data.waterGlasses === 'number') next.waterGlasses = data.waterGlasses;
-        if (Array.isArray(data.weightHistory) && data.weightHistory.every((n) => typeof n === 'number')) {
+        if (
+          Array.isArray(data.weightHistory) &&
+          data.weightHistory.every((n) => typeof n === 'number')
+        ) {
           next.weightHistory = data.weightHistory;
         }
         if (
           Array.isArray(data.setLogs) &&
           data.setLogs.every(
-            (e) => e && typeof e === 'object' && typeof e.exerciseId === 'number' && typeof e.dateKey === 'string'
+            (e) =>
+              e &&
+              typeof e === 'object' &&
+              typeof e.exerciseId === 'number' &&
+              typeof e.dateKey === 'string'
           )
         ) {
           next.setLogs = data.setLogs;

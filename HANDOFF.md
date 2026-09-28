@@ -1,5 +1,6 @@
 # HANDOFF — FitPulse / Forma
 
+<<<<<<< HEAD
 **Checkpoint date:** 2026-09-28
 **Active branch:** `fix/profile-gate-weightkg` (also merged to `main` via PR #37; continue on this branch or `main`)
 **Repo:** https://github.com/simaklaw/forma
@@ -69,3 +70,28 @@ Google Fit **rejected**. Health Connect when implementing health sync. Offline-f
 3. No Google Fit.
 4. Preserve exercise ids **1–30**.
 5. Update this file after each chunk.
+=======
+**Checkpoint:** 2026-09-27
+**Branch in flight:** `polish/headers-catalog-coach`
+**APK:** do not build until owner says so.
+
+## On main
+
+- Product features + first polish wave (tabs, nutrition, ScreenHeader)
+
+## In flight
+
+- ScreenHeader subtitle; Catalog + Coach FP headers; coach «Отправить»
+
+## Next
+
+1. Merge when CI green
+2. Profile / Workout header roll-out optional
+3. APK on owner request
+
+## Rules
+
+1. No APK without owner go-ahead.
+2. No Google Fit.
+3. Never commit API keys.
+>>>>>>> origin/main
