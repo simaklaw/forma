@@ -13,11 +13,14 @@ interface TrainingModeStore {
 export const useTrainingModeStore = create<TrainingModeStore>()(
   persist(
     (set) => ({
-      trainingMode: 'gym',
+      trainingMode: 'home',
       setTrainingMode: (mode) => set({ trainingMode: mode === 'home' ? 'home' : 'gym' })
     }),
     {
       name: 'fitpulse_training_mode',
+      version: 1,
+      // Soft-reset: anyone who still has 'gym' from before this change lands on home.
+      migrate: (_persisted) => ({ trainingMode: 'home' as const }),
       storage: createJSONStorage(() => AsyncStorage)
     }
   )
