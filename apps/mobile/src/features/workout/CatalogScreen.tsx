@@ -15,6 +15,8 @@ import {
 import ExerciseDetailModal from './ExerciseDetailModal';
 import { favoriteKey, loadFavorites, parseFavoriteKey } from './exerciseFavorites';
 
+const SHOW_GYM_MODE_TOGGLE = false;
+
 const EQUIPMENT_ORDER: Equipment[] = [
   'none',
   'bands',
@@ -27,7 +29,7 @@ const EQUIPMENT_ORDER: Equipment[] = [
 
 export default function CatalogScreen() {
   const colors = useThemeColors();
-  const [mode, setMode] = useState<TrainingMode>('gym');
+  const [mode, setMode] = useState<TrainingMode>('home');
   const [query, setQuery] = useState('');
   const [muscle, setMuscle] = useState<MuscleKey | null>(null);
   const [equipment, setEquipment] = useState<Equipment | null>(null);
@@ -87,28 +89,30 @@ export default function CatalogScreen() {
           Офлайн-список упражнений для дома и зала
         </Text>
       </View>
-      <View style={styles.modeTabs} accessibilityRole="tablist">
-        {(['gym', 'home'] as const).map((item) => {
-          const active = mode === item;
-          return (
-            <TouchableOpacity
-              key={item}
-              onPress={() => changeMode(item)}
-              style={[
-                styles.modeTab,
-                { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                active && { borderColor: colors.lime, backgroundColor: colors.limeDim }
-              ]}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: active }}
-            >
-              <Text style={[styles.modeText, { color: active ? colors.lime : colors.paperDim }]}>
-                {item === 'gym' ? 'Зал' : 'Дом'}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+      {SHOW_GYM_MODE_TOGGLE && (
+        <View style={styles.modeTabs} accessibilityRole="tablist">
+          {(['gym', 'home'] as const).map((item) => {
+            const active = mode === item;
+            return (
+              <TouchableOpacity
+                key={item}
+                onPress={() => changeMode(item)}
+                style={[
+                  styles.modeTab,
+                  { borderColor: colors.lineStrong, backgroundColor: colors.panel },
+                  active && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                ]}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: active }}
+              >
+                <Text style={[styles.modeText, { color: active ? colors.lime : colors.paperDim }]}>
+                  {item === 'gym' ? 'Зал' : 'Дом'}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
       <TextInput
         value={query}
         onChangeText={setQuery}

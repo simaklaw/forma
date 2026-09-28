@@ -30,6 +30,12 @@
 - Added `ExerciseSheet.onClose` wiring so the selected exercise unmounts when the sheet closes and hidden videos do not keep autoplaying in the background.
 - Validation: mobile typecheck passed; 19 Jest suites / 104 tests passed; `git diff --check` passed.
 
+### Home default + coach keyword routing (2026-09-28)
+- New installs and migrated persisted training-mode state now default to `home`; the gym plan and IDs remain in the codebase for a later product re-enable.
+- The gym/home toggle is hidden in Workout and Catalog through a single-purpose `SHOW_GYM_MODE_TOGGLE` feature flag rather than deleting gym functionality.
+- Rules-based coach responses now have explicit branches for muscle gain and belly-fat questions, with regression coverage in `RulesLocalAITrainer.test.ts`.
+- Validation: mobile typecheck passed; 22 Jest suites / 120 tests passed; lint reported 0 errors (repository has existing Prettier warnings); `git diff --check` passed.
+
 ---
 
 ## Next backlog

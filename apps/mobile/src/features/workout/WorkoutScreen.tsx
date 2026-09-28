@@ -27,6 +27,9 @@ import {
 } from './catalog';
 import type { TabParamList } from '@/navigation/types';
 
+/** Product default is home training; keep gym mode code available for a later re-enable. */
+const SHOW_GYM_MODE_TOGGLE = false;
+
 const WEEKDAY_RU_FULL = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 
 function isDayPlanComplete(
@@ -229,28 +232,30 @@ export default function WorkoutScreen() {
         </View>
       </View>
 
-      <View style={styles.modeTabs} accessibilityRole="tablist">
-        {(
-          [
-            { id: 'gym' as const, label: 'Зал' },
-            { id: 'home' as const, label: 'Дом' }
-          ] as const
-        ).map((m) => {
-          const active = trainingMode === m.id;
-          return (
-            <TouchableOpacity
-              key={m.id}
-              style={[styles.modeTab, { borderColor: colors.lineStrong, backgroundColor: colors.panel }, active && { borderColor: colors.lime, backgroundColor: colors.limeDim }]}
-              onPress={() => switchMode(m.id)}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: active }}
-              accessibilityLabel={m.label}
-            >
-              <Text style={[styles.modeTabText, { color: colors.paperDim }, active && { color: colors.lime }]}>{m.label}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+      {SHOW_GYM_MODE_TOGGLE && (
+        <View style={styles.modeTabs} accessibilityRole="tablist">
+          {(
+            [
+              { id: 'gym' as const, label: 'Зал' },
+              { id: 'home' as const, label: 'Дом' }
+            ] as const
+          ).map((m) => {
+            const active = trainingMode === m.id;
+            return (
+              <TouchableOpacity
+                key={m.id}
+                style={[styles.modeTab, { borderColor: colors.lineStrong, backgroundColor: colors.panel }, active && { borderColor: colors.lime, backgroundColor: colors.limeDim }]}
+                onPress={() => switchMode(m.id)}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: active }}
+                accessibilityLabel={m.label}
+              >
+                <Text style={[styles.modeTabText, { color: colors.paperDim }, active && { color: colors.lime }]}>{m.label}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
 
       <ScrollView
         horizontal
