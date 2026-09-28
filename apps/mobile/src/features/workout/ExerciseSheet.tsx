@@ -17,6 +17,7 @@ import { sequentialStepInfo } from './session/sequentialStep';
 import { applySessionProjection } from './data/applySessionProjection';
 import { getSessionService } from './data';
 import { formatLoadLabel, isBodyweightExercise, resolveWorkingLoadKg } from './catalog';
+import { EXERCISE_VIDEOS, type ExerciseMediaKey } from './exerciseMedia';
 
 const beepSource = require('../../../assets/sfx/beep.wav');
 
@@ -32,6 +33,7 @@ export interface ExerciseDef {
   targetMuscles: MuscleKey[];
   note: string;
   wgerSearchTerm?: string;
+  mediaKey?: ExerciseMediaKey;
 }
 
 interface Props {
@@ -40,6 +42,7 @@ interface Props {
   dayExercises?: ExerciseDef[];
   onFinished?: (exerciseId: number) => void;
   onGoToExpected?: (exerciseId: number) => void;
+  onClose?: () => void;
 }
 
 function remainingRestSeconds(restEndsAtMs: number | null | undefined, nowMs = Date.now()): number | null {
@@ -49,7 +52,7 @@ function remainingRestSeconds(restEndsAtMs: number | null | undefined, nowMs = D
 }
 
 const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
-  ({ exercise, dayId, dayExercises, onFinished, onGoToExpected }, ref) => {
+  ({ exercise, dayId, dayExercises, onFinished, onGoToExpected, onClose }, ref) => {
     const colors = useThemeColors();
     const styles = createStyles(colors);
     const completedSetsToday = useFitPulseStore((s) => s.completedSetsToday);
@@ -207,6 +210,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
             : `Упражнение ${String(exercise.index).padStart(2, '0')}`
         }
         title={exercise.name}
+        onClose={onClose}
       >
         {seq.isCurrent && !finished && seq.totalSteps > 0 && (
           <View style={styles.currentChip}>
@@ -233,7 +237,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           </View>
         )}
 
-        <ExerciseVideo />
+        <ExerciseVideo
+          source={exercise.mediaKey ? EXERCISE_VIDEOS[exercise.mediaKey] : undefined}
+        />
 
         {reference && (
           <View style={styles.refPhotoWrap}>

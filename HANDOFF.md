@@ -1,6 +1,6 @@
 # HANDOFF — FitPulse / Forma
 
-**Checkpoint date:** 2026-09-26
+**Checkpoint date:** 2026-09-28
 **Active branch:** `fix/profile-gate-weightkg`
 **Repo:** https://github.com/simaklaw/forma
 **Product name:** FitPulse (mobile), monorepo still called Forma
@@ -27,6 +27,15 @@ This file is the **single source of truth** for handoff between AI agents and th
 - Removed remaining `FORMA` UI labels from the touched workout/metabolism surfaces. The only intentional hardcoded black is the fullscreen video canvas.
 - Validation: mobile typecheck passed; 19 Jest suites / 104 tests passed; lint has 0 errors (repository-wide Prettier warnings only); `git diff --check` passed.
 
+### Local exercise media (2026-09-28)
+
+- Copied the existing web exercise media into `apps/mobile/assets/exercises/`: 12 JPG thumbnails and 12 MP4 demos. No generated or external copyrighted media was added.
+- Added `apps/mobile/src/features/workout/exerciseMedia.ts` with explicit Metro-safe `require()` maps for thumbnails and videos.
+- Added optional `mediaKey` to `ExerciseDef` and mapped all 27 home-plan exercises to an existing local movement demo; gym plans remain unchanged.
+- Added thumbnails to the home workout exercise list and passed local videos into the existing `ExerciseVideo` component.
+- Added `ExerciseSheet.onClose` wiring so the selected exercise unmounts when the sheet closes; this prevents hidden exercise videos from continuing to autoplay in the background.
+- Validation: mobile typecheck passed; 19 Jest suites / 104 tests passed; `git diff --check` passed.
+
 ### Catalog expansion (wger-aligned, offline-first)
 
 - `apps/mobile/src/features/workout/gymPlan.ts` — 8 gym days (push/pull/legs/full/upper/lower/shoulders/arms), more exercises; **ids 1–30 preserved** for logs/PRs; new ids 31+.
@@ -51,6 +60,11 @@ This file is the **single source of truth** for handoff between AI agents and th
 1. ~~**Catalog browser screen** — list/search exercises with **filter home | gym** (and ideally category chips). Wire from Workout tab / Today.~~ **Done 2026-09-26.**
 2. ~~**`calves` in MuscleMap** — add `calves` to `MuscleKey`, labels, positions in `apps/mobile/src/components/MuscleMap.tsx`; then use `targetMuscles: ['calves']` where appropriate (e.g. calf raises).~~ **Done 2026-09-26.**
 3. ~~**Light theme on remaining screens** — sporty light palette, same toggle; no pure gray Material defaults; keep FitPulse identity.~~ **Done 2026-09-26.**
+
+### Next implementation chunks from owner-provided Grok review
+- Make the home/bodyweight mode the default while preserving the gym code path; decide explicitly whether existing persisted gym preferences should be preserved or migrated.
+- Add targeted coach keyword branches for muscle gain and belly-fat questions with regression tests.
+- Replace the SQLite `CREATE TABLE IF NOT EXISTS` bootstrap with a `PRAGMA user_version` migration runner and tests before adding future schema columns.
 
 ### Deferred / later (not blocking APK when backlog 1–3 done)
 

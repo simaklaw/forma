@@ -10,9 +10,7 @@
  * identity (square corners, bordered frame, mono labels) rather than that
  * reference's rounded gradient hero card.
  *
- * No real video URL is wired in yet — `source` is required and must be
- * supplied by the caller (e.g. a wger exercise's video/image field, once
- * WgerExerciseService is actually connected — see HANDOFF.md). Passing no
+ * The caller may provide a remote URL or a bundled Metro asset. Passing no
  * source renders a bordered placeholder instead of a broken player.
  */
 
@@ -23,7 +21,8 @@ import { fonts, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 
 interface Props {
-  source?: { uri: string };
+  /** Remote URL or a local Metro asset returned by require('...mp4'). */
+  source?: { uri: string } | number;
   label?: string;
 }
 

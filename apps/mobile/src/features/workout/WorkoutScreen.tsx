@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -11,6 +11,7 @@ import ExerciseSheet, { ExerciseDef } from './ExerciseSheet';
 import { WorkoutCoachCard } from './WorkoutCoachCard';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { useTrainingModeStore } from '@/state/useTrainingModeStore';
+import { EXERCISE_THUMBNAILS } from './exerciseMedia';
 import { DayProgress, lastNDays, ruDayWord, toDateKey } from '@/engines/WorkoutStats';
 import type { WorkoutSession } from '@forma/workout-domain';
 import {
@@ -478,6 +479,14 @@ export default function WorkoutScreen() {
               <Text style={[styles.logIndex, { color: colors.paperFaint }, isCurrentStep && { color: colors.lime }]}>
                 {String(i + 1).padStart(2, '0')}
               </Text>
+              {ex.mediaKey ? (
+                <Image
+                  source={EXERCISE_THUMBNAILS[ex.mediaKey]}
+                  style={styles.logThumb}
+                  resizeMode="cover"
+                  accessibilityLabel={`Иллюстрация: ${ex.name}`}
+                />
+              ) : null}
               <View style={{ flex: 1 }}>
                 <View style={styles.logNameRow}>
                   <Text
@@ -513,6 +522,7 @@ export default function WorkoutScreen() {
         dayExercises={activeDay.exercises}
         onFinished={() => void refreshResumable()}
         onGoToExpected={(id) => openExercise(id)}
+        onClose={() => setSelectedExerciseId(null)}
       />
     </SafeAreaView>
   );
@@ -562,6 +572,7 @@ const styles = StyleSheet.create({
   sessionFill: { height: '100%', borderRadius: 2 },
   logRow: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: spacing.md, borderRadius: radius.card, borderWidth: 1, marginBottom: spacing.sm },
   logIndex: { fontFamily: fonts.mono, fontSize: 14, width: 28 },
+  logThumb: { width: 52, height: 52, borderRadius: 10 },
   logNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   logName: { fontSize: 15, fontFamily: fonts.bodySemi, flexShrink: 1 },
   nowBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: radius.pill },
