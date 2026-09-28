@@ -89,4 +89,12 @@ describe('catalog integrity', () => {
       expect((ex.wgerSearchTerm ?? '').trim().length).toBeGreaterThan(0);
     }
   });
+
+  it('maps every home exercise to a mediaKey', () => {
+    for (const day of CATALOGS.home) {
+      for (const ex of day.exercises) {
+        expect(ex.mediaKey).toBeTruthy();
+      }
+    }
+  });
 });

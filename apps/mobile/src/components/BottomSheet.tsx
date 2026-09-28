@@ -14,11 +14,12 @@ interface Props {
   eyebrow?: string;
   snapPoints?: (string | number)[];
   onClose?: () => void;
+  onChange?: (index: number) => void;
   children: React.ReactNode;
 }
 
 const AppBottomSheet = forwardRef<GorhomBottomSheet, Props>(
-  ({ title, eyebrow, snapPoints, onClose, children }, ref) => {
+  ({ title, eyebrow, snapPoints, onClose, onChange, children }, ref) => {
     const colors = useThemeColors();
     const styles = createStyles(colors);
     const points = useMemo(() => snapPoints ?? ['60%', '85%'], [snapPoints]);
@@ -37,6 +38,7 @@ const AppBottomSheet = forwardRef<GorhomBottomSheet, Props>(
         snapPoints={points}
         enablePanDownToClose
         onClose={onClose}
+        onChange={onChange}
         backdropComponent={renderBackdrop}
         backgroundStyle={styles.background}
         handleIndicatorStyle={styles.handle}
