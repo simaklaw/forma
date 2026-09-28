@@ -32,9 +32,12 @@ const EQUIPMENT_ORDER: Equipment[] = [
   'bench'
 ];
 
+/** Временно скрыт — home-only product decision (см. WorkoutScreen). */
+const SHOW_GYM_MODE_TOGGLE = false;
+
 export default function CatalogScreen() {
   const colors = useThemeColors();
-  const [mode, setMode] = useState<TrainingMode>('gym');
+  const [mode, setMode] = useState<TrainingMode>('home');
   const [query, setQuery] = useState('');
   const [muscle, setMuscle] = useState<MuscleKey | null>(null);
   const [equipment, setEquipment] = useState<Equipment | null>(null);
@@ -117,7 +120,7 @@ export default function CatalogScreen() {
       <ScreenHeader
         eyebrow="Библиотека"
         title="Каталог"
-        subtitle={`Офлайн · дом и зал · ${filtered.length} из ${items.length}`}
+        subtitle={`Офлайн · дом · ${filtered.length} из ${items.length}`}
       />
 
       {replaceTarget ? (
@@ -144,36 +147,38 @@ export default function CatalogScreen() {
         </View>
       ) : null}
 
-      <View style={styles.modeTabs} accessibilityRole="tablist">
-        {(
-          [
-            { id: 'gym' as const, label: 'Зал', count: gymCount },
-            { id: 'home' as const, label: 'Дом', count: homeCount }
-          ] as const
-        ).map((item) => {
-          const active = mode === item.id;
-          return (
-            <TouchableOpacity
-              key={item.id}
-              onPress={() => changeMode(item.id)}
-              style={[
-                styles.modeTab,
-                { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                active && { borderColor: colors.lime, backgroundColor: colors.limeDim }
-              ]}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: active }}
-            >
-              <Text style={[styles.modeText, { color: active ? colors.lime : colors.paperDim }]}>
-                {item.label}
-              </Text>
-              <Text style={[styles.modeCount, { color: active ? colors.lime : colors.paperFaint }]}>
-                {item.count}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+      {SHOW_GYM_MODE_TOGGLE && (
+        <View style={styles.modeTabs} accessibilityRole="tablist">
+          {(
+            [
+              { id: 'gym' as const, label: 'Зал', count: gymCount },
+              { id: 'home' as const, label: 'Дом', count: homeCount }
+            ] as const
+          ).map((item) => {
+            const active = mode === item.id;
+            return (
+              <TouchableOpacity
+                key={item.id}
+                onPress={() => changeMode(item.id)}
+                style={[
+                  styles.modeTab,
+                  { borderColor: colors.lineStrong, backgroundColor: colors.panel },
+                  active && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                ]}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: active }}
+              >
+                <Text style={[styles.modeText, { color: active ? colors.lime : colors.paperDim }]}>
+                  {item.label}
+                </Text>
+                <Text style={[styles.modeCount, { color: active ? colors.lime : colors.paperFaint }]}>
+                  {item.count}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
       <TextInput
         value={query}
         onChangeText={setQuery}
