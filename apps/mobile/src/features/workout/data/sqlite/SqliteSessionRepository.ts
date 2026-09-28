@@ -6,7 +6,7 @@ import {
   type SessionCheckpoint,
   type SessionRepository
 } from '../SessionRepository';
-import { SCHEMA_SQL, WORKOUT_DB_NAME } from './schema';
+import { SCHEMA_MIGRATIONS, WORKOUT_DB_NAME, WORKOUT_SCHEMA_VERSION } from './schema';
 
 /**
  * Minimal surface of expo-sqlite sync API.
@@ -64,7 +64,33 @@ export class SqliteSessionRepository implements SessionRepository {
 
   ensureSchema(): void {
     if (this.ready) return;
-    this.db.execSync(SCHEMA_SQL);
+    this.db.execSync('PRAGMA journal_mode = WAL');
+    const row = this.db.getFirstSync<{ user_version: number }>('PRAGMA user_version');
+    const currentVersion = Number(row?.user_version ?? 0);
+    if (!Number.isInteger(currentVersion) || currentVersion < 0) {
+      throw new Error(`Invalid SQLite user_version: ${String(row?.user_version)}`);
+    }
+    if (currentVersion > WORKOUT_SCHEMA_VERSION) {
+      throw new Error(
+        `SQLite schema ${currentVersion} is newer than app schema ${WORKOUT_SCHEMA_VERSION}`
+      );
+    }
+    for (const migration of SCHEMA_MIGRATIONS) {
+      if (migration.version <= currentVersion) continue;
+      this.db.execSync('BEGIN IMMEDIATE');
+      try {
+        this.db.execSync(migration.sql);
+        this.db.execSync(`PRAGMA user_version = ${migration.version}`);
+        this.db.execSync('COMMIT');
+      } catch (error) {
+        try {
+          this.db.execSync('ROLLBACK');
+        } catch {
+          // ignore rollback errors
+        }
+        throw error;
+      }
+    }
     this.ready = true;
   }
 

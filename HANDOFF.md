@@ -36,6 +36,12 @@
 - Rules-based coach responses now have explicit branches for muscle gain and belly-fat questions, with regression coverage in `RulesLocalAITrainer.test.ts`.
 - Validation: mobile typecheck passed; 22 Jest suites / 120 tests passed; lint reported 0 errors (repository has existing Prettier warnings); `git diff --check` passed.
 
+### SQLite versioned migrations (2026-09-28)
+- Replaced the runtime `CREATE TABLE IF NOT EXISTS` bootstrap with ordered migrations tracked by `PRAGMA user_version`.
+- Added explicit rejection when a database was created by a newer app version, transaction-wrapped migration application, and idempotent upgrade behavior for legacy v0/v1 databases.
+- Added tests for fresh install, v1 upgrade, idempotency, and future-version rejection.
+- Validation: mobile typecheck passed; 23 Jest suites / 123 tests passed; `git diff --check` passed.
+
 ---
 
 ## Next backlog
