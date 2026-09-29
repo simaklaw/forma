@@ -1,6 +1,6 @@
 # HANDOFF — FitPulse
 
-**Checkpoint:** 2026-09-29 (P1 skeleton)
+**Checkpoint:** 2026-09-29 (P1 idempotency + docker-compose)
 **Brand:** FitPulse (not Forma rebrand). Packages may still use `@forma/*` internally.
 **APK:** do not build until owner says so.
 
@@ -12,7 +12,9 @@
 
 ## In flight
 
-- `feat/p1-postgres-sync-skeleton` — P1.1 DDL + P1.2 sync API stubs
+- `feat/p1-postgres-sync-skeleton` — PR #76: DDL + sync-contract + Hono API
+  - in-memory idempotency on push (duplicate / hash mismatch)
+  - `docker-compose.yml` for local Postgres
 
 ## P0 status (FitPulse mobile) — DONE
 
@@ -30,10 +32,19 @@
 |------|--------|
 | packages/db DDL (schemas + tables) | this branch |
 | packages/sync-contract DTOs | this branch |
-| apps/api Hono push/pull stubs | this branch |
-| Real Postgres + RLS + idempotency store | not started |
+| apps/api Hono push/pull | this branch |
+| In-memory idempotency (client_operation_id) | this branch |
+| docker-compose Postgres | this branch |
+| Real Postgres + RLS | not started |
 | Projection handlers (records, activity_credit) | not started |
 | Client outbox → push wiring | not started |
+
+## Local Postgres
+
+```bash
+docker compose up -d
+psql postgresql://fitpulse:fitpulse@localhost:5432/fitpulse -f packages/db/migrations/001_init.sql
+```
 
 ## Rules
 

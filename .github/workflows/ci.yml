@@ -52,6 +52,12 @@ jobs:
       - name: Test workout domain
         run: pnpm --filter @forma/workout-domain test
 
+      - name: Test sync-contract
+        run: pnpm --filter @forma/sync-contract test
+
+      - name: Test api
+        run: pnpm --filter @forma/api test
+
       - name: Test mobile
         run: pnpm --filter @forma/mobile test -- --ci --passWithNoTests
 
