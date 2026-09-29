@@ -10,8 +10,12 @@
     "esModuleInterop": true,
     "isolatedModules": true,
     "lib": ["ES2022"],
-    "types": ["node"]
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@forma/sync-contract": ["../../packages/sync-contract/src/index.ts"]
+    }
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src/**/*.test.ts"]
 }

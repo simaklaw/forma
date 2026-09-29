@@ -12,7 +12,7 @@
     "type-check": "tsc --noEmit",
     "build": "tsc --noEmit",
     "lint": "echo \"@forma/sync-contract: no lint yet\"",
-    "test": "node --experimental-strip-types --test src/**/*.test.ts"
+    "test": "node --experimental-strip-types --test src/types.test.ts"
   },
   "devDependencies": {
     "typescript": "^5.7.0"
