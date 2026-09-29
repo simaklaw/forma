@@ -37,7 +37,7 @@ export interface AppDeps {
   requireUuid?: boolean;
   /**
    * Shared-secret API token. When set, every /api/v1/sync/* request must
-   * carry `Authorization: Bearer <token>`. Interim protection against
+   * carry an Authorization: Bearer header. Interim protection against
    * IDOR until per-user JWT auth (P2) lands.
    */
   apiToken?: string;
@@ -72,8 +72,7 @@ export function createApp(
       store: requireUuid ? 'postgres' : 'memory',
       auth: apiToken ? 'bearer' : 'open',
     }),
-  
-);
+  );
 
   if (apiToken) {
     app.use('/api/v1/sync/*', async (c, next) => {
@@ -133,14 +132,9 @@ export function createApp(
       }
 
       if (requireUuid) {
-        const ids = [
-          op.client_operation_id,
-          op.device_id,
-          op.aggregate_id,
-        ];
+        const ids = [op.client_operation_id, op.device_id, op.aggregate_id];
         if (ids.some((id) => !UUID_RE.test(id))) {
-          results.push
-({
+          results.push({
             client_operation_id: op.client_operation_id,
             status: 'rejected',
             error_code: 'ids_must_be_uuid',
@@ -197,8 +191,7 @@ export function createApp(
           app_version: stringFrom(opPayload.app_version),
         });
 
-        i
-f (!inserted) {
+        if (!inserted) {
           // Another request for the same operation won the race.
           const raced = await deps.store.get(
             body.user_id,
@@ -260,8 +253,7 @@ f (!inserted) {
 
   app.get('/api/v1/sync/pull', async (c) => {
     const after = Number(c.req.query('after_change_id') ?? '0');
-    if (!Number.isFinite(afte
-r) || after < 0) {
+    if (!Number.isFinite(after) || after < 0) {
       return c.json({ error: 'invalid_after_change_id' }, 400);
     }
 
@@ -316,11 +308,10 @@ export async function createAppFromEnv(): Promise<ReturnType<typeof createApp>> 
   } = await import('./postgres.ts');
   const { PostgresProjectionService } = await import('./projections.ts');
   const sql = createSql(url);
-  const projections = new PostgresProjectionService(sql);
   return createApp({
     store: new PostgresIdempotencyStore(sql),
     feed: new PostgresChangeFeed(sql),
-    projections,
+    projections: new PostgresProjectionService(sql),
     uow: new PostgresSyncUnitOfWork(sql),
     requireUuid: true,
     apiToken,
