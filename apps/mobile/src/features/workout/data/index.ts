@@ -26,5 +26,10 @@ export {
   SYNC_LOCAL_USER_UUID,
   SYNC_LOCAL_DEVICE_UUID
 } from './HttpOutboxTransport';
+export {
+  startOutboxDrainLifecycle,
+  runOutboxDrainOnce,
+  resetOutboxDrainBootstrapForTests
+} from './bootstrapOutboxDrain';
 export { personalRecordsFromSetLogs, mergePersonalRecords } from './personalRecords';
 export { applySessionProjection } from './applySessionProjection';
