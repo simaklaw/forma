@@ -3,6 +3,7 @@ import { createLogger } from '@/core/logger';
 import { mapSessionToHealthWorkout, type SessionBurnInput } from './mapWorkoutToHealth';
 import {
   getHealthConnectNative,
+  openHealthConnectSettings,
   WRITE_WEIGHT_PERMISSIONS,
   WRITE_WORKOUT_PERMISSIONS
 } from './nativeClient';
@@ -12,8 +13,9 @@ import type { HealthSyncStatus, HealthWorkoutExport } from './types';
 const log = createLogger('health-connect');
 
 /**
- * Health Connect facade (Android only). No Google Fit.
- * Native path requires react-native-health-connect + dev/EAS build (not Expo Go).
+ * Health Connect facade (Android only).
+ * Samsung Health consumes HC records when the user enables Health Connect sync in Samsung Health.
+ * No Google Fit API.
  */
 export class HealthConnectService {
   static async getStatus(): Promise<HealthSyncStatus> {
@@ -31,6 +33,21 @@ export class HealthConnectService {
       if (typeof avail === 'number' && status !== avail) {
         return 'unavailable';
       }
+
+      if (typeof native.getGrantedPermissions === 'function') {
+        try {
+          const granted = await native.getGrantedPermissions();
+          const hasExerciseWrite =
+            Array.isArray(granted) &&
+            granted.some((p) => p.recordType === 'ExerciseSession' && p.accessType === 'write');
+          if (Array.isArray(granted) && granted.length > 0 && !hasExerciseWrite) {
+            return 'denied';
+          }
+        } catch {
+          // older native builds may lack getGrantedPermissions
+        }
+      }
+
       return 'ready';
     } catch (err) {
       log.warn('getStatus failed', {
@@ -47,6 +64,11 @@ export class HealthConnectService {
       return null;
     }
     return payload;
+  }
+
+  /** Open system Health Connect settings (permissions / data sources). */
+  static openSettings(): boolean {
+    return openHealthConnectSettings();
   }
 
   /** Request write permissions for exercise + active calories (+ weight). */
@@ -99,7 +121,7 @@ export class HealthConnectService {
           recordType: 'ExerciseSession',
           startTime: payload.startTime,
           endTime: payload.endTime,
-          exerciseType: 0, // OTHER
+          exerciseType: payload.exerciseType,
           title: payload.title,
           metadata: {
             clientRecordId: `fitpulse-${payload.sessionId}`
@@ -132,7 +154,7 @@ export class HealthConnectService {
 
   /**
    * Best-effort body weight sample. No-op if export disabled or native missing.
-   * Never throws.
+   * Never throws. Never invents a default body mass.
    */
   static async writeWeightKg(weightKg: number, atMs: number = Date.now()): Promise<boolean> {
     try {
