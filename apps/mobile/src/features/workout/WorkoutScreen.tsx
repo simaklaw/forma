@@ -344,7 +344,7 @@ export default function WorkoutScreen() {
                 accessibilityState={{ selected: active }}
                 accessibilityLabel={m.label}
               >
-                <Text style={[styles.modeTabText, { color: colors.paperDim }, active && { color: colors.lime }}>{m.label}</Text>
+                <Text style={[styles.modeTabText, { color: colors.paperDim }, active && { color: colors.lime }]}>{m.label}</Text>
               </TouchableOpacity>
             );
           })}
