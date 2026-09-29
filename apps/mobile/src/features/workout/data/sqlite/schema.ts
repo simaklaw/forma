@@ -67,13 +67,13 @@ export const MIGRATIONS: ReadonlyArray<{ version: number; sql: string }> = [
       CREATE INDEX idx_outbox_pending
         ON outbox (status, created_at_ms);
     `
+  },
+  {
+    version: 2,
+    // Denormalized body-weight snapshot for MET/burn queries without parsing aggregate_json.
+    // Nullable: older sessions and bodyweight-only plans may leave it unset.
+    sql: `ALTER TABLE workout_session ADD COLUMN weight_snapshot_kg REAL;`
   }
-
-  // Следующая миграция будет выглядеть так:
-  // {
-  //   version: 2,
-  //   sql: `ALTER TABLE workout_session ADD COLUMN weight_snapshot_kg REAL;`
-  // }
 ];
 
 /** Highest migration number in the list — used by the runner and tests. */
