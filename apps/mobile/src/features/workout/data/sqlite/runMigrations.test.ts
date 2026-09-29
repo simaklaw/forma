@@ -16,6 +16,11 @@ function createFakeDb() {
       if (sql === 'PRAGMA user_version') {
         return { user_version: userVersion } as unknown as T;
       }
+      if (sql.includes('sqlite_master') && sql.includes('workout_session')) {
+        return tables.has('workout_session')
+          ? ({ name: 'workout_session' } as unknown as T)
+          : null;
+      }
       return null;
     },
     execSync(sql: string): void {
@@ -32,6 +37,9 @@ function createFakeDb() {
           tables.add(name);
         });
       }
+    },
+    seedTable(name: string) {
+      tables.add(name);
     },
     getUserVersion: () => userVersion,
     getTables: () => [...tables],
@@ -70,6 +78,14 @@ describe('runMigrations', () => {
     const hasV1Tables = newSql.some((s) => s.includes('CREATE TABLE workout_session'));
     expect(hasV1Tables).toBe(false);
     expect(db.getUserVersion()).toBe(CURRENT_SCHEMA_VERSION);
+  });
+
+  it('stamps user_version=1 when v1 tables already exist (pre-runner installs)', () => {
+    const db = createFakeDb();
+    db.seedTable('workout_session');
+    runMigrations(db);
+    expect(db.getUserVersion()).toBe(CURRENT_SCHEMA_VERSION);
+    expect(db.getExecuted().some((s) => s.includes('CREATE TABLE workout_session'))).toBe(false);
   });
 
   it('wraps each migration in BEGIN IMMEDIATE / COMMIT', () => {
