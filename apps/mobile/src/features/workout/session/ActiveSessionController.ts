@@ -47,11 +47,16 @@ function profileBodyKg(): number | null {
   return w;
 }
 
+/**
+ * Rough session burn for Health Connect export.
+ * Uses frozen session.weightKgSnapshot only — never invents a default body mass.
+ */
 function estimateSessionBurnKcal(session: WorkoutSession): number {
+  const body = session.weightKgSnapshot;
+  if (typeof body !== 'number' || !Number.isFinite(body) || body <= 0) return 0;
   const started = session.startedAtMs ?? Date.now() - 30 * 60 * 1000;
   const ended = session.completedAtMs ?? Date.now();
   const minutes = Math.max(1, (ended - started) / 60000);
-  const body = session.weightKgSnapshot ?? 70;
   // ~6 MET resistance training ≈ 0.0175 * MET * kg * min
   return Math.round(0.0175 * 6 * body * minutes);
 }
