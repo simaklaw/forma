@@ -7,17 +7,20 @@
 
 1. SQLite migrations v1–v2 + weight snapshot (#66–#68)
 2. Home mode, exercise media, coach keywords (#64)
-3. Nutrition ring (#69), Health Connect / Samsung (#71–#72)
-4. Progress screen polish (#73)
+3. Nutrition ring (#69)
+4. Health Connect → Samsung Health + weight export (#71–#72)
+5. Progress polish (#73)
+6. Coach chips + onboarding a11y (#74)
 
 ## In flight
 
-- `feat/coach-onboarding-polish` — horizontal coach chips + a11y; onboarding ScrollView/KAV; ProfileForm labels
+— none —
 
-## Next
+## Next (optional)
 
-1. Merge coach/onboarding polish when CI green
-2. APK only when owner says so
+1. Session history list on Progress (completed workouts from SQLite)
+2. Water quick-actions UX on Nutrition
+3. **APK / EAS build only when owner says so**
 
 ## Rules
 
