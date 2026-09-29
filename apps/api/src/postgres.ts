@@ -13,17 +13,26 @@ export function createSql(connectionString: string): Sql {
   });
 }
 
-/** Ensure app_user + device exist so client_operation FKs succeed (dev/bootstrap). */
-async function ensureIdentity(
-  sql: Sql,
-  userId: string,
-  deviceId: string,
-): Promise<void> {
+function asJson(sql: Sql, value: Record<string, unknown>) {
+  return sql.json(value as Parameters<Sql['json']>[0]);
+}
+
+/** Ensure app_user exists (FK for client_operation / sync_change). */
+async function ensureUser(sql: Sql, userId: string): Promise<void> {
   await sql`
     INSERT INTO platform.app_user (user_id, auth_subject)
     VALUES (${userId}::uuid, ${userId})
     ON CONFLICT (user_id) DO NOTHING
   `;
+}
+
+/** Ensure device row exists (FK for client_operation). */
+async function ensureDevice(
+  sql: Sql,
+  userId: string,
+  deviceId: string,
+): Promise<void> {
+  await ensureUser(sql, userId);
   await sql`
     INSERT INTO platform.device (
       device_id, user_id, installation_id, platform, app_version
@@ -89,7 +98,7 @@ export class PostgresIdempotencyStore implements IdempotencyStore {
   }
 
   async put(op: StoredOperation): Promise<void> {
-    await ensureIdentity(this.sql, op.user_id, op.device_id);
+    await ensureDevice(this.sql, op.user_id, op.device_id);
     await this.sql`
       INSERT INTO platform.client_operation (
         operation_id,
@@ -110,7 +119,7 @@ export class PostgresIdempotencyStore implements IdempotencyStore {
         ${op.aggregate_id}::uuid,
         ${op.payload_hash},
         ${op.status}::platform.operation_status,
-        ${this.sql.json(op.result_body as postgres.JSONValue)}
+        ${asJson(this.sql, op.result_body)}
       )
       ON CONFLICT (user_id, device_id, client_operation_id) DO NOTHING
     `;
@@ -177,7 +186,7 @@ export class PostgresChangeFeed implements ChangeFeed {
     mutation: 'upsert' | 'tombstone';
     payload: Record<string, unknown>;
   }): Promise<number> {
-    await ensureIdentity(this.sql, input.user_id, input.user_id);
+    await ensureUser(this.sql, input.user_id);
     const rows = await this.sql<{ change_id: string }[]>`
       INSERT INTO platform.sync_change (
         user_id, entity_type, entity_id, entity_version, mutation, payload
@@ -187,7 +196,7 @@ export class PostgresChangeFeed implements ChangeFeed {
         ${input.entity_id}::uuid,
         ${input.entity_version},
         ${input.mutation},
-        ${this.sql.json(input.payload as postgres.JSONValue)}
+        ${asJson(this.sql, input.payload)}
       )
       RETURNING change_id
     `;
