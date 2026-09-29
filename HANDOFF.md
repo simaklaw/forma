@@ -1,6 +1,6 @@
 # HANDOFF — FitPulse
 
-**Checkpoint:** 2026-09-29 (P1.3 projection writers)
+**Checkpoint:** 2026-09-29 (sync API hardening merged: atomic UoW, strict RLS 003, bearer token)
 **Brand:** FitPulse in UI/bundle. Packages may use `@forma/*` internally.
 **APK:** do not build until owner says so.
 
@@ -25,7 +25,7 @@
 | Projection service (noop / memory) | yes |
 | `activity_credit` writer (memory + postgres) | this branch |
 | `exercise_record` Postgres upsert | deferred (FK to session/revision) |
-| Auth → RLS GUC | not started |
+| Auth → RLS GUC | GUC + strict RLS (003) + SYNC_API_TOKEN bearer done; per-user JWT not started |
 
 ## Rules
 
