@@ -1,22 +1,21 @@
 import { AppState, type AppStateStatus, type NativeEventSubscription } from 'react-native';
 import { createLogger } from '@/core/logger';
-import { OutboxDrainService } from './OutboxDrainService';
-import {
-  createHttpOutboxTransportFromEnv,
-  noopOutboxTransport,
-} from './index';
+import { OutboxDrainService, noopOutboxTransport } from './OutboxDrainService';
+import { createHttpOutboxTransportFromEnv } from './HttpOutboxTransport';
 
 const log = createLogger('outbox-bootstrap');
 
 let started = false;
 let appStateSub: NativeEventSubscription | null = null;
 let drain: OutboxDrainService | null = null;
+let hasHttpTransport: boolean | null = null;
 
 function getDrain(): OutboxDrainService {
   if (!drain) {
-    const transport = createHttpOutboxTransportFromEnv() ?? noopOutboxTransport;
-    drain = new OutboxDrainService(transport);
-    if (!createHttpOutboxTransportFromEnv()) {
+    const http = createHttpOutboxTransportFromEnv();
+    hasHttpTransport = http != null;
+    drain = new OutboxDrainService(http ?? noopOutboxTransport);
+    if (!hasHttpTransport) {
       log.debug('no EXPO_PUBLIC_SYNC_API_URL — using noop transport');
     }
   }
@@ -77,4 +76,5 @@ export function resetOutboxDrainBootstrapForTests(): void {
   appStateSub = null;
   started = false;
   drain = null;
+  hasHttpTransport = null;
 }
