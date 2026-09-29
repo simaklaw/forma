@@ -1,54 +1,42 @@
 # HANDOFF — FitPulse
 
-**Checkpoint:** 2026-09-29 (P1 Postgres store behind DATABASE_URL)
+**Checkpoint:** 2026-09-29 (P1 HttpOutboxTransport + RLS SQL)
 **Brand:** FitPulse (not Forma rebrand). Packages may still use `@forma/*` internally.
 **APK:** do not build until owner says so.
 
 ## On main
 
-1. SQLite migrations + weight snapshot, home mode, media, coach, nutrition, HC/Samsung
-2. Progress / coach-onboarding polish (#73–#74)
-3. P0 Early Leave — pause / finish partial / abandon (#75)
-4. P1 skeleton — DDL + sync-contract + Hono API + docker-compose (#76)
+1. P0 offline-first mobile (SQLite, Early Leave, HC/Samsung) — #75
+2. P1 skeleton DDL + sync-contract + Hono — #76
+3. Postgres IdempotencyStore + ChangeFeed (`DATABASE_URL`) — #77
 
 ## In flight
 
-- `feat/p1-postgres-idempotency-store` — real `platform.client_operation` + `sync_change` when `DATABASE_URL` is set; memory default for CI/tests
-
-## P0 status (FitPulse mobile) — DONE
-
-| Item | Status |
-|------|--------|
-| Brand FitPulse | yes (`app.fitpulse.*`) |
-| workout-domain + SQLite + outbox | yes |
-| Session snapshot / weightKgSnapshot | yes |
-| Wall-clock RestTimerEngine + AppState | yes |
-| Early Leave (pause / save / abandon) | yes (#75) |
+- `feat/p1-http-outbox-transport` — mobile `HttpOutboxTransport` → push API; `002_rls_basic.sql`
 
 ## P1 status
 
 | Item | Status |
 |------|--------|
 | packages/db DDL | yes (#76) |
-| packages/sync-contract DTOs | yes (#76) |
-| apps/api Hono push/pull | yes (#76) |
-| In-memory idempotency + TTL | yes (#76) |
-| docker-compose Postgres | yes (#76) |
-| Postgres IdempotencyStore + ChangeFeed | this branch |
-| RLS policies | not started |
-| Projection handlers | not started |
-| Client outbox → push wiring | not started |
+| sync-contract + Hono push/pull | yes (#76) |
+| Postgres stores (DATABASE_URL) | yes (#77) |
+| HttpOutboxTransport (client) | this branch |
+| RLS SQL (basic) | this branch |
+| Wire transport in App.tsx / background | not started |
+| Projection handlers (server) | not started |
+| Auth-bound user_id | not started |
 
-## Local Postgres
+## Local sync loop
 
 ```bash
 docker compose up -d
 psql postgresql://fitpulse:fitpulse@localhost:5432/fitpulse -f packages/db/migrations/001_init.sql
+psql postgresql://fitpulse:fitpulse@localhost:5432/fitpulse -f packages/db/migrations/002_rls_basic.sql
 export DATABASE_URL=postgresql://fitpulse:fitpulse@localhost:5432/fitpulse
-pnpm --filter @forma/api dev
+# API: pnpm --filter @forma/api exec tsx src/index.ts  (or createAppFromEnv)
+# Mobile: EXPO_PUBLIC_SYNC_API_URL=http://10.0.2.2:8787
 ```
-
-Without `DATABASE_URL`, API uses in-memory stores (same as CI).
 
 ## Rules
 

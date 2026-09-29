@@ -18,5 +18,13 @@ export { mergeSessionProjection, projectSessionEvents } from './sessionProjectio
 export type { SessionProjection } from './sessionProjections';
 export { OutboxDrainService, outboxDrain, noopOutboxTransport } from './OutboxDrainService';
 export type { OutboxTransport } from './OutboxDrainService';
+export {
+  createHttpOutboxTransport,
+  createHttpOutboxTransportFromEnv,
+  resolveSyncUserId,
+  toSyncPayloadHash,
+  SYNC_LOCAL_USER_UUID,
+  SYNC_LOCAL_DEVICE_UUID
+} from './HttpOutboxTransport';
 export { personalRecordsFromSetLogs, mergePersonalRecords } from './personalRecords';
 export { applySessionProjection } from './applySessionProjection';
