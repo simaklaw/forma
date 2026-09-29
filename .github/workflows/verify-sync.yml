@@ -79,16 +79,10 @@ jobs:
           set -o pipefail
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f packages/db/migrations/003_rls_strict.sql 2>&1 | tee migrate_003.log
 
-      - name: RLS strict check (pg_tables)
+      - name: RLS strict check
         run: |
           set -o pipefail
-          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "select count(*) as strict_tables from pg_tables t join pg_class c on c.relname = t.tablename where c.relrowsecurity and c.relforcerowlevelsecurity and t.schemaname in ('platform','workout','engagement','nutrition');" 2>&1 | tee rls_check.log
-
-      - name: RLS sanity via pg_class
-        run: |
-          set -o pipefail
-          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -Atc "select count(*) from pg_class c join pg_namespace n on n.oid = c.relnamespace where c.relrowsecurity and c.relforcerowlevelsecurity and n.nspname in ('platform','workout','engagement','nutrition');" 2>&1 | tee rls_sanity.log
-          STRICT=$(tail -1 rls_sanity.log | tr -d ' ')
+          STRICT=$(psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -Atc "select count(*) from pg_class c join pg_namespace n on n.oid = c.relnamespace where c.relrowsecurity and c.relforcerowsecurity and n.nspname in ('platform','workout','engagement','nutrition');" 2>&1 | tee rls_check.log)
           echo "strict_tables=$STRICT"
           [ "$STRICT" -ge 10 ]
 
@@ -163,7 +157,7 @@ jobs:
           git checkout -B ci-logs origin/ci-logs 2>/dev/null || git checkout -B ci-logs
           DIR="ci-logs/${{ github.run_id }}"
           mkdir -p "$DIR"
-          for f in migrate_001.log migrate_002.log migrate_003.log rls_check.log rls_sanity.log api.log push.json resp.json resp2.json pull.json; do
+          for f in migrate_001.log migrate_002.log migrate_003.log rls_check.log api.log push.json resp.json resp2.json pull.json; do
             if [ -f "$f" ]; then cp "$f" "$DIR/"; else echo "missing: $f" >> "$DIR/README.txt"; fi
           done
           cat >> "$DIR/README.txt" <<EOF
