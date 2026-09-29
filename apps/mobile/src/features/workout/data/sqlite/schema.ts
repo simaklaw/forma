@@ -1,6 +1,7 @@
 /** SQLite schema and incremental migrations for the local workout aggregate. */
 
-export const WORKOUT_DB_NAME = 'forma_workout_v1.db';
+/** On-device DB file. Renamed for FitPulse branding; first launch creates a fresh file. */
+export const WORKOUT_DB_NAME = 'fitpulse_workout_v1.db';
 
 /**
  * Migrations are numbered from 1. The number IS the target `user_version`.

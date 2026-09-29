@@ -1,6 +1,6 @@
-# Forma monorepo
+# FitPulse monorepo
 
-Кроссплатформенная экосистема **Forma** (web) + **FitPulse** (mobile), ядро `@forma/core`.
+**FitPulse** — мобильный тренер и дневник (Expo). Внутренние пакеты могут сохранять scope `@forma/*`.
 
 ## Запуск
 
@@ -10,41 +10,38 @@ Node 22+, pnpm 9.15+
 pnpm install
 pnpm type-check
 pnpm test
-pnpm --filter @forma/web dev
+pnpm --filter @forma/mobile start
+# API (P1):
+# export DATABASE_URL=postgresql://fitpulse:fitpulse@localhost:5432/fitpulse
+# pnpm --filter @forma/api test
 ```
 
-## Ядро @forma/core v0.5
+## Ядро @forma/core
 
-- MetabolicEngine, WorkoutStats (`todayKey` / `toDateKey`), ACTIVITY_FACTOR, MET
+- MetabolicEngine, WorkoutStats, MET
 - Open Food Facts + wger clients
-- `useFormaStore` + `createPersistedFormaStore(storage)`
-- `ILocalAITrainer` / `RulesLocalAITrainer` / `CoachEngine` (`isLlmReady`)
+- CoachEngine / RulesLocalAITrainer
 
 ## Локальный ИИ
 
-| Платформа | Адаптер | UI |
-|-----------|---------|-----|
-| Web | `WebLocalAITrainer` → WebLLM (WebGPU) | `/coach` + статус WebLLM/Rules |
-| Mobile | `LlamaLocalAITrainer` → llama.rn 0.9 / rules | вкладка **Тренер** + `WorkoutCoachCard` |
+| Платформа | Адаптер |
+|-----------|---------|
+| Mobile | `LlamaLocalAITrainer` → llama.rn / rules |
+| Web | `WebLocalAITrainer` → WebLLM (если apps/web в репо) |
 
-GGUF не в репозитории; URL — `EXPO_PUBLIC_LLAMA_MODEL_URL` (`apps/mobile/.env.example`).
+GGUF не в репозитории; URL — `EXPO_PUBLIC_LLAMA_MODEL_URL`.
 
-## CI & EAS
+## Sync (P1)
 
-[Monorepo CI](https://github.com/simaklaw/forma/actions) — frozen lockfile, type-check, tests.
+```bash
+docker compose up -d
+psql postgresql://fitpulse:fitpulse@localhost:5432/fitpulse -f packages/db/migrations/001_init.sql
+psql postgresql://fitpulse:fitpulse@localhost:5432/fitpulse -f packages/db/migrations/002_rls_basic.sql
+export DATABASE_URL=postgresql://fitpulse:fitpulse@localhost:5432/fitpulse
+# mobile: EXPO_PUBLIC_SYNC_API_URL=http://10.0.2.2:8787
+```
 
-Native development client:
+## Branding
 
-1. `pnpm install` (после добавления `expo-dev-client` обновите и закоммитьте `pnpm-lock.yaml`).
-2. Один раз: `cd apps/mobile && npx eas-cli@latest init` → реальный `extra.eas.projectId` в `app.json` (см. `apps/mobile/EAS-SETUP.md`).
-3. Secret `EXPO_TOKEN` → workflow [EAS Build](https://github.com/simaklaw/forma/actions/workflows/eas-build.yml), profile **development**.
-
-## Дальше
-
-1. EAS Android development build + dev client на устройстве
-2. GGUF download / RAM / tokens/s
-3. Persist истории чата тренера при необходимости
-
-## Architecture
-
-See [the workout architecture comparison](docs/architecture/WORKOUT_ARCHITECTURE_COMPARISON.md) for the reference analysis, target workout database model, player state machine, UX integration plan, and roadmap.
+- UI / bundle: **FitPulse** (`app.fitpulse.*`)
+- Packages: `@forma/*` (internal, no user-facing rename required)
