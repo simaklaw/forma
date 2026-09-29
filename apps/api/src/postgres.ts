@@ -1,6 +1,14 @@
 import postgres from 'postgres';
 import { randomUUID } from 'node:crypto';
-import type { IdempotencyStore, StoredOperation, ChangeFeed } from './store.ts';
+import type {
+  IdempotencyStore,
+  StoredOperation,
+  ChangeFeed,
+  PutResult,
+  SyncUnitOfWork,
+  UnitOfWorkDeps,
+} from './store.ts';
+import { PostgresProjectionService } from './projections.ts';
 import type { SyncChange } from '@forma/sync-contract';
 
 export type Sql = ReturnType<typeof postgres>;
@@ -26,11 +34,18 @@ async function ensureUser(sql: Sql, userId: string): Promise<void> {
   `;
 }
 
-/** Ensure device row exists (FK for client_operation). */
+/**
+ * Ensure device row exists (FK for client_operation).
+ * Platform / app version are taken from client-reported op metadata
+ * (StoredOperation.device_platform / app_version) with neutral defaults —
+ * never hardcoded to a single OS.
+ */
 async function ensureDevice(
   sql: Sql,
   userId: string,
   deviceId: string,
+  platform: string = 'unknown',
+  appVersion: string = '0.0.0',
 ): Promise<void> {
   await ensureUser(sql, userId);
   await sql`
@@ -41,15 +56,19 @@ async function ensureDevice(
       ${deviceId}::uuid,
       ${userId}::uuid,
       ${deviceId}::uuid,
-      'android',
-      '0.0.0'
+      ${platform},
+      ${appVersion}
     )
     ON CONFLICT (device_id) DO NOTHING
   `;
 }
 
 export class PostgresIdempotencyStore implements IdempotencyStore {
-  constructor(private readonly sql: Sql) {}
+  private readonly sql: Sql;
+
+  constructor(sql: Sql) {
+    this.sql = sql;
+  }
 
   async get(
     userId: string,
@@ -97,9 +116,15 @@ export class PostgresIdempotencyStore implements IdempotencyStore {
     };
   }
 
-  async put(op: StoredOperation): Promise<void> {
-    await ensureDevice(this.sql, op.user_id, op.device_id);
-    await this.sql`
+  async put(op: StoredOperation): Promise<PutResult> {
+    await ensureDevice(
+      this.sql,
+      op.user_id,
+      op.device_id,
+      op.device_platform,
+      op.app_version,
+    );
+    const rows = await this.sql<{ operation_id: string }[]>`
       INSERT INTO platform.client_operation (
         operation_id,
         user_id,
@@ -122,12 +147,20 @@ export class PostgresIdempotencyStore implements IdempotencyStore {
         ${asJson(this.sql, op.result_body)}
       )
       ON CONFLICT (user_id, device_id, client_operation_id) DO NOTHING
+      RETURNING operation_id
     `;
+    // inserted=false means another request won the race (or a replay):
+    // the caller re-reads the stored row and answers duplicate/mismatch.
+    return { inserted: rows.length > 0 };
   }
 }
 
 export class PostgresChangeFeed implements ChangeFeed {
-  constructor(private readonly sql: Sql) {}
+  private readonly sql: Sql;
+
+  constructor(sql: Sql) {
+    this.sql = sql;
+  }
 
   async listAfter(
     userId: string,
@@ -201,5 +234,32 @@ export class PostgresChangeFeed implements ChangeFeed {
       RETURNING change_id
     `;
     return Number(rows[0].change_id);
+  }
+}
+
+/**
+ * Postgres unit of work: every push/pull runs inside ONE transaction that
+ * also sets app.current_user_id (transaction-local GUC) so strict RLS
+ * policies scope all reads/writes to the requesting user.
+ * Store, feed and projections share the transaction client — an accepted
+ * operation, its change-feed entry and its projections commit atomically.
+ */
+export class PostgresSyncUnitOfWork implements SyncUnitOfWork {
+  private readonly sql: Sql;
+
+  constructor(sql: Sql) {
+    this.sql = sql;
+  }
+
+  async run<T>(userId: string, fn: (deps: UnitOfWorkDeps) => Promise<T>): Promise<T> {
+    return this.sql.begin(async (tx) => {
+      // true = transaction-local (like SET LOCAL), cleared on commit/rollback
+      await tx`SELECT set_config('app.current_user_id', ${userId}, true)`;
+      return fn({
+        store: new PostgresIdempotencyStore(tx),
+        feed: new PostgresChangeFeed(tx),
+        projections: new PostgresProjectionService(tx),
+      });
+    });
   }
 }
