@@ -28,7 +28,8 @@ import {
   isAnyPlanComplete,
   selectPlanWeekDaysCompleted,
   selectPlanCurrentStreak,
-  selectPlanStreakDays
+  selectPlanStreakDays,
+  todayPlanDayId
 } from './workoutScreenHelpers';
 
 export default function WorkoutScreen() {
@@ -36,6 +37,7 @@ export default function WorkoutScreen() {
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const sheetRef = useRef<GorhomBottomSheet>(null);
   const [selectedDayId, setSelectedDayId] = useState<string | null>(null);
+  const [userPickedDay, setUserPickedDay] = useState(false);
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
   const [resumable, setResumable] = useState<WorkoutSession | null>(null);
 
@@ -81,10 +83,21 @@ export default function WorkoutScreen() {
     }
   }, [effectiveExercises, selectedExerciseId]);
 
+  useFocusEffect(
+    useCallback(() => {
+      if (plan.length === 0) return;
+      if (!userPickedDay || !plan.some((d) => d.id === selectedDayId)) {
+        setSelectedDayId(todayPlanDayId(plan));
+        if (!userPickedDay) setSelectedExerciseId(null);
+      }
+    }, [plan, userPickedDay, selectedDayId])
+  );
+
   useEffect(() => {
-    if (!plan.some((d) => d.id === selectedDayId)) {
-      setSelectedDayId(plan[0]?.id ?? null);
+    if (selectedDayId && !plan.some((d) => d.id === selectedDayId)) {
+      setSelectedDayId(todayPlanDayId(plan) || plan[0]?.id || null);
       setSelectedExerciseId(null);
+      setUserPickedDay(false);
     }
   }, [plan, selectedDayId]);
 
@@ -153,6 +166,7 @@ export default function WorkoutScreen() {
     sheetRef.current?.expand();
   }
   function selectDay(id: string) {
+    setUserPickedDay(true);
     setSelectedDayId(id);
     setSelectedExerciseId(null);
   }
@@ -179,10 +193,130 @@ export default function WorkoutScreen() {
   const sessionPct =
     sessionTargetSets > 0 ? Math.min(100, Math.round((sessionDoneSets / sessionTargetSets) * 100)) : 0;
 
+  const ticket = (
+    <View style={[styles.ticket, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+      <View style={styles.ticketMain}>
+        <View style={{ flex: 1, paddingRight: 12 }}>
+          <Text style={[styles.ticketLabel, { color: colors.paperFaint }]}>
+            Сегодня · {trainingMode === 'gym' ? 'зал' : 'дом'}
+          </Text>
+          <Text style={[styles.ticketName, { color: colors.paper }]}>{activeDay.name}</Text>
+          <Text style={[styles.ticketMeta, { color: colors.paperDim }]}>
+            {effectiveExercises.length} упражнения · {activeDay.meta}
+            {burnedToday > 0 ? ` · ~${burnedToday} ккал` : ''}
+          </Text>
+          {resumable && dayIdFromTemplate(resumable.templateRevisionId) === activeDay.id ? (
+            <View style={styles.resumeBlock}>
+              <Text style={[styles.resumeHint, { color: colors.lime }]}>
+                Есть незавершённая сессия · шаг {resumable.currentStepIndex + 1}/{resumable.steps.length}
+              </Text>
+              <View
+                style={styles.sessionProgress}
+                accessibilityRole="progressbar"
+                accessibilityValue={{ min: 0, max: 100, now: sessionPct }}
+                accessibilityLabel={`Прогресс сессии ${sessionDoneSets} из ${sessionTargetSets} подходов`}
+              >
+                <View style={[styles.sessionProgressTrack, { backgroundColor: colors.line }]}>
+                  <View style={[styles.sessionProgressFill, { backgroundColor: colors.lime, width: `${sessionPct}%` }]} />
+                </View>
+                <Text style={[styles.sessionProgressLbl, { color: colors.paperFaint }]}>
+                  {sessionDoneSets}/{sessionTargetSets} подходов · {sessionPct}%
+                </Text>
+              </View>
+              <View style={styles.resumeActions}>
+                <TouchableOpacity
+                  style={[styles.startPill, { backgroundColor: colors.lime }]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Продолжить тренировку"
+                  onPress={() => {
+                    void ActiveSessionController.ensureDaySession(activeDay.id, effectiveExercises)
+                      .then((session) => {
+                        if (!session) return;
+                        void refreshResumable();
+                        const step = session.steps[session.currentStepIndex];
+                        const exId = step ? Number(step.snapshot.exerciseId) : effectiveExercises[0]?.id;
+                        if (exId) openExercise(exId);
+                      })
+                      .catch(() => {});
+                  }}
+                >
+                  <Text style={[styles.startPillText, { color: colors.ink }]}>▶  Продолжить</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.restartPill, { borderColor: colors.lineStrong }]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Начать заново"
+                  onPress={() => {
+                    void ActiveSessionController.restartDaySession(activeDay.id, effectiveExercises)
+                      .then((session) => {
+                        if (!session) return;
+                        void refreshResumable();
+                        const first = session.steps[0];
+                        const exId = first ? Number(first.snapshot.exerciseId) : effectiveExercises[0]?.id;
+                        if (exId) openExercise(exId);
+                      })
+                      .catch(() => {});
+                  }}
+                >
+                  <Text style={[styles.restartPillText, { color: colors.paperDim }]}>Начать заново</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.restartPill, { borderColor: colors.ember }]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Выйти из тренировки"
+                  onPress={() => {
+                    presentEarlyLeave((outcome) => {
+                      if (outcome === 'cancelled') return;
+                      void refreshResumable();
+                    });
+                  }}
+                >
+                  <Text style={[styles.restartPillText, { color: colors.ember }]}>Выйти</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={[styles.startPill, { backgroundColor: colors.lime }]}
+              accessibilityRole="button"
+              accessibilityLabel="Начать тренировку"
+              onPress={() => {
+                void ActiveSessionController.ensureDaySession(activeDay.id, effectiveExercises)
+                  .then((session) => {
+                    if (!session) return;
+                    void refreshResumable();
+                    const first = effectiveExercises[0];
+                    if (first) openExercise(first.id);
+                  })
+                  .catch(() => {});
+              }}
+            >
+              <Text style={[styles.startPillText, { color: colors.ink }]}>▶  Начать тренировку</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+      <View style={[styles.ticketPerf, { borderTopColor: colors.line }]}>
+        <View style={[styles.perfCell, { borderRightColor: colors.line }]}>
+          <Text style={[styles.perfVal, { color: colors.paper }]}>{weekDaysCompleted}/7</Text>
+          <Text style={[styles.perfLbl, { color: colors.paperFaint }]}>Дней на неделе</Text>
+        </View>
+        <View style={[styles.perfCell, { borderRightColor: colors.line }]}>
+          <Text style={[styles.perfVal, { color: colors.paper }]}>{burnedToday > 0 ? `~${burnedToday}` : '—'}</Text>
+          <Text style={[styles.perfLbl, { color: colors.paperFaint }]}>Сожжено, ккал</Text>
+        </View>
+        <View style={[styles.perfCell, { borderRightWidth: 0 }]}>
+          <Text style={[styles.perfVal, { color: colors.paper }]}>{overallPr !== null ? `${overallPr}` : '—'}</Text>
+          <Text style={[styles.perfLbl, { color: colors.paperFaint }]}>Рекорд, кг</Text>
+        </View>
+      </View>
+    </View>
+  );
+
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]} edges={['top']}>
       <View style={[styles.header, { borderBottomColor: colors.line }]}>
-        <Text style={[styles.eyebrow, { color: colors.lime }]}>FITPULSE · {todayLabel}</Text>
+        <Text style={[styles.eyebrow, { color: colors.lime }]}>FitPulse · {todayLabel} · день цикла</Text>
         <View style={styles.titleRow}>
           <Text style={[styles.title, { color: colors.paper }]}>Тренировка</Text>
           <TouchableOpacity
@@ -216,9 +350,12 @@ export default function WorkoutScreen() {
         </View>
       )}
 
+      <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 }}>{ticket}</View>
+
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dayTabs} accessibilityRole="tablist">
         {plan.map((day) => {
           const active = day.id === activeDay.id;
+          const isToday = day.id === todayPlanDayId(plan);
           return (
             <TouchableOpacity
               key={day.id}
@@ -226,9 +363,10 @@ export default function WorkoutScreen() {
               onPress={() => selectDay(day.id)}
               accessibilityRole="tab"
               accessibilityState={{ selected: active }}
-              accessibilityLabel={day.name}
+              accessibilityLabel={isToday ? `${day.name}, сегодня` : day.name}
             >
               <Text style={[styles.dayTabText, { color: colors.paperDim }, active && { color: colors.lime }]} numberOfLines={1}>
+                {isToday ? '· ' : ''}
                 {day.name.split(' — ')[0] || day.name}
               </Text>
             </TouchableOpacity>
@@ -237,122 +375,6 @@ export default function WorkoutScreen() {
       </ScrollView>
 
       <ScrollView contentContainerStyle={styles.body}>
-        <View style={[styles.ticket, { backgroundColor: colors.panel, borderColor: colors.line }]}>
-          <View style={styles.ticketMain}>
-            <View style={{ flex: 1, paddingRight: 12 }}>
-              <Text style={[styles.ticketLabel, { color: colors.paperFaint }]}>План дня · {trainingMode === 'gym' ? 'зал' : 'дом'}</Text>
-              <Text style={[styles.ticketName, { color: colors.paper }]}>{activeDay.name}</Text>
-              <Text style={[styles.ticketMeta, { color: colors.paperDim }]}>
-                {effectiveExercises.length} упражнения · {activeDay.meta}
-                {burnedToday > 0 ? ` · ~${burnedToday} ккал` : ''}
-              </Text>
-              {resumable && dayIdFromTemplate(resumable.templateRevisionId) === activeDay.id ? (
-                <View style={styles.resumeBlock}>
-                  <Text style={[styles.resumeHint, { color: colors.lime }]}>
-                    Есть незавершённая сессия · шаг {resumable.currentStepIndex + 1}/{resumable.steps.length}
-                  </Text>
-                  <View
-                    style={styles.sessionProgress}
-                    accessibilityRole="progressbar"
-                    accessibilityValue={{ min: 0, max: 100, now: sessionPct }}
-                    accessibilityLabel={`Прогресс сессии ${sessionDoneSets} из ${sessionTargetSets} подходов`}
-                  >
-                    <View style={[styles.sessionProgressTrack, { backgroundColor: colors.line }]}>
-                      <View style={[styles.sessionProgressFill, { backgroundColor: colors.lime, width: `${sessionPct}%` }]} />
-                    </View>
-                    <Text style={[styles.sessionProgressLbl, { color: colors.paperFaint }]}>
-                      {sessionDoneSets}/{sessionTargetSets} подходов · {sessionPct}%
-                    </Text>
-                  </View>
-                  <View style={styles.resumeActions}>
-                    <TouchableOpacity
-                      style={[styles.startPill, { backgroundColor: colors.lime }]}
-                      accessibilityRole="button"
-                      accessibilityLabel="Продолжить тренировку"
-                      onPress={() => {
-                        void ActiveSessionController.ensureDaySession(activeDay.id, effectiveExercises)
-                          .then((session) => {
-                            if (!session) return;
-                            void refreshResumable();
-                            const step = session.steps[session.currentStepIndex];
-                            const exId = step ? Number(step.snapshot.exerciseId) : effectiveExercises[0]?.id;
-                            if (exId) openExercise(exId);
-                          })
-                          .catch(() => {});
-                      }}
-                    >
-                      <Text style={[styles.startPillText, { color: colors.ink }]}>▶  Продолжить</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.restartPill, { borderColor: colors.lineStrong }]}
-                      accessibilityRole="button"
-                      accessibilityLabel="Начать заново"
-                      onPress={() => {
-                        void ActiveSessionController.restartDaySession(activeDay.id, effectiveExercises)
-                          .then((session) => {
-                            if (!session) return;
-                            void refreshResumable();
-                            const first = session.steps[0];
-                            const exId = first ? Number(first.snapshot.exerciseId) : effectiveExercises[0]?.id;
-                            if (exId) openExercise(exId);
-                          })
-                          .catch(() => {});
-                      }}
-                    >
-                      <Text style={[styles.restartPillText, { color: colors.paperDim }]}>Начать заново</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.restartPill, { borderColor: colors.ember }]}
-                      accessibilityRole="button"
-                      accessibilityLabel="Выйти из тренировки"
-                      onPress={() => {
-                        presentEarlyLeave((outcome) => {
-                          if (outcome === 'cancelled') return;
-                          void refreshResumable();
-                        });
-                      }}
-                    >
-                      <Text style={[styles.restartPillText, { color: colors.ember }]}>Выйти</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ) : (
-                <TouchableOpacity
-                  style={[styles.startPill, { backgroundColor: colors.lime }]}
-                  accessibilityRole="button"
-                  accessibilityLabel="Начать тренировку"
-                  onPress={() => {
-                    void ActiveSessionController.ensureDaySession(activeDay.id, effectiveExercises)
-                      .then((session) => {
-                        if (!session) return;
-                        void refreshResumable();
-                        const first = effectiveExercises[0];
-                        if (first) openExercise(first.id);
-                      })
-                      .catch(() => {});
-                  }}
-                >
-                  <Text style={[styles.startPillText, { color: colors.ink }]}>▶  Начать тренировку</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-          <View style={[styles.ticketPerf, { borderTopColor: colors.line }]}>
-            <View style={[styles.perfCell, { borderRightColor: colors.line }]}>
-              <Text style={[styles.perfVal, { color: colors.paper }]}>{weekDaysCompleted}/7</Text>
-              <Text style={[styles.perfLbl, { color: colors.paperFaint }]}>Дней на неделе</Text>
-            </View>
-            <View style={[styles.perfCell, { borderRightColor: colors.line }]}>
-              <Text style={[styles.perfVal, { color: colors.paper }]}>{burnedToday > 0 ? `~${burnedToday}` : '—'}</Text>
-              <Text style={[styles.perfLbl, { color: colors.paperFaint }]}>Сожжено, ккал</Text>
-            </View>
-            <View style={[styles.perfCell, { borderRightWidth: 0 }]}>
-              <Text style={[styles.perfVal, { color: colors.paper }]}>{overallPr !== null ? `${overallPr}` : '—'}</Text>
-              <Text style={[styles.perfLbl, { color: colors.paperFaint }]}>Рекорд, кг</Text>
-            </View>
-          </View>
-        </View>
-
         <View style={[styles.streakRow, { backgroundColor: colors.panel, borderColor: colors.line }]}>
           <Text style={{ fontSize: 20 }}>🔥</Text>
           <View style={{ flex: 1 }}>
@@ -395,26 +417,25 @@ export default function WorkoutScreen() {
           </Text>
         </View>
 
-        {overrideIds != null && (
+        {overrideIds && overrideIds.length > 0 && (
           <TouchableOpacity
             style={[styles.resetOverride, { borderColor: colors.lineStrong }]}
             onPress={() => {
               void clearDayOverride(trainingMode, activeDay.id).then(() => setOverrideTick((t) => t + 1));
             }}
             accessibilityRole="button"
-            accessibilityLabel="Сбросить замены упражнений"
+            accessibilityLabel="Вернуть упражнения дня по умолчанию"
           >
-            <Text style={[styles.resetOverrideText, { color: colors.paperDim }]}>Сбросить замены</Text>
+            <Text style={[styles.resetOverrideText, { color: colors.paperDim }]}>Сбросить замены дня</Text>
           </TouchableOpacity>
         )}
 
         {effectiveExercises.map((ex, i) => {
-          const done = completedSetsToday(ex.id) >= ex.totalSets;
-          const inProgress = !done && completedSetsToday(ex.id) > 0;
-          const isCurrentStep = currentStepExerciseId === ex.id && !done;
           const setsDone = completedSetsToday(ex.id);
-          const exPr = personalRecords[ex.id] ?? null;
+          const done = setsDone >= ex.totalSets;
+          const isCurrentStep = currentStepExerciseId === ex.id;
           const thumb = ex.mediaKey ? EXERCISE_THUMBNAILS[ex.mediaKey] : undefined;
+          const exPr = personalRecords[ex.id];
           return (
             <TouchableOpacity
               key={ex.id}

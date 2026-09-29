@@ -7,6 +7,17 @@ export const WEEKDAY_RU_FULL = ['Воскресенье', 'Понедельни�
 /** Home-only for now; set true to show gym/home toggle. */
 export const SHOW_GYM_MODE_TOGGLE = false;
 
+/**
+ * Pick today's day in the weekly cycle from the plan list.
+ * Monday → index 0 … Sunday → index 6 (mod plan length).
+ */
+export function todayPlanDayId(plan: WorkoutDay[], now: Date = new Date()): string {
+  if (plan.length === 0) return '';
+  const js = now.getDay(); // 0 = Sunday
+  const monBased = js === 0 ? 6 : js - 1;
+  return plan[monBased % plan.length]!.id;
+}
+
 export function isDayPlanComplete(
   dayProgress: DayProgress,
   dateKey: string,

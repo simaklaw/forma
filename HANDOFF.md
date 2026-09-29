@@ -1,40 +1,34 @@
 # HANDOFF — FitPulse
 
-**Checkpoint:** 2026-09-29 (App outbox drain lifecycle)
-**Brand:** FitPulse (not Forma rebrand). Packages may still use `@forma/*` internally.
+**Checkpoint:** 2026-09-29 (today CTA + FitPulse copy + projection stub)
+**Brand:** FitPulse in UI/bundle. Packages may use `@forma/*` internally.
 **APK:** do not build until owner says so.
 
 ## On main
 
-1. P0 offline-first mobile — #75
-2. P1 DDL + sync-contract + Hono — #76
-3. Postgres stores (`DATABASE_URL`) — #77
-4. HttpOutboxTransport + RLS SQL — #78
+1. P0 offline-first — #75
+2. P1 sync skeleton → Postgres → HttpOutbox → App drain — #76–#79
 
 ## In flight
 
-- `feat/p1-app-outbox-drain` — `startOutboxDrainLifecycle` in App.tsx (launch + AppState active)
+- `feat/workout-today-cta-fitpulse` — today's cycle day + Start above the fold; branding; projection stub
+
+## Workout UX
+
+- Tab **Тренировки** is initial route
+- On focus: select `todayPlanDayId` (Mon-based rotation)
+- Ticket with **Начать тренировку** is above the exercise list (no scroll needed)
 
 ## P1 status
 
 | Item | Status |
 |------|--------|
-| packages/db DDL + RLS SQL | yes |
-| sync-contract + Hono push/pull | yes |
-| Postgres stores | yes |
-| HttpOutboxTransport | yes (#78) |
-| App lifecycle drain | this branch |
-| Auth / JWT → RLS GUC | not started |
-| Server projections | not started |
-
-## Sync env
-
-```bash
-export DATABASE_URL=postgresql://fitpulse:fitpulse@localhost:5432/fitpulse
-# mobile: EXPO_PUBLIC_SYNC_API_URL=http://10.0.2.2:8787
-```
-
-Without `EXPO_PUBLIC_SYNC_API_URL`, drain uses noop transport (no network).
+| DDL + RLS SQL | yes |
+| Sync API + Postgres stores | yes |
+| Client outbox + App drain | yes |
+| Projection service (noop stub) | this branch |
+| Real exercise_record / activity_credit writers | not started |
+| Auth → RLS GUC | not started |
 
 ## Rules
 
