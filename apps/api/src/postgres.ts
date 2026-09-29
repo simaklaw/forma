@@ -13,6 +13,14 @@ import type { SyncChange } from '@forma/sync-contract';
 
 export type Sql = ReturnType<typeof postgres>;
 
+/**
+ * Sql or transaction client. postgres.js TransactionSql is intentionally
+ * NOT assignable to Sql in its own typings, so transaction-scoped stores
+ * accept this looser structural type instead.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type DbClient = any;
+
 export function createSql(connectionString: string): Sql {
   return postgres(connectionString, {
     max: 10,
@@ -21,12 +29,12 @@ export function createSql(connectionString: string): Sql {
   });
 }
 
-function asJson(sql: Sql, value: Record<string, unknown>) {
+function asJson(sql: DbClient, value: Record<string, unknown>) {
   return sql.json(value as Parameters<Sql['json']>[0]);
 }
 
 /** Ensure app_user exists (FK for client_operation / sync_change). */
-async function ensureUser(sql: Sql, userId: string): Promise<void> {
+async function ensureUser(sql: DbClient, userId: string): Promise<void> {
   await sql`
     INSERT INTO platform.app_user (user_id, auth_subject)
     VALUES (${userId}::uuid, ${userId})
@@ -41,7 +49,7 @@ async function ensureUser(sql: Sql, userId: string): Promise<void> {
  * never hardcoded to a single OS.
  */
 async function ensureDevice(
-  sql: Sql,
+  sql: DbClient,
   userId: string,
   deviceId: string,
   platform: string = 'unknown',
@@ -64,9 +72,9 @@ async function ensureDevice(
 }
 
 export class PostgresIdempotencyStore implements IdempotencyStore {
-  private readonly sql: Sql;
+  private readonly sql: DbClient;
 
-  constructor(sql: Sql) {
+  constructor(sql: DbClient) {
     this.sql = sql;
   }
 
@@ -75,19 +83,7 @@ export class PostgresIdempotencyStore implements IdempotencyStore {
     deviceId: string,
     clientOpId: string,
   ): Promise<StoredOperation | undefined> {
-    const rows = await this.sql<
-  
-    {
-        client_operation_id: string;
-        user_id: string;
-        device_id: string;
-        aggregate_type: string;
-        aggregate_id: string;
-        payload_hash: string;
-        status: StoredOperation['status'];
-        result_body: Record<string, unknown>;
-      }[]
-    >`
+    const rows = (await this.sql`
       SELECT
         client_operation_id::text,
         user_id::text,
@@ -102,7 +98,16 @@ export class PostgresIdempotencyStore implements IdempotencyStore {
         AND device_id = ${deviceId}::uuid
         AND client_operation_id = ${clientOpId}::uuid
       LIMIT 1
-    `;
+    `) as {
+      client_operation_id: string;
+      user_id: string;
+      device_id: string;
+      aggregate_type: string;
+      aggregate_id: string;
+      payload_hash: string;
+      status: StoredOperation['status'];
+      result_body: Record<string, unknown>;
+    }[];
     const row = rows[0];
     if (!row) return undefined;
     return {
@@ -125,7 +130,7 @@ export class PostgresIdempotencyStore implements IdempotencyStore {
       op.device_platform,
       op.app_version,
     );
-    const rows = await this.sql<{ operation_id: string }[]>`
+    const rows = (await this.sql`
       INSERT INTO platform.client_operation (
         operation_id,
         user_id,
@@ -149,18 +154,27 @@ export class PostgresIdempotencyStore implements IdempotencyStore {
       )
       ON CONFLICT (user_id, device_id, client_operation_id) DO NOTHING
       RETURNING operation_id
- 
-   `;
+    `) as { operation_id: string }[];
     // inserted=false means another request won the race (or a replay):
     // the caller re-reads the stored row and answers duplicate/mismatch.
     return { inserted: rows.length > 0 };
   }
 }
 
-export class PostgresChangeFeed implements ChangeFeed {
-  private readonly sql: Sql;
+interface ChangeRow {
+  change_id: string;
+  entity_type: string;
+  entity_id: string;
+  entity_version: string;
+  mutation: 'upsert' | 'tombstone';
+  payload: Record<string, unknown>;
+  committed_at: Date;
+}
 
-  constructor(sql: Sql) {
+export class PostgresChangeFeed implements ChangeFeed {
+  private readonly sql: DbClient;
+
+  constructor(sql: DbClient) {
     this.sql = sql;
   }
 
@@ -169,17 +183,7 @@ export class PostgresChangeFeed implements ChangeFeed {
     afterChangeId: number,
     limit: number,
   ): Promise<{ changes: SyncChange[]; next_change_id: number; has_more: boolean }> {
-    const rows = await this.sql<
-      {
-        change_id: string;
-        entity_type: string;
-        entity_id: string;
-        entity_version: string;
-        mutation: 'upsert' | 'tombstone';
-        payload: Record<string, unknown>;
-        committed_at: Date;
-      }[]
-    >`
+    const rows = (await this.sql`
       SELECT
         change_id,
         entity_type,
@@ -193,29 +197,19 @@ export class PostgresChangeFeed implements ChangeFeed {
         AND change_id > ${afterChangeId}
       ORDER BY change_id ASC
       LIMIT ${limit + 1}
-    `;
+    `) as ChangeRow[];
 
     const hasMore = rows.length > limit;
     const page = hasMore ? rows.slice(0, limit) : rows;
-    const changes: SyncChange[] = page.map(
-      (r: {
-        change_id: string;
-        entity_type: string;
-        entity_id: string;
-        entity_version: string;
-        mutation: 'upsert' | 'tombstone';
-        payload: Record<string, unknown>;
-        committed_at: Date;
-      }) => ({
+    const changes: SyncChange[] = page.map((r) => ({
       change_id: Number(r.change_id),
       entity_type: r.entity_type,
       entity_id: r.entity_id,
       entity_version: Number(r.entity_version),
       mutation: r.mutation,
       payload: r.payload ?? {},
-        committed_at: new Date(r.committed_at).toISOString(),
-      }),
-    );
+      committed_at: new Date(r.committed_at).toISOString(),
+    }));
     const next =
       changes.length > 0
         ? changes[changes.length - 1].change_id
@@ -231,9 +225,8 @@ export class PostgresChangeFeed implements ChangeFeed {
     mutation: 'upsert' | 'tombstone';
     payload: Record<string, unknown>;
   }): Promise<number> {
-    await ensureUser(this.sql, input.user
-_id);
-    const rows = await this.sql<{ change_id: string }[]>`
+    await ensureUser(this.sql, input.user_id);
+    const rows = (await this.sql`
       INSERT INTO platform.sync_change (
         user_id, entity_type, entity_id, entity_version, mutation, payload
       ) VALUES (
@@ -245,7 +238,7 @@ _id);
         ${asJson(this.sql, input.payload)}
       )
       RETURNING change_id
-    `;
+    `) as { change_id: string }[];
     return Number(rows[0].change_id);
   }
 }
@@ -265,7 +258,13 @@ export class PostgresSyncUnitOfWork implements SyncUnitOfWork {
   }
 
   async run<T>(userId: string, fn: (deps: UnitOfWorkDeps) => Promise<T>): Promise<T> {
-    return this.sql.begin(async (tx) => {
+    // postgres.js begin() typings do not propagate our generic cleanly
+    // (UnwrapPromiseArray overload is picked instead) — call it through a
+    // narrow, explicit signature.
+    const begin = this.sql.begin as unknown as (
+      cb: (tx: DbClient) => Promise<T>,
+    ) => Promise<T>;
+    return begin(async (tx) => {
       // true = transaction-local (like SET LOCAL), cleared on commit/rollback
       await tx`SELECT set_config('app.current_user_id', ${userId}, true)`;
       return fn({
