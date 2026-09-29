@@ -38,6 +38,25 @@ function activityStreakDays(
   return streak;
 }
 
+function buildSubtitle(opts: {
+  weightKg: number;
+  activeDays: number;
+  streak: number;
+  burnedWeek: number;
+  weekSets: number;
+}): string {
+  const { weightKg, activeDays, streak, burnedWeek, weekSets } = opts;
+  if (weightKg <= 0 && weekSets === 0) {
+    return 'Заполните вес и залогируйте подходы';
+  }
+  const parts: string[] = [];
+  if (activeDays > 0) parts.push(`${activeDays} ${ruDayWord(activeDays)} с треней`);
+  if (streak > 0) parts.push(`серия ${streak}`);
+  if (burnedWeek > 0) parts.push(`~${burnedWeek} ккал`);
+  if (parts.length === 0) return 'Нет данных за 7 дней — после первой тренировки';
+  return parts.join(' · ');
+}
+
 export default function ProgressScreen() {
   const colors = useThemeColors();
   const styles = createStyles(colors);
@@ -48,6 +67,7 @@ export default function ProgressScreen() {
   const personalRecords = useFitPulseStore((s) => s.personalRecords);
 
   const exerciseNames = useMemo(() => allExerciseNames(), []);
+  const todayKey = useMemo(() => toDateKey(new Date()), []);
 
   const weightKg =
     typeof profileWeight === 'number' && Number.isFinite(profileWeight) && profileWeight > 0
@@ -107,23 +127,32 @@ export default function ProgressScreen() {
     return burns.map((b, i) => ({
       ...b,
       label: weekdayRuShort(days[i]),
-      pct: Math.round((b.kcal / max) * 100)
+      pct: Math.round((b.kcal / max) * 100),
+      isToday: keys[i] === todayKey
     }));
-  }, [weightKg, setLogs, exerciseNames]);
+  }, [weightKg, setLogs, exerciseNames, todayKey]);
 
   const burnedToday = estimateBurnFromSetLogs({
     weightKg,
     setLogs,
-    dateKey: toDateKey(new Date()),
+    dateKey: todayKey,
     exerciseNames
   });
   const burnedWeek = burnSeries.reduce((sum, b) => sum + b.kcal, 0);
   const hasAnyBurn = burnSeries.some((b) => b.kcal > 0);
   const weekVolumeKg = volume.reduce((s, v) => s + v.volumeKg, 0);
 
+  const subtitle = buildSubtitle({
+    weightKg,
+    activeDays,
+    streak,
+    burnedWeek,
+    weekSets
+  });
+
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScreenHeader eyebrow="Последние 7 дней" title="Прогресс" />
+      <ScreenHeader eyebrow="Последние 7 дней" title="Прогресс" subtitle={subtitle} />
 
       <ScrollView contentContainerStyle={styles.body}>
         {weightKg <= 0 ? (
@@ -137,30 +166,54 @@ export default function ProgressScreen() {
         <DailyTipCard inset />
 
         <View style={styles.statsRow}>
-          <View style={styles.statCard}>
+          <View
+            style={styles.statCard}
+            accessibilityRole="summary"
+            accessibilityLabel={`Ккал сегодня: ${burnedToday > 0 ? burnedToday : 'нет данных'}`}
+          >
             <Text style={styles.statVal}>{burnedToday > 0 ? `~${burnedToday}` : '—'}</Text>
             <Text style={styles.statLbl}>ккал сегодня</Text>
           </View>
-          <View style={styles.statCard}>
+          <View
+            style={styles.statCard}
+            accessibilityRole="summary"
+            accessibilityLabel={`Ккал за 7 дней: ${burnedWeek > 0 ? burnedWeek : 'нет данных'}`}
+          >
             <Text style={styles.statVal}>{burnedWeek > 0 ? `~${burnedWeek}` : '—'}</Text>
             <Text style={styles.statLbl}>ккал за 7 дней</Text>
           </View>
-          <View style={styles.statCard}>
+          <View
+            style={styles.statCard}
+            accessibilityRole="summary"
+            accessibilityLabel={`Вес: ${weightKg > 0 ? `${weightKg} килограмм` : 'не указан'}`}
+          >
             <Text style={styles.statVal}>{weightKg > 0 ? String(weightKg) : '—'}</Text>
             <Text style={styles.statLbl}>вес, кг</Text>
           </View>
         </View>
 
         <View style={styles.statsRow}>
-          <View style={styles.statCard}>
+          <View
+            style={styles.statCard}
+            accessibilityRole="summary"
+            accessibilityLabel={`Подходов за неделю: ${weekSets}`}
+          >
             <Text style={styles.statVal}>{weekSets > 0 ? String(weekSets) : '—'}</Text>
             <Text style={styles.statLbl}>подходов</Text>
           </View>
-          <View style={styles.statCard}>
+          <View
+            style={styles.statCard}
+            accessibilityRole="summary"
+            accessibilityLabel={`Дней с тренировкой: ${activeDays}`}
+          >
             <Text style={styles.statVal}>{activeDays > 0 ? String(activeDays) : '—'}</Text>
             <Text style={styles.statLbl}>дней с треней</Text>
           </View>
-          <View style={styles.statCard}>
+          <View
+            style={styles.statCard}
+            accessibilityRole="summary"
+            accessibilityLabel={streak > 0 ? `Серия ${streak} ${ruDayWord(streak)}` : 'Серии нет'}
+          >
             <Text style={styles.statVal}>{streak > 0 ? String(streak) : '—'}</Text>
             <Text style={styles.statLbl}>
               серия{streak > 0 ? ` · ${ruDayWord(streak)}` : ''}
@@ -169,13 +222,25 @@ export default function ProgressScreen() {
         </View>
 
         <View style={styles.statsRow}>
-          <View style={[styles.statCard, { flex: 1 }]}>
+          <View
+            style={[styles.statCard, { flex: 1 }]}
+            accessibilityRole="summary"
+            accessibilityLabel={
+              weekVolumeKg > 0
+                ? `Объём за 7 дней ${Math.round(weekVolumeKg)} килограмм-повторений`
+                : 'Объём не записан'
+            }
+          >
             <Text style={styles.statVal}>
               {weekVolumeKg > 0 ? Math.round(weekVolumeKg).toLocaleString('ru-RU') : '—'}
             </Text>
             <Text style={styles.statLbl}>объём кг·повт за 7 дней</Text>
           </View>
-          <View style={[styles.statCard, { flex: 1 }]}>
+          <View
+            style={[styles.statCard, { flex: 1 }]}
+            accessibilityRole="summary"
+            accessibilityLabel={bestPr != null ? `Лучший PR ${bestPr} кг` : 'PR пока нет'}
+          >
             <Text style={styles.statVal}>{bestPr != null ? `${bestPr}` : '—'}</Text>
             <Text style={styles.statLbl}>лучший PR, кг</Text>
           </View>
@@ -184,7 +249,7 @@ export default function ProgressScreen() {
         <View style={styles.chartBlock}>
           <Text style={styles.chartTitle}>Сожжено по дням (оценка MET)</Text>
           {hasAnyBurn ? (
-            <View style={styles.bars}>
+            <View style={styles.bars} accessibilityRole="image" accessibilityLabel="График ккал по дням">
               {burnSeries.map((v, i) => (
                 <View key={v.dateKey} style={styles.barCol}>
                   <Text style={styles.barTop}>{v.kcal > 0 ? v.kcal : ''}</Text>
@@ -193,11 +258,16 @@ export default function ProgressScreen() {
                       styles.bar,
                       {
                         height: `${Math.max(v.pct, 2)}%`,
-                        backgroundColor: i % 2 === 0 ? colors.lime : colors.mint
-                      }
+                        backgroundColor: v.isToday
+                          ? colors.lime
+                          : i % 2 === 0
+                            ? colors.mint
+                            : colors.lineStrong
+                      },
+                      v.isToday && styles.barToday
                     ]}
                   />
-                  <Text style={styles.barLabel}>{v.label}</Text>
+                  <Text style={[styles.barLabel, v.isToday && styles.barLabelToday]}>{v.label}</Text>
                 </View>
               ))}
             </View>
@@ -213,24 +283,36 @@ export default function ProgressScreen() {
         <View style={styles.chartBlock}>
           <Text style={styles.chartTitle}>Объём тренировок по дням</Text>
           {hasAnyVolume ? (
-            <View style={styles.bars}>
-              {volume.map((v, i) => (
-                <View key={v.dateKey} style={styles.barCol}>
-                  <Text style={styles.barTop}>
-                    {v.volumeKg > 0 ? Math.round(v.volumeKg) : ''}
-                  </Text>
-                  <View
-                    style={[
-                      styles.bar,
-                      {
-                        height: `${Math.max(v.pct, 2)}%`,
-                        backgroundColor: i % 2 === 0 ? colors.lime : colors.lineStrong
-                      }
-                    ]}
-                  />
-                  <Text style={styles.barLabel}>{v.label}</Text>
-                </View>
-              ))}
+            <View
+              style={styles.bars}
+              accessibilityRole="image"
+              accessibilityLabel="График объёма по дням"
+            >
+              {volume.map((v, i) => {
+                const isToday = v.dateKey === todayKey;
+                return (
+                  <View key={v.dateKey} style={styles.barCol}>
+                    <Text style={styles.barTop}>
+                      {v.volumeKg > 0 ? Math.round(v.volumeKg) : ''}
+                    </Text>
+                    <View
+                      style={[
+                        styles.bar,
+                        {
+                          height: `${Math.max(v.pct, 2)}%`,
+                          backgroundColor: isToday
+                            ? colors.lime
+                            : i % 2 === 0
+                              ? colors.mint
+                              : colors.lineStrong
+                        },
+                        isToday && styles.barToday
+                      ]}
+                    />
+                    <Text style={[styles.barLabel, isToday && styles.barLabelToday]}>{v.label}</Text>
+                  </View>
+                );
+              })}
             </View>
           ) : (
             <Text style={styles.emptyState}>
@@ -243,7 +325,11 @@ export default function ProgressScreen() {
           <View style={styles.chartBlock}>
             <Text style={styles.chartTitle}>Личные рекорды (топ по весу)</Text>
             {topPrs.map((r, i) => (
-              <View key={r.exerciseId} style={styles.prRow}>
+              <View
+                key={r.exerciseId}
+                style={styles.prRow}
+                accessibilityLabel={`${i + 1}. ${r.name}, ${r.weight} килограмм`}
+              >
                 <Text style={styles.prRank}>{String(i + 1).padStart(2, '0')}</Text>
                 <Text style={styles.prName} numberOfLines={1}>
                   {r.name}
@@ -308,7 +394,9 @@ function createStyles(colors: ColorTokens) {
     barCol: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', height: '100%', gap: 4 },
     barTop: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 9, minHeight: 12 },
     bar: { width: '100%', minHeight: 3, borderRadius: 3 },
+    barToday: { borderWidth: 1, borderColor: colors.lime },
     barLabel: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 11 },
+    barLabelToday: { color: colors.lime, fontFamily: fonts.bodySemi },
     emptyState: { color: colors.paperFaint, fontFamily: fonts.body, fontSize: 12.5, lineHeight: 18 },
     prRow: {
       flexDirection: 'row',
