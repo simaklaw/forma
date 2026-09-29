@@ -55,6 +55,17 @@ describe('sync API skeleton', () => {
     assert.equal(body.results[0].status, 'accepted');
   });
 
+  it('push accepts empty operations array', async () => {
+    const res = await app.request('/api/v1/sync/push', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ user_id: 'u1', operations: [] }),
+    });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.deepEqual(body.results, []);
+  });
+
   it('push returns duplicate on replay', async () => {
     const body = pushBody();
     const first = await app.request('/api/v1/sync/push', {
@@ -103,11 +114,21 @@ describe('sync API skeleton', () => {
     assert.equal(body.results[0].error_code, 'invalid_payload_hash');
   });
 
-  it('pull returns empty page', async () => {
+  it('pull returns empty page with after_change_id=0', async () => {
     const res = await app.request('/api/v1/sync/pull?after_change_id=0');
     assert.equal(res.status, 200);
     const body = await res.json();
     assert.deepEqual(body.changes, []);
+    assert.equal(body.has_more, false);
+    assert.equal(body.next_change_id, 0);
+  });
+
+  it('pull defaults after_change_id to 0 when omitted', async () => {
+    const res = await app.request('/api/v1/sync/pull');
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.deepEqual(body.changes, []);
+    assert.equal(body.next_change_id, 0);
     assert.equal(body.has_more, false);
   });
 });
