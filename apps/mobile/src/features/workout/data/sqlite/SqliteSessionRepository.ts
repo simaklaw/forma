@@ -27,6 +27,7 @@ type SessionRow = {
   last_event_ordinal: number;
   aggregate_json: string;
   updated_at_ms: number;
+  weight_snapshot_kg: number | null;
 };
 
 type EventRow = {
@@ -56,6 +57,13 @@ type OutboxDbRow = {
   status: string;
   created_at_ms: number;
 };
+
+/** Finite positive body mass for the denormalized column; null otherwise. */
+function weightSnapshotOrNull(session: WorkoutSession): number | null {
+  const w = session.weightKgSnapshot;
+  if (typeof w !== 'number' || !Number.isFinite(w) || w <= 0) return null;
+  return w;
+}
 
 export class SqliteSessionRepository implements SessionRepository {
   constructor(private readonly db: SqliteDatabase) {}
@@ -126,6 +134,7 @@ export class SqliteSessionRepository implements SessionRepository {
 
     const now = Date.now();
     const json = JSON.stringify(session);
+    const weightSnapshot = weightSnapshotOrNull(session);
 
     this.withTransaction(() => {
       if (isResumableStatus(session.status)) {
@@ -145,14 +154,16 @@ export class SqliteSessionRepository implements SessionRepository {
 
       this.db.runSync(
         `INSERT INTO workout_session (
-           session_id, user_id, status, row_version, last_event_ordinal, aggregate_json, updated_at_ms
-         ) VALUES (?, ?, ?, ?, ?, ?, ?)
+           session_id, user_id, status, row_version, last_event_ordinal,
+           aggregate_json, updated_at_ms, weight_snapshot_kg
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(session_id) DO UPDATE SET
            status = excluded.status,
            row_version = excluded.row_version,
            last_event_ordinal = excluded.last_event_ordinal,
            aggregate_json = excluded.aggregate_json,
-           updated_at_ms = excluded.updated_at_ms`,
+           updated_at_ms = excluded.updated_at_ms,
+           weight_snapshot_kg = excluded.weight_snapshot_kg`,
         [
           session.sessionId,
           session.userId,
@@ -160,7 +171,8 @@ export class SqliteSessionRepository implements SessionRepository {
           session.rowVersion,
           session.lastEventOrdinal,
           json,
-          now
+          now,
+          weightSnapshot
         ]
       );
 
