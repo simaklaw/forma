@@ -1,5 +1,5 @@
-import type { OperationStatus } from '@forma/sync-contract';
-import type { SyncChange } from '@forma/sync-contract';
+import type { OperationStatus, SyncChange } from '@forma/sync-contract';
+import type { ProjectionService } from './projections.ts';
 
 /** Row stored after a successful (or rejected) push operation. */
 export interface StoredOperation {
@@ -11,6 +11,14 @@ export interface StoredOperation {
   payload_hash: string;
   status: OperationStatus;
   result_body: Record<string, unknown>;
+  /** Optional client-reported device metadata (never hardcoded server-side). */
+  device_platform?: string;
+  app_version?: string;
+}
+
+/** Result of IdempotencyStore.put: false when the row already existed (race / replay). */
+export interface PutResult {
+  inserted: boolean;
 }
 
 /**
@@ -24,7 +32,7 @@ export interface IdempotencyStore {
     clientOpId: string,
   ): Promise<StoredOperation | undefined>;
 
-  put(op: StoredOperation): Promise<void>;
+  put(op: StoredOperation): Promise<PutResult>;
 }
 
 /** Monotonic change feed for GET /api/v1/sync/pull. */
@@ -44,4 +52,20 @@ export interface ChangeFeed {
     mutation: 'upsert' | 'tombstone';
     payload: Record<string, unknown>;
   }): Promise<number>;
+}
+
+/** Transaction-scoped dependencies handed to a unit of work. */
+export interface UnitOfWorkDeps {
+  store: IdempotencyStore;
+  feed: ChangeFeed;
+  projections: ProjectionService;
+}
+
+/**
+ * Unit of work: runs store + feed + projections atomically for one user.
+ * Memory implementation is a plain pass-through; Postgres wraps in a
+ * transaction and sets app.current_user_id (RLS GUC) for its duration.
+ */
+export interface SyncUnitOfWork {
+  run<T>(userId: string, fn: (deps: UnitOfWorkDeps) => Promise<T>): Promise<T>;
 }

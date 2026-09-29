@@ -1,4 +1,12 @@
-import type { IdempotencyStore, StoredOperation, ChangeFeed } from './store.ts';
+import type {
+  IdempotencyStore,
+  StoredOperation,
+  ChangeFeed,
+  PutResult,
+  SyncUnitOfWork,
+  UnitOfWorkDeps,
+} from './store.ts';
+import type { ProjectionService } from './projections.ts';
 import type { SyncChange } from '@forma/sync-contract';
 
 /** Default TTL for in-memory entries (24h). */
@@ -56,13 +64,13 @@ export class MemoryIdempotencyStore implements IdempotencyStore {
     return rest;
   }
 
-  async put(op: StoredOperation): Promise<void> {
+  async put(op: StoredOperation): Promise<PutResult> {
     const now = Date.now();
     if (this.map.size > 10_000) this.sweep(now);
-    this.map.set(this.key(op.user_id, op.device_id, op.client_operation_id), {
-      ...op,
-      stored_at: now,
-    });
+    const k = this.key(op.user_id, op.device_id, op.client_operation_id);
+    const inserted = !this.map.has(k);
+    this.map.set(k, { ...op, stored_at: now });
+    return { inserted };
   }
 
   clear(): void {
@@ -117,6 +125,34 @@ export class MemoryChangeFeed implements ChangeFeed {
       committed_at: new Date().toISOString(),
     });
     return this.seq;
+  }
+}
+
+/**
+ * Memory unit of work: no real transaction, straight pass-through.
+ * Keeps the same shape as PostgresSyncUnitOfWork for the API layer.
+ */
+export class MemorySyncUnitOfWork implements SyncUnitOfWork {
+  private readonly store: IdempotencyStore;
+  private readonly feed: ChangeFeed;
+  private readonly projections: ProjectionService;
+
+  constructor(
+    store: IdempotencyStore,
+    feed: ChangeFeed,
+    projections: ProjectionService,
+  ) {
+    this.store = store;
+    this.feed = feed;
+    this.projections = projections;
+  }
+
+  async run<T>(userId: string, fn: (deps: UnitOfWorkDeps) => Promise<T>): Promise<T> {
+    return fn({
+      store: this.store,
+      feed: this.feed,
+      projections: this.projections,
+    });
   }
 }
 
