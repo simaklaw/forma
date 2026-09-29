@@ -12,11 +12,11 @@ function statusLabel(status: HealthSyncStatus, enabled: boolean): string {
   if (!enabled) return 'Выключено — тренировки не отправляются';
   switch (status) {
     case 'ready':
-      return 'Готово к экспорту тренировок';
+      return 'Готово · записи уйдут в Health Connect (и Samsung Health при синхронизации)';
     case 'unavailable':
-      return 'Нужен dev/EAS build + приложение Health Connect';
+      return 'Нужен dev/EAS build и приложение Health Connect на устройстве';
     case 'denied':
-      return 'Нет разрешения на запись';
+      return 'Нет разрешения на запись — откройте настройки Health Connect';
     case 'error':
       return 'Ошибка доступа к Health Connect';
     case 'unsupported':
@@ -57,12 +57,11 @@ export default function HealthConnectCard() {
     try {
       if (!enabled) {
         const granted = await HealthConnectService.requestWriteAccess();
-        // Allow enabling even if native missing (pref only) — write no-ops until ready
         await setHealthExportEnabled(true);
         setEnabled(true);
         if (!granted) {
           const st = await HealthConnectService.getStatus();
-          setStatus(st);
+          setStatus(st === 'ready' ? 'denied' : st);
         } else {
           setStatus('ready');
         }
@@ -75,12 +74,22 @@ export default function HealthConnectCard() {
     }
   }
 
+  function openSettings() {
+    const opened = HealthConnectService.openSettings();
+    if (!opened) {
+      // Native bridge missing — status text already explains EAS/dev build
+      void refresh();
+    }
+  }
+
   return (
     <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
-      <Text style={[styles.title, { color: colors.paper }]}>Health Connect</Text>
+      <Text style={[styles.title, { color: colors.paper }]}>Samsung Health / Health Connect</Text>
       <Text style={[styles.desc, { color: colors.paperFaint }]}>
-        Экспорт завершённых тренировок в системный Health Connect (не Google Fit). Работает на
-        Android после native-сборки.
+        FitPulse пишет тренировки и активные калории в системный{' '}
+        <Text style={{ color: colors.paperDim }}>Health Connect</Text>
+        {' '}(не Google Fit). На Galaxy включите синхронизацию Health Connect внутри Samsung
+        Health — тогда сессии появятся в дневнике SH.
       </Text>
       <Text style={[styles.status, { color: colors.paperDim }]}>
         {busy ? '…' : statusLabel(status, enabled)}
@@ -106,6 +115,16 @@ export default function HealthConnectCard() {
           </Text>
         )}
       </TouchableOpacity>
+      {Platform.OS === 'android' ? (
+        <TouchableOpacity
+          style={[styles.linkBtn, { borderColor: colors.lineStrong }]}
+          onPress={openSettings}
+          accessibilityRole="button"
+          accessibilityLabel="Открыть настройки Health Connect"
+        >
+          <Text style={[styles.linkText, { color: colors.cyan }]}>Настройки Health Connect</Text>
+        </TouchableOpacity>
+      ) : null}
     </View>
   );
 }
@@ -119,12 +138,20 @@ const styles = StyleSheet.create({
   },
   title: { fontFamily: fonts.bodySemi, fontSize: 15, marginBottom: 6 },
   desc: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, marginBottom: 8 },
-  status: { fontFamily: fonts.body, fontSize: 12, marginBottom: 12 },
+  status: { fontFamily: fonts.body, fontSize: 12, marginBottom: 12, lineHeight: 17 },
   btn: {
     paddingVertical: 12,
     borderRadius: radius.control,
     borderWidth: 1,
     alignItems: 'center'
   },
-  btnText: { fontFamily: fonts.bodySemi, fontSize: 13 }
+  btnText: { fontFamily: fonts.bodySemi, fontSize: 13 },
+  linkBtn: {
+    marginTop: 10,
+    paddingVertical: 10,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    alignItems: 'center'
+  },
+  linkText: { fontFamily: fonts.bodySemi, fontSize: 12 }
 });
