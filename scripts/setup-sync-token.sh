@@ -10,7 +10,13 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-TOKEN="$(openssl rand -hex 32 2>/dev/null || od -An -N32 -tx1 /dev/urandom | tr -d ' \n')"
+TOKEN="$(openssl rand -hex 32 2>/dev/null || od -An -N32 -tx1 /dev/urandom 2>/dev/null | tr -d ' \n')"
+
+if [ -z "$TOKEN" ]; then
+  echo "ERROR: could not generate a random token (no openssl, no /dev/urandom)." >&2
+  echo "       Install openssl and re-run: pnpm sync:setup" >&2
+  exit 1
+fi
 
 upsert() {
   local file="$1" key="$2" value="$3"
@@ -24,7 +30,7 @@ upsert() {
 
 API_ENV="apps/api/.env"
 if [ ! -f "$API_ENV" ]; then
-  printf 'DATABASE_URL=postgresql://fitpulse:fitpulse@localhost:5432/fitpulse\n' > "$API_ENV"
+  printf 'DATABASE_URL=postgresql://postgres:postgres@localhost:5432/fitpulse\n' > "$API_ENV"
 fi
 upsert "$API_ENV" SYNC_API_TOKEN "$TOKEN"
 
