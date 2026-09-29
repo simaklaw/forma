@@ -8,16 +8,17 @@
 1. SQLite migrations v1–v2 + `weight_snapshot_kg` write (#66–#68)
 2. Home mode, exercise media, coach keywords (#64)
 3. Nutrition ring polish (#69)
-4. Health Connect → Samsung Health path (#71)
+4. Health Connect → Samsung Health (#71)
+5. HC weight on logWeight + updateProfile (#72)
 
 ## In flight
 
-- `feat/weight-hc-on-profile-update` — HC weight export on `logWeight` **and** `updateProfile({ weight })`; invalid weight no-op
+- `feat/progress-screen-polish` — Progress subtitle summary, a11y on stats, today bar highlight
 
 ## Next
 
-1. Merge weight→HC profile update when CI green
-2. Product polish candidates: Progress screen, onboarding gate UX, coach chips
+1. Merge progress polish when CI green
+2. Onboarding / coach chips polish
 3. APK only when owner says so
 
 ## Rules
