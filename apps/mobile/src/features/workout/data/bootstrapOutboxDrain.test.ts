@@ -1,3 +1,10 @@
+jest.mock('react-native', () => ({
+  AppState: {
+    addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+    currentState: 'active',
+  },
+}));
+
 import {
   startOutboxDrainLifecycle,
   resetOutboxDrainBootstrapForTests,
