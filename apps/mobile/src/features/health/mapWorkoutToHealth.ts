@@ -1,4 +1,4 @@
-import type { HealthWorkoutExport } from './types';
+import { HC_EXERCISE_STRENGTH_TRAINING, type HealthWorkoutExport } from './types';
 
 export interface SessionBurnInput {
   sessionId: string;
@@ -12,6 +12,7 @@ export interface SessionBurnInput {
 /**
  * Maps a completed FitPulse session into a Health Connect–ready payload.
  * Pure: no native modules, safe for Jest and web.
+ * Samsung Health reads these records via Health Connect sync (not Google Fit).
  */
 export function mapSessionToHealthWorkout(
   input: SessionBurnInput,
@@ -39,6 +40,7 @@ export function mapSessionToHealthWorkout(
     endTime: new Date(endMs).toISOString(),
     activeCaloriesKcal: Math.round(input.burnedKcal),
     title: input.title.trim() || 'FitPulse workout',
-    sessionId: input.sessionId
+    sessionId: input.sessionId,
+    exerciseType: HC_EXERCISE_STRENGTH_TRAINING
   };
 }
