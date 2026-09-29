@@ -6,9 +6,13 @@ export type EarlyLeaveOutcome = 'paused' | 'finished' | 'abandoned' | 'cancelled
 
 /**
  * P0 Early Leave dialog (FitPulse branding).
+ * Stops rest timer synchronously before the Alert (no race with background tick).
  * Pause · save progress (complete partial) · cancel session (abandon).
  */
 export function presentEarlyLeave(onDone?: (outcome: EarlyLeaveOutcome) => void): void {
+  // Sync stop — must happen before Alert so a wall-clock tick cannot fire mid-dialog.
+  RestTimerEngine.stopTimer();
+
   Alert.alert(
     'Выйти из тренировки?',
     'Можно поставить на паузу, сохранить сделанный объём или отменить сессию.',
@@ -22,8 +26,12 @@ export function presentEarlyLeave(onDone?: (outcome: EarlyLeaveOutcome) => void)
         text: 'Пауза',
         onPress: () => {
           void (async () => {
-            RestTimerEngine.stopTimer();
-            await ActiveSessionController.pauseSession();
+            const session = await ActiveSessionController.pauseSession();
+            if (!session) {
+              Alert.alert('Не удалось', 'Не получилось поставить сессию на паузу. Попробуйте ещё раз.');
+              onDone?.('cancelled');
+              return;
+            }
             onDone?.('paused');
           })();
         }
@@ -32,8 +40,15 @@ export function presentEarlyLeave(onDone?: (outcome: EarlyLeaveOutcome) => void)
         text: 'Сохранить прогресс',
         onPress: () => {
           void (async () => {
-            RestTimerEngine.stopTimer();
-            await ActiveSessionController.finishPartialSession();
+            const session = await ActiveSessionController.finishPartialSession();
+            if (!session) {
+              Alert.alert(
+                'Не удалось',
+                'Не получилось сохранить прогресс. Данные сессии на устройстве не потеряны — попробуйте ещё раз.'
+              );
+              onDone?.('cancelled');
+              return;
+            }
             onDone?.('finished');
           })();
         }
@@ -43,8 +58,12 @@ export function presentEarlyLeave(onDone?: (outcome: EarlyLeaveOutcome) => void)
         style: 'destructive',
         onPress: () => {
           void (async () => {
-            RestTimerEngine.stopTimer();
-            await ActiveSessionController.leaveSession();
+            const session = await ActiveSessionController.leaveSession();
+            if (!session) {
+              Alert.alert('Не удалось', 'Не получилось отменить сессию. Попробуйте ещё раз.');
+              onDone?.('cancelled');
+              return;
+            }
             onDone?.('abandoned');
           })();
         }
