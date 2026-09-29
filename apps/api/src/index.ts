@@ -4,10 +4,15 @@ import type {
   SyncPushResponse,
   SyncPushOperationResult,
 } from '@forma/sync-contract';
-import type { IdempotencyStore, ChangeFeed } from './store.ts';
+import type {
+  IdempotencyStore,
+  ChangeFeed,
+  SyncUnitOfWork,
+} from './store.ts';
 import {
   defaultIdempotencyStore,
   defaultChangeFeed,
+  MemorySyncUnitOfWork,
 } from './idempotency.ts';
 import {
   defaultProjectionService,
@@ -21,8 +26,25 @@ export interface AppDeps {
   store: IdempotencyStore;
   feed: ChangeFeed;
   projections?: ProjectionService;
+  /**
+   * Transactional unit of work. Defaults to a memory pass-through built
+   * from store/feed/projections; the Postgres env factory wires the real
+   * transactional variant (store + feed + projections in one txn, with
+   * app.current_user_id set for RLS).
+   */
+  uow?: SyncUnitOfWork;
   /** When true, user_id / device_id / client_operation_id / aggregate_id must be UUID. */
   requireUuid?: boolean;
+  /**
+   * Shared-secret API token. When set, every /api/v1/sync/* request must
+   * carry `Authorization: Bearer <token>`. Interim protection against
+   * IDOR until per-user JWT auth (P2) lands.
+   */
+  apiToken?: string;
+}
+
+function stringFrom(value: unknown): string | undefined {
+  return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
 
 export function createApp(
@@ -37,7 +59,10 @@ export function createApp(
     feed,
     projections = defaultProjectionService,
     requireUuid = false,
+    apiToken,
   } = deps;
+  const uow: SyncUnitOfWork =
+    deps.uow ?? new MemorySyncUnitOfWork(store, feed, projections);
   const app = new Hono();
 
   app.get('/health', (c) =>
@@ -45,12 +70,26 @@ export function createApp(
       ok: true,
       service: 'fitpulse-api',
       store: requireUuid ? 'postgres' : 'memory',
+      auth: apiToken ? 'bearer' : 'open',
     }),
   );
+
+  if (apiToken) {
+    app.use('/api/v1/sync/*', async (c, next) => {
+      const header = c.req.header('authorization') ?? '';
+      if (header !== `Bearer ${apiToken}`) {
+        return c.json({ error: 'unauthorized' }, 401);
+      }
+      await next();
+    });
+  }
 
   /**
    * POST /api/v1/sync/push
    * Idempotent batch from client Transactional Outbox.
+   * Each operation is processed inside one unit-of-work transaction:
+   * idempotency row + change-feed entry + projections commit or roll back
+   * together; a lost race is answered as duplicate, never re-appended.
    */
   app.post('/api/v1/sync/push', async (c) => {
     let body: SyncPushRequest;
@@ -110,71 +149,107 @@ export function createApp(
         }
       }
 
-      const existing = await store.get(
-        body.user_id,
-        op.device_id,
-        op.client_operation_id,
-      );
-      if (existing) {
-        if (existing.payload_hash !== op.payload_hash) {
-          results.push({
-            client_operation_id: op.client_operation_id,
-            status: 'rejected',
-            error_code: 'payload_hash_mismatch',
-            error_message:
-              'same client_operation_id with different payload_hash',
-          });
-          continue;
-        }
-        results.push({
-          client_operation_id: op.client_operation_id,
-          status: 'duplicate',
-          result_body: existing.result_body,
-        });
-        continue;
-      }
+      const opPayload = (op.payload ?? {}) as Record<string, unknown>;
 
-      const resultBody = {
-        aggregate_type: op.aggregate_type,
-        aggregate_id: op.aggregate_id,
-      };
+      const outcome = await uow.run(body.user_id, async (deps) => {
+        const duplicateFor = (
+          existing: NonNullable<Awaited<ReturnType<IdempotencyStore['get']>>>,
+        ): SyncPushOperationResult =>
+          existing.payload_hash !== op.payload_hash
+            ? {
+                client_operation_id: op.client_operation_id,
+                status: 'rejected',
+                error_code: 'payload_hash_mismatch',
+                error_message:
+                  'same client_operation_id with different payload_hash',
+              }
+            : {
+                client_operation_id: op.client_operation_id,
+                status: 'duplicate',
+                result_body: existing.result_body,
+              };
 
-      await store.put({
-        client_operation_id: op.client_operation_id,
-        user_id: body.user_id,
-        device_id: op.device_id,
-        aggregate_type: op.aggregate_type,
-        aggregate_id: op.aggregate_id,
-        payload_hash: op.payload_hash,
-        result_body: resultBody,
-        status: 'accepted',
-      });
+        const existing = await deps.store.get(
+          body.user_id,
+          op.device_id,
+          op.client_operation_id,
+        );
+        if (existing) return duplicateFor(existing);
 
-      await feed.append({
-        user_id: body.user_id,
-        entity_type: op.aggregate_type,
-        entity_id: op.aggregate_id,
-        entity_version: 1,
-        mutation: 'upsert',
-        payload: op.payload ?? resultBody,
-      });
-
-      try {
-        await projections.onAccepted({
-          user_id: body.user_id,
+        const resultBody = {
           aggregate_type: op.aggregate_type,
           aggregate_id: op.aggregate_id,
-          payload: (op.payload as Record<string, unknown>) ?? resultBody,
-        });
-      } catch {
-        // Projection failure must not reject an already-accepted op.
-      }
+        };
 
-      results.push({
-        client_operation_id: op.client_operation_id,
-        status: 'accepted',
-        result_body: resultBody,
+        const { inserted } = await deps.store.put({
+          client_operation_id: op.client_operation_id,
+          user_id: body.user_id,
+          device_id: op.device_id,
+          aggregate_type: op.aggregate_type,
+          aggregate_id: op.aggregate_id,
+          payload_hash: op.payload_hash,
+          result_body: resultBody,
+          status: 'accepted',
+          // Client-reported device metadata (see ensureDevice).
+          device_platform: stringFrom(opPayload.device_platform),
+          app_version: stringFrom(opPayload.app_version),
+        });
+
+        if (!inserted) {
+          // Another request for the same operation won the race.
+          const raced = await deps.store.get(
+            body.user_id,
+            op.device_id,
+            op.client_operation_id,
+          );
+          if (raced) return duplicateFor(raced);
+          // Extremely unlikely (row vanished); answer duplicate without body
+          // rather than re-appending a change-feed entry.
+          return {
+            client_operation_id: op.client_operation_id,
+            status: 'duplicate',
+            result_body: {},
+          };
+        }
+
+        await deps.feed.append({
+          user_id: body.user_id,
+          entity_type: op.aggregate_type,
+          entity_id: op.aggregate_id,
+          entity_version: 1,
+          mutation: 'upsert',
+          payload: opPayload ?? resultBody,
+        });
+
+        try {
+          await deps.projections.onAccepted({
+            user_id: body.user_id,
+            aggregate_type: op.aggregate_type,
+            aggregate_id: op.aggregate_id,
+            payload: opPayload ?? resultBody,
+          });
+        } catch (err) {
+          // Projection failure must not reject an already-accepted op,
+          // but it MUST be visible for debugging/replay — never silent.
+          console.error(
+            '[fitpulse-api] projection failed for accepted op',
+            {
+              client_operation_id: op.client_operation_id,
+              aggregate_type: op.aggregate_type,
+              aggregate_id: op.aggregate_id,
+            },
+            err,
+          );
+        }
+
+        return {
+          client_operation_id: op.client_operation_id,
+          status: 'accepted',
+          result_body: resultBody,
+        } satisfies SyncPushOperationResult;
       });
+
+      results.push(outcome);
     }
 
     return c.json({ results } satisfies SyncPushResponse);
@@ -204,7 +279,10 @@ export function createApp(
       500,
     );
 
-    const page = await feed.listAfter(userId, after, limit);
+    // Inside the unit of work so Postgres runs it with the RLS GUC set.
+    const page = await uow.run(userId, (deps) =>
+      deps.feed.listAfter(userId, after, limit),
+    );
     return c.json(page);
   });
 
@@ -216,25 +294,25 @@ export const app = createApp();
 /** Build app from env: DATABASE_URL → Postgres stores + projections. */
 export async function createAppFromEnv(): Promise<ReturnType<typeof createApp>> {
   const url = process.env.DATABASE_URL;
+  const apiToken = process.env.SYNC_API_TOKEN || undefined;
   if (!url) {
     return createApp({
       store: defaultIdempotencyStore,
       feed: defaultChangeFeed,
       projections: defaultProjectionService,
       requireUuid: false,
+      apiToken,
     });
   }
-  const {
-    createSql,
-    PostgresIdempotencyStore,
-    PostgresChangeFeed,
-  } = await import('./postgres.ts');
-  const { PostgresProjectionService } = await import('./projections.ts');
+  const { createSql, PostgresSyncUnitOfWork } = await import('./postgres.ts');
   const sql = createSql(url);
   return createApp({
-    store: new PostgresIdempotencyStore(sql),
-    feed: new PostgresChangeFeed(sql),
-    projections: new PostgresProjectionService(sql),
+    // Store/feed/projections come from the transactional unit of work;
+    // these top-level instances are only used outside transactions.
+    store: new PostgresSyncUnitOfWork(sql) as unknown as IdempotencyStore,
+    feed: null as unknown as ChangeFeed,
+    uow: new PostgresSyncUnitOfWork(sql),
     requireUuid: true,
+    apiToken,
   });
 }
