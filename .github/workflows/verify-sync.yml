@@ -79,6 +79,11 @@ jobs:
           set -o pipefail
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f packages/db/migrations/003_rls_strict.sql 2>&1 | tee migrate_003.log
 
+      - name: Migration 004_device_platform_unknown
+        run: |
+          set -o pipefail
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f packages/db/migrations/004_device_platform_unknown.sql 2>&1 | tee migrate_004.log
+
       - name: RLS strict check
         run: |
           set -o pipefail
@@ -157,7 +162,7 @@ jobs:
           git checkout -B ci-logs origin/ci-logs 2>/dev/null || git checkout -B ci-logs
           DIR="ci-logs/${{ github.run_id }}"
           mkdir -p "$DIR"
-          for f in migrate_001.log migrate_002.log migrate_003.log rls_check.log api.log push.json resp.json resp2.json pull.json; do
+          for f in migrate_001.log migrate_002.log migrate_003.log migrate_004.log rls_check.log api.log push.json resp.json resp2.json pull.json; do
             if [ -f "$f" ]; then cp "$f" "$DIR/"; else echo "missing: $f" >> "$DIR/README.txt"; fi
           done
           cat >> "$DIR/README.txt" <<EOF
