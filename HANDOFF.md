@@ -5,20 +5,18 @@
 
 ## On main
 
-1. [#66](https://github.com/simaklaw/forma/pull/66) SQLite `PRAGMA user_version` migration runner + legacy stamp
-2. [#64](https://github.com/simaklaw/forma/pull/64) home mode default, exercise media (jpg/mp4), coach keywords
-3. [#67](https://github.com/simaklaw/forma/pull/67) migration **v2** `weight_snapshot_kg` column
+1. SQLite migrations v1–v2 + `weight_snapshot_kg` write path (#66–#68)
+2. Home mode, exercise media, coach keywords (#64)
 
 ## In flight
 
-- `feat/weight-snapshot-write` — write `weight_snapshot_kg` from `session.weightKgSnapshot` on commit; no invented 70 kg in HC burn estimate
+- `feat/nutrition-ring-polish` — CalorieRing %/budget/a11y, MacroBar a11y, NutritionScreen hero chips (цель / тренировка / бюджет)
 
 ## Next
 
-1. Merge weight-snapshot write when CI green
-2. Nutrition ring polish (КБЖУ) + gym/home UX
-3. Health Connect / Samsung Health — already scaffolded under `features/health`
-4. APK only when owner says so
+1. Merge nutrition polish when CI green
+2. Health Connect / Samsung Health polish (`features/health`)
+3. APK only when owner says so
 
 ## Rules
 
