@@ -102,10 +102,14 @@ export default function WorkoutScreen() {
   const profileWeight = useFitPulseStore((s) => s.profile.weight);
 
   const plan = useMemo(() => catalogFor(trainingMode), [trainingMode]);
-  const planDayIds = useMemo(() => new Set(plan.map((d) => d.id)), [plan]);
+  const planDayIds = useMemo(
+    () => new Set(plan.map((d) => `${trainingMode}:${d.id}`)),
+    [plan, trainingMode]
+  );
 
   const activeDay =
     plan.find((d) => d.id === (selectedDayId ?? plan[0]?.id)) ?? plan[0];
+  const sessionDayId = activeDay ? `${trainingMode}:${activeDay.id}` : '';
 
   useEffect(() => {
     if (!plan.some((d) => d.id === selectedDayId)) {
@@ -183,7 +187,7 @@ export default function WorkoutScreen() {
   );
 
   const currentStepExerciseId =
-    resumable && activeDay && dayIdFromTemplate(resumable.templateRevisionId) === activeDay.id
+    resumable && activeDay && dayIdFromTemplate(resumable.templateRevisionId) === sessionDayId
       ? Number(resumable.steps[resumable.currentStepIndex]?.snapshot.exerciseId)
       : null;
 
@@ -286,7 +290,7 @@ export default function WorkoutScreen() {
                 {activeDay.exercises.length} упражнения · {activeDay.meta}
                 {burnedToday > 0 ? ` · ~${burnedToday} ккал` : ''}
               </Text>
-              {resumable && dayIdFromTemplate(resumable.templateRevisionId) === activeDay.id ? (
+              {resumable && dayIdFromTemplate(resumable.templateRevisionId) === sessionDayId ? (
                 <View style={styles.resumeBlock}>
                   <Text style={[styles.resumeHint, { color: colors.lime }]}>
                     Есть незавершённая сессия · шаг {resumable.currentStepIndex + 1}/
@@ -299,7 +303,7 @@ export default function WorkoutScreen() {
                       accessibilityLabel="Продолжить тренировку"
                       onPress={() => {
                         void ActiveSessionController.ensureDaySession(
-                          activeDay.id,
+                          sessionDayId,
                           activeDay.exercises
                         )
                           .then((session) => {
@@ -322,7 +326,7 @@ export default function WorkoutScreen() {
                       accessibilityLabel="Начать заново"
                       onPress={() => {
                         void ActiveSessionController.restartDaySession(
-                          activeDay.id,
+                          sessionDayId,
                           activeDay.exercises
                         )
                           .then((session) => {
@@ -348,7 +352,7 @@ export default function WorkoutScreen() {
                   accessibilityLabel="Начать тренировку"
                   onPress={() => {
                     void ActiveSessionController.ensureDaySession(
-                      activeDay.id,
+                      sessionDayId,
                       activeDay.exercises
                     )
                       .then((session) => {
@@ -427,7 +431,7 @@ export default function WorkoutScreen() {
           </Text>
         </View>
 
-        {resumable && dayIdFromTemplate(resumable.templateRevisionId) === activeDay.id ? (
+        {resumable && dayIdFromTemplate(resumable.templateRevisionId) === sessionDayId ? (
           <View style={styles.sessionBar} accessibilityRole="progressbar">
             <Text style={[styles.sessionBarLabel, { color: colors.paperDim }]}>
               Сессия · шаг {resumable.currentStepIndex + 1}/{resumable.steps.length}
@@ -509,7 +513,7 @@ export default function WorkoutScreen() {
       <ExerciseSheet
         ref={sheetRef}
         exercise={selectedExercise}
-        dayId={activeDay.id}
+        dayId={sessionDayId}
         dayExercises={activeDay.exercises}
         onFinished={() => void refreshResumable()}
         onGoToExpected={(id) => openExercise(id)}

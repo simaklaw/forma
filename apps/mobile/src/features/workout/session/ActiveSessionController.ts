@@ -143,6 +143,8 @@ class ActiveSessionControllerImpl {
   }
 
   async restartDaySession(dayId: string, exercises: ExerciseDef[]): Promise<WorkoutSession | null> {
+    if (profileBodyKg() == null) return null;
+
     const svc = getSessionService();
     const previous = await svc.getResumable(LOCAL_USER_ID);
     let dateKeyToClear: string | null = null;

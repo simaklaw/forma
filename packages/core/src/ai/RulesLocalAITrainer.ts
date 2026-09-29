@@ -42,17 +42,25 @@ function advise(ctx: UserContextSnapshot, userPrompt: string): string {
     return `До белка ещё около ${proteinLeft} г (цель ~${proteinTarget} г, ≈ 2 г/кг). Размажь по приёмам: творог, яйца, рыба, курица — не в один ужин.`;
   }
 
+  // The standalone workout recovery chip takes priority over calorie fallback.
+  if (q === "восстановление") {
+    if (ctx.lastWorkout) {
+      return `«${ctx.lastWorkout.name}» уже в логе (RPE ${ctx.lastWorkout.rpeScore}). Сегодня — белок, вода и сон. Нет смысла добивать ещё один тяжёлый блок.`;
+    }
+    return "Пока нет завершённой тренировки в логе. Для восстановления начни со сна, воды и спокойной прогулки; нагрузку выбирай по самочувствию.";
+  }
+
   if (q.includes("калор") || q.includes("кбжу") || q.includes("калори")) {
     return `Цель ${ctx.dailyMetrics.targetCalories} ккал, съедено ${ctx.dailyMetrics.consumedCalories}, сожжено ${burned}. Дельта ${delta > 0 ? "+" : ""}${delta}.`;
   }
 
   // Coach chips: «Сон и восстановление»
-  if (q.includes("сон") || q.includes("sleep")) {
+  if (/(?:^|[^\p{L}\p{N}_])(?:сон|сна|сну|сном|сне|sleep)(?=$|[^\p{L}\p{N}_])/u.test(q)) {
     return "Ориентир 7–9 часов сна. После тяжёлого дня приоритет — сон и белок, а не ещё одна «добивающая» сессия. Это не медицинский совет, а привычка под восстановление.";
   }
 
   // Coach chips: «Вода сегодня»
-  if (q.includes("вод") || q.includes("water") || q.includes("гидрат")) {
+  if (/(?:^|[^\p{L}\p{N}_])(?:вода|воды|воде|воду|водой|water|гидратация|гидратации|гидратацию)(?=$|[^\p{L}\p{N}_])/u.test(q)) {
     return "Отмечай стаканы во вкладке «Питание». Жажда часто маскируется под голод между приёмами. После тренировки — вода раньше, чем сладкий напиток «за восстановление».";
   }
 
@@ -60,7 +68,7 @@ function advise(ctx: UserContextSnapshot, userPrompt: string): string {
     return `«${ctx.lastWorkout.name}» уже в логе (RPE ${ctx.lastWorkout.rpeScore}). Сегодня — белок, вода и сон. Нет смысла добивать ещё один тяжёлый блок.`;
   }
 
-  if (q.includes("трен") || q.includes("зал") || q.includes("дом")) {
+  if (q.includes("трен") || q.includes("зал") || /(?:^|[^\p{L}\p{N}_])(?:дом|дома|дому|домом|доме)(?=$|[^\p{L}\p{N}_])/u.test(q)) {
     if (ctx.lastWorkout) {
       return `Сессия «${ctx.lastWorkout.name}» уже закрыта. Завтра — следующий день плана, сегодня достаточно восстановления.`;
     }

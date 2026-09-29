@@ -41,7 +41,7 @@ This file is the **single source of truth** for handoff between AI agents and th
 
 - Event-sourced session layer under `apps/mobile/src/features/workout/data/` + `session/`
 - Rest timer, sequential steps, ExerciseSheet, MuscleMap
-- Theme toggle exists in places (dark default); **not** fully rolled out to all screens
+- Theme toggle (dark default) and light palette are fully rolled out across screens and shared components.
 - Branding direction: **FitPulse**, not "forma" in UI chrome
 
 ---
@@ -104,8 +104,8 @@ Implementation notes for a future agent:
 ```
 Продолжаем FitPulse (simaklaw/forma), ветка fix/profile-gate-weightkg.
 Сначала прочитай HANDOFF.md в корне репозитория.
-Следующие задачи по порядку: (1) экран-браузер «Каталог» фильтр дом/зал,
-(2) calves в MuscleMap, (3) light theme на остальных экранах.
+Оставшиеся задачи: больше планов и русских подсказок, расширение питания,
+полировка Coach LLM.
 Google Fit не трогаем — только Health Connect когда дойдём до health sync.
 APK не собираем, пока не скажу.
 ```
@@ -116,8 +116,7 @@ APK не собираем, пока не скажу.
 You are continuing the FitPulse mobile app in https://github.com/simaklaw/forma
 Branch: fix/profile-gate-weightkg
 Read HANDOFF.md at repo root first — it is authoritative.
-Next: Catalog browser (home/gym filter), then calves in MuscleMap,
-then light theme on remaining screens.
+Remaining work: more plans and Russian cues, nutrition depth, and Coach LLM polish.
 Do NOT integrate Google Fit; Health Connect only when health sync is in scope.
 Do NOT build APK until the human says so.
 Preserve exercise ids 1–30 in gym/home plans.

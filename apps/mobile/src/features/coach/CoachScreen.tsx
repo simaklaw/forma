@@ -60,6 +60,7 @@ export default function CoachScreen() {
   const colors = useThemeColors();
   const styles = createStyles(colors);
   const profile = useFitPulseStore((s) => s.profile);
+  const metabolic = useFitPulseStore((s) => s.metabolic);
   const todayMeals = useFitPulseStore((s) => s.todayMeals);
   const setLogs = useFitPulseStore((s) => s.setLogs);
   const messages = useFitPulseStore((s) => s.coachMessages);
@@ -70,7 +71,7 @@ export default function CoachScreen() {
   const targets = useMemo(() => {
     if (!domainProfile) return null;
     return useFitPulseStore.getState().calculateTargets();
-  }, [domainProfile]);
+  }, [domainProfile, metabolic]);
 
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);

@@ -40,8 +40,12 @@ export default function ProfileScreen() {
   const [weightInput, setWeightInput] = useState(numStr(profile.weight));
 
   function commitNumber(field: 'age' | 'height' | 'weight', value: string) {
-    const num = parseFloat(value);
-    if (isNaN(num) || num <= 0) return;
+    const num = field === 'age' ? Number(value) : parseFloat(value);
+    if (field === 'age' && (!Number.isInteger(num) || num < 13 || num > 120)) {
+      setAgeInput(numStr(profile.age));
+      return;
+    }
+    if (!Number.isFinite(num) || num <= 0) return;
     if (field === 'weight') {
       logWeight(num);
     } else {

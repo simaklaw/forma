@@ -74,6 +74,32 @@ describe('ActiveSessionController', () => {
     await expect(ActiveSessionController.restartDaySession('legs', exercises)).resolves.toBeNull();
   });
 
+  it('incomplete profile restart preserves the active session and logged progress', async () => {
+    const session = await ActiveSessionController.ensureDaySession('gym:legs', exercises);
+    await ActiveSessionController.recordSetForExercise({
+      dayId: 'gym:legs', exercises, exerciseId: 1, weightKg: 80, reps: 8
+    });
+    await projectIntoStore(session!.sessionId);
+    const { setLogs, dayProgress } = useFitPulseStore.getState();
+    useFitPulseStore.setState({ profile: { ...TEST_PROFILE, age: null } });
+
+    await expect(ActiveSessionController.restartDaySession('gym:legs', exercises)).resolves.toBeNull();
+
+    expect((await getSessionService().getSession(session!.sessionId))?.status).toBe('active');
+    expect(ActiveSessionController.getSessionId()).toBe(session!.sessionId);
+    expect(useFitPulseStore.getState().setLogs).toEqual(setLogs);
+    expect(useFitPulseStore.getState().dayProgress).toEqual(dayProgress);
+  });
+
+  it.each([false, true])('mode-qualified days do not reuse sessions (cold start: %s)', async (cold) => {
+    const gym = await ActiveSessionController.ensureDaySession('gym:legs', exercises);
+    if (cold) ActiveSessionController.resetForTests();
+    const home = await ActiveSessionController.ensureDaySession('home:legs', exercises);
+    expect(home!.sessionId).not.toBe(gym!.sessionId);
+    expect(home!.templateRevisionId).toBe('day-home:legs');
+    expect((await getSessionService().getSession(gym!.sessionId))?.status).toBe('abandoned');
+  });
+
   it('ensureDaySession prepares and starts once per day', async () => {
     const a = await ActiveSessionController.ensureDaySession('legs', exercises);
     expect(a).not.toBeNull();

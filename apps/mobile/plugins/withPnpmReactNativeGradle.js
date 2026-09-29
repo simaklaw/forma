@@ -17,13 +17,13 @@ module.exports = function withPnpmReactNativeGradle(config) {
     const withPaths =
       "require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })";
 
-    if (contents.includes(withPaths)) {
-      return config;
-    }
-
     if (contents.includes(bare)) {
       contents = contents.split(bare).join(withPaths);
       config.modResults.contents = contents;
+      return config;
+    }
+
+    if (contents.includes(withPaths)) {
       return config;
     }
 

@@ -41,6 +41,32 @@ describe("RulesLocalAITrainer", () => {
     assert.match(text, /стакан/i);
   });
 
+  it("does not route unrelated words to sleep, water, or home advice", async () => {
+    const trainer = new RulesLocalAITrainer();
+    const expected = await trainer.generateAdvice(context, "совет");
+    for (const prompt of ["персональный совет", "подводный", "углеводы", "домино", "watermelon", "sleepy"]) {
+      assert.equal(await trainer.generateAdvice(context, prompt), expected, prompt);
+    }
+  });
+
+  it("recognizes full words with punctuation and Cyrillic endings", async () => {
+    const trainer = new RulesLocalAITrainer();
+    assert.match(await trainer.generateAdvice(context, "Как улучшить сон?"), /7–9/);
+    assert.match(await trainer.generateAdvice(context, "Сколько воды?"), /стакан/);
+    assert.match(await trainer.generateAdvice({ ...context, lastWorkout: undefined }, "Дома!"), /Зал или Дом/);
+  });
+
+  it("answers recovery with and without a workout before calorie fallback", async () => {
+    const trainer = new RulesLocalAITrainer();
+    const deficit = { ...context, dailyMetrics: { ...context.dailyMetrics, consumedCalories: 1000 } };
+    const withWorkout = await trainer.generateAdvice(deficit, " Восстановление ");
+    assert.match(withWorkout, /Full body/);
+    assert.match(withWorkout, /RPE 7/);
+    const withoutWorkout = await trainer.generateAdvice({ ...deficit, lastWorkout: undefined }, "Восстановление");
+    assert.match(withoutWorkout, /нет завершённой тренировки/);
+    assert.doesNotMatch(withoutWorkout, /Дефицит/);
+  });
+
   it("streams exactly the same content as generateAdvice", async () => {
     const trainer = new RulesLocalAITrainer();
     const expected = await trainer.generateAdvice(context, "что с белком?");

@@ -119,10 +119,16 @@ function mergeProfile(base: StoredProfile, patch: unknown): StoredProfile {
   const p = patch as Record<string, unknown>;
   return {
     sex: 'sex' in p ? asSex(p.sex) : base.sex,
-    age: 'age' in p ? asPositiveNumber(p.age) : base.age,
+    age:
+      typeof p.age === 'number' && Number.isInteger(p.age) && p.age >= 13 && p.age <= 120
+        ? p.age
+        : base.age,
     height: 'height' in p ? asPositiveNumber(p.height) : base.height,
     weight: 'weight' in p ? asPositiveNumber(p.weight) : base.weight,
-    pal: typeof p.pal === 'number' && Number.isFinite(p.pal) ? p.pal : base.pal,
+    pal:
+      typeof p.pal === 'number' && Number.isFinite(p.pal) && p.pal >= 1.2 && p.pal <= 1.725
+        ? p.pal
+        : base.pal,
     goal: p.goal === 'gain' || p.goal === 'maintain' || p.goal === 'recomp' ? p.goal : base.goal
   };
 }

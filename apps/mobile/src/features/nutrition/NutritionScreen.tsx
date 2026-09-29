@@ -132,6 +132,9 @@ export default function NutritionScreen() {
                   key={i}
                   style={[styles.waterCell, filled && styles.waterCellFilled]}
                   onPress={() => toggleWater(i)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Стакан воды ${i + 1} из ${WATER_MAX}, ${filled ? 'выпит' : 'не выпит'}`}
+                  accessibilityState={{ selected: filled }}
                 />
               );
             })}
@@ -150,7 +153,12 @@ export default function NutritionScreen() {
               <Text style={styles.mealKcal}>
                 {meals[key].reduce((sum, i) => sum + i.kcal, 0)} ккал
               </Text>
-              <TouchableOpacity style={styles.addBtn} onPress={() => openAddFood(key)}>
+              <TouchableOpacity
+                style={styles.addBtn}
+                onPress={() => openAddFood(key)}
+                accessibilityRole="button"
+                accessibilityLabel={`Добавить продукт: ${MEAL_LABELS[key]}`}
+              >
                 <Text style={styles.addBtnText}>+</Text>
               </TouchableOpacity>
             </View>
@@ -167,7 +175,11 @@ export default function NutritionScreen() {
                     Б{item.protein} Ж{item.fat} У{item.carbs}
                   </Text>
                   <Text style={styles.foodKcal}>{item.kcal}</Text>
-                  <TouchableOpacity onPress={() => removeFoodItem(key, item.id)}>
+                  <TouchableOpacity
+                    onPress={() => removeFoodItem(key, item.id)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Удалить ${item.name}: ${MEAL_LABELS[key]}, ${formatClockTime(item.loggedAt)}`}
+                  >
                     <Text style={styles.foodDel}>×</Text>
                   </TouchableOpacity>
                 </View>

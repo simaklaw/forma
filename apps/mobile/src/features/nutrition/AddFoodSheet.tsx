@@ -131,10 +131,12 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
       return;
     }
 
+    let cancelled = false;
     setLoading(true);
     debounceRef.current = setTimeout(async () => {
       try {
         const remote = await OpenFoodFactsService.searchProducts(query.trim());
+        if (cancelled) return;
         if (remote.length > 0) {
           const local = catalogPresets().filter((f) => matchesQuery(f.name, query));
           const localNames = new Set(local.map((f) => f.name.trim().toLowerCase()));
@@ -146,14 +148,16 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
           setSourceLabel('OFF пусто — локальная база');
         }
       } catch {
+        if (cancelled) return;
         runLocalFilter(query);
         setSourceLabel('OFF недоступен — локальная база');
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }, 400);
 
     return () => {
+      cancelled = true;
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [query, tab, runLocalFilter, catalogPresets]);
