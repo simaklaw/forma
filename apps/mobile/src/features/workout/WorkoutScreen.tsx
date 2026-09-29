@@ -417,7 +417,7 @@ export default function WorkoutScreen() {
           </Text>
         </View>
 
-        {overrideIds != null && (
+        {overrideIds && overrideIds.length > 0 && (
           <TouchableOpacity
             style={[styles.resetOverride, { borderColor: colors.lineStrong }]}
             onPress={() => {
@@ -434,7 +434,7 @@ export default function WorkoutScreen() {
           const setsDone = completedSetsToday(ex.id);
           const done = setsDone >= ex.totalSets;
           const isCurrentStep = currentStepExerciseId === ex.id;
-          const thumb = EXERCISE_THUMBNAILS[ex.mediaKey ?? ''];
+          const thumb = ex.mediaKey ? EXERCISE_THUMBNAILS[ex.mediaKey] : undefined;
           const exPr = personalRecords[ex.id];
           return (
             <TouchableOpacity
@@ -460,32 +460,27 @@ export default function WorkoutScreen() {
                 navigation.navigate('Каталог');
               }}
             >
+              <View style={[styles.logNum, { backgroundColor: colors.line }, done && { backgroundColor: colors.lime }]}>
+                {done ? (
+                  <Text style={{ color: colors.ink, fontSize: 12 }}>✓</Text>
+                ) : (
+                  <Text style={[styles.logNumText, { color: colors.paperDim }]}>{String(i + 1).padStart(2, '0')}</Text>
+                )}
+              </View>
               {thumb != null ? (
-                <Image source={thumb} style={{ width: 44, height: 44, borderRadius: 8 }} />
+                <Image source={thumb} style={styles.thumb} accessibilityIgnoresInvertColors />
               ) : (
-                <Text style={[styles.logIndex, { color: colors.paperFaint }]}>{String(i + 1).padStart(2, '0')}</Text>
+                <View style={[styles.thumb, { backgroundColor: colors.line }]} />
               )}
               <View style={{ flex: 1 }}>
-                <View style={styles.logNameRow}>
-                  <Text style={[styles.logName, { color: colors.paper }]} numberOfLines={1}>
-                    {ex.name}
-                  </Text>
-                  {isCurrentStep && (
-                    <View style={[styles.nowBadge, { backgroundColor: colors.lime }]}>
-                      <Text style={[styles.nowBadgeText, { color: colors.ink }]}>сейчас</Text>
-                    </View>
-                  )}
-                </View>
-                <Text style={[styles.logSpec, { color: colors.paperDim }]}>
-                  {setsDone}/{ex.totalSets} · {formatLoadLabel(ex, safeWeightKg)} × {ex.workingReps}
+                <Text style={[styles.logName, { color: colors.paper }]} numberOfLines={1}>
+                  {ex.name}
+                </Text>
+                <Text style={[styles.logMeta, { color: colors.paperDim }]}>
+                  {setsDone}/{ex.totalSets} подх. · {formatLoadLabel(ex, safeWeightKg)}
+                  {exPr != null ? ` · PR ${exPr} кг` : ''}
                 </Text>
               </View>
-              {exPr != null && (
-                <View style={{ alignItems: 'flex-end' }}>
-                  <Text style={[styles.logPr, { color: colors.lime }]}>{exPr}</Text>
-                  <Text style={[styles.logPrLbl, { color: colors.paperFaint }]}>кг PR</Text>
-                </View>
-              )}
             </TouchableOpacity>
           );
         })}
@@ -496,10 +491,10 @@ export default function WorkoutScreen() {
         exercise={selectedExercise}
         dayId={activeDay.id}
         dayExercises={effectiveExercises}
-        onFinished={() => {
+        onClose={() => {
+          setSelectedExerciseId(null);
           void refreshResumable();
         }}
-        onGoToExpected={(id) => openExercise(id)}
       />
     </SafeAreaView>
   );
