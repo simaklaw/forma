@@ -20,6 +20,7 @@ import {
   WORKOUT_DB_NAME,
   type SqliteDatabase
 } from '@/features/workout/data';
+import { startOutboxDrainLifecycle } from '@/features/workout/data/bootstrapOutboxDrain';
 import { hydrateSessionReadModel } from '@/features/workout/session/hydrateSessionReadModel';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 
@@ -68,13 +69,18 @@ export default function App() {
 
     enableSqliteSessions();
     void hydrateSessionReadModel();
+    const stopOutbox = startOutboxDrainLifecycle();
+
     const trainer = new LlamaLocalAITrainer();
     CoachEngine.setTrainer(trainer);
     void trainer.initialize((ratio) => setMobileTrainerProgress(ratio));
 
     const unsub = useFitPulseStore.persist.onFinishHydration(() => setHydrated(true));
     if (useFitPulseStore.persist.hasHydrated()) setHydrated(true);
-    return unsub;
+    return () => {
+      unsub();
+      stopOutbox();
+    };
   }, []);
 
   if (!fontsLoaded || !hydrated) {

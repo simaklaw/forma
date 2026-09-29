@@ -17,3 +17,13 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
     keys.forEach((key) => storage.delete(key));
   }),
 }));
+
+// Minimal RN surface for unit tests under testEnvironment: node
+jest.mock('react-native', () => ({
+  AppState: {
+    addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+    currentState: 'active',
+  },
+  Platform: { OS: 'ios', select: (spec) => spec.ios ?? spec.default },
+  View: 'View',
+}));

@@ -1,42 +1,40 @@
 # HANDOFF — FitPulse
 
-**Checkpoint:** 2026-09-29 (P1 HttpOutboxTransport + RLS SQL)
+**Checkpoint:** 2026-09-29 (App outbox drain lifecycle)
 **Brand:** FitPulse (not Forma rebrand). Packages may still use `@forma/*` internally.
 **APK:** do not build until owner says so.
 
 ## On main
 
-1. P0 offline-first mobile (SQLite, Early Leave, HC/Samsung) — #75
-2. P1 skeleton DDL + sync-contract + Hono — #76
-3. Postgres IdempotencyStore + ChangeFeed (`DATABASE_URL`) — #77
+1. P0 offline-first mobile — #75
+2. P1 DDL + sync-contract + Hono — #76
+3. Postgres stores (`DATABASE_URL`) — #77
+4. HttpOutboxTransport + RLS SQL — #78
 
 ## In flight
 
-- `feat/p1-http-outbox-transport` — mobile `HttpOutboxTransport` → push API; `002_rls_basic.sql`
+- `feat/p1-app-outbox-drain` — `startOutboxDrainLifecycle` in App.tsx (launch + AppState active)
 
 ## P1 status
 
 | Item | Status |
 |------|--------|
-| packages/db DDL | yes (#76) |
-| sync-contract + Hono push/pull | yes (#76) |
-| Postgres stores (DATABASE_URL) | yes (#77) |
-| HttpOutboxTransport (client) | this branch |
-| RLS SQL (basic) | this branch |
-| Wire transport in App.tsx / background | not started |
-| Projection handlers (server) | not started |
-| Auth-bound user_id | not started |
+| packages/db DDL + RLS SQL | yes |
+| sync-contract + Hono push/pull | yes |
+| Postgres stores | yes |
+| HttpOutboxTransport | yes (#78) |
+| App lifecycle drain | this branch |
+| Auth / JWT → RLS GUC | not started |
+| Server projections | not started |
 
-## Local sync loop
+## Sync env
 
 ```bash
-docker compose up -d
-psql postgresql://fitpulse:fitpulse@localhost:5432/fitpulse -f packages/db/migrations/001_init.sql
-psql postgresql://fitpulse:fitpulse@localhost:5432/fitpulse -f packages/db/migrations/002_rls_basic.sql
 export DATABASE_URL=postgresql://fitpulse:fitpulse@localhost:5432/fitpulse
-# API: pnpm --filter @forma/api exec tsx src/index.ts  (or createAppFromEnv)
-# Mobile: EXPO_PUBLIC_SYNC_API_URL=http://10.0.2.2:8787
+# mobile: EXPO_PUBLIC_SYNC_API_URL=http://10.0.2.2:8787
 ```
+
+Without `EXPO_PUBLIC_SYNC_API_URL`, drain uses noop transport (no network).
 
 ## Rules
 
