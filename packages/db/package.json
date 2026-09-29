@@ -1,0 +1,11 @@
+{
+  "name": "@forma/db",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PostgreSQL DDL migrations for FitPulse server (P1)",
+  "scripts": {
+    "type-check": "echo \"@forma/db: SQL only\"",
+    "build": "echo \"@forma/db: SQL only\"",
+    "lint": "echo \"@forma/db: no lint\""
+  }
+}

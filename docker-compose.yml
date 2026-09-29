@@ -1,0 +1,24 @@
+# Local Postgres for FitPulse P1 (architecture plan §P1.1)
+# Usage: docker compose up -d
+# Apply DDL:  psql postgresql://fitpulse:fitpulse@localhost:5432/fitpulse -f packages/db/migrations/001_init.sql
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fitpulse-postgres
+    environment:
+      POSTGRES_USER: fitpulse
+      POSTGRES_PASSWORD: fitpulse
+      POSTGRES_DB: fitpulse
+    ports:
+      - "5432:5432"
+    volumes:
+      - fitpulse_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fitpulse -d fitpulse"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  fitpulse_pg_data:

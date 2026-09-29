@@ -43,14 +43,23 @@ jobs:
       - name: Build web
         run: pnpm --filter @forma/web build
 
-      - name: Type-check all packages
-        run: pnpm type-check
+      - name: Type-check core packages
+        run: pnpm --filter @forma/core --filter @forma/workout-domain --filter @forma/mobile --filter @forma/web type-check
+
+      - name: Type-check P1 packages
+        run: pnpm --filter @forma/sync-contract --filter @forma/api type-check
 
       - name: Test shared core
         run: pnpm --filter @forma/core test
 
       - name: Test workout domain
         run: pnpm --filter @forma/workout-domain test
+
+      - name: Test sync-contract
+        run: pnpm --filter @forma/sync-contract test
+
+      - name: Test api
+        run: pnpm --filter @forma/api test
 
       - name: Test mobile
         run: pnpm --filter @forma/mobile test -- --ci --passWithNoTests
