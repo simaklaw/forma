@@ -6,7 +6,7 @@ import {
   type SessionCheckpoint,
   type SessionRepository
 } from '../SessionRepository';
-import { SCHEMA_SQL, WORKOUT_DB_NAME } from './schema';
+import { WORKOUT_DB_NAME } from './schema';
 
 /**
  * Minimal surface of expo-sqlite sync API.
@@ -58,15 +58,7 @@ type OutboxDbRow = {
 };
 
 export class SqliteSessionRepository implements SessionRepository {
-  private ready = false;
-
   constructor(private readonly db: SqliteDatabase) {}
-
-  ensureSchema(): void {
-    if (this.ready) return;
-    this.db.execSync(SCHEMA_SQL);
-    this.ready = true;
-  }
 
   private withTransaction(fn: () => void): void {
     this.db.execSync('BEGIN IMMEDIATE');
@@ -84,7 +76,6 @@ export class SqliteSessionRepository implements SessionRepository {
   }
 
   async getSession(sessionId: string): Promise<WorkoutSession | null> {
-    this.ensureSchema();
     const row = this.db.getFirstSync<SessionRow>(
       'SELECT * FROM workout_session WHERE session_id = ?',
       [sessionId]
@@ -94,7 +85,6 @@ export class SqliteSessionRepository implements SessionRepository {
   }
 
   async getResumableSession(userId: string): Promise<WorkoutSession | null> {
-    this.ensureSchema();
     const row = this.db.getFirstSync<SessionRow>(
       `SELECT * FROM workout_session
        WHERE user_id = ? AND status IN ('prepared', 'active', 'paused')
@@ -107,7 +97,6 @@ export class SqliteSessionRepository implements SessionRepository {
   }
 
   async listEvents(sessionId: string): Promise<SessionEvent[]> {
-    this.ensureSchema();
     const rows = this.db.getAllSync<EventRow>(
       'SELECT * FROM session_event WHERE session_id = ? ORDER BY ordinal ASC',
       [sessionId]
@@ -130,7 +119,6 @@ export class SqliteSessionRepository implements SessionRepository {
     payloadHashes: string[];
     checkpoint?: SessionCheckpoint;
   }): Promise<void> {
-    this.ensureSchema();
     const { session, events, payloadHashes, checkpoint } = input;
     if (events.length !== payloadHashes.length) {
       throw new Error('payloadHashes length must match events');
@@ -230,7 +218,6 @@ export class SqliteSessionRepository implements SessionRepository {
   }
 
   async saveCheckpoint(checkpoint: SessionCheckpoint): Promise<void> {
-    this.ensureSchema();
     const existing = this.db.getFirstSync<CheckpointRow>(
       'SELECT * FROM session_checkpoint WHERE session_id = ?',
       [checkpoint.sessionId]
@@ -257,7 +244,6 @@ export class SqliteSessionRepository implements SessionRepository {
   }
 
   async getCheckpoint(sessionId: string): Promise<SessionCheckpoint | null> {
-    this.ensureSchema();
     const row = this.db.getFirstSync<CheckpointRow>(
       'SELECT * FROM session_checkpoint WHERE session_id = ?',
       [sessionId]
@@ -273,7 +259,6 @@ export class SqliteSessionRepository implements SessionRepository {
   }
 
   async listPendingOutbox(limit = 50): Promise<OutboxRow[]> {
-    this.ensureSchema();
     const rows = this.db.getAllSync<OutboxDbRow>(
       `SELECT * FROM outbox WHERE status = 'pending' ORDER BY created_at_ms ASC LIMIT ?`,
       [limit]
@@ -290,12 +275,10 @@ export class SqliteSessionRepository implements SessionRepository {
   }
 
   async markOutbox(operationId: string, status: OutboxStatus): Promise<void> {
-    this.ensureSchema();
     this.db.runSync(`UPDATE outbox SET status = ? WHERE operation_id = ?`, [status, operationId]);
   }
 
   async pruneOutbox(retentionDays: number, statuses: OutboxStatus[]): Promise<number> {
-    this.ensureSchema();
     if (statuses.length === 0) return 0;
     const cutoffMs = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
     const placeholders = statuses.map(() => '?').join(', ');

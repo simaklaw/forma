@@ -1,7 +1,8 @@
 import { MemorySessionRepository } from './MemorySessionRepository';
 import { SessionCommandService } from './SessionCommandService';
 import type { SessionRepository } from './SessionRepository';
-import { SqliteSessionRepository, type SqliteDatabase } from './sqlite/SqliteSessionRepository';
+import type { SqliteDatabase } from './sqlite/SqliteSessionRepository';
+import { openWorkoutDb } from './sqlite/openWorkoutDb';
 
 export type SessionPersistenceMode = 'memory' | 'sqlite';
 
@@ -44,9 +45,7 @@ export function configureSessionPersistence(
   let repo: SessionRepository;
   if (next === 'sqlite') {
     if (!db) throw new Error('sqlite mode requires a database handle');
-    const sqliteRepo = new SqliteSessionRepository(db);
-    sqliteRepo.ensureSchema();
-    repo = sqliteRepo;
+    repo = openWorkoutDb(() => db);
   } else {
     repo = new MemorySessionRepository();
   }
