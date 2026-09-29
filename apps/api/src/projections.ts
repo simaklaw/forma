@@ -26,6 +26,7 @@ export interface ProjectionService {
 /**
  * Callable sql tag (postgres package). Kept structural/loose so we do not
  * import postgres.ts at module load (strip-types + circular risk).
+ * Also accepts a transaction client (postgres.Resolvable).
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SqlClient = any;
@@ -84,8 +85,15 @@ export function shouldGrantActivityCredit(
   return false;
 }
 
-/** Local calendar date for credit (YYYY-MM-DD). */
-export function extractLocalDate(payload: Record<string, unknown>): string {
+/**
+ * Local calendar date for credit (YYYY-MM-DD), as reported by the client.
+ * Returns null when the payload carries no local date — NEVER falls back
+ * to the server's UTC date: that would shift credits a day for UTC+N users.
+ * Callers must skip the credit (with a warning) when null.
+ */
+export function extractLocalDate(
+  payload: Record<string, unknown>,
+): string | null {
   const candidates = [
     payload.local_date,
     payload.localDate,
@@ -96,7 +104,7 @@ export function extractLocalDate(payload: Record<string, unknown>): string {
       return c.slice(0, 10);
     }
   }
-  return new Date().toISOString().slice(0, 10);
+  return null;
 }
 
 export type ActivityCreditRow = {
@@ -142,14 +150,22 @@ export class MemoryProjectionService implements ProjectionService {
     );
     if (exists) return;
 
-    this.credits.push({
-      credit_id: randomUUID(),
-      user_id: input.user_id,
-      local_date: extractLocalDate(input.payload),
-      source_domain: 'workout',
-      source_entity_id: input.aggregate_id,
-      policy_version: ACTIVITY_CREDIT_POLICY_VERSION,
-    });
+    const localDate = extractLocalDate(input.payload);
+    if (!localDate) {
+      console.warn(
+        '[fitpulse-api] activity_credit skipped: no local_date in payload',
+        { aggregate_id: input.aggregate_id },
+      );
+    } else {
+      this.credits.push({
+        credit_id: randomUUID(),
+        user_id: input.user_id,
+        local_date: localDate,
+        source_domain: 'workout',
+        source_entity_id: input.aggregate_id,
+        policy_version: ACTIVITY_CREDIT_POLICY_VERSION,
+      });
+    }
 
     // Soft PR candidates from payload.sets / payload.records (no FK).
     const sets = input.payload.sets;
@@ -200,6 +216,8 @@ export class MemoryProjectionService implements ProjectionService {
 /**
  * Postgres: engagement.activity_credit on terminal workout_session ops.
  * Idempotent via UNIQUE (source_domain, source_entity_id, policy_version).
+ * sql may be a transaction client — then the credit is atomic with the
+ * accepted operation itself.
  */
 export class PostgresProjectionService implements ProjectionService {
   private readonly sql: SqlClient;
@@ -212,6 +230,14 @@ export class PostgresProjectionService implements ProjectionService {
     if (!shouldGrantActivityCredit(input)) return;
 
     const localDate = extractLocalDate(input.payload);
+    if (!localDate) {
+      console.warn(
+        '[fitpulse-api] activity_credit skipped: no local_date in payload',
+        { aggregate_id: input.aggregate_id },
+      );
+      return;
+    }
+
     const creditId = randomUUID();
 
     await this.sql`
