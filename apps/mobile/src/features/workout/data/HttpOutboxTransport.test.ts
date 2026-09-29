@@ -48,6 +48,39 @@ describe('HttpOutboxTransport', () => {
     expect(body.operations[0].payload_hash.length).toBe(64);
   });
 
+  it('sends Authorization header when token is provided', async () => {
+    const fetchImpl = jest.fn(async () => ({
+      ok: true,
+      json: async () => ({ results: [{ status: 'accepted' }] }),
+    })) as unknown as typeof fetch;
+
+    const t = createHttpOutboxTransport({
+      baseUrl: 'http://localhost:8787',
+      token: 'secret-token',
+      fetchImpl,
+    });
+    await expect(t.send(sampleRow)).resolves.toBe('accepted');
+    const [, init] = fetchImpl.mock.calls[0] as [string, RequestInit];
+    const headers = init.headers as Record<string, string>;
+    expect(headers.authorization).toBe('Bearer secret-token');
+  });
+
+  it('omits Authorization header when no token is provided', async () => {
+    const fetchImpl = jest.fn(async () => ({
+      ok: true,
+      json: async () => ({ results: [{ status: 'accepted' }] }),
+    })) as unknown as typeof fetch;
+
+    const t = createHttpOutboxTransport({
+      baseUrl: 'http://localhost:8787',
+      fetchImpl,
+    });
+    await t.send(sampleRow);
+    const [, init] = fetchImpl.mock.calls[0] as [string, RequestInit];
+    const headers = init.headers as Record<string, string>;
+    expect(headers.authorization).toBeUndefined();
+  });
+
   it('send returns accepted on duplicate', async () => {
     const fetchImpl = jest.fn(async () => ({
       ok: true,
@@ -57,6 +90,16 @@ describe('HttpOutboxTransport', () => {
     })) as unknown as typeof fetch;
     const t = createHttpOutboxTransport({ baseUrl: 'http://x', fetchImpl });
     await expect(t.send(sampleRow)).resolves.toBe('accepted');
+  });
+
+  it('send returns failed on 401 (missing/wrong token)', async () => {
+    const fetchImpl = jest.fn(async () => ({
+      ok: false,
+      status: 401,
+      json: async () => ({ error: 'unauthorized' }),
+    })) as unknown as typeof fetch;
+    const t = createHttpOutboxTransport({ baseUrl: 'http://x', fetchImpl });
+    await expect(t.send(sampleRow)).resolves.toBe('failed');
   });
 
   it('send returns failed on network error', async () => {

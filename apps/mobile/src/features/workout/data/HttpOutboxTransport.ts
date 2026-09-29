@@ -25,6 +25,12 @@ export function toSyncPayloadHash(localHash: string): string {
 
 export type HttpOutboxTransportOptions = {
   baseUrl: string;
+  /**
+   * Shared-secret token for the sync API (SYNC_API_TOKEN on the server).
+   * Sent as Authorization: Bearer <token>. When the server has the token
+   * set, requests without it get 401 and every send() fails.
+   */
+  token?: string;
   /** Defaults to SYNC_LOCAL_DEVICE_UUID. */
   deviceId?: string;
   /** Defaults to resolveSyncUserId(). */
@@ -42,10 +48,17 @@ export function createHttpOutboxTransport(
   const base = opts.baseUrl.replace(/\/$/, '');
   const deviceId = opts.deviceId ?? SYNC_LOCAL_DEVICE_UUID;
   const userId = opts.userId ?? resolveSyncUserId();
+  const token = opts.token;
   const fetchFn = opts.fetchImpl ?? globalThis.fetch.bind(globalThis);
 
   return {
     async send(row: OutboxRow): Promise<'accepted' | 'failed'> {
+      const headers: Record<string, string> = {
+        'content-type': 'application/json',
+        accept: 'application/json',
+      };
+      if (token) headers.authorization = `Bearer ${token}`;
+
       const body = {
         user_id: userId,
         operations: [
@@ -67,7 +80,7 @@ export function createHttpOutboxTransport(
       try {
         const res = await fetchFn(`${base}/api/v1/sync/push`, {
           method: 'POST',
-          headers: { 'content-type': 'application/json', accept: 'application/json' },
+          headers,
           body: JSON.stringify(body),
         });
         if (!res.ok) return 'failed';
@@ -87,6 +100,7 @@ export function createHttpOutboxTransport(
 /**
  * Build transport from Expo public env, or null if unset (keep noop).
  * EXPO_PUBLIC_SYNC_API_URL=http://10.0.2.2:8787
+ * EXPO_PUBLIC_SYNC_API_TOKEN=<same value as server SYNC_API_TOKEN>
  */
 export function createHttpOutboxTransportFromEnv(): OutboxTransport | null {
   const base =
@@ -94,5 +108,11 @@ export function createHttpOutboxTransportFromEnv(): OutboxTransport | null {
       process.env?.EXPO_PUBLIC_SYNC_API_URL) ||
     '';
   if (!base || typeof base !== 'string') return null;
-  return createHttpOutboxTransport({ baseUrl: base });
+  return createHttpOutboxTransport({
+    baseUrl: base,
+    token:
+      (typeof process !== 'undefined' &&
+        process.env?.EXPO_PUBLIC_SYNC_API_TOKEN) ||
+      undefined,
+  });
 }
