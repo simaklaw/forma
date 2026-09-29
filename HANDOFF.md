@@ -8,12 +8,17 @@
 1. SQLite migrations v1–v2 + `weight_snapshot_kg` write (#66–#68)
 2. Home mode, exercise media, coach keywords (#64)
 3. Nutrition ring polish (#69)
-4. Health Connect → Samsung Health path (#70 / v2)
+4. Health Connect → Samsung Health path (#71)
+
+## In flight
+
+- `feat/weight-hc-on-profile-update` — HC weight export on `logWeight` **and** `updateProfile({ weight })`; invalid weight no-op
 
 ## Next
 
-1. Optional: push profile weight to HC on logWeight
-2. APK only when owner says so
+1. Merge weight→HC profile update when CI green
+2. Product polish candidates: Progress screen, onboarding gate UX, coach chips
+3. APK only when owner says so
 
 ## Rules
 

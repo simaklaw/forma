@@ -202,8 +202,16 @@ export const useFitPulseStore = create<AppStore>()(
       personalRecords: {},
       coachMessages: defaultCoachMessages(),
 
-      updateProfile: (newProfile) =>
-        set((state) => ({ profile: mergeProfile(state.profile, newProfile) })),
+      updateProfile: (newProfile) => {
+        const prevWeight = get().profile.weight;
+        set((state) => ({ profile: mergeProfile(state.profile, newProfile) }));
+        if ('weight' in newProfile) {
+          const next = asPositiveNumber(newProfile.weight);
+          if (next != null && next !== prevWeight) {
+            scheduleWeightExport(next);
+          }
+        }
+      },
 
       triggerRefeed: () => set({ metabolic: startRefeed() }),
       triggerDietBreak: () => set({ metabolic: startDietBreak() }),
@@ -246,13 +254,12 @@ export const useFitPulseStore = create<AppStore>()(
 
       logWeight: (weight) => {
         const w = asPositiveNumber(weight);
+        if (w == null) return;
         set((state) => ({
           profile: { ...state.profile, weight: w },
-          weightHistory: [...state.weightHistory, weight]
-            .filter((n) => Number.isFinite(n) && n > 0)
-            .slice(-30)
+          weightHistory: [...state.weightHistory, w].slice(-30)
         }));
-        if (w != null) scheduleWeightExport(w);
+        scheduleWeightExport(w);
       },
 
       recordSet: (exerciseId, weight, reps, rir) => {
