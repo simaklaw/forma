@@ -1,26 +1,19 @@
-import type { OperationStatus } from '@forma/sync-contract';
+import type { IdempotencyStore, StoredOperation, ChangeFeed } from './store.ts';
+import type { SyncChange } from '@forma/sync-contract';
 
-export interface StoredOperation {
-  client_operation_id: string;
-  user_id: string;
-  device_id: string;
-  payload_hash: string;
-  status: OperationStatus;
-  result_body: Record<string, unknown>;
-  /** Epoch ms when the entry was stored (for TTL eviction). */
+/** Default TTL for in-memory entries (24h). */
+export const DEFAULT_TTL_MS = 24 * 60 * 60 * 1000;
+
+interface MemoryEntry extends StoredOperation {
   stored_at: number;
 }
 
-/** Default TTL for in-memory entries (24h). Postgres will replace this store. */
-export const DEFAULT_TTL_MS = 24 * 60 * 60 * 1000;
-
 /**
- * In-memory stand-in for platform.client_operation until Postgres is wired.
- * Key format: `${user_id}|${device_id}|${client_operation_id}`
- * Entries older than ttlMs are treated as missing (lazy eviction on get/put).
+ * In-memory IdempotencyStore (tests + local without DATABASE_URL).
+ * Key: `${user_id}|${device_id}|${client_operation_id}`
  */
-export class MemoryIdempotencyStore {
-  private readonly map = new Map<string, StoredOperation>();
+export class MemoryIdempotencyStore implements IdempotencyStore {
+  private readonly map = new Map<string, MemoryEntry>();
   private readonly ttlMs: number;
 
   constructor(ttlMs: number = DEFAULT_TTL_MS) {
@@ -31,11 +24,10 @@ export class MemoryIdempotencyStore {
     return `${userId}|${deviceId}|${clientOpId}`;
   }
 
-  private isExpired(entry: StoredOperation, now: number): boolean {
+  private isExpired(entry: MemoryEntry, now: number): boolean {
     return now - entry.stored_at > this.ttlMs;
   }
 
-  /** Drop expired entries (lazy). Call periodically in long-running processes if needed. */
   sweep(now: number = Date.now()): number {
     let removed = 0;
     for (const [k, v] of this.map) {
@@ -47,12 +39,12 @@ export class MemoryIdempotencyStore {
     return removed;
   }
 
-  get(
+  async get(
     userId: string,
     deviceId: string,
     clientOpId: string,
-    now: number = Date.now(),
-  ): StoredOperation | undefined {
+  ): Promise<StoredOperation | undefined> {
+    const now = Date.now();
     const k = this.key(userId, deviceId, clientOpId);
     const entry = this.map.get(k);
     if (!entry) return undefined;
@@ -60,14 +52,13 @@ export class MemoryIdempotencyStore {
       this.map.delete(k);
       return undefined;
     }
-    return entry;
+    const { stored_at: _, ...rest } = entry;
+    return rest;
   }
 
-  put(op: Omit<StoredOperation, 'stored_at'>, now: number = Date.now()): void {
-    // Opportunistic sweep when map grows (keeps memory bounded without a timer).
-    if (this.map.size > 10_000) {
-      this.sweep(now);
-    }
+  async put(op: StoredOperation): Promise<void> {
+    const now = Date.now();
+    if (this.map.size > 10_000) this.sweep(now);
     this.map.set(this.key(op.user_id, op.device_id, op.client_operation_id), {
       ...op,
       stored_at: now,
@@ -83,4 +74,51 @@ export class MemoryIdempotencyStore {
   }
 }
 
+/** In-memory change feed (tests). */
+export class MemoryChangeFeed implements ChangeFeed {
+  private seq = 0;
+  private readonly rows: Array<SyncChange & { user_id: string }> = [];
+
+  async listAfter(
+    userId: string,
+    afterChangeId: number,
+    limit: number,
+  ): Promise<{ changes: SyncChange[]; next_change_id: number; has_more: boolean }> {
+    const matched = this.rows.filter(
+      (r) => r.user_id === userId && r.change_id > afterChangeId,
+    );
+    const page = matched.slice(0, limit);
+    const next =
+      page.length > 0 ? page[page.length - 1].change_id : afterChangeId;
+    return {
+      changes: page.map(({ user_id: _, ...c }) => c),
+      next_change_id: next,
+      has_more: matched.length > limit,
+    };
+  }
+
+  async append(input: {
+    user_id: string;
+    entity_type: string;
+    entity_id: string;
+    entity_version: number;
+    mutation: 'upsert' | 'tombstone';
+    payload: Record<string, unknown>;
+  }): Promise<number> {
+    this.seq += 1;
+    this.rows.push({
+      change_id: this.seq,
+      user_id: input.user_id,
+      entity_type: input.entity_type,
+      entity_id: input.entity_id,
+      entity_version: input.entity_version,
+      mutation: input.mutation,
+      payload: input.payload,
+      committed_at: new Date().toISOString(),
+    });
+    return this.seq;
+  }
+}
+
 export const defaultIdempotencyStore = new MemoryIdempotencyStore();
+export const defaultChangeFeed = new MemoryChangeFeed();

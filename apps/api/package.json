@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "@forma/sync-contract": "workspace:*",
-    "hono": "^4.6.0"
+    "hono": "^4.6.0",
+    "postgres": "^3.4.5"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
