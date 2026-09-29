@@ -1,0 +1,122 @@
+name: Verify sync setup (E2E)
+
+# Full cloud verification of the sync stack — no computer needed.
+# Postgres service -> migrations -> token -> API up -> real HTTP checks:
+#   /health reports bearer, push 401 without token, 200 accepted with token,
+#   replay is duplicate, pull returns the change.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: verify-sync-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Postgres · Migrations · Token · API E2E
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fitpulse
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install psql client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Apply migrations (001 + 002 + strict RLS 003)
+        run: |
+          PSQL="postgresql://postgres:postgres@localhost:5432/fitpulse"
+          psql "$PSQL" -v ON_ERROR_STOP=1 -f packages/db/migrations/001_init.sql
+          psql "$PSQL" -v ON_ERROR_STOP=1 -f packages/db/migrations/002_rls_basic.sql
+          psql "$PSQL" -v ON_ERROR_STOP=1 -f packages/db/migrations/003_rls_strict.sql
+          echo "RLS check:" && psql "$PSQL" -c "select count(*) as strict_tables from pg_tables t join pg_class c on c.relname = t.tablename where c.relrowsecurity and c.relforcerowlevelsecurity and t.schemaname in ('platform','workout','engagement','nutrition');"
+
+      - name: Generate sync token (pnpm sync:setup)
+        run: |
+          pnpm sync:setup
+          test -s apps/api/.env
+          grep -q '^SYNC_API_TOKEN=..' apps/api/.env
+          grep -q '^EXPO_PUBLIC_SYNC_API_TOKEN=..' apps/mobile/.env
+          echo "token files OK"
+
+      - name: Start API
+        run: |
+          export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/fitpulse"
+          nohup pnpm --filter @forma/api start > api.log 2>&1 &
+          for i in $(seq 1 45); do
+            if curl -sf http://localhost:8787/health > /dev/null 2>&1; then echo "API is up"; break; fi
+            sleep 1
+          done
+          curl -sf http://localhost:8787/health || { cat api.log; exit 1; }
+
+      - name: /health reports bearer auth
+        run: curl -s http://localhost:8787/health | grep '"auth":"bearer"'
+
+      - name: push without token is 401
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8787/api/v1/sync/push \
+            -H 'content-type: application/json' -d '{}')
+          echo "status=$code"
+          [ "$code" = "401" ]
+
+      - name: push with token is 200 accepted (through strict RLS)
+        run: |
+          TOKEN=$(grep '^SYNC_API_TOKEN=' apps/api/.env | cut -d= -f2)
+          HASH=$(printf 'a%.0s' $(seq 1 64))
+          cat > push.json <<EOF
+          {"user_id":"00000000-0000-4000-8000-000000000001","operations":[{"client_operation_id":"018f0000-0000-7000-8000-000000000001","device_id":"00000000-0000-4000-8000-0000000000d1","aggregate_type":"workout_session","aggregate_id":"00000000-0000-4000-8000-0000000000a1","payload_hash":"$HASH","payload":{"event":"complete_set"},"occurred_at_client":"2026-09-29T00:00:00.000Z"}]}
+          EOF
+          code=$(curl -s -o resp.json -w '%{http_code}' -X POST http://localhost:8787/api/v1/sync/push \
+            -H 'content-type: application/json' -H "authorization: Bearer $TOKEN" --data @push.json)
+          echo "status=$code"; cat resp.json
+          [ "$code" = "200" ]
+          grep -q '"status":"accepted"' resp.json
+
+      - name: replay of the same op is duplicate (idempotency E2E)
+        run: |
+          TOKEN=$(grep '^SYNC_API_TOKEN=' apps/api/.env | cut -d= -f2)
+          code=$(curl -s -o resp2.json -w '%{http_code}' -X POST http://localhost:8787/api/v1/sync/push \
+            -H 'content-type: application/json' -H "authorization: Bearer $TOKEN" --data @push.json)
+          echo "status=$code"; cat resp2.json
+          [ "$code" = "200" ]
+          grep -q '"status":"duplicate"' resp2.json
+
+      - name: pull returns exactly one change (no duplicates)
+        run: |
+          TOKEN=$(grep '^SYNC_API_TOKEN=' apps/api/.env | cut -d= -f2)
+          curl -s "http://localhost:8787/api/v1/sync/pull?user_id=00000000-0000-4000-8000-000000000001&after_change_id=0" \
+            -H "authorization: Bearer $TOKEN" -o pull.json
+          cat pull.json
+          CHANGES=$(node -e "console.log(JSON.parse(require('fs').readFileSync('pull.json','utf8')).changes.length)")
+          echo "changes=$CHANGES"
+          [ "$CHANGES" = "1" ]

@@ -1,0 +1,21 @@
+// Codespaces config — run FitPulse from a phone browser.
+// Open the repo on github.com -> Code -> Codespaces -> Create, then in the
+// terminal: pnpm install && pnpm sync:setup && pnpm api:dev
+{
+  "name": "FitPulse",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" }
+  },
+  "postCreateCommand": "npm install -g pnpm@9.15.0 && pnpm install --no-frozen-lockfile",
+  "forwardPorts": [8787, 8081],
+  "portsAttributes": {
+    "8787": { "label": "sync API" },
+    "8081": { "label": "Expo dev server" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
+    }
+  }
+}
