@@ -14,7 +14,11 @@
     "test": "turbo run test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "format:check:gate": "prettier --check apps/mobile/src/features/workout/catalogBrowser.ts apps/mobile/src/features/workout/catalogBrowser.test.ts apps/mobile/src/features/workout/exerciseFavorites.ts apps/mobile/src/features/workout/exerciseFavorites.test.ts packages/workout-domain/src/commands.ts packages/workout-domain/src/events.ts packages/workout-domain/src/index.ts packages/workout-domain/src/types.ts apps/mobile/src/core/logger.ts apps/mobile/src/features/workout/replaceTarget.ts"
+    "format:check:gate": "prettier --check apps/mobile/src/features/workout/catalogBrowser.ts apps/mobile/src/features/workout/catalogBrowser.test.ts apps/mobile/src/features/workout/exerciseFavorites.ts apps/mobile/src/features/workout/exerciseFavorites.test.ts packages/workout-domain/src/commands.ts packages/workout-domain/src/events.ts packages/workout-domain/src/index.ts packages/workout-domain/src/types.ts apps/mobile/src/core/logger.ts apps/mobile/src/features/workout/replaceTarget.ts",
+    "sync:setup": "bash scripts/setup-sync-token.sh",
+    "db:up": "docker compose up -d",
+    "db:migrate": "psql postgresql://fitpulse:fitpulse@localhost:5432/fitpulse -f packages/db/migrations/001_init.sql && psql postgresql://fitpulse:fitpulse@localhost:5432/fitpulse -f packages/db/migrations/002_rls_basic.sql && psql postgresql://fitpulse:fitpulse@localhost:5432/fitpulse -f packages/db/migrations/003_rls_strict.sql",
+    "api:dev": "pnpm --filter @forma/api dev"
   },
   "pnpm": {
     "overrides": {
