@@ -1,9 +1,10 @@
+import { HC_EXERCISE_STRENGTH_TRAINING } from './types';
 import { mapSessionToHealthWorkout } from './mapWorkoutToHealth';
 
 describe('mapSessionToHealthWorkout', () => {
   const now = Date.parse('2026-09-26T12:00:00.000Z');
 
-  it('maps a completed session', () => {
+  it('maps a completed session as strength training', () => {
     const out = mapSessionToHealthWorkout(
       {
         sessionId: 'sess-1',
@@ -18,6 +19,7 @@ describe('mapSessionToHealthWorkout', () => {
     expect(out!.activeCaloriesKcal).toBe(287);
     expect(out!.sessionId).toBe('sess-1');
     expect(out!.title).toContain('Грудь');
+    expect(out!.exerciseType).toBe(HC_EXERCISE_STRENGTH_TRAINING);
     expect(Date.parse(out!.endTime)).toBeGreaterThan(Date.parse(out!.startTime));
   });
 
