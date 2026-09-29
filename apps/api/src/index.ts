@@ -1,5 +1,4 @@
 import { Hono } from 'hono';
-import { serve } from '@hono/node-server';
 import type {
   SyncPushRequest,
   SyncPushResponse,
@@ -65,11 +64,6 @@ app.get('/api/v1/sync/pull', (c) => {
   return c.json(res);
 });
 
-const port = Number(process.env.PORT ?? 8787);
-
-if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('index.ts')) {
-  console.log(`FitPulse API listening on :${port}`);
-  serve({ fetch: app.fetch, port });
-}
-
 export { app };
+
+// Optional local listen: pnpm --filter @forma/api exec tsx -e "import { app } from './src/index.ts'; import { serve } from '@hono/node-server'; serve({ fetch: app.fetch, port: 8787 })"
