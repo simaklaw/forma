@@ -7,14 +7,11 @@
 
 1. SQLite migrations v1–v2 + `weight_snapshot_kg` write (#66–#68)
 2. Home mode, exercise media, coach keywords (#64)
-
-## Open (merge later)
-
-- [#69](https://github.com/simaklaw/forma/pull/69) nutrition ring polish — owner will merge after health
+3. Nutrition ring polish (#69)
 
 ## In flight
 
-- `feat/health-connect-samsung` — Health Connect → Samsung Health path (not Google Fit):
+- `feat/health-connect-samsung` (#70) — Health Connect → Samsung Health (not Google Fit):
   - ExerciseSession type STRENGTH_TRAINING (80)
   - WRITE_WEIGHT permission
   - Card copy + open Health Connect settings
@@ -22,10 +19,9 @@
 
 ## Next
 
-1. CI + merge health-connect-samsung
-2. Merge #69 nutrition polish
-3. Optional: push profile weight to HC on logWeight
-4. APK only when owner says so
+1. Merge #70 when conflict-free
+2. Optional: push profile weight to HC on logWeight
+3. APK only when owner says so
 
 ## Rules
 
