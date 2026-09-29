@@ -1,6 +1,7 @@
 import type { MuscleKey } from '@/components/MuscleMap';
+import type { Sex } from '@/engines/MetabolicEngine';
 import type { ExerciseDef } from './ExerciseSheet';
-import { CATALOGS, type TrainingMode } from './catalog';
+import { catalogFor, type TrainingMode } from './catalog';
 
 export type CatalogItem = ExerciseDef & { mode: TrainingMode; dayName: string };
 
@@ -44,8 +45,8 @@ export function inferEquipment(
   return 'barbell';
 }
 
-export function buildCatalogItems(mode: TrainingMode): CatalogItem[] {
-  return CATALOGS[mode].flatMap((day) =>
+export function buildCatalogItems(mode: TrainingMode, sex: Sex | null = 'male'): CatalogItem[] {
+  return catalogFor(mode, sex).flatMap((day) =>
     day.exercises.map((exercise) => ({ ...exercise, mode, dayName: day.name }))
   );
 }

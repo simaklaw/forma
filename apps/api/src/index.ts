@@ -9,6 +9,10 @@ import {
   defaultIdempotencyStore,
   defaultChangeFeed,
 } from './idempotency.ts';
+import {
+  defaultProjectionService,
+  type ProjectionService,
+} from './projections.ts';
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -16,6 +20,7 @@ const UUID_RE =
 export interface AppDeps {
   store: IdempotencyStore;
   feed: ChangeFeed;
+  projections?: ProjectionService;
   /** When true, user_id / device_id / client_operation_id / aggregate_id must be UUID. */
   requireUuid?: boolean;
 }
@@ -24,9 +29,15 @@ export function createApp(
   deps: AppDeps = {
     store: defaultIdempotencyStore,
     feed: defaultChangeFeed,
+    projections: defaultProjectionService,
   },
 ) {
-  const { store, feed, requireUuid = false } = deps;
+  const {
+    store,
+    feed,
+    projections = defaultProjectionService,
+    requireUuid = false,
+  } = deps;
   const app = new Hono();
 
   app.get('/health', (c) =>
@@ -135,11 +146,10 @@ export function createApp(
         aggregate_type: op.aggregate_type,
         aggregate_id: op.aggregate_id,
         payload_hash: op.payload_hash,
-        status: 'accepted',
         result_body: resultBody,
+        status: 'accepted',
       });
 
-      // Publish change so other devices can pull.
       await feed.append({
         user_id: body.user_id,
         entity_type: op.aggregate_type,
@@ -148,6 +158,17 @@ export function createApp(
         mutation: 'upsert',
         payload: op.payload ?? resultBody,
       });
+
+      try {
+        await projections.onAccepted({
+          user_id: body.user_id,
+          aggregate_type: op.aggregate_type,
+          aggregate_id: op.aggregate_id,
+          payload: (op.payload as Record<string, unknown>) ?? resultBody,
+        });
+      } catch {
+        // Projection failure must not reject an already-accepted op.
+      }
 
       results.push({
         client_operation_id: op.client_operation_id,
@@ -159,9 +180,6 @@ export function createApp(
     return c.json({ results } satisfies SyncPushResponse);
   });
 
-  /**
-   * GET /api/v1/sync/pull?after_change_id=N&user_id=UUID&limit=100
-   */
   app.get('/api/v1/sync/pull', async (c) => {
     const after = Number(c.req.query('after_change_id') ?? '0');
     if (!Number.isFinite(after) || after < 0) {
@@ -170,7 +188,6 @@ export function createApp(
 
     const userId = c.req.query('user_id') ?? '';
     if (!userId) {
-      // Empty feed when no user (skeleton-compatible).
       return c.json({
         changes: [],
         next_change_id: after,
@@ -194,16 +211,15 @@ export function createApp(
   return app;
 }
 
-/** Default app (memory) for tests. */
 export const app = createApp();
 
-/** Build app from env: DATABASE_URL → Postgres stores. */
 export async function createAppFromEnv(): Promise<ReturnType<typeof createApp>> {
   const url = process.env.DATABASE_URL;
   if (!url) {
     return createApp({
       store: defaultIdempotencyStore,
       feed: defaultChangeFeed,
+      projections: defaultProjectionService,
       requireUuid: false,
     });
   }
@@ -213,6 +229,7 @@ export async function createAppFromEnv(): Promise<ReturnType<typeof createApp>> 
   return createApp({
     store: new PostgresIdempotencyStore(sql),
     feed: new PostgresChangeFeed(sql),
+    projections: defaultProjectionService,
     requireUuid: true,
   });
 }

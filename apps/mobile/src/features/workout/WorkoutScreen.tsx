@@ -48,8 +48,9 @@ export default function WorkoutScreen() {
   const personalRecords = useFitPulseStore((s) => s.personalRecords);
   const setLogs = useFitPulseStore((s) => s.setLogs);
   const profileWeight = useFitPulseStore((s) => s.profile.weight);
+  const profileSex = useFitPulseStore((s) => s.profile.sex);
 
-  const plan = useMemo(() => catalogFor(trainingMode), [trainingMode]);
+  const plan = useMemo(() => catalogFor(trainingMode, profileSex), [trainingMode, profileSex]);
   const planDayIds = useMemo(() => new Set(plan.map((d) => d.id)), [plan]);
   const activeDay = plan.find((d) => d.id === (selectedDayId ?? plan[0]?.id)) ?? plan[0];
 
@@ -198,7 +199,7 @@ export default function WorkoutScreen() {
       <View style={styles.ticketMain}>
         <View style={{ flex: 1, paddingRight: 12 }}>
           <Text style={[styles.ticketLabel, { color: colors.paperFaint }]}>
-            Сегодня · {trainingMode === 'gym' ? 'зал' : 'дом'}
+            Сегодня · {profileSex === 'female' ? 'жен' : 'муж'} · {trainingMode === 'gym' ? 'зал' : 'дом'}
           </Text>
           <Text style={[styles.ticketName, { color: colors.paper }]}>{activeDay.name}</Text>
           <Text style={[styles.ticketMeta, { color: colors.paperDim }]}>
@@ -316,7 +317,7 @@ export default function WorkoutScreen() {
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]} edges={['top']}>
       <View style={[styles.header, { borderBottomColor: colors.line }]}>
-        <Text style={[styles.eyebrow, { color: colors.lime }]}>FitPulse · {todayLabel} · день цикла</Text>
+        <Text style={[styles.eyebrow, { color: colors.lime }]}>FitPulse · {todayLabel} · {profileSex === 'female' ? 'жен' : 'муж'} · день цикла</Text>
         <View style={styles.titleRow}>
           <Text style={[styles.title, { color: colors.paper }]}>Тренировка</Text>
           <TouchableOpacity
@@ -417,7 +418,7 @@ export default function WorkoutScreen() {
           </Text>
         </View>
 
-        {overrideIds && overrideIds.length > 0 && (
+        {overrideIds != null && overrideIds.length > 0 && (
           <TouchableOpacity
             style={[styles.resetOverride, { borderColor: colors.lineStrong }]}
             onPress={() => {
