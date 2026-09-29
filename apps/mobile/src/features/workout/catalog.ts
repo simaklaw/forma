@@ -1,17 +1,25 @@
 import type { ExerciseDef } from './ExerciseSheet';
+import type { Sex } from '@/engines/MetabolicEngine';
 import { WORKOUT_PLAN as HOME_PLAN, type WorkoutDay } from './bodyweightPlan';
 import { GYM_PLAN } from './gymPlan';
+import { planForSex } from './sexPlan';
 
 export type TrainingMode = 'gym' | 'home';
 export type { WorkoutDay };
 
+/** Base catalogs (sex-neutral). Prefer catalogFor(mode, sex) in UI. */
 export const CATALOGS: Record<TrainingMode, WorkoutDay[]> = {
   gym: GYM_PLAN,
   home: HOME_PLAN
 };
 
-export function catalogFor(mode: TrainingMode): WorkoutDay[] {
-  return CATALOGS[mode] ?? GYM_PLAN;
+/**
+ * Plan for training mode + profile sex.
+ * Sex is required after onboarding; when null, male plan is used as fallback only in tests.
+ */
+export function catalogFor(mode: TrainingMode, sex: Sex | null = 'male'): WorkoutDay[] {
+  const resolved: Sex = sex === 'female' ? 'female' : 'male';
+  return planForSex(mode, resolved);
 }
 
 export function isBodyweightExercise(ex: Pick<ExerciseDef, 'workingWeight'>): boolean {
