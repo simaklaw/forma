@@ -57,6 +57,7 @@ describe('runMigrations', () => {
     expect(db.getTables()).toContain('workout_session');
     expect(db.getTables()).toContain('session_event');
     expect(db.getTables()).toContain('outbox');
+    expect(db.getExecuted().some((s) => s.includes('weight_snapshot_kg'))).toBe(true);
   });
 
   it('is idempotent — calling twice does not re-run migrations', () => {
@@ -77,6 +78,7 @@ describe('runMigrations', () => {
     const newSql = db.getExecuted().slice(executedBefore);
     const hasV1Tables = newSql.some((s) => s.includes('CREATE TABLE workout_session'));
     expect(hasV1Tables).toBe(false);
+    expect(newSql.some((s) => s.includes('weight_snapshot_kg'))).toBe(true);
     expect(db.getUserVersion()).toBe(CURRENT_SCHEMA_VERSION);
   });
 
@@ -86,6 +88,8 @@ describe('runMigrations', () => {
     runMigrations(db);
     expect(db.getUserVersion()).toBe(CURRENT_SCHEMA_VERSION);
     expect(db.getExecuted().some((s) => s.includes('CREATE TABLE workout_session'))).toBe(false);
+    // After stamp to v1, v2 ALTER still runs.
+    expect(db.getExecuted().some((s) => s.includes('weight_snapshot_kg'))).toBe(true);
   });
 
   it('wraps each migration in BEGIN IMMEDIATE / COMMIT', () => {
@@ -93,15 +97,10 @@ describe('runMigrations', () => {
     runMigrations(db);
     const executed = db.getExecuted();
 
-    MIGRATIONS.forEach((m) => {
-      const beginIdx = executed.findIndex(
-        (s, i) => s === 'BEGIN IMMEDIATE' && executed[i + 1]?.includes('CREATE TABLE')
-      );
-      expect(beginIdx).toBeGreaterThanOrEqual(0);
-      expect(m.version).toBeGreaterThan(0);
-    });
-
-    expect(executed).toContain('COMMIT');
+    const beginCount = executed.filter((s) => s === 'BEGIN IMMEDIATE').length;
+    const commitCount = executed.filter((s) => s === 'COMMIT').length;
+    expect(beginCount).toBe(MIGRATIONS.length);
+    expect(commitCount).toBe(MIGRATIONS.length);
   });
 
   it('throws and rolls back if migration SQL is invalid', () => {
