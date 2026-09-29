@@ -72,7 +72,8 @@ export function createApp(
       store: requireUuid ? 'postgres' : 'memory',
       auth: apiToken ? 'bearer' : 'open',
     }),
-  );
+  
+);
 
   if (apiToken) {
     app.use('/api/v1/sync/*', async (c, next) => {
@@ -138,7 +139,8 @@ export function createApp(
           op.aggregate_id,
         ];
         if (ids.some((id) => !UUID_RE.test(id))) {
-          results.push({
+          results.push
+({
             client_operation_id: op.client_operation_id,
             status: 'rejected',
             error_code: 'ids_must_be_uuid',
@@ -195,7 +197,8 @@ export function createApp(
           app_version: stringFrom(opPayload.app_version),
         });
 
-        if (!inserted) {
+        i
+f (!inserted) {
           // Another request for the same operation won the race.
           const raced = await deps.store.get(
             body.user_id,
@@ -257,7 +260,8 @@ export function createApp(
 
   app.get('/api/v1/sync/pull', async (c) => {
     const after = Number(c.req.query('after_change_id') ?? '0');
-    if (!Number.isFinite(after) || after < 0) {
+    if (!Number.isFinite(afte
+r) || after < 0) {
       return c.json({ error: 'invalid_after_change_id' }, 400);
     }
 
@@ -304,13 +308,19 @@ export async function createAppFromEnv(): Promise<ReturnType<typeof createApp>> 
       apiToken,
     });
   }
-  const { createSql, PostgresSyncUnitOfWork } = await import('./postgres.ts');
+  const {
+    createSql,
+    PostgresIdempotencyStore,
+    PostgresChangeFeed,
+    PostgresSyncUnitOfWork,
+  } = await import('./postgres.ts');
+  const { PostgresProjectionService } = await import('./projections.ts');
   const sql = createSql(url);
+  const projections = new PostgresProjectionService(sql);
   return createApp({
-    // Store/feed/projections come from the transactional unit of work;
-    // these top-level instances are only used outside transactions.
-    store: new PostgresSyncUnitOfWork(sql) as unknown as IdempotencyStore,
-    feed: null as unknown as ChangeFeed,
+    store: new PostgresIdempotencyStore(sql),
+    feed: new PostgresChangeFeed(sql),
+    projections,
     uow: new PostgresSyncUnitOfWork(sql),
     requireUuid: true,
     apiToken,
