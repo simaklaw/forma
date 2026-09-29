@@ -57,8 +57,14 @@ export default function NutritionScreen() {
   const burned = complete
     ? estimateWorkoutBurnKcal(setLogs, toDateKey(new Date()), profile.weight)
     : 0;
-  const budget = targets.target + burned;
+  const budget = Math.round(targets.target + burned);
   const remainingKcal = complete ? Math.round(budget - totals.kcal) : 0;
+
+  const headerSubtitle = !complete
+    ? 'Заполните профиль для целей КБЖУ'
+    : remainingKcal >= 0
+      ? `Осталось ${remainingKcal.toLocaleString('ru-RU')} ккал`
+      : `Сверх на ${Math.abs(remainingKcal).toLocaleString('ru-RU')} ккал`;
 
   function openAddFood(mealKey: keyof DayMeals) {
     setActiveMeal(mealKey);
@@ -72,7 +78,7 @@ export default function NutritionScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScreenHeader eyebrow="Сегодня" title="Питание" />
+      <ScreenHeader eyebrow="Сегодня" title="Питание" subtitle={headerSubtitle} />
 
       <ScrollView contentContainerStyle={styles.body}>
         {!complete ? (
@@ -109,19 +115,28 @@ export default function NutritionScreen() {
               color={colors.macroCarb}
             />
             {complete ? (
-              <>
-                <Text style={styles.remainHint}>
-                  {remainingKcal >= 0
-                    ? `Осталось ${remainingKcal.toLocaleString('ru-RU')} ккал`
-                    : `Сверх на ${Math.abs(remainingKcal).toLocaleString('ru-RU')} ккал`}
-                </Text>
-                <Text style={styles.budgetHint}>
-                  Цель {targets.target.toLocaleString('ru-RU')}
-                  {burned > 0
-                    ? ` + тренировка ${burned.toLocaleString('ru-RU')} = ${budget.toLocaleString('ru-RU')}`
-                    : ''}
-                </Text>
-              </>
+              <View style={styles.budgetRow}>
+                <View style={styles.budgetChip}>
+                  <Text style={styles.budgetChipLabel}>Цель</Text>
+                  <Text style={styles.budgetChipVal}>
+                    {targets.target.toLocaleString('ru-RU')}
+                  </Text>
+                </View>
+                {burned > 0 ? (
+                  <View style={[styles.budgetChip, styles.budgetChipBurn]}>
+                    <Text style={styles.budgetChipLabelBurn}>Тренировка</Text>
+                    <Text style={styles.budgetChipValBurn}>
+                      +{burned.toLocaleString('ru-RU')}
+                    </Text>
+                  </View>
+                ) : null}
+                <View style={[styles.budgetChip, styles.budgetChipTotal]}>
+                  <Text style={styles.budgetChipLabel}>Бюджет</Text>
+                  <Text style={styles.budgetChipValLime}>
+                    {budget.toLocaleString('ru-RU')}
+                  </Text>
+                </View>
+              </View>
             ) : (
               <Text style={styles.remainHint}>Цели появятся после профиля</Text>
             )}
@@ -221,7 +236,7 @@ function createStyles(colors: ColorTokens) {
     heroCard: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 16,
+      gap: 14,
       marginHorizontal: spacing.xl,
       marginTop: spacing.lg,
       padding: spacing.lg,
@@ -230,19 +245,64 @@ function createStyles(colors: ColorTokens) {
       borderWidth: 1,
       borderColor: colors.line
     },
-    macroCol: { flex: 1 },
+    macroCol: { flex: 1, minWidth: 0 },
     remainHint: {
-      marginTop: 2,
+      marginTop: 4,
       color: colors.paperFaint,
       fontFamily: fonts.mono,
       fontSize: 11
     },
-    budgetHint: {
-      marginTop: 2,
-      color: colors.paperDim,
+    budgetRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+      marginTop: 4
+    },
+    budgetChip: {
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: radius.control,
+      backgroundColor: colors.ink,
+      borderWidth: 1,
+      borderColor: colors.lineStrong
+    },
+    budgetChipBurn: {
+      borderColor: colors.cyan,
+      backgroundColor: 'rgba(45,212,191,0.08)'
+    },
+    budgetChipTotal: {
+      borderColor: colors.lime,
+      backgroundColor: colors.limeDim
+    },
+    budgetChipLabel: {
+      color: colors.paperFaint,
+      fontSize: 9,
       fontFamily: fonts.body,
-      fontSize: 10,
-      lineHeight: 14
+      letterSpacing: 0.3
+    },
+    budgetChipLabelBurn: {
+      color: colors.cyan,
+      fontSize: 9,
+      fontFamily: fonts.body,
+      letterSpacing: 0.3
+    },
+    budgetChipVal: {
+      color: colors.paperDim,
+      fontFamily: fonts.mono,
+      fontSize: 12,
+      marginTop: 1
+    },
+    budgetChipValBurn: {
+      color: colors.cyan,
+      fontFamily: fonts.mono,
+      fontSize: 12,
+      marginTop: 1
+    },
+    budgetChipValLime: {
+      color: colors.lime,
+      fontFamily: fonts.mono,
+      fontSize: 12,
+      marginTop: 1
     },
     waterCard: {
       marginHorizontal: spacing.xl,
