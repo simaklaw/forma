@@ -5,10 +5,12 @@
  * - PostgresProjectionService: upserts engagement.activity_credit.
  * - exercise_record needs workout.session + catalog.exercise_revision rows;
  *   deferred until server-side session materialization lands.
+ *
+ * Note: avoid TS parameter properties — node --experimental-strip-types
+ * does not support them.
  */
 
 import { randomUUID } from 'node:crypto';
-import type { Sql } from './postgres.ts';
 
 export type ProjectionInput = {
   user_id: string;
@@ -20,6 +22,11 @@ export type ProjectionInput = {
 export interface ProjectionService {
   onAccepted(input: ProjectionInput): Promise<void>;
 }
+
+/** Minimal sql tag surface used by PostgresProjectionService (avoids importing postgres.ts at load). */
+type SqlTag = {
+  (strings: TemplateStringsArray, ...values: unknown[]): Promise<unknown>;
+};
 
 /** Bump when credit policy rules change (unique with source entity). */
 export const ACTIVITY_CREDIT_POLICY_VERSION = 1;
@@ -193,7 +200,11 @@ export class MemoryProjectionService implements ProjectionService {
  * Idempotent via UNIQUE (source_domain, source_entity_id, policy_version).
  */
 export class PostgresProjectionService implements ProjectionService {
-  constructor(private readonly sql: Sql) {}
+  private readonly sql: SqlTag;
+
+  constructor(sql: SqlTag) {
+    this.sql = sql;
+  }
 
   async onAccepted(input: ProjectionInput): Promise<void> {
     if (!shouldGrantActivityCredit(input)) return;
