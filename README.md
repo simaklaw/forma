@@ -16,6 +16,17 @@ pnpm --filter @forma/mobile start
 # pnpm --filter @forma/api test
 ```
 
+## Работа без компьютера (GitHub Codespaces)
+
+Всё, что нужно для разработки, доступно из браузера телефона:
+
+1. Репозиторий → **Code** → **Codespaces** → create. devcontainer уже настроен (порты 8787 API и 8081 Expo проброшены).
+2. В браузерном терминале работают все pnpm-команды из этого README.
+3. Быстрая проверка всего стека синка: **Actions** → **Verify sync setup (E2E)** → **Run workflow**. Workflow сам поднимает Postgres, применяет миграции, генерирует токен и проверяет API настоящими HTTP-запросами. Итог — в Summary прогона; при падении диагностика публикуется в ветку `ci-logs`.
+4. Мобильное приложение: Expo Go на телефоне, подключённое к URL Codespace.
+
+Бесплатный лимит Codespaces: 120 core-часов/мес.
+
 ## Ядро @forma/core
 
 - MetabolicEngine, WorkoutStats, MET
@@ -34,12 +45,15 @@ GGUF не в репозитории; URL — `EXPO_PUBLIC_LLAMA_MODEL_URL`.
 ## Sync (P1)
 
 ```bash
-docker compose up -d
-psql postgresql://fitpulse:fitpulse@localhost:5432/fitpulse -f packages/db/migrations/001_init.sql
-psql postgresql://fitpulse:fitpulse@localhost:5432/fitpulse -f packages/db/migrations/002_rls_basic.sql
-export DATABASE_URL=postgresql://fitpulse:fitpulse@localhost:5432/fitpulse
-# mobile: EXPO_PUBLIC_SYNC_API_URL=http://10.0.2.2:8787
+pnpm db:up        # docker compose: Postgres 16
+pnpm db:migrate   # миграции 001–004
+pnpm sync:setup   # генерирует SYNC_API_TOKEN в apps/api/.env и EXPO_PUBLIC_SYNC_API_TOKEN в apps/mobile/.env
+pnpm api:dev      # API на :8787 с bearer-авторизацией
 ```
+
+Миграции: 001_init → 002_rls_basic → 003_rls_strict (строгий RLS + FORCE) → 004_device_platform_unknown.
+
+Клиент отправляет `Authorization: Bearer $EXPO_PUBLIC_SYNC_API_TOKEN`; без токена API отвечает 401.
 
 ## Branding
 
