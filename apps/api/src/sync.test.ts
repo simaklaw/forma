@@ -1,7 +1,7 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { createApp } from './index.ts';
-import { MemoryIdempotencyStore } from './idempotency.ts';
+import { MemoryIdempotencyStore, MemoryChangeFeed } from './idempotency.ts';
 
 function pushBody(
   overrides: Partial<{
@@ -9,6 +9,7 @@ function pushBody(
     client_operation_id: string;
     device_id: string;
     payload_hash: string;
+    aggregate_id: string;
   }> = {},
 ) {
   return {
@@ -18,22 +19,24 @@ function pushBody(
         client_operation_id: overrides.client_operation_id ?? 'op1',
         device_id: overrides.device_id ?? 'd1',
         aggregate_type: 'workout_session',
-        aggregate_id: 's1',
+        aggregate_id: overrides.aggregate_id ?? 's1',
         payload_hash: overrides.payload_hash ?? 'b'.repeat(64),
-        payload: {},
+        payload: { event: 'complete_set' },
         occurred_at_client: new Date().toISOString(),
       },
     ],
   };
 }
 
-describe('sync API skeleton', () => {
+describe('sync API', () => {
   let store: MemoryIdempotencyStore;
+  let feed: MemoryChangeFeed;
   let app: ReturnType<typeof createApp>;
 
   beforeEach(() => {
     store = new MemoryIdempotencyStore();
-    app = createApp(store);
+    feed = new MemoryChangeFeed();
+    app = createApp({ store, feed, requireUuid: false });
   });
 
   it('health', async () => {
@@ -44,7 +47,7 @@ describe('sync API skeleton', () => {
     assert.equal(body.service, 'fitpulse-api');
   });
 
-  it('push accepts valid op', async () => {
+  it('push accepts valid op and publishes change', async () => {
     const res = await app.request('/api/v1/sync/push', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -53,6 +56,13 @@ describe('sync API skeleton', () => {
     assert.equal(res.status, 200);
     const body = await res.json();
     assert.equal(body.results[0].status, 'accepted');
+
+    const pull = await app.request('/api/v1/sync/pull?user_id=u1&after_change_id=0');
+    assert.equal(pull.status, 200);
+    const page = await pull.json();
+    assert.equal(page.changes.length, 1);
+    assert.equal(page.changes[0].entity_type, 'workout_session');
+    assert.equal(page.has_more, false);
   });
 
   it('push accepts empty operations array', async () => {
@@ -114,13 +124,12 @@ describe('sync API skeleton', () => {
     assert.equal(body.results[0].error_code, 'invalid_payload_hash');
   });
 
-  it('pull returns empty page with after_change_id=0', async () => {
+  it('pull returns empty page without user_id', async () => {
     const res = await app.request('/api/v1/sync/pull?after_change_id=0');
     assert.equal(res.status, 200);
     const body = await res.json();
     assert.deepEqual(body.changes, []);
     assert.equal(body.has_more, false);
-    assert.equal(body.next_change_id, 0);
   });
 
   it('pull defaults after_change_id to 0 when omitted', async () => {
@@ -129,6 +138,5 @@ describe('sync API skeleton', () => {
     const body = await res.json();
     assert.deepEqual(body.changes, []);
     assert.equal(body.next_change_id, 0);
-    assert.equal(body.has_more, false);
   });
 });

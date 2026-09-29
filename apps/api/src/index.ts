@@ -2,23 +2,44 @@ import { Hono } from 'hono';
 import type {
   SyncPushRequest,
   SyncPushResponse,
-  SyncPullResponse,
   SyncPushOperationResult,
 } from '@forma/sync-contract';
+import type { IdempotencyStore, ChangeFeed } from './store.ts';
 import {
   defaultIdempotencyStore,
-  type MemoryIdempotencyStore,
+  defaultChangeFeed,
 } from './idempotency.ts';
 
-export function createApp(store: MemoryIdempotencyStore = defaultIdempotencyStore) {
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export interface AppDeps {
+  store: IdempotencyStore;
+  feed: ChangeFeed;
+  /** When true, user_id / device_id / client_operation_id / aggregate_id must be UUID. */
+  requireUuid?: boolean;
+}
+
+export function createApp(
+  deps: AppDeps = {
+    store: defaultIdempotencyStore,
+    feed: defaultChangeFeed,
+  },
+) {
+  const { store, feed, requireUuid = false } = deps;
   const app = new Hono();
 
-  app.get('/health', (c) => c.json({ ok: true, service: 'fitpulse-api' }));
+  app.get('/health', (c) =>
+    c.json({
+      ok: true,
+      service: 'fitpulse-api',
+      store: requireUuid ? 'postgres' : 'memory',
+    }),
+  );
 
   /**
    * POST /api/v1/sync/push
    * Idempotent batch from client Transactional Outbox.
-   * In-memory store until platform.client_operation is wired.
    */
   app.post('/api/v1/sync/push', async (c) => {
     let body: SyncPushRequest;
@@ -32,93 +53,166 @@ export function createApp(store: MemoryIdempotencyStore = defaultIdempotencyStor
       return c.json({ error: 'invalid_body' }, 400);
     }
 
-    const results: SyncPushOperationResult[] = body.operations.map((op) => {
+    if (requireUuid && !UUID_RE.test(body.user_id)) {
+      return c.json({ error: 'user_id_must_be_uuid' }, 400);
+    }
+
+    const results: SyncPushOperationResult[] = [];
+
+    for (const op of body.operations) {
       if (!op.client_operation_id || !op.payload_hash || !op.device_id) {
-        return {
+        results.push({
           client_operation_id: op.client_operation_id ?? '',
-          status: 'rejected' as const,
+          status: 'rejected',
           error_code: 'missing_fields',
           error_message:
             'client_operation_id, device_id and payload_hash required',
-        };
+        });
+        continue;
       }
 
       if (op.payload_hash.length !== 64) {
-        return {
+        results.push({
           client_operation_id: op.client_operation_id,
-          status: 'rejected' as const,
+          status: 'rejected',
           error_code: 'invalid_payload_hash',
           error_message: 'payload_hash must be 64-char hex SHA-256',
-        };
+        });
+        continue;
       }
 
-      const existing = store.get(
+      if (requireUuid) {
+        const ids = [
+          op.client_operation_id,
+          op.device_id,
+          op.aggregate_id,
+        ];
+        if (ids.some((id) => !UUID_RE.test(id))) {
+          results.push({
+            client_operation_id: op.client_operation_id,
+            status: 'rejected',
+            error_code: 'ids_must_be_uuid',
+            error_message:
+              'client_operation_id, device_id, aggregate_id must be UUID',
+          });
+          continue;
+        }
+      }
+
+      const existing = await store.get(
         body.user_id,
         op.device_id,
         op.client_operation_id,
       );
       if (existing) {
         if (existing.payload_hash !== op.payload_hash) {
-          return {
+          results.push({
             client_operation_id: op.client_operation_id,
-            status: 'rejected' as const,
+            status: 'rejected',
             error_code: 'payload_hash_mismatch',
             error_message:
               'same client_operation_id with different payload_hash',
-          };
+          });
+          continue;
         }
-        return {
+        results.push({
           client_operation_id: op.client_operation_id,
-          status: 'duplicate' as const,
+          status: 'duplicate',
           result_body: existing.result_body,
-        };
+        });
+        continue;
       }
 
       const resultBody = {
-        stub: true,
         aggregate_type: op.aggregate_type,
         aggregate_id: op.aggregate_id,
       };
-      store.put({
+
+      await store.put({
         client_operation_id: op.client_operation_id,
         user_id: body.user_id,
         device_id: op.device_id,
+        aggregate_type: op.aggregate_type,
+        aggregate_id: op.aggregate_id,
         payload_hash: op.payload_hash,
         status: 'accepted',
         result_body: resultBody,
       });
 
-      return {
+      // Publish change so other devices can pull.
+      await feed.append({
+        user_id: body.user_id,
+        entity_type: op.aggregate_type,
+        entity_id: op.aggregate_id,
+        entity_version: 1,
+        mutation: 'upsert',
+        payload: op.payload ?? resultBody,
+      });
+
+      results.push({
         client_operation_id: op.client_operation_id,
-        status: 'accepted' as const,
+        status: 'accepted',
         result_body: resultBody,
-      };
-    });
+      });
+    }
 
     return c.json({ results } satisfies SyncPushResponse);
   });
 
   /**
-   * GET /api/v1/sync/pull?after_change_id=N
-   * Monotonic change feed from platform.sync_change.
-   * Skeleton: empty page until DB is wired.
+   * GET /api/v1/sync/pull?after_change_id=N&user_id=UUID&limit=100
    */
-  app.get('/api/v1/sync/pull', (c) => {
+  app.get('/api/v1/sync/pull', async (c) => {
     const after = Number(c.req.query('after_change_id') ?? '0');
     if (!Number.isFinite(after) || after < 0) {
       return c.json({ error: 'invalid_after_change_id' }, 400);
     }
 
-    const res: SyncPullResponse = {
-      changes: [],
-      next_change_id: after,
-      has_more: false,
-    };
-    return c.json(res);
+    const userId = c.req.query('user_id') ?? '';
+    if (!userId) {
+      // Empty feed when no user (skeleton-compatible).
+      return c.json({
+        changes: [],
+        next_change_id: after,
+        has_more: false,
+      });
+    }
+
+    if (requireUuid && !UUID_RE.test(userId)) {
+      return c.json({ error: 'user_id_must_be_uuid' }, 400);
+    }
+
+    const limit = Math.min(
+      Math.max(Number(c.req.query('limit') ?? '100') || 100, 1),
+      500,
+    );
+
+    const page = await feed.listAfter(userId, after, limit);
+    return c.json(page);
   });
 
   return app;
 }
 
-/** Default app instance (shared in-memory store) for tests and local run. */
+/** Default app (memory) for tests. */
 export const app = createApp();
+
+/** Build app from env: DATABASE_URL → Postgres stores. */
+export async function createAppFromEnv(): Promise<ReturnType<typeof createApp>> {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    return createApp({
+      store: defaultIdempotencyStore,
+      feed: defaultChangeFeed,
+      requireUuid: false,
+    });
+  }
+  const { createSql, PostgresIdempotencyStore, PostgresChangeFeed } =
+    await import('./postgres.ts');
+  const sql = createSql(url);
+  return createApp({
+    store: new PostgresIdempotencyStore(sql),
+    feed: new PostgresChangeFeed(sql),
+    requireUuid: true,
+  });
+}
