@@ -173,7 +173,7 @@ jobs:
           workspace:
           $(ls -la)
           EOF
-          git add ci-logs
+          git add -f ci-logs
           git commit -m "ci: diagnostics from run ${{ github.run_id }}"
           git push --force origin ci-logs
           echo "publish done"
