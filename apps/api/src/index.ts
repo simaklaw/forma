@@ -205,7 +205,7 @@ export function createApp(
             client_operation_id: op.client_operation_id,
             status: 'duplicate',
             result_body: {},
-          };
+          } satisfies SyncPushOperationResult;
         }
 
         await deps.feed.append({
