@@ -118,6 +118,12 @@ class ActiveSessionControllerImpl {
     return session;
   }
 
+  private clearBinding(): void {
+    this.sessionId = null;
+    this.dayId = null;
+    this.emit();
+  }
+
   private async abandonIfDifferentDay(nextDayId: string): Promise<WorkoutSession | null> {
     const svc = getSessionService();
     const previous = await svc.getResumable(LOCAL_USER_ID);
@@ -215,9 +221,77 @@ class ActiveSessionControllerImpl {
       clearDayReadModel(dateKeyToClear);
     }
 
-    this.sessionId = null;
-    this.dayId = null;
+    this.clearBinding();
     return this.ensureDaySession(dayId, exercises);
+  }
+
+  /** P0 Early Leave — pause active session (keeps resumable). */
+  async pauseSession(): Promise<WorkoutSession | null> {
+    if (!this.sessionId) return null;
+    try {
+      const result = await getSessionService().dispatch(this.sessionId, { type: 'pause_session' });
+      this.emit();
+      return result.session;
+    } catch (err) {
+      log.debug('pauseSession ignored', {
+        err: err instanceof Error ? err.message : String(err)
+      });
+      return null;
+    }
+  }
+
+  /** Resume paused session. */
+  async resumeSession(): Promise<WorkoutSession | null> {
+    if (!this.sessionId) return null;
+    try {
+      const result = await getSessionService().dispatch(this.sessionId, { type: 'resume_session' });
+      this.emit();
+      return result.session;
+    } catch (err) {
+      log.debug('resumeSession ignored', {
+        err: err instanceof Error ? err.message : String(err)
+      });
+      return null;
+    }
+  }
+
+  /** Save done volume and complete as partial (Early Leave «Сохранить прогресс»). */
+  async finishPartialSession(): Promise<WorkoutSession | null> {
+    if (!this.sessionId) return null;
+    try {
+      const result = await getSessionService().dispatch(this.sessionId, {
+        type: 'complete_session',
+        reason: 'user_finished_partial'
+      });
+      log.info('finished partial session', { sessionId: this.sessionId });
+      scheduleHealthExport(result.session, this.dayId);
+      this.clearBinding();
+      return result.session;
+    } catch (err) {
+      log.debug('finishPartialSession ignored', {
+        err: err instanceof Error ? err.message : String(err)
+      });
+      return null;
+    }
+  }
+
+  /** Abandon session without completing (Early Leave «Отменить сессию»). */
+  async leaveSession(): Promise<WorkoutSession | null> {
+    if (!this.sessionId) return null;
+    try {
+      const result = await getSessionService().dispatch(this.sessionId, {
+        type: 'abandon_session',
+        reason: 'user_left'
+      });
+      log.info('left session', { sessionId: this.sessionId });
+      this.clearBinding();
+      return result.session;
+    } catch (err) {
+      log.debug('leaveSession ignored', {
+        err: err instanceof Error ? err.message : String(err)
+      });
+      return null;
+    }
   }
 
   async recordSetForExercise(input: {
@@ -283,7 +357,7 @@ class ActiveSessionControllerImpl {
 
     scheduleHealthExport(completed.session, this.dayId);
 
-    this.emit();
+    this.clearBinding();
   }
 
   async getLegacyProjection(sessionId: string) {
