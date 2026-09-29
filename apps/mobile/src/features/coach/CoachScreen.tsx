@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -30,7 +31,7 @@ const CHIPS = [
   'Восстановление',
   'Сон и восстановление',
   'Вода сегодня'
-];
+] as const;
 
 function toDomainProfile(profile: {
   sex: Sex | null;
@@ -215,20 +216,31 @@ export default function CoachScreen() {
           subtitle={`${status}${proteinLine ? ` · ${proteinLine}` : ''}`}
           right={clearBtn}
         />
-        <Text style={styles.workoutLine}>{workoutLine}</Text>
+        <Text style={styles.workoutLine} accessibilityRole="text">
+          {workoutLine}
+        </Text>
 
-        <View style={styles.chips}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chips}
+          accessibilityRole="list"
+          accessibilityLabel="Быстрые вопросы тренеру"
+        >
           {CHIPS.map((c) => (
             <Pressable
               key={c}
               disabled={busy}
               onPress={() => void send(c)}
               style={[styles.chip, busy && styles.chipDisabled]}
+              accessibilityRole="button"
+              accessibilityLabel={c}
+              accessibilityState={{ disabled: busy }}
             >
               <Text style={styles.chipText}>{c}</Text>
             </Pressable>
           ))}
-        </View>
+        </ScrollView>
 
         <FlatList
           ref={listRef}
@@ -246,6 +258,10 @@ export default function CoachScreen() {
                 styles.bubble,
                 item.role === 'user' ? styles.userBubble : styles.coachBubble
               ]}
+              accessibilityRole="text"
+              accessibilityLabel={
+                item.role === 'user' ? `Вы: ${item.text}` : `Тренер: ${item.text}`
+              }
             >
               <Text style={item.role === 'user' ? styles.userBubbleText : styles.bubbleText}>
                 {item.text}
@@ -265,11 +281,15 @@ export default function CoachScreen() {
             editable={!busy}
             onSubmitEditing={() => void send()}
             returnKeyType="send"
+            accessibilityLabel="Сообщение тренеру"
           />
           <Pressable
             onPress={() => void send()}
             disabled={busy || !input.trim()}
             style={[styles.send, (busy || !input.trim()) && styles.sendDisabled]}
+            accessibilityRole="button"
+            accessibilityLabel="Отправить"
+            accessibilityState={{ disabled: busy || !input.trim() }}
           >
             <Text style={styles.sendText}>Отправить</Text>
           </Pressable>
@@ -301,11 +321,10 @@ function createStyles(colors: ColorTokens) {
     clear: { color: colors.paperDim, fontSize: 12, fontFamily: fonts.bodySemi },
     chips: {
       flexDirection: 'row',
-      flexWrap: 'wrap',
       gap: spacing.sm,
       paddingHorizontal: spacing.xl,
       paddingTop: spacing.md,
-      marginBottom: spacing.sm
+      paddingBottom: spacing.sm
     },
     chip: {
       borderWidth: 1,

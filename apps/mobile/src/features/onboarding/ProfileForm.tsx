@@ -48,14 +48,15 @@ export function ProfileForm({ initial, submitLabel, onSubmit }: Props) {
 
   return (
     <View style={styles.wrap}>
-      <View style={styles.sexRow}>
+      <View style={styles.sexRow} accessibilityRole="radiogroup" accessibilityLabel="Пол">
         {(['male', 'female'] as const).map((g) => (
           <TouchableOpacity
             key={g}
             style={[styles.sexBtn, sex === g && styles.sexBtnOn]}
             onPress={() => setSex(g)}
-            accessibilityRole="button"
+            accessibilityRole="radio"
             accessibilityState={{ selected: sex === g }}
+            accessibilityLabel={g === 'male' ? 'Мужской' : 'Женский'}
           >
             <Text style={[styles.sexText, sex === g && styles.sexTextOn]}>
               {g === 'male' ? 'Мужской' : 'Женский'}
@@ -63,14 +64,34 @@ export function ProfileForm({ initial, submitLabel, onSubmit }: Props) {
           </TouchableOpacity>
         ))}
       </View>
-      <Field label="Вес, кг" value={weight} onChange={setWeight} placeholder="например 78" />
-      <Field label="Рост, см" value={height} onChange={setHeight} placeholder="например 178" />
-      <Field label="Возраст (13–120)" value={age} onChange={setAge} placeholder="например 28" />
+      <Field
+        label="Вес, кг"
+        value={weight}
+        onChange={setWeight}
+        placeholder="например 78"
+        a11yLabel="Вес в килограммах"
+      />
+      <Field
+        label="Рост, см"
+        value={height}
+        onChange={setHeight}
+        placeholder="например 178"
+        a11yLabel="Рост в сантиметрах"
+      />
+      <Field
+        label="Возраст (13–120)"
+        value={age}
+        onChange={setAge}
+        placeholder="например 28"
+        a11yLabel="Возраст от 13 до 120"
+      />
       <TouchableOpacity
         style={[styles.cta, !ready && styles.ctaDisabled]}
         disabled={!ready}
         onPress={() => ready && onSubmit(draft)}
         accessibilityRole="button"
+        accessibilityLabel={submitLabel}
+        accessibilityState={{ disabled: !ready }}
       >
         <Text style={styles.ctaText}>{submitLabel}</Text>
       </TouchableOpacity>
@@ -82,12 +103,14 @@ function Field({
   label,
   value,
   onChange,
-  placeholder
+  placeholder,
+  a11yLabel
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
+  a11yLabel: string;
 }) {
   const colors = useThemeColors();
   const styles = createStyles(colors);
@@ -101,6 +124,7 @@ function Field({
         placeholder={placeholder}
         placeholderTextColor={colors.paperFaint}
         keyboardType="numeric"
+        accessibilityLabel={a11yLabel}
       />
     </View>
   );
@@ -108,47 +132,47 @@ function Field({
 
 function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
-  wrap: { gap: spacing.md },
-  sexRow: { flexDirection: 'row', gap: spacing.sm },
-  sexBtn: {
-    flex: 1,
-    height: 44,
-    borderRadius: radius.control,
-    borderWidth: 1,
-    borderColor: colors.lineStrong,
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  sexBtnOn: { borderColor: colors.lime, backgroundColor: colors.limeDim },
-  sexText: { color: colors.paperDim, fontFamily: fonts.bodySemi, fontSize: 14 },
-  sexTextOn: { color: colors.lime },
-  field: { gap: 6 },
-  label: {
-    color: colors.paperFaint,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6
-  },
-  input: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: colors.lineStrong,
-    borderRadius: radius.control,
-    backgroundColor: colors.panelRaised,
-    color: colors.paper,
-    paddingHorizontal: 12,
-    fontFamily: fonts.mono,
-    fontSize: 20
-  },
-  cta: {
-    marginTop: spacing.sm,
-    height: 52,
-    borderRadius: radius.control,
-    backgroundColor: colors.lime,
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  ctaDisabled: { opacity: 0.4 },
-  ctaText: { color: colors.ink, fontFamily: fonts.mono, fontSize: 18 }
+    wrap: { gap: spacing.md },
+    sexRow: { flexDirection: 'row', gap: spacing.sm },
+    sexBtn: {
+      flex: 1,
+      height: 44,
+      borderRadius: radius.control,
+      borderWidth: 1,
+      borderColor: colors.lineStrong,
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    sexBtnOn: { borderColor: colors.lime, backgroundColor: colors.limeDim },
+    sexText: { color: colors.paperDim, fontFamily: fonts.bodySemi, fontSize: 14 },
+    sexTextOn: { color: colors.lime },
+    field: { gap: 6 },
+    label: {
+      color: colors.paperFaint,
+      fontSize: 11,
+      textTransform: 'uppercase',
+      letterSpacing: 0.6
+    },
+    input: {
+      height: 48,
+      borderWidth: 1,
+      borderColor: colors.lineStrong,
+      borderRadius: radius.control,
+      backgroundColor: colors.panelRaised,
+      color: colors.paper,
+      paddingHorizontal: 12,
+      fontFamily: fonts.mono,
+      fontSize: 20
+    },
+    cta: {
+      marginTop: spacing.sm,
+      height: 52,
+      borderRadius: radius.control,
+      backgroundColor: colors.lime,
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    ctaDisabled: { opacity: 0.4 },
+    ctaText: { color: colors.ink, fontFamily: fonts.mono, fontSize: 18 }
   });
 }
