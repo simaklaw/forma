@@ -28,7 +28,8 @@
         "android.permission.VIBRATE",
         "android.permission.health.READ_STEPS",
         "android.permission.health.WRITE_EXERCISE",
-        "android.permission.health.WRITE_ACTIVE_CALORIES_BURNED"
+        "android.permission.health.WRITE_ACTIVE_CALORIES_BURNED",
+        "android.permission.health.WRITE_WEIGHT"
       ]
     },
     "plugins": [
