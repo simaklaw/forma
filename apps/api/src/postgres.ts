@@ -13,6 +13,14 @@ import type { SyncChange } from '@forma/sync-contract';
 
 export type Sql = ReturnType<typeof postgres>;
 
+/**
+ * Sql or transaction client. postgres.js TransactionSql is intentionally
+ * NOT assignable to Sql in its own typings, so transaction-scoped stores
+ * accept this looser structural type instead.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type DbClient = any;
+
 export function createSql(connectionString: string): Sql {
   return postgres(connectionString, {
     max: 10,
@@ -21,12 +29,12 @@ export function createSql(connectionString: string): Sql {
   });
 }
 
-function asJson(sql: Sql, value: Record<string, unknown>) {
+function asJson(sql: DbClient, value: Record<string, unknown>) {
   return sql.json(value as Parameters<Sql['json']>[0]);
 }
 
 /** Ensure app_user exists (FK for client_operation / sync_change). */
-async function ensureUser(sql: Sql, userId: string): Promise<void> {
+async function ensureUser(sql: DbClient, userId: string): Promise<void> {
   await sql`
     INSERT INTO platform.app_user (user_id, auth_subject)
     VALUES (${userId}::uuid, ${userId})
@@ -41,7 +49,7 @@ async function ensureUser(sql: Sql, userId: string): Promise<void> {
  * never hardcoded to a single OS.
  */
 async function ensureDevice(
-  sql: Sql,
+  sql: DbClient,
   userId: string,
   deviceId: string,
   platform: string = 'unknown',
@@ -64,9 +72,9 @@ async function ensureDevice(
 }
 
 export class PostgresIdempotencyStore implements IdempotencyStore {
-  private readonly sql: Sql;
+  private readonly sql: DbClient;
 
-  constructor(sql: Sql) {
+  constructor(sql: DbClient) {
     this.sql = sql;
   }
 
@@ -156,9 +164,9 @@ export class PostgresIdempotencyStore implements IdempotencyStore {
 }
 
 export class PostgresChangeFeed implements ChangeFeed {
-  private readonly sql: Sql;
+  private readonly sql: DbClient;
 
-  constructor(sql: Sql) {
+  constructor(sql: DbClient) {
     this.sql = sql;
   }
 
@@ -252,7 +260,13 @@ export class PostgresSyncUnitOfWork implements SyncUnitOfWork {
   }
 
   async run<T>(userId: string, fn: (deps: UnitOfWorkDeps) => Promise<T>): Promise<T> {
-    return this.sql.begin(async (tx) => {
+    // postgres.js begin() typings do not propagate our generic cleanly
+    // (UnwrapPromiseArray overload is picked instead) — call it through a
+    // narrow, explicit signature.
+    const begin = this.sql.begin as unknown as (
+      cb: (tx: DbClient) => Promise<T>,
+    ) => Promise<T>;
+    return begin(async (tx) => {
       // true = transaction-local (like SET LOCAL), cleared on commit/rollback
       await tx`SELECT set_config('app.current_user_id', ${userId}, true)`;
       return fn({
