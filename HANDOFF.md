@@ -1,6 +1,6 @@
 # HANDOFF — FitPulse
 
-**Checkpoint:** 2026-09-29 (today CTA + FitPulse copy + projection stub)
+**Checkpoint:** 2026-09-29 (P1.3 projection writers)
 **Brand:** FitPulse in UI/bundle. Packages may use `@forma/*` internally.
 **APK:** do not build until owner says so.
 
@@ -8,16 +8,12 @@
 
 1. P0 offline-first — #75
 2. P1 sync skeleton → Postgres → HttpOutbox → App drain — #76–#79
+3. Today CTA + FitPulse copy + projection stub — #80
+4. Sex-specific plans — #81
 
 ## In flight
 
-- `feat/workout-today-cta-fitpulse` — today's cycle day + Start above the fold; branding; projection stub
-
-## Workout UX
-
-- Tab **Тренировки** is initial route
-- On focus: select `todayPlanDayId` (Mon-based rotation)
-- Ticket with **Начать тренировку** is above the exercise list (no scroll needed)
+- `feat/p1-projection-writers` — Memory + Postgres `activity_credit` on terminal session ops
 
 ## P1 status
 
@@ -26,8 +22,9 @@
 | DDL + RLS SQL | yes |
 | Sync API + Postgres stores | yes |
 | Client outbox + App drain | yes |
-| Projection service (noop stub) | this branch |
-| Real exercise_record / activity_credit writers | not started |
+| Projection service (noop / memory) | yes |
+| `activity_credit` writer (memory + postgres) | this branch |
+| `exercise_record` Postgres upsert | deferred (FK to session/revision) |
 | Auth → RLS GUC | not started |
 
 ## Rules

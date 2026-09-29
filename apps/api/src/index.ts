@@ -213,6 +213,7 @@ export function createApp(
 
 export const app = createApp();
 
+/** Build app from env: DATABASE_URL → Postgres stores + projections. */
 export async function createAppFromEnv(): Promise<ReturnType<typeof createApp>> {
   const url = process.env.DATABASE_URL;
   if (!url) {
@@ -223,13 +224,17 @@ export async function createAppFromEnv(): Promise<ReturnType<typeof createApp>> 
       requireUuid: false,
     });
   }
-  const { createSql, PostgresIdempotencyStore, PostgresChangeFeed } =
-    await import('./postgres.ts');
+  const {
+    createSql,
+    PostgresIdempotencyStore,
+    PostgresChangeFeed,
+  } = await import('./postgres.ts');
+  const { PostgresProjectionService } = await import('./projections.ts');
   const sql = createSql(url);
   return createApp({
     store: new PostgresIdempotencyStore(sql),
     feed: new PostgresChangeFeed(sql),
-    projections: defaultProjectionService,
+    projections: new PostgresProjectionService(sql),
     requireUuid: true,
   });
 }
