@@ -5,21 +5,19 @@
 
 ## On main
 
-1. SQLite migrations v1–v2 + `weight_snapshot_kg` write (#66–#68)
+1. SQLite migrations v1–v2 + weight snapshot (#66–#68)
 2. Home mode, exercise media, coach keywords (#64)
-3. Nutrition ring polish (#69)
-4. Health Connect → Samsung Health (#71)
-5. HC weight on logWeight + updateProfile (#72)
+3. Nutrition ring (#69), Health Connect / Samsung (#71–#72)
+4. Progress screen polish (#73)
 
 ## In flight
 
-- `feat/progress-screen-polish` — Progress subtitle summary, a11y on stats, today bar highlight
+- `feat/coach-onboarding-polish` — horizontal coach chips + a11y; onboarding ScrollView/KAV; ProfileForm labels
 
 ## Next
 
-1. Merge progress polish when CI green
-2. Onboarding / coach chips polish
-3. APK only when owner says so
+1. Merge coach/onboarding polish when CI green
+2. APK only when owner says so
 
 ## Rules
 
