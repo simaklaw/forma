@@ -1,4 +1,4 @@
-# Workout session data layer (P0-C)
+# Workout session data layer (P0-C / P1 sync client)
 
 Offline-first persistence for `@forma/workout-domain`.
 
@@ -12,7 +12,6 @@ UI / player
 ```
 
 Recovery in P0 reads the materialised `aggregate_json` column, not event-log replay.
-Full journal replay is **not** a public API of `@forma/workout-domain` in P0 (see TODO P1).
 
 ## Implementations
 
@@ -21,14 +20,25 @@ Full journal replay is **not** a public API of `@forma/workout-domain` in P0 (se
 | `MemorySessionRepository` | Jest, default bootstrap |
 | `SqliteSessionRepository` | Device / EAS via `expo-sqlite` |
 
-## Testing (honest scope)
+## Outbox → sync API (P1)
 
-| Suite | Engine |
-|-------|--------|
-| `SessionRepository.contract.test.ts` | **Memory only** |
-| `SqliteSessionRepository.txn.test.ts` | **Fake in-memory DB** (records BEGIN/COMMIT; does **not** execute real SQLite DDL) |
+Each accepted event is written to `outbox` with `status=pending`.
 
-**Known gap:** partial unique index and `UNIQUE (session_id, ordinal)` are **not** exercised against a real SQLite / `expo-sqlite` binary in CI. Validate on device or EAS development client. Do not treat the fake-DB test as proof that DDL is valid on-device.
+```ts
+import {
+  OutboxDrainService,
+  createHttpOutboxTransportFromEnv,
+  noopOutboxTransport,
+} from '@/features/workout/data';
+
+const transport =
+  createHttpOutboxTransportFromEnv() ?? noopOutboxTransport;
+const drain = new OutboxDrainService(transport);
+await drain.drainOnce(20);
+```
+
+Set `EXPO_PUBLIC_SYNC_API_URL` (e.g. `http://10.0.2.2:8787` on Android emulator).
+Until auth lands, `local-user` is mapped to a fixed UUID for the API.
 
 ## Bootstrap (native)
 
@@ -45,22 +55,13 @@ configureSessionPersistence(
 );
 ```
 
-`App.tsx` attempts this on iOS/Android. On failure it logs an **explicit warning** and keeps a **non-blocking memory fallback** (not hard fail-fast). Sessions then do not survive process death.
-
-## Outbox
-
-Each accepted event is written to `outbox` with `status=pending` for future P1 sync. No network yet.
-
 ## Legacy read-model projection
 
 Accepted `set_completed` events are projected by `sessionProjections.ts` into the
-legacy Zustand `setLogs` and `dayProgress` shapes used by workout, analytics and
-coach screens. Projection is idempotent by event ID and uses the session's
-`localStartDate` as the local day key. New workout writes go through the durable
-session command first; the legacy store is updated only from the accepted event
-journal. Existing legacy logs remain supported for backwards-compatible reads.
+legacy Zustand `setLogs` / `dayProgress` shapes.
 
-## Not in this layer
+## Not in this layer yet
 
-- Server push/pull
 - Full event-sourced rebuild from journal
+- Auth-bound user_id (still placeholder)
+- Background TaskManager drain schedule
