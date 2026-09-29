@@ -4,6 +4,8 @@ name: Verify sync setup (E2E)
 # Postgres service -> migrations -> token -> API up -> real HTTP checks:
 #   /health reports bearer, push 401 without token, 200 accepted with token,
 #   replay is duplicate, pull returns the change.
+# On any failure, step "Publish logs on failure" commits all captured logs
+# to the ci-logs branch so they can be read without admin access to Actions.
 
 on:
   push:
@@ -14,10 +16,15 @@ concurrency:
   group: verify-sync-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
   verify:
     name: Postgres · Migrations · Token · API E2E
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fitpulse
     services:
       postgres:
         image: postgres:16-alpine
@@ -50,16 +57,32 @@ jobs:
       - name: Install psql client
         run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
 
+      - name: Show psql / postgres versions
+        run: |
+          psql --version
+          psql "$DATABASE_URL" -c "select version();"
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Apply migrations (001 + 002 + strict RLS 003)
+      - name: Migration 001_init
         run: |
-          PSQL="postgresql://postgres:postgres@localhost:5432/fitpulse"
-          psql "$PSQL" -v ON_ERROR_STOP=1 -f packages/db/migrations/001_init.sql
-          psql "$PSQL" -v ON_ERROR_STOP=1 -f packages/db/migrations/002_rls_basic.sql
-          psql "$PSQL" -v ON_ERROR_STOP=1 -f packages/db/migrations/003_rls_strict.sql
-          echo "RLS check:" && psql "$PSQL" -c "select count(*) as strict_tables from pg_tables t join pg_class c on c.relname = t.tablename where c.relrowsecurity and c.relforcerowlevelsecurity and t.schemaname in ('platform','workout','engagement','nutrition');"
+          set -o pipefail
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f packages/db/migrations/001_init.sql 2>&1 | tee migrate_001.log
+
+      - name: Migration 002_rls_basic
+        run: |
+          set -o pipefail
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f packages/db/migrations/002_rls_basic.sql 2>&1 | tee migrate_002.log
+
+      - name: Migration 003_rls_strict
+        run: |
+          set -o pipefail
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f packages/db/migrations/003_rls_strict.sql 2>&1 | tee migrate_003.log
+
+      - name: RLS strict check
+        run: |
+          psql "$DATABASE_URL" -c "select count(*) as strict_tables from pg_tables t join pg_class c on c.relname = t.tablename where c.relrowsecurity and c.relforcerowlevelsecurity and t.schemaname in ('platform','workout','engagement','nutrition');"
 
       - name: Generate sync token (pnpm sync:setup)
         run: |
@@ -120,3 +143,22 @@ jobs:
           CHANGES=$(node -e "console.log(JSON.parse(require('fs').readFileSync('pull.json','utf8')).changes.length)")
           echo "changes=$CHANGES"
           [ "$CHANGES" = "1" ]
+
+      - name: Publish logs on failure
+        if: failure()
+        run: |
+          set -eu
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          git checkout -B ci-logs
+          mkdir -p ci-logs/${{ github.run_id }}
+          cp *.log ci-logs/${{ github.run_id }}/ 2>/dev/null || true
+          cat > ci-logs/${{ github.run_id }}/README.txt <<EOF
+          failed run: ${{ github.run_id }} (attempt ${{ github.run_attempt }})
+          commit: ${{ github.sha }}
+          date: $(date -u +%FT%TZ)
+          EOF
+          git add ci-logs
+          git commit -m "ci: logs from failed run ${{ github.run_id }}"
+          git push origin ci-logs
