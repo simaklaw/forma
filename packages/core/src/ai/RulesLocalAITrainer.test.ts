@@ -64,6 +64,29 @@ describe("RulesLocalAITrainer", () => {
     assert.equal(progress, 1);
     assert.equal(trainer.isLlmReady?.() ?? false, false);
   });
+
+  it("answers a muscle-gain question instead of the generic calorie fallback", async () => {
+    const trainer = new RulesLocalAITrainer();
+    const text = await trainer.generateAdvice(context, "Я худой, как мне накачаться?");
+    assert.match(text, /профицит/i);
+    assert.match(text, /белок/i);
+    assert.match(text, /2 г\/кг/);
+  });
+
+  it("debunks spot reduction for a belly-fat question", async () => {
+    const trainer = new RulesLocalAITrainer();
+    const text = await trainer.generateAdvice(context, "Как убрать живот?");
+    assert.match(text, /миф/i);
+    assert.match(text, /дефицит/i);
+  });
+
+  it("still falls back to the calorie-delta reply for a truly generic message", async () => {
+    const trainer = new RulesLocalAITrainer();
+    const text = await trainer.generateAdvice(context, "как у меня дела сегодня?");
+    assert.match(text, /Цель/);
+    assert.equal(text.includes("профицит"), false);
+    assert.equal(text.includes("миф"), false);
+  });
 });
 
 describe("buildTrainerSystemPrompt", () => {

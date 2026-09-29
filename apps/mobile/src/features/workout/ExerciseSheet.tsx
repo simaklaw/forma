@@ -18,6 +18,7 @@ import { sequentialStepInfo } from './session/sequentialStep';
 import { applySessionProjection } from './data/applySessionProjection';
 import { getSessionService } from './data';
 import { formatLoadLabel, isBodyweightExercise, resolveWorkingLoadKg } from './catalog';
+import { EXERCISE_VIDEOS } from './exerciseMedia';
 
 const beepSource = require('../../../assets/sfx/beep.wav');
 
@@ -33,6 +34,7 @@ export interface ExerciseDef {
   targetMuscles: MuscleKey[];
   note: string;
   wgerSearchTerm?: string;
+  mediaKey?: import('./exerciseMedia').ExerciseMediaKey;
 }
 
 interface Props {
@@ -64,6 +66,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const [rir, setRir] = useState(2);
     const [restRemaining, setRestRemaining] = useState<number | null>(null);
     const [sessionSnap, setSessionSnap] = useState<WorkoutSession | null>(null);
+    const [sheetOpen, setSheetOpen] = useState(true);
 
     const startRestFromDeadline = useCallback((restEndsAtMs: number) => {
       const sec = remainingRestSeconds(restEndsAtMs);
@@ -215,6 +218,10 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
     const ctaDisabled = finished || restRemaining !== null || blockedBySequence;
     const cues = techniqueCuesFromNote(exercise.note);
+    const videoSource =
+      exercise.mediaKey && EXERCISE_VIDEOS[exercise.mediaKey]
+        ? EXERCISE_VIDEOS[exercise.mediaKey]
+        : undefined;
 
     return (
       <AppBottomSheet
@@ -225,6 +232,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
             : `Упражнение ${String(exercise.index).padStart(2, '0')}`
         }
         title={exercise.name}
+        onChange={(index) => setSheetOpen(index >= 0)}
       >
         {seq.isCurrent && !finished && seq.totalSteps > 0 && (
           <View style={styles.currentChip}>
@@ -251,7 +259,12 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           </View>
         )}
 
-        <ExerciseVideo posterUri={reference?.imageUrl} cues={cues} />
+        <ExerciseVideo
+          source={videoSource}
+          posterUri={reference?.imageUrl}
+          cues={cues}
+          shouldPlay={sheetOpen}
+        />
 
         {reference && (
           <View style={styles.refPhotoWrap}>
@@ -503,42 +516,48 @@ function createStyles(colors: ColorTokens) {
     note: {
       marginTop: 10,
       padding: 12,
-      borderLeftWidth: 2,
-      borderColor: colors.cyan,
       borderRadius: radius.control,
-      backgroundColor: 'rgba(45,212,191,0.08)'
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.line
     },
-    noteText: { color: colors.paperDim, fontSize: 11.5, lineHeight: 17, fontFamily: fonts.body },
-    rirLabel: { color: colors.paperFaint, fontSize: 11.5, marginTop: 14, marginBottom: 8 },
-    stepperRow: { flexDirection: 'row', gap: 10 },
+    noteText: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
+    rirLabel: {
+      marginTop: spacing.lg,
+      marginBottom: 8,
+      color: colors.paperFaint,
+      fontSize: 12,
+      fontFamily: fonts.body
+    },
+    stepperRow: { flexDirection: 'row', gap: 12 },
     stepperBlock: {
       flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
       borderWidth: 1,
-      borderColor: colors.lineStrong,
+      borderColor: colors.line,
       borderRadius: radius.control,
-      overflow: 'hidden',
-      backgroundColor: colors.panel
+      backgroundColor: colors.panel,
+      overflow: 'hidden'
     },
     stepperBtn: {
       width: 40,
       height: 44,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: colors.ink
+      backgroundColor: colors.panelRaised
     },
-    stepperBtnText: { color: colors.paper, fontSize: 20, fontFamily: fonts.mono },
-    stepperValueWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },
+    stepperBtnText: { color: colors.lime, fontSize: 20, fontFamily: fonts.mono },
+    stepperValueWrap: { flex: 1, alignItems: 'center' },
     stepperValue: { color: colors.paper, fontSize: 18, fontFamily: fonts.mono },
-    stepperUnit: { color: colors.paperFaint, fontSize: 9.5, marginTop: 1 },
+    stepperUnit: { color: colors.paperFaint, fontSize: 10 },
     rirRow: { flexDirection: 'row', gap: 8 },
     rirBtn: {
       flex: 1,
       height: 40,
-      borderWidth: 1,
-      borderColor: colors.lineStrong,
       borderRadius: radius.control,
+      borderWidth: 1,
+      borderColor: colors.line,
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: colors.panel
@@ -548,64 +567,44 @@ function createStyles(colors: ColorTokens) {
     rirBtnTextActive: { color: colors.lime },
     restTimer: {
       marginTop: spacing.lg,
-      padding: spacing.lg,
-      borderRadius: radius.card,
+      padding: 14,
+      borderRadius: radius.control,
       borderWidth: 1,
-      borderColor: colors.lime,
-      backgroundColor: colors.limeDim,
+      borderColor: colors.line,
+      backgroundColor: colors.panel,
       alignItems: 'center'
     },
-    restLabel: {
-      color: colors.paperDim,
-      fontFamily: fonts.bodySemi,
-      fontSize: 12,
-      letterSpacing: 0.6
-    },
-    restVal: {
-      color: colors.lime,
-      fontFamily: fonts.mono,
-      fontSize: 42,
-      marginTop: 4
-    },
+    restLabel: { color: colors.paperFaint, fontSize: 11, fontFamily: fonts.body },
+    restVal: { color: colors.lime, fontSize: 28, fontFamily: fonts.mono, marginVertical: 6 },
     restBarTrack: {
       width: '100%',
-      height: 6,
-      borderRadius: 3,
-      backgroundColor: colors.lineStrong,
-      marginTop: 12,
-      overflow: 'hidden'
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: colors.line,
+      marginBottom: 8
     },
-    restBarFill: {
-      height: '100%',
-      backgroundColor: colors.lime,
-      borderRadius: 3
-    },
-    restSkip: {
-      color: colors.paperDim,
-      fontFamily: fonts.mono,
-      fontSize: 13,
-      marginTop: 12,
-      textDecorationLine: 'underline'
-    },
-    sets: { marginTop: spacing.lg, gap: 8 },
+    restBarFill: { height: 4, borderRadius: 2, backgroundColor: colors.lime },
+    restSkip: { color: colors.paperDim, fontSize: 12, textDecorationLine: 'underline' },
+    sets: { marginTop: spacing.lg, gap: 6 },
     setRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 10,
       paddingVertical: 8,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: colors.line
+      borderBottomWidth: 1,
+      borderColor: colors.line
     },
-    setNum: { width: 22, color: colors.lime, fontFamily: fonts.mono, fontSize: 14 },
+    setNum: { width: 28, color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 13 },
     setSpec: { flex: 1, color: colors.paper, fontFamily: fonts.body, fontSize: 13 },
-    setDone: { color: colors.lime, fontFamily: fonts.mono, fontSize: 11 },
-    setPending: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 11 },
+    setDone: { color: colors.lime, fontFamily: fonts.mono, fontSize: 12 },
+    setPending: { color: colors.paperFaint, fontFamily: fonts.body, fontSize: 12 },
     cta: {
       marginTop: spacing.lg,
-      backgroundColor: colors.lime,
+      marginBottom: spacing.xl,
+      height: 52,
       borderRadius: radius.control,
-      paddingVertical: 16,
-      alignItems: 'center'
+      backgroundColor: colors.lime,
+      alignItems: 'center',
+      justifyContent: 'center'
     },
     ctaDisabled: { opacity: 0.45 },
     ctaText: { color: colors.ink, fontFamily: fonts.bodySemi, fontSize: 15 }

@@ -17,12 +17,15 @@ import { fonts, radius, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 
 interface Props {
-  source?: { uri: string };
+  /** Remote { uri } or Metro require() asset number. */
+  source?: { uri: string } | number;
   /** Optional still from wger when video is missing. */
   posterUri?: string;
   /** Short technique steps (from plan note). */
   cues?: string[];
   label?: string;
+  /** When false, pause preview playback (e.g. sheet closed). */
+  shouldPlay?: boolean;
 }
 
 function normalizeCues(cues: string[] | undefined): string[] {
@@ -40,7 +43,8 @@ export default function ExerciseVideo({
   source,
   posterUri,
   cues,
-  label = 'ТЕХНИКА ВЫПОЛНЕНИЯ'
+  label = 'ТЕХНИКА ВЫПОЛНЕНИЯ',
+  shouldPlay = true
 }: Props) {
   const colors = useThemeColors();
   const styles = createStyles(colors);
@@ -59,6 +63,15 @@ export default function ExerciseVideo({
     }, 2800);
     return () => clearInterval(id);
   }, [source, steps.length]);
+
+  useEffect(() => {
+    if (!source || !previewRef.current) return;
+    if (shouldPlay) {
+      previewRef.current.playAsync().catch(() => {});
+    } else {
+      previewRef.current.pauseAsync().catch(() => {});
+    }
+  }, [shouldPlay, source]);
 
   function openFullscreen() {
     if (!source) return;
@@ -100,12 +113,12 @@ export default function ExerciseVideo({
         {source ? (
           <Video
             ref={previewRef}
-            source={source}
+            source={source as any}
             style={StyleSheet.absoluteFill}
             resizeMode={ResizeMode.COVER}
             isMuted
             isLooping
-            shouldPlay
+            shouldPlay={shouldPlay}
           />
         ) : posterUri ? (
           <Image
@@ -158,7 +171,7 @@ export default function ExerciseVideo({
             >
               <Video
                 ref={fullscreenRef}
-                source={source}
+                source={source as any}
                 style={StyleSheet.absoluteFill}
                 resizeMode={ResizeMode.CONTAIN}
                 shouldPlay

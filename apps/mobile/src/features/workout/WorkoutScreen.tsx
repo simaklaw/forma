@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -31,8 +31,14 @@ import {
 } from './dayPlanOverrides';
 import { setReplaceTarget } from './replaceTarget';
 import type { TabParamList } from '@/navigation/types';
+import { EXERCISE_THUMBNAILS } from './exerciseMedia';
 
 const WEEKDAY_RU_FULL = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+
+/** Временно скрыт по продуктовому решению — приложение сейчас только про домашние
+ *  тренировки без оборудования. Код переключателя оставлен нетронутым: чтобы
+ *  вернуть — просто верни этот флаг в true, JSX ниже не менялся. */
+const SHOW_GYM_MODE_TOGGLE = false;
 
 function isDayPlanComplete(
   dayProgress: DayProgress,
@@ -268,28 +274,30 @@ export default function WorkoutScreen() {
         </View>
       </View>
 
-      <View style={styles.modeTabs} accessibilityRole="tablist">
-        {(
-          [
-            { id: 'gym' as const, label: 'Зал' },
-            { id: 'home' as const, label: 'Дом' }
-          ] as const
-        ).map((m) => {
-          const active = trainingMode === m.id;
-          return (
-            <TouchableOpacity
-              key={m.id}
-              style={[styles.modeTab, { borderColor: colors.lineStrong, backgroundColor: colors.panel }, active && { borderColor: colors.lime, backgroundColor: colors.limeDim }]}
-              onPress={() => switchMode(m.id)}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: active }}
-              accessibilityLabel={m.label}
-            >
-              <Text style={[styles.modeTabText, { color: colors.paperDim }, active && { color: colors.lime }]}>{m.label}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+      {SHOW_GYM_MODE_TOGGLE && (
+        <View style={styles.modeTabs} accessibilityRole="tablist">
+          {(
+            [
+              { id: 'gym' as const, label: 'Зал' },
+              { id: 'home' as const, label: 'Дом' }
+            ] as const
+          ).map((m) => {
+            const active = trainingMode === m.id;
+            return (
+              <TouchableOpacity
+                key={m.id}
+                style={[styles.modeTab, { borderColor: colors.lineStrong, backgroundColor: colors.panel }, active && { borderColor: colors.lime, backgroundColor: colors.limeDim }]}
+                onPress={() => switchMode(m.id)}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: active }}
+                accessibilityLabel={m.label}
+              >
+                <Text style={[styles.modeTabText, { color: colors.paperDim }, active && { color: colors.lime }]}>{m.label}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
 
       <ScrollView
         horizontal
@@ -544,6 +552,13 @@ export default function WorkoutScreen() {
               }}
               onPress={() => openExercise(ex.id)}
             >
+              {ex.mediaKey && EXERCISE_THUMBNAILS[ex.mediaKey] ? (
+                <Image
+                  source={EXERCISE_THUMBNAILS[ex.mediaKey]}
+                  style={{ width: 48, height: 48, borderRadius: 8, marginRight: 4 }}
+                  resizeMode="cover"
+                />
+              ) : null}
               <Text style={[styles.logIndex, { color: colors.paperFaint }, isCurrentStep && { color: colors.lime }]}>
                 {String(i + 1).padStart(2, '0')}
               </Text>
@@ -561,18 +576,20 @@ export default function WorkoutScreen() {
                     </View>
                   ) : null}
                 </View>
-                <Text style={[styles.logSpec, { color: colors.paperFaint }]}>
-                  {setsDone}/{ex.totalSets} подх. · {formatLoadLabel(ex, safeWeightKg)}
-                  {inProgress ? ' · в работе' : done ? ' · готово' : ''}
+                <Text style={[styles.logSpec, { color: colors.paperDim }]}>
+                  {formatLoadLabel(ex, safeWeightKg)} × {ex.workingReps} · {setsDone}/{ex.totalSets} подходов
+                  {inProgress ? ' · в процессе' : done ? ' · готово' : ''}
                 </Text>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
-                <Text style={[styles.logPr, { color: colors.paper }]}>{exPr !== null ? `${exPr}` : '—'}</Text>
+                <Text style={[styles.logPr, { color: colors.paper }]}>{exPr != null ? `${exPr}` : '—'}</Text>
                 <Text style={[styles.logPrLbl, { color: colors.paperFaint }]}>рекорд</Text>
               </View>
             </TouchableOpacity>
           );
         })}
+
+        <View style={{ height: 120 }} />
       </ScrollView>
 
       <ExerciseSheet
@@ -580,7 +597,9 @@ export default function WorkoutScreen() {
         exercise={selectedExercise}
         dayId={activeDay.id}
         dayExercises={effectiveExercises}
-        onFinished={() => void refreshResumable()}
+        onFinished={() => {
+          void refreshResumable();
+        }}
         onGoToExpected={(id) => openExercise(id)}
       />
     </SafeAreaView>
@@ -589,47 +608,126 @@ export default function WorkoutScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, paddingBottom: spacing.sm, borderBottomWidth: 1 },
-  eyebrow: { fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1 },
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md,
+    borderBottomWidth: 1
+  },
+  eyebrow: { fontFamily: fonts.mono, fontSize: 11, letterSpacing: 1, marginBottom: 4 },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontSize: 30, fontFamily: fonts.mono },
-  catalogButton: { borderWidth: 1, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 7 },
-  catalogButtonText: { fontFamily: fonts.bodySemi, fontSize: 12 },
-  modeTabs: { flexDirection: 'row', gap: 8, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
-  modeTab: { flex: 1, paddingVertical: 12, borderRadius: radius.pill, borderWidth: 1, alignItems: 'center' },
+  title: { fontFamily: fonts.mono, fontSize: 28 },
+  catalogButton: {
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingHorizontal: 14,
+    paddingVertical: 8
+  },
+  catalogButtonText: { fontFamily: fonts.bodySemi, fontSize: 13 },
+  modeTabs: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm
+  },
+  modeTab: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    paddingVertical: 10
+  },
   modeTabText: { fontFamily: fonts.bodySemi, fontSize: 14 },
-  dayTabs: { paddingHorizontal: spacing.lg, gap: 8, paddingBottom: spacing.sm },
-  dayTab: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: radius.pill, borderWidth: 1, minWidth: 72, alignItems: 'center' },
-  dayTabText: { fontFamily: fonts.bodySemi, fontSize: 12 },
-  body: { paddingHorizontal: spacing.lg, paddingBottom: 120 },
-  ticket: { borderRadius: radius.card, borderWidth: 1, marginTop: spacing.sm, overflow: 'hidden' },
-  ticketMain: { flexDirection: 'row', padding: spacing.lg },
-  ticketLabel: { fontSize: 11, fontFamily: fonts.bodySemi, marginBottom: 4 },
-  ticketName: { fontSize: 18, fontFamily: fonts.bodySemi, marginBottom: 4 },
-  ticketMeta: { fontSize: 13, fontFamily: fonts.body, marginBottom: 12 },
+  dayTabs: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, gap: 8 },
+  dayTab: {
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingHorizontal: 14,
+    paddingVertical: 8
+  },
+  dayTabText: { fontFamily: fonts.bodySemi, fontSize: 13 },
+  body: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: 40 },
+  ticket: {
+    borderWidth: 1,
+    borderRadius: radius.card,
+    overflow: 'hidden',
+    marginBottom: spacing.md
+  },
+  ticketMain: { flexDirection: 'row', padding: spacing.md },
+  ticketLabel: { fontFamily: fonts.body, fontSize: 11, marginBottom: 4 },
+  ticketName: { fontFamily: fonts.bodySemi, fontSize: 18, marginBottom: 4 },
+  ticketMeta: { fontFamily: fonts.body, fontSize: 12, marginBottom: 12 },
   resumeBlock: { gap: 8 },
-  resumeHint: { fontSize: 12, fontFamily: fonts.bodySemi },
+  resumeHint: { fontFamily: fonts.body, fontSize: 12 },
   resumeActions: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  startPill: { paddingHorizontal: 16, paddingVertical: 12, borderRadius: radius.pill, alignSelf: 'flex-start' },
+  startPill: {
+    alignSelf: 'flex-start',
+    borderRadius: radius.pill,
+    paddingHorizontal: 16,
+    paddingVertical: 10
+  },
   startPillText: { fontFamily: fonts.bodySemi, fontSize: 14 },
-  restartPill: { paddingHorizontal: 16, paddingVertical: 12, borderRadius: radius.pill, borderWidth: 1, alignSelf: 'flex-start' },
-  restartPillText: { fontFamily: fonts.bodySemi, fontSize: 14 },
+  restartPill: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingHorizontal: 14,
+    paddingVertical: 9
+  },
+  restartPillText: { fontFamily: fonts.body, fontSize: 13 },
   ticketPerf: { flexDirection: 'row', borderTopWidth: 1 },
-  perfCell: { flex: 1, padding: 12, alignItems: 'center', borderRightWidth: 1 },
-  perfVal: { fontSize: 18, fontFamily: fonts.mono },
-  perfLbl: { fontSize: 10, marginTop: 2 },
-  streakRow: { flexDirection: 'row', gap: 12, alignItems: 'center', padding: spacing.lg, borderRadius: radius.card, borderWidth: 1, marginTop: spacing.md },
-  streakText: { fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
+  perfCell: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRightWidth: 1,
+    alignItems: 'center'
+  },
+  perfVal: { fontFamily: fonts.mono, fontSize: 18 },
+  perfLbl: { fontFamily: fonts.body, fontSize: 10, marginTop: 2 },
+  streakRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1,
+    borderRadius: radius.card,
+    padding: spacing.md,
+    marginBottom: spacing.md
+  },
+  streakText: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18 },
   ticks: { flexDirection: 'row', gap: 4, marginTop: 8 },
-  tick: { flex: 1, height: 4, borderRadius: 2 },
-  sectionHead: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.lg, marginBottom: 10 },
-  sectionTitle: { fontSize: 13, fontFamily: fonts.bodySemi },
-  sectionCount: { fontFamily: fonts.mono, fontSize: 13 },
+  tick: { width: 18, height: 6, borderRadius: 3 },
+  sectionHead: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+    marginTop: spacing.sm
+  },
+  sectionTitle: { fontFamily: fonts.bodySemi, fontSize: 13, letterSpacing: 0.5 },
+  sectionCount: { fontFamily: fonts.mono, fontSize: 12 },
+  resetOverride: {
+    marginBottom: spacing.sm,
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    alignItems: 'center'
+  },
+  resetOverrideText: { fontFamily: fonts.body, fontSize: 12 },
   sessionBar: { marginBottom: spacing.sm },
-  sessionBarLabel: { fontSize: 12, fontFamily: fonts.bodySemi, marginBottom: 6 },
+  sessionBarLabel: { fontFamily: fonts.mono, fontSize: 11, marginBottom: 4 },
   sessionTrack: { height: 4, borderRadius: 2, overflow: 'hidden' },
-  sessionFill: { height: '100%', borderRadius: 2 },
-  logRow: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: spacing.md, borderRadius: radius.card, borderWidth: 1, marginBottom: spacing.sm },
+  sessionFill: { height: 4, borderRadius: 2 },
+  logRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: spacing.md,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    marginBottom: spacing.sm
+  },
   logIndex: { fontFamily: fonts.mono, fontSize: 14, width: 28 },
   logNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   logName: { fontSize: 15, fontFamily: fonts.bodySemi, flexShrink: 1 },
@@ -637,22 +735,5 @@ const styles = StyleSheet.create({
   nowBadgeText: { fontSize: 10, fontFamily: fonts.bodySemi },
   logSpec: { fontSize: 12, fontFamily: fonts.body, marginTop: 2 },
   logPr: { fontFamily: fonts.mono, fontSize: 14 },
-  logPrLbl: { fontSize: 10, marginTop: 2 },
-  resetOverride: {
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderRadius: radius.pill,
-    paddingVertical: 8,
-    alignItems: 'center'
-  },
-  resetOverrideText: { fontFamily: fonts.bodySemi, fontSize: 12 },
-  replaceBtn: {
-    marginTop: 6,
-    alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: radius.pill,
-    borderWidth: 1
-  },
-  replaceBtnText: { fontFamily: fonts.bodySemi, fontSize: 11 }
+  logPrLbl: { fontSize: 10, marginTop: 2 }
 });

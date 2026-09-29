@@ -24,7 +24,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 60,
         targetMuscles: ['chest', 'triceps'],
         note: 'Корпус прямой, локти ~45° к телу.',
-        wgerSearchTerm: 'Push-up'
+        wgerSearchTerm: 'Push-up',
+        mediaKey: 'pushup'
       },
       {
         id: 48,
@@ -36,7 +37,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 60,
         targetMuscles: ['chest', 'triceps'],
         note: 'Локти ближе к корпусу — акцент на трицепс.',
-        wgerSearchTerm: 'Close-grip Press-ups'
+        wgerSearchTerm: 'Close-grip Press-ups',
+        mediaKey: 'pushup'
       },
       {
         id: 49,
@@ -48,7 +50,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 75,
         targetMuscles: ['chest', 'shoulders'],
         note: 'Ноги на стуле — нагрузка выше.',
-        wgerSearchTerm: 'Decline Push-Ups'
+        wgerSearchTerm: 'Decline Push-Ups',
+        mediaKey: 'pushup'
       }
     ]
   },
@@ -67,7 +70,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 90,
         targetMuscles: ['back', 'biceps'],
         note: 'Лопатки вниз-назад, без рывка.',
-        wgerSearchTerm: 'Pull-ups'
+        wgerSearchTerm: 'Pull-ups',
+        mediaKey: 'pullup'
       },
       {
         id: 50,
@@ -79,7 +83,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 60,
         targetMuscles: ['back', 'biceps'],
         note: 'Тело прямой линией, грудь к перекладине.',
-        wgerSearchTerm: 'Inverted Rows'
+        wgerSearchTerm: 'Inverted Rows',
+        mediaKey: 'pullup'
       },
       {
         id: 12,
@@ -91,7 +96,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 60,
         targetMuscles: ['back', 'biceps'],
         note: 'Тяните локтями к тазу.',
-        wgerSearchTerm: 'Band row'
+        wgerSearchTerm: 'Band row',
+        mediaKey: 'row-band'
       }
     ]
   },
@@ -110,7 +116,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 75,
         targetMuscles: ['quads', 'glutes', 'core'],
         note: 'Вес в пятках, колени по носкам.',
-        wgerSearchTerm: 'Squat'
+        wgerSearchTerm: 'Squat',
+        mediaKey: 'squat'
       },
       {
         id: 14,
@@ -122,7 +129,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 60,
         targetMuscles: ['quads', 'glutes', 'hamstrings'],
         note: 'Переднее бедро параллельно полу.',
-        wgerSearchTerm: 'Lunges'
+        wgerSearchTerm: 'Lunges',
+        mediaKey: 'lunge'
       },
       {
         id: 51,
@@ -134,7 +142,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 75,
         targetMuscles: ['quads', 'glutes'],
         note: 'Задняя нога на стуле, корпус вертикально.',
-        wgerSearchTerm: 'Bulgarian split squats'
+        wgerSearchTerm: 'Bulgarian split squats',
+        mediaKey: 'lunge'
       },
       {
         id: 52,
@@ -146,7 +155,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 60,
         targetMuscles: ['quads', 'glutes'],
         note: 'Шаг назад, колено к полу без удара.',
-        wgerSearchTerm: 'Reverse lunges'
+        wgerSearchTerm: 'Reverse lunges',
+        mediaKey: 'lunge'
       }
     ]
   },
@@ -165,7 +175,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 45,
         targetMuscles: ['core'],
         note: 'Повторы = секунды. Таз не провисает.',
-        wgerSearchTerm: 'Plank'
+        wgerSearchTerm: 'Plank',
+        mediaKey: 'plank'
       },
       {
         id: 16,
@@ -177,7 +188,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 45,
         targetMuscles: ['core'],
         note: 'Поясница прижата к полу.',
-        wgerSearchTerm: 'Dead bug'
+        wgerSearchTerm: 'Dead bug',
+        mediaKey: 'dead-bug'
       },
       {
         id: 17,
@@ -189,7 +201,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 45,
         targetMuscles: ['core'],
         note: 'Повторы = секунды на сторону.',
-        wgerSearchTerm: 'Side plank'
+        wgerSearchTerm: 'Side plank',
+        mediaKey: 'side-plank'
       },
       {
         id: 53,
@@ -201,7 +214,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 40,
         targetMuscles: ['core'],
         note: 'Лопатки отрываются, поясница на полу.',
-        wgerSearchTerm: 'Crunches'
+        wgerSearchTerm: 'Crunches',
+        mediaKey: 'plank'
       },
       {
         id: 54,
@@ -213,7 +227,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 45,
         targetMuscles: ['core'],
         note: 'Таз стабилен, без раскачки.',
-        wgerSearchTerm: 'Plank Shoulder Taps'
+        wgerSearchTerm: 'Plank Shoulder Taps',
+        mediaKey: 'plank'
       }
     ]
   },
@@ -232,7 +247,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 60,
         targetMuscles: ['triceps'],
         note: 'Плечи вниз, локти назад.',
-        wgerSearchTerm: 'Chair dip'
+        wgerSearchTerm: 'Chair dip',
+        mediaKey: 'chair-dip'
       },
       {
         id: 55,
@@ -244,7 +260,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 60,
         targetMuscles: ['triceps'],
         note: 'Узкая постановка рук.',
-        wgerSearchTerm: 'Floor dips'
+        wgerSearchTerm: 'Floor dips',
+        mediaKey: 'chair-dip'
       },
       {
         id: 19,
@@ -256,7 +273,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 60,
         targetMuscles: ['shoulders', 'triceps'],
         note: 'Рёбра вниз, не прогибайте поясницу.',
-        wgerSearchTerm: 'Shoulder press'
+        wgerSearchTerm: 'Shoulder press',
+        mediaKey: 'shoulder-press'
       }
     ]
   },
@@ -275,7 +293,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 45,
         targetMuscles: ['glutes', 'hamstrings'],
         note: 'Сжимайте ягодицы вверху.',
-        wgerSearchTerm: 'Glute Bridge'
+        wgerSearchTerm: 'Glute Bridge',
+        mediaKey: 'glute-bridge'
       },
       {
         id: 21,
@@ -287,7 +306,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 60,
         targetMuscles: ['glutes'],
         note: 'Лопатки на опоре.',
-        wgerSearchTerm: 'Hip thrust'
+        wgerSearchTerm: 'Hip thrust',
+        mediaKey: 'hip-thrust'
       },
       {
         id: 56,
@@ -299,7 +319,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 45,
         targetMuscles: ['glutes'],
         note: 'На четвереньках, без прогиба поясницы.',
-        wgerSearchTerm: 'Kneeling kickbacks'
+        wgerSearchTerm: 'Kneeling kickbacks',
+        mediaKey: 'glute-bridge'
       },
       {
         id: 57,
@@ -311,7 +332,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 60,
         targetMuscles: ['glutes', 'quads'],
         note: 'Вся стопа на ступени, толкайтесь пяткой.',
-        wgerSearchTerm: 'Step-ups'
+        wgerSearchTerm: 'Step-ups',
+        mediaKey: 'lunge'
       }
     ]
   },
@@ -330,7 +352,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 60,
         targetMuscles: ['quads', 'glutes'],
         note: 'Разминка всего тела — техника прежде всего.',
-        wgerSearchTerm: 'Squat'
+        wgerSearchTerm: 'Squat',
+        mediaKey: 'squat'
       },
       {
         id: 59,
@@ -342,7 +365,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 60,
         targetMuscles: ['chest', 'triceps'],
         note: 'Корпус прямой.',
-        wgerSearchTerm: 'Push-up'
+        wgerSearchTerm: 'Push-up',
+        mediaKey: 'pushup'
       },
       {
         id: 60,
@@ -354,7 +378,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 45,
         targetMuscles: ['glutes'],
         note: 'Пауза вверху.',
-        wgerSearchTerm: 'Glute Bridge'
+        wgerSearchTerm: 'Glute Bridge',
+        mediaKey: 'glute-bridge'
       },
       {
         id: 61,
@@ -366,7 +391,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 45,
         targetMuscles: ['core'],
         note: 'Секунды в упоре.',
-        wgerSearchTerm: 'Plank'
+        wgerSearchTerm: 'Plank',
+        mediaKey: 'plank'
       },
       {
         id: 62,
@@ -378,7 +404,8 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
         restSeconds: 60,
         targetMuscles: ['quads', 'glutes'],
         note: 'По 10 на ногу.',
-        wgerSearchTerm: 'Lunges'
+        wgerSearchTerm: 'Lunges',
+        mediaKey: 'lunge'
       }
     ]
   }
