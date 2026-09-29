@@ -63,9 +63,9 @@ describe('extractLocalDate', () => {
     assert.equal(extractLocalDate({ local_date: '2026-09-28' }), '2026-09-28');
   });
 
-  it('falls back to today ISO date', () => {
-    const d = extractLocalDate({});
-    assert.match(d, /^\d{4}-\d{2}-\d{2}$/);
+  it('returns null when no local date is present (no UTC fallback)', () => {
+    assert.equal(extractLocalDate({}), null);
+    assert.equal(extractLocalDate({ local_date: 123 }), null);
   });
 });
 
@@ -100,6 +100,17 @@ describe('MemoryProjectionService', () => {
     assert.equal(s.credits[0].policy_version, ACTIVITY_CREDIT_POLICY_VERSION);
   });
 
+  it('skips credit when payload has no local date', async () => {
+    const s = new MemoryProjectionService();
+    await s.onAccepted({
+      user_id: 'u1',
+      aggregate_type: 'workout_session',
+      aggregate_id: 'sess-no-date',
+      payload: { status: 'completed' },
+    });
+    assert.equal(s.credits.length, 0);
+  });
+
   it('ignores intermediate complete_set', async () => {
     const s = new MemoryProjectionService();
     await s.onAccepted({
@@ -119,6 +130,7 @@ describe('MemoryProjectionService', () => {
       aggregate_id: 'sess-3',
       payload: {
         status: 'completed',
+        local_date: '2026-09-29',
         sets: [
           { exercise_id: 1, load_kg: 80 },
           { exercise_id: 1, load_kg: 90 },
