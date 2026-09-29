@@ -2,6 +2,9 @@
  * Optional native bridge to react-native-health-connect.
  * Safe when the package is not installed (Jest, web, Expo Go):
  * all methods resolve to null / false.
+ *
+ * Path: FitPulse → Health Connect → Samsung Health (user enables HC sync in SH).
+ * Not Google Fit.
  */
 
 export type HcPermission = { accessType: 'read' | 'write'; recordType: string };
@@ -11,6 +14,8 @@ export interface HealthConnectNative {
   getSdkStatus: () => Promise<number>;
   requestPermission: (permissions: HcPermission[]) => Promise<HcPermission[]>;
   insertRecords: (records: unknown[]) => Promise<string[]>;
+  getGrantedPermissions?: () => Promise<HcPermission[]>;
+  openHealthConnectSettings?: () => void;
   SdkAvailabilityStatus: {
     SDK_AVAILABLE: number;
     SDK_UNAVAILABLE: number;
@@ -45,3 +50,14 @@ export const WRITE_WORKOUT_PERMISSIONS: HcPermission[] = [
 export const WRITE_WEIGHT_PERMISSIONS: HcPermission[] = [
   { accessType: 'write', recordType: 'Weight' }
 ];
+
+export function openHealthConnectSettings(): boolean {
+  const native = getHealthConnectNative();
+  if (!native?.openHealthConnectSettings) return false;
+  try {
+    native.openHealthConnectSettings();
+    return true;
+  } catch {
+    return false;
+  }
+}
