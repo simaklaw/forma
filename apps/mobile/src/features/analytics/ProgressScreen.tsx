@@ -267,9 +267,7 @@ export default function ProgressScreen() {
                       v.isToday && styles.barToday
                     ]}
                   />
-                  <Text style={[styles.barLabel, v.isToday && styles.barLabelToday]}>
-                    {v.isToday ? 'срд' : v.label}
-                  </Text>
+                  <Text style={[styles.barLabel, v.isToday && styles.barLabelToday]}>{v.label}</Text>
                 </View>
               ))}
             </View>
@@ -311,9 +309,7 @@ export default function ProgressScreen() {
                         isToday && styles.barToday
                       ]}
                     />
-                    <Text style={[styles.barLabel, isToday && styles.barLabelToday]}>
-                      {isToday ? 'срд' : v.label}
-                    </Text>
+                    <Text style={[styles.barLabel, isToday && styles.barLabelToday]}>{v.label}</Text>
                   </View>
                 );
               })}
