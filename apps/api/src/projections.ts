@@ -23,10 +23,12 @@ export interface ProjectionService {
   onAccepted(input: ProjectionInput): Promise<void>;
 }
 
-/** Minimal sql tag surface used by PostgresProjectionService (avoids importing postgres.ts at load). */
-type SqlTag = {
-  (strings: TemplateStringsArray, ...values: unknown[]): Promise<unknown>;
-};
+/**
+ * Callable sql tag (postgres package). Kept structural/loose so we do not
+ * import postgres.ts at module load (strip-types + circular risk).
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SqlClient = any;
 
 /** Bump when credit policy rules change (unique with source entity). */
 export const ACTIVITY_CREDIT_POLICY_VERSION = 1;
@@ -200,9 +202,9 @@ export class MemoryProjectionService implements ProjectionService {
  * Idempotent via UNIQUE (source_domain, source_entity_id, policy_version).
  */
 export class PostgresProjectionService implements ProjectionService {
-  private readonly sql: SqlTag;
+  private readonly sql: SqlClient;
 
-  constructor(sql: SqlTag) {
+  constructor(sql: SqlClient) {
     this.sql = sql;
   }
 
