@@ -258,13 +258,15 @@ class ActiveSessionControllerImpl {
   /** Save done volume and complete as partial (Early Leave «Сохранить прогресс»). */
   async finishPartialSession(): Promise<WorkoutSession | null> {
     if (!this.sessionId) return null;
+    const dayId = this.dayId;
     try {
       const result = await getSessionService().dispatch(this.sessionId, {
         type: 'complete_session',
         reason: 'user_finished_partial'
       });
-      log.info('finished partial session', { sessionId: this.sessionId });
-      scheduleHealthExport(result.session, this.dayId);
+      log.info('finished partial session', { sessionId: result.session.sessionId });
+      // Domain persist first; HC is best-effort fire-and-forget.
+      scheduleHealthExport(result.session, dayId);
       this.clearBinding();
       return result.session;
     } catch (err) {
@@ -283,7 +285,8 @@ class ActiveSessionControllerImpl {
         type: 'abandon_session',
         reason: 'user_left'
       });
-      log.info('left session', { sessionId: this.sessionId });
+      log.info('left session', { sessionId: result.session.sessionId });
+      // Abandon has no HC export; clear only after domain accept.
       this.clearBinding();
       return result.session;
     } catch (err) {
@@ -349,14 +352,14 @@ class ActiveSessionControllerImpl {
     );
     if (!allDone) return;
 
+    const dayId = this.dayId;
     const completed = await svc.dispatch(this.sessionId, {
       type: 'complete_session',
       reason: 'all_sets_done'
     });
-    log.info('completed day session', { sessionId: this.sessionId });
+    log.info('completed day session', { sessionId: completed.session.sessionId });
 
-    scheduleHealthExport(completed.session, this.dayId);
-
+    scheduleHealthExport(completed.session, dayId);
     this.clearBinding();
   }
 
