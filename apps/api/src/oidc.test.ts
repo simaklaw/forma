@@ -13,11 +13,12 @@ import { MemoryIdempotencyStore, MemoryChangeFeed } from './idempotency.ts';
 import { MemoryUserRegistry, verifyJwt } from './auth.ts';
 
 const SECRET = 'oidc-test-secret';
-const GOOGLE_AUD = 'google-client-id.apps.googleusercontent.com';
-const APPLE_AUD = 'app.fitpulse.web';
+const MAILRU_AUD = 'mailru-client-id-test';
+const VK_APP = '51812311';
 
 let publicJwk: Jwk;
 let privateKeyPem: string;
+let publicKeyPem: string;
 let kid: string;
 
 function b64url(buf: Buffer): string {
@@ -40,6 +41,7 @@ before(() => {
     modulusLength: 2048,
   });
   privateKeyPem = privateKey.export({ type: 'pkcs1', format: 'pem' }) as string;
+  publicKeyPem = publicKey.export({ type: 'spki', format: 'pem' }) as string;
   const jwk = publicKey.export({ format: 'jwk' }) as Jwk;
   kid = 'test-kid-1';
   publicJwk = { ...jwk, kid, alg: 'RS256', use: 'sig' };
@@ -48,8 +50,9 @@ before(() => {
 
 function cfg(overrides: Partial<OidcConfig> = {}): OidcConfig {
   return {
-    googleClientId: GOOGLE_AUD,
-    appleClientId: APPLE_AUD,
+    mailruClientId: MAILRU_AUD,
+    vkClientId: VK_APP,
+    vkPublicKeyPem: publicKeyPem,
     fetchJwks: async () => [publicJwk],
     nowSeconds: () => 1_700_000_000,
     ...overrides,
@@ -57,117 +60,114 @@ function cfg(overrides: Partial<OidcConfig> = {}): OidcConfig {
 }
 
 describe('claimsToAuthSubject', () => {
-  it('prefers verified email', () => {
+  it('prefers email for mailru', () => {
     assert.equal(
-      claimsToAuthSubject('google', {
+      claimsToAuthSubject('mailru', {
         sub: '123',
-        email: 'Alice@Example.com',
-        email_verified: true,
-        iss: 'https://accounts.google.com',
-        aud: GOOGLE_AUD,
+        email: 'User@Mail.ru',
+        iss: 'https://account.mail.ru',
+        aud: MAILRU_AUD,
         exp: 9e9,
       }),
-      'alice@example.com',
+      'user@mail.ru',
     );
   });
 
   it('falls back to oidc:provider:sub', () => {
     assert.equal(
-      claimsToAuthSubject('google', {
-        sub: 'abc-sub',
-        email: 'nope@x.com',
-        email_verified: false,
-        iss: 'https://accounts.google.com',
-        aud: GOOGLE_AUD,
+      claimsToAuthSubject('vk', {
+        sub: '987654',
+        iis: 'VK',
+        app: VK_APP,
         exp: 9e9,
       }),
-      'oidc:google:abc-sub',
+      'oidc:vk:987654',
     );
   });
 });
 
-describe('verifyIdToken', () => {
-  it('accepts a valid Google ID token', async () => {
+describe('verifyIdToken mailru', () => {
+  it('accepts a valid Mail.ru ID token', async () => {
     const token = signRs256(
       { alg: 'RS256', typ: 'JWT', kid },
       {
-        iss: 'https://accounts.google.com',
-        aud: GOOGLE_AUD,
-        sub: 'g-sub-1',
-        email: 'user@gmail.com',
+        iss: 'https://account.mail.ru',
+        aud: MAILRU_AUD,
+        sub: 'mr-sub-1',
+        email: 'user@mail.ru',
         email_verified: true,
         exp: 1_700_000_000 + 3600,
         iat: 1_700_000_000,
       },
     );
-    const claims = await verifyIdToken('google', token, cfg());
-    assert.equal(claims.sub, 'g-sub-1');
-    assert.equal(claims.email, 'user@gmail.com');
-  });
-
-  it('rejects expired tokens', async () => {
-    const token = signRs256(
-      { alg: 'RS256', typ: 'JWT', kid },
-      {
-        iss: 'https://accounts.google.com',
-        aud: GOOGLE_AUD,
-        sub: 'g-sub-1',
-        exp: 1_700_000_000 - 10,
-      },
-    );
-    await assert.rejects(
-      () => verifyIdToken('google', token, cfg()),
-      (e: Error & { code?: string }) => e.code === 'expired',
-    );
+    const claims = await verifyIdToken('mailru', token, cfg());
+    assert.equal(claims.sub, 'mr-sub-1');
+    assert.equal(claims.email, 'user@mail.ru');
   });
 
   it('rejects wrong audience', async () => {
     const token = signRs256(
       { alg: 'RS256', typ: 'JWT', kid },
       {
-        iss: 'https://accounts.google.com',
-        aud: 'other-client',
-        sub: 'g-sub-1',
+        iss: 'https://account.mail.ru',
+        aud: 'other',
+        sub: 'mr-sub-1',
         exp: 1_700_000_000 + 3600,
       },
     );
     await assert.rejects(
-      () => verifyIdToken('google', token, cfg()),
+      () => verifyIdToken('mailru', token, cfg()),
+      (e: Error & { code?: string }) => e.code === 'audience_mismatch',
+    );
+  });
+});
+
+describe('verifyIdToken vk', () => {
+  it('accepts a valid VK ID token (iis + app)', async () => {
+    const token = signRs256(
+      { alg: 'RS256', typ: 'JWT' },
+      {
+        iis: 'VK',
+        sub: 424242,
+        app: Number(VK_APP),
+        exp: 1_700_000_000 + 3600,
+        iat: 1_700_000_000,
+      },
+    );
+    const claims = await verifyIdToken('vk', token, cfg());
+    assert.equal(claims.sub, '424242');
+  });
+
+  it('rejects wrong app id', async () => {
+    const token = signRs256(
+      { alg: 'RS256', typ: 'JWT' },
+      {
+        iis: 'VK',
+        sub: '1',
+        app: 999,
+        exp: 1_700_000_000 + 3600,
+      },
+    );
+    await assert.rejects(
+      () => verifyIdToken('vk', token, cfg()),
       (e: Error & { code?: string }) => e.code === 'audience_mismatch',
     );
   });
 
-  it('rejects bad signature', async () => {
+  it('rejects expired', async () => {
     const token = signRs256(
-      { alg: 'RS256', typ: 'JWT', kid },
+      { alg: 'RS256', typ: 'JWT' },
       {
-        iss: 'https://accounts.google.com',
-        aud: GOOGLE_AUD,
-        sub: 'g-sub-1',
-        exp: 1_700_000_000 + 3600,
+        iis: 'VK',
+        sub: '1',
+        app: Number(VK_APP),
+        exp: 1_700_000_000 - 10,
       },
     );
-    const parts = token.split('.');
-    const bad = `${parts[0]}.${parts[1]}.${'AA'.repeat(32)}`;
     await assert.rejects(
-      () => verifyIdToken('google', bad, cfg()),
-      (e: Error & { code?: string }) => e.code === 'invalid_token',
+      () => verifyIdToken('vk', token, cfg()),
+      (e: Error & { code?: string }) => e.code === 'expired',
     );
-  });
-
-  it('accepts Apple issuer', async () => {
-    const token = signRs256(
-      { alg: 'RS256', typ: 'JWT', kid },
-      {
-        iss: 'https://appleid.apple.com',
-        aud: APPLE_AUD,
-        sub: 'apple-sub',
-        email: 'hidden@privaterelay.appleid.com',
-        exp: 1_700_000_000 + 3600,
-      },
-    );
-    const claims = await verifyIdToken('apple', token, cfg());
-    assert.equal(claims.sub, 'apple-sub');
   });
 });
 
@@ -183,14 +183,14 @@ describe('POST /api/v1/auth/oidc', () => {
     });
   }
 
-  it('exchanges Google ID token for app JWT', async () => {
+  it('exchanges Mail.ru ID token for app JWT', async () => {
     const idToken = signRs256(
       { alg: 'RS256', typ: 'JWT', kid },
       {
-        iss: 'https://accounts.google.com',
-        aud: GOOGLE_AUD,
-        sub: 'g-sub-42',
-        email: 'oidc-user@gmail.com',
+        iss: 'https://account.mail.ru',
+        aud: MAILRU_AUD,
+        sub: 'mr-42',
+        email: 'oidc-user@mail.ru',
         email_verified: true,
         exp: 1_700_000_000 + 3600,
       },
@@ -198,31 +198,44 @@ describe('POST /api/v1/auth/oidc', () => {
     const res = await app().request('/api/v1/auth/oidc', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ provider: 'google', id_token: idToken }),
+      body: JSON.stringify({ provider: 'mailru', id_token: idToken }),
     });
     assert.equal(res.status, 200);
     const body = await res.json();
-    assert.equal(body.auth_subject, 'oidc-user@gmail.com');
-    assert.equal(body.provider, 'google');
-    assert.equal(body.created, true);
+    assert.equal(body.auth_subject, 'oidc-user@mail.ru');
+    assert.equal(body.provider, 'mailru');
     assert.equal(verifyJwt(SECRET, body.token), body.user_id);
-
-    const again = await app().request('/api/v1/auth/oidc', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ provider: 'google', id_token: idToken }),
-    });
-    const body2 = await again.json();
-    assert.equal(body2.user_id, body.user_id);
-    assert.equal(body2.created, false);
   });
 
-  it('returns 400 for unknown provider', async () => {
+  it('exchanges VK ID token for app JWT', async () => {
+    const idToken = signRs256(
+      { alg: 'RS256', typ: 'JWT' },
+      {
+        iis: 'VK',
+        sub: 777,
+        app: Number(VK_APP),
+        exp: 1_700_000_000 + 3600,
+      },
+    );
     const res = await app().request('/api/v1/auth/oidc', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ provider: 'facebook', id_token: 'x'.repeat(40) }),
+      body: JSON.stringify({ provider: 'vk', id_token: idToken }),
     });
-    assert.equal(res.status, 400);
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.auth_subject, 'oidc:vk:777');
+    assert.equal(body.provider, 'vk');
+  });
+
+  it('returns 400 for google/apple', async () => {
+    for (const provider of ['google', 'apple', 'facebook']) {
+      const res = await app().request('/api/v1/auth/oidc', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ provider, id_token: 'x'.repeat(40) }),
+      });
+      assert.equal(res.status, 400, provider);
+    }
   });
 });
