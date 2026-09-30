@@ -1,25 +1,21 @@
 # HANDOFF — FitPulse
 
-**Checkpoint:** 2026-09-30 (OIDC token exchange in progress)
+**Checkpoint:** 2026-09-30 (OIDC: Mail.ru + VK ID)
 **Brand:** FitPulse in UI/bundle.
 **APK:** do not build until owner says so.
 
-## Done
+## Auth
 
-- P0 offline workout + P1 sync/RLS + P2 projections (soft PR → materialize)
-- Email subject → JWT (`POST /api/v1/auth/register`)
-- CI green on main (001–006)
-
-## In flight — OIDC
-
-- `POST /api/v1/auth/oidc` — Google/Apple ID token → app JWT
-- Env: `OIDC_GOOGLE_CLIENT_ID`, `OIDC_APPLE_CLIENT_ID`
-- Mobile: `exchangeOidcCredentials` (native Google/Apple UI next)
+- Email subject → JWT (`POST /api/v1/auth/register`) — works offline-first
+- **OIDC:** `POST /api/v1/auth/oidc` with `provider: mailru | vk`
+  - **No Google / Apple** (product decision for RU)
+  - Mail.ru: JWKS at account.mail.ru, env `OIDC_MAILRU_CLIENT_ID`
+  - VK ID: RSA public key, env `OIDC_VK_CLIENT_ID` + `OIDC_VK_PUBLIC_KEY` (PEM)
 
 ## Next
 
-1. Finish OIDC (server tests + mobile Google via expo-auth-session)
-2. Native Sign in with Google / Apple buttons
+1. Green CI on feat/oidc-token-exchange
+2. Optional: native VK ID / Mail.ru login UI (SDK or browser)
 3. APK only when owner says so
 
 ## Rules
@@ -29,3 +25,4 @@
 3. No Google Fit — Health Connect only.
 4. Frozen catalog exercise ids 1–30.
 5. Profile gate: weightKg finite > 0.
+6. No Google/Apple sign-in — Mail.ru / VK ID only.
