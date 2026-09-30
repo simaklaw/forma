@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS workout.pr_observation (
   source_session_id uuid NOT NULL,
   achieved_at       timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (user_id, exercise_key, record_kind)
-);
+};
 
 ALTER TABLE workout.pr_observation ENABLE ROW LEVEL SECURITY;
 ALTER TABLE workout.pr_observation FORCE ROW LEVEL SECURITY;
