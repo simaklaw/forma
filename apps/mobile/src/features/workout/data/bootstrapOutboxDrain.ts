@@ -1,31 +1,73 @@
 import { AppState, type AppStateStatus, type NativeEventSubscription } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createLogger } from '@/core/logger';
 import { OutboxDrainService, noopOutboxTransport } from './OutboxDrainService';
-import { createHttpOutboxTransportFromEnv } from './HttpOutboxTransport';
+import { createHttpOutboxTransport } from './HttpOutboxTransport';
+import { ensureSyncCredentials } from '../auth/syncAuth';
 
 const log = createLogger('outbox-bootstrap');
 
 let started = false;
 let appStateSub: NativeEventSubscription | null = null;
-let drain: OutboxDrainService | null = null;
-let hasHttpTransport: boolean | null = null;
+let drainPromise: Promise<OutboxDrainService> | null = null;
+let hasHttpTransport = false;
 
-function getDrain(): OutboxDrainService {
-  if (!drain) {
-    const http = createHttpOutboxTransportFromEnv();
-    hasHttpTransport = http != null;
-    drain = new OutboxDrainService(http ?? noopOutboxTransport);
-    if (!hasHttpTransport) {
-      log.debug('no EXPO_PUBLIC_SYNC_API_URL — using noop transport');
-    }
+function syncApiUrl(): string {
+  if (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_SYNC_API_URL) {
+    return process.env.EXPO_PUBLIC_SYNC_API_URL;
   }
-  return drain;
+  return '';
+}
+
+/**
+ * Build the drain once per app session:
+ * 1. no EXPO_PUBLIC_SYNC_API_URL → noop transport (fully offline);
+ * 2. URL set → ensure per-user JWT credentials (register on first use,
+ *    re-register on expiry) and wire them into the HTTP transport.
+ * Credential failure is non-fatal: noop transport for this session,
+ * next app start retries registration.
+ */
+async function buildDrain(): Promise<OutboxDrainService> {
+  const base = syncApiUrl();
+  if (!base) {
+    log.debug('no EXPO_PUBLIC_SYNC_API_URL — using noop transport');
+    return new OutboxDrainService(noopOutboxTransport);
+  }
+
+  const creds = await ensureSyncCredentials({
+    baseUrl: base,
+    storage: AsyncStorage,
+  });
+  if (!creds) {
+    log.warn('no sync credentials — noop transport this session');
+    return new OutboxDrainService(noopOutboxTransport);
+  }
+
+  hasHttpTransport = true;
+  return new OutboxDrainService(
+    createHttpOutboxTransport({
+      baseUrl: base,
+      token: creds.token,
+      userId: creds.user_id,
+    }),
+  );
+}
+
+/** Lazily built, cached drain; on build failure allow a retry next pass. */
+function getDrain(): Promise<OutboxDrainService> {
+  if (!drainPromise) {
+    drainPromise = buildDrain().catch((err: unknown) => {
+      drainPromise = null;
+      throw err;
+    });
+  }
+  return drainPromise;
 }
 
 /** Run a single drain pass; never throws to the UI. */
 export async function runOutboxDrainOnce(limit = 20): Promise<void> {
   try {
-    const d = getDrain();
+    const d = await getDrain();
     const result = await d.drainOnce(limit);
     if (result.accepted + result.failed + result.skipped > 0) {
       log.info('outbox drain', result);
@@ -50,7 +92,8 @@ export function startOutboxDrainLifecycle(): () => void {
   void (async () => {
     await runOutboxDrainOnce(20);
     try {
-      await getDrain().pruneAccepted(14);
+      const d = await getDrain();
+      await d.pruneAccepted(14);
     } catch {
       /* non-fatal */
     }
@@ -75,6 +118,6 @@ export function resetOutboxDrainBootstrapForTests(): void {
   appStateSub?.remove();
   appStateSub = null;
   started = false;
-  drain = null;
-  hasHttpTransport = null;
+  drainPromise = null;
+  hasHttpTransport = false;
 }
