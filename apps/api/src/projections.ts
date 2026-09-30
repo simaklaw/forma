@@ -2,21 +2,29 @@
  * P1.3 — Projection hooks after accepted sync ops (architecture plan §1.3).
  *
  * - MemoryProjectionService: default / tests (no DB).
- * - PostgresProjectionService: upserts engagement.activity_credit.
- * - exercise_record needs workout.session + catalog.exercise_revision rows;
- *   deferred until server-side session materialization lands.
+ * - PostgresProjectionService:
+ *   - engagement.activity_credit (terminal sessions)
+ *   - workout.pr_observation (soft PR from projection.setLogs)
+ *   - session materialize + promote soft PR → exercise_record
  *
  * Note: avoid TS parameter properties — node --experimental-strip-types
  * does not support them.
  */
 
 import { randomUUID } from 'node:crypto';
+import {
+  materializeSessionChildren,
+  materializeWorkoutSession,
+  promoteSoftPrToExerciseRecord,
+} from './sessionMaterialize.ts';
 
 export type ProjectionInput = {
   user_id: string;
   aggregate_type: string;
   aggregate_id: string;
   payload: Record<string, unknown>;
+  /** Client device_id from the push op (needed for session materialize). */
+  device_id?: string;
 };
 
 export interface ProjectionService {
@@ -125,6 +133,120 @@ export type ExerciseRecordRow = {
   achieved_at: string;
 };
 
+/**
+ * Soft max_load candidates from enriched push payload.
+ * Prefers projection.setLogs (mobile enrichment), falls back to payload.sets.
+ */
+export function extractMaxLoadCandidates(
+  input: ProjectionInput,
+): ExerciseRecordRow[] {
+  const out: ExerciseRecordRow[] = [];
+  const seen = new Map<string, number>(); // exercise_key -> best index in out
+  const local = extractLocalDate(input.payload);
+  const achievedAt = local
+    ? `${local}T12:00:00.000Z`
+    : new Date().toISOString();
+
+  const consider = (exerciseKey: string, weight: number) => {
+    if (!(weight > 0) || !exerciseKey) return;
+    const prevIdx = seen.get(exerciseKey);
+    if (prevIdx != null) {
+      if (weight > out[prevIdx].value) {
+        out[prevIdx] = {
+          ...out[prevIdx],
+          value: weight,
+          source_session_id: input.aggregate_id,
+        };
+      }
+      return;
+    }
+    seen.set(exerciseKey, out.length);
+    out.push({
+      user_id: input.user_id,
+      exercise_key: exerciseKey,
+      record_kind: 'max_load',
+      value: weight,
+      source_session_id: input.aggregate_id,
+      achieved_at: achievedAt,
+    });
+  };
+
+  const projection = input.payload.projection;
+  if (projection && typeof projection === 'object') {
+    const setLogs = (projection as Record<string, unknown>).setLogs;
+    if (Array.isArray(setLogs)) {
+      for (const raw of setLogs) {
+        if (!raw || typeof raw !== 'object') continue;
+        const s = raw as Record<string, unknown>;
+        const key =
+          typeof s.exerciseId === 'number'
+            ? String(s.exerciseId)
+            : typeof s.exerciseId === 'string'
+              ? s.exerciseId
+              : typeof s.exercise_id === 'number'
+                ? String(s.exercise_id)
+                : typeof s.exercise_id === 'string'
+                  ? s.exercise_id
+                  : null;
+        const w =
+          typeof s.weight === 'number'
+            ? s.weight
+            : typeof s.load_kg === 'number'
+              ? s.load_kg
+              : null;
+        if (key && w != null) consider(key, w);
+      }
+    }
+  }
+
+  if (out.length === 0 && Array.isArray(input.payload.sets)) {
+    for (const raw of input.payload.sets) {
+      if (!raw || typeof raw !== 'object') continue;
+      const s = raw as Record<string, unknown>;
+      const key =
+        typeof s.exercise_id === 'number'
+          ? String(s.exercise_id)
+          : typeof s.exercise_id === 'string'
+            ? s.exercise_id
+            : typeof s.exerciseId === 'number'
+              ? String(s.exerciseId)
+              : null;
+      const w =
+        typeof s.load_kg === 'number'
+          ? s.load_kg
+          : typeof s.weight === 'number'
+            ? s.weight
+            : null;
+      if (key && w != null) consider(key, w);
+    }
+  }
+
+  return out;
+}
+
+function mergeSoftRecords(
+  records: ExerciseRecordRow[],
+  candidates: ExerciseRecordRow[],
+): void {
+  for (const c of candidates) {
+    const prev = records.find(
+      (r) =>
+        r.user_id === c.user_id &&
+        r.exercise_key === c.exercise_key &&
+        r.record_kind === c.record_kind,
+    );
+    if (!prev || c.value > prev.value) {
+      if (prev) {
+        prev.value = c.value;
+        prev.source_session_id = c.source_session_id;
+        prev.achieved_at = c.achieved_at;
+      } else {
+        records.push({ ...c });
+      }
+    }
+  }
+}
+
 /** No-op — keeps push path free of side effects when explicitly chosen. */
 export class NoopProjectionService implements ProjectionService {
   async onAccepted(_input: ProjectionInput): Promise<void> {
@@ -141,6 +263,10 @@ export class MemoryProjectionService implements ProjectionService {
   readonly records: ExerciseRecordRow[] = [];
 
   async onAccepted(input: ProjectionInput): Promise<void> {
+    if (isWorkoutSessionAggregate(input.aggregate_type)) {
+      mergeSoftRecords(this.records, extractMaxLoadCandidates(input));
+    }
+
     if (!shouldGrantActivityCredit(input)) return;
 
     const exists = this.credits.some(
@@ -156,68 +282,23 @@ export class MemoryProjectionService implements ProjectionService {
         '[fitpulse-api] activity_credit skipped: no local_date in payload',
         { aggregate_id: input.aggregate_id },
       );
-    } else {
-      this.credits.push({
-        credit_id: randomUUID(),
-        user_id: input.user_id,
-        local_date: localDate,
-        source_domain: 'workout',
-        source_entity_id: input.aggregate_id,
-        policy_version: ACTIVITY_CREDIT_POLICY_VERSION,
-      });
+      return;
     }
 
-    // Soft PR candidates from payload.sets / payload.records (no FK).
-    const sets = input.payload.sets;
-    if (Array.isArray(sets)) {
-      for (const raw of sets) {
-        if (!raw || typeof raw !== 'object') continue;
-        const s = raw as Record<string, unknown>;
-        const load =
-          typeof s.load_kg === 'number'
-            ? s.load_kg
-            : typeof s.weight === 'number'
-              ? s.weight
-              : null;
-        const exKey =
-          typeof s.exercise_id === 'string'
-            ? s.exercise_id
-            : typeof s.exercise_id === 'number'
-              ? String(s.exercise_id)
-              : null;
-        if (load == null || load <= 0 || !exKey) continue;
-        const prev = this.records.find(
-          (r) =>
-            r.user_id === input.user_id &&
-            r.exercise_key === exKey &&
-            r.record_kind === 'max_load',
-        );
-        if (!prev || load > prev.value) {
-          if (prev) {
-            prev.value = load;
-            prev.source_session_id = input.aggregate_id;
-            prev.achieved_at = new Date().toISOString();
-          } else {
-            this.records.push({
-              user_id: input.user_id,
-              exercise_key: exKey,
-              record_kind: 'max_load',
-              value: load,
-              source_session_id: input.aggregate_id,
-              achieved_at: new Date().toISOString(),
-            });
-          }
-        }
-      }
-    }
+    this.credits.push({
+      credit_id: randomUUID(),
+      user_id: input.user_id,
+      local_date: localDate,
+      source_domain: 'workout',
+      source_entity_id: input.aggregate_id,
+      policy_version: ACTIVITY_CREDIT_POLICY_VERSION,
+    });
   }
 }
 
 /**
- * Postgres: engagement.activity_credit on terminal workout_session ops.
- * Idempotent via UNIQUE (source_domain, source_entity_id, policy_version).
- * sql may be a transaction client — then the credit is atomic with the
- * accepted operation itself.
+ * Postgres: activity_credit + pr_observation + session materialize.
+ * sql may be a transaction client — then work is atomic with the accepted op.
  */
 export class PostgresProjectionService implements ProjectionService {
   private readonly sql: SqlClient;
@@ -227,6 +308,71 @@ export class PostgresProjectionService implements ProjectionService {
   }
 
   async onAccepted(input: ProjectionInput): Promise<void> {
+    if (!isWorkoutSessionAggregate(input.aggregate_type)) return;
+
+    await this.sql`
+      INSERT INTO platform.app_user (user_id, auth_subject)
+      VALUES (${input.user_id}::uuid, ${input.user_id})
+      ON CONFLICT (user_id) DO NOTHING
+    `;
+
+    // Soft PR observations (no catalog/session FK)
+    const candidates = extractMaxLoadCandidates(input);
+    for (const c of candidates) {
+      await this.sql`
+        INSERT INTO workout.pr_observation (
+          user_id,
+          exercise_key,
+          record_kind,
+          value,
+          source_session_id,
+          achieved_at
+        ) VALUES (
+          ${c.user_id}::uuid,
+          ${c.exercise_key},
+          ${c.record_kind},
+          ${c.value},
+          ${c.source_session_id}::uuid,
+          ${c.achieved_at}::timestamptz
+        )
+        ON CONFLICT (user_id, exercise_key, record_kind) DO UPDATE SET
+          value = EXCLUDED.value,
+          source_session_id = EXCLUDED.source_session_id,
+          achieved_at = EXCLUDED.achieved_at
+        WHERE workout.pr_observation.value < EXCLUDED.value
+      `;
+    }
+
+    // Session row + steps/sets + promote soft → hard exercise_record
+    if (input.device_id) {
+      try {
+        const ok = await materializeWorkoutSession(this.sql, {
+          user_id: input.user_id,
+          aggregate_id: input.aggregate_id,
+          device_id: input.device_id,
+          payload: input.payload,
+        });
+        if (ok) {
+          await materializeSessionChildren(
+            this.sql,
+            input.aggregate_id,
+            input.payload,
+          );
+          await promoteSoftPrToExerciseRecord(
+            this.sql,
+            input.user_id,
+            input.aggregate_id,
+          );
+        }
+      } catch (err) {
+        console.error(
+          '[fitpulse-api] session materialize failed',
+          { aggregate_id: input.aggregate_id },
+          err,
+        );
+      }
+    }
+
     if (!shouldGrantActivityCredit(input)) return;
 
     const localDate = extractLocalDate(input.payload);
@@ -239,13 +385,6 @@ export class PostgresProjectionService implements ProjectionService {
     }
 
     const creditId = randomUUID();
-
-    await this.sql`
-      INSERT INTO platform.app_user (user_id, auth_subject)
-      VALUES (${input.user_id}::uuid, ${input.user_id})
-      ON CONFLICT (user_id) DO NOTHING
-    `;
-
     await this.sql`
       INSERT INTO engagement.activity_credit (
         credit_id,
