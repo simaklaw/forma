@@ -60,15 +60,20 @@ export default function SyncAccountCard() {
       setError('Синхронизация не настроена: задайте EXPO_PUBLIC_SYNC_API_URL.');
       return;
     }
+    const normalized = email.trim().toLowerCase();
+    if (!isEmailSubject(normalized)) {
+      setError('Укажи корректный email (например you@example.com).');
+      return;
+    }
     setBusy(true);
     try {
       const next = await linkSyncAccount({
         baseUrl: base,
         storage: AsyncStorage,
-        subject: email,
+        subject: normalized,
       });
       setCreds(next);
-      setSubject(email.trim().toLowerCase());
+      setSubject(normalized);
       setMessage('Аккаунт привязан. Данные синка пойдут под этим email.');
     } catch (e) {
       setError(
