@@ -16,8 +16,9 @@ export function projectSessionEvents(
   session: Pick<WorkoutSession, 'localStartDate' | 'steps'>,
   events: readonly SessionEvent[]
 ): SessionProjection {
+  const steps = session.steps ?? [];
   const snapshots = new Map<number, SessionStepSnapshot>(
-    session.steps.map((step) => [step.snapshot.stepIndex, step.snapshot])
+    steps.map((step) => [step.snapshot.stepIndex, step.snapshot])
   );
   const setLogs: SetLogEntry[] = [];
   const dayProgress: DayProgress = {};
