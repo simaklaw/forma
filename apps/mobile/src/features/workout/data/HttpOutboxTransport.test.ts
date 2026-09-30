@@ -17,6 +17,11 @@ const sampleRow: OutboxRow = {
   createdAtMs: Date.UTC(2026, 0, 1),
 };
 
+const auth = {
+  userId: SYNC_LOCAL_USER_UUID,
+  token: 'test-token',
+};
+
 describe('HttpOutboxTransport', () => {
   it('pads payload hash to 64 hex chars', () => {
     expect(toSyncPayloadHash('ab').length).toBe(64);
@@ -37,6 +42,7 @@ describe('HttpOutboxTransport', () => {
 
     const t = createHttpOutboxTransport({
       baseUrl: 'http://localhost:8787',
+      ...auth,
       fetchImpl,
     });
     await expect(t.send(sampleRow)).resolves.toBe('accepted');
@@ -56,6 +62,7 @@ describe('HttpOutboxTransport', () => {
 
     const t = createHttpOutboxTransport({
       baseUrl: 'http://localhost:8787',
+      userId: SYNC_LOCAL_USER_UUID,
       token: 'secret-token',
       fetchImpl,
     });
@@ -65,30 +72,39 @@ describe('HttpOutboxTransport', () => {
     expect(headers.authorization).toBe('Bearer secret-token');
   });
 
-  it('omits Authorization header when no token is provided', async () => {
+  it('returns failed when token or userId is missing (no data mix)', async () => {
     const fetchImpl = jest.fn(async () => ({
       ok: true,
       json: async () => ({ results: [{ status: 'accepted' }] }),
     })) as unknown as typeof fetch;
 
-    const t = createHttpOutboxTransport({
+    const noAuth = createHttpOutboxTransport({
       baseUrl: 'http://localhost:8787',
       fetchImpl,
     });
-    await t.send(sampleRow);
-    const [, init] = fetchImpl.mock.calls[0] as [string, RequestInit];
-    const headers = init.headers as Record<string, string>;
-    expect(headers.authorization).toBeUndefined();
+    await expect(noAuth.send(sampleRow)).resolves.toBe('failed');
+    expect(fetchImpl).not.toHaveBeenCalled();
+
+    const tokenOnly = createHttpOutboxTransport({
+      baseUrl: 'http://localhost:8787',
+      token: 'x',
+      fetchImpl,
+    });
+    await expect(tokenOnly.send(sampleRow)).resolves.toBe('failed');
+    expect(fetchImpl).not.toHaveBeenCalled();
   });
 
   it('send returns accepted on duplicate', async () => {
     const fetchImpl = jest.fn(async () => ({
       ok: true,
-      json: async () => ({
-        results: [{ status: 'duplicate' }],
-      }),
+      json: async () => ({ results: [{ status: 'duplicate' }] }),
     })) as unknown as typeof fetch;
-    const t = createHttpOutboxTransport({ baseUrl: 'http://x', fetchImpl });
+
+    const t = createHttpOutboxTransport({
+      baseUrl: 'http://x',
+      ...auth,
+      fetchImpl,
+    });
     await expect(t.send(sampleRow)).resolves.toBe('accepted');
   });
 
@@ -96,9 +112,10 @@ describe('HttpOutboxTransport', () => {
     const fetchImpl = jest.fn(async () => ({
       ok: false,
       status: 401,
-      json: async () => ({ error: 'unauthorized' }),
+      json: async () => ({}),
     })) as unknown as typeof fetch;
-    const t = createHttpOutboxTransport({ baseUrl: 'http://x', fetchImpl });
+
+    const t = createHttpOutboxTransport({ baseUrl: 'http://x', ...auth, fetchImpl });
     await expect(t.send(sampleRow)).resolves.toBe('failed');
   });
 
@@ -106,17 +123,97 @@ describe('HttpOutboxTransport', () => {
     const fetchImpl = jest.fn(async () => {
       throw new Error('offline');
     }) as unknown as typeof fetch;
-    const t = createHttpOutboxTransport({ baseUrl: 'http://x', fetchImpl });
+
+    const t = createHttpOutboxTransport({ baseUrl: 'http://x', ...auth, fetchImpl });
     await expect(t.send(sampleRow)).resolves.toBe('failed');
   });
 
-  it('send returns failed on non-ok HTTP', async () => {
+  it('enriches payload with status, local date, and projection', async () => {
     const fetchImpl = jest.fn(async () => ({
-      ok: false,
-      status: 500,
-      json: async () => ({}),
+      ok: true,
+      json: async () => ({ results: [{ status: 'accepted' }] }),
     })) as unknown as typeof fetch;
-    const t = createHttpOutboxTransport({ baseUrl: 'http://x', fetchImpl });
+
+    const t = createHttpOutboxTransport({
+      baseUrl: 'http://x',
+      ...auth,
+      fetchImpl,
+      resolveEnrichment: async () => ({
+        status: 'completed',
+        localStartDate: '2026-09-30',
+        projection: {
+          setLogs: [
+            {
+              id: 'e1',
+              exerciseId: 7,
+              dateKey: '2026-09-30',
+              weight: 80,
+              reps: 5,
+              rir: 1,
+            },
+          ],
+          dayProgress: { '2026-09-30': { '7': 1 } },
+        },
+      }),
+    });
+    await expect(t.send(sampleRow)).resolves.toBe('accepted');
+    const [, init] = fetchImpl.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(String(init.body));
+    const payload = body.operations[0].payload;
+    expect(payload.status).toBe('completed');
+    expect(payload.local_start_date).toBe('2026-09-30');
+    expect(payload.projection.setLogs[0].exerciseId).toBe(7);
+  });
+
+  it('still pushes thin payload when resolveEnrichment throws', async () => {
+    const fetchImpl = jest.fn(async () => ({
+      ok: true,
+      json: async () => ({ results: [{ status: 'accepted' }] }),
+    })) as unknown as typeof fetch;
+
+    const t = createHttpOutboxTransport({
+      baseUrl: 'http://x',
+      ...auth,
+      fetchImpl,
+      resolveEnrichment: async () => {
+        throw new Error('sqlite locked');
+      },
+    });
+    await expect(t.send(sampleRow)).resolves.toBe('accepted');
+    const [, init] = fetchImpl.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(String(init.body));
+    const payload = body.operations[0].payload;
+    expect(payload.event_id).toBe(sampleRow.eventId);
+    expect(payload.projection).toBeUndefined();
+  });
+
+  it('skips enrichment fields when resolveEnrichment returns null', async () => {
+    const fetchImpl = jest.fn(async () => ({
+      ok: true,
+      json: async () => ({ results: [{ status: 'accepted' }] }),
+    })) as unknown as typeof fetch;
+
+    const t = createHttpOutboxTransport({
+      baseUrl: 'http://x',
+      ...auth,
+      fetchImpl,
+      resolveEnrichment: async () => null,
+    });
+    await expect(t.send(sampleRow)).resolves.toBe('accepted');
+    const [, init] = fetchImpl.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(String(init.body));
+    const payload = body.operations[0].payload;
+    expect(payload.status).toBeUndefined();
+    expect(payload.projection).toBeUndefined();
+  });
+
+  it('send returns failed when result status is rejected', async () => {
+    const fetchImpl = jest.fn(async () => ({
+      ok: true,
+      json: async () => ({ results: [{ status: 'rejected' }] }),
+    })) as unknown as typeof fetch;
+
+    const t = createHttpOutboxTransport({ baseUrl: 'http://x', ...auth, fetchImpl });
     await expect(t.send(sampleRow)).resolves.toBe('failed');
   });
 });
