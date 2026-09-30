@@ -1,4 +1,7 @@
+import { createLogger } from '@/core/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const log = createLogger('health-sync-prefs');
 
 const ENABLED_KEY = '@fitpulse/health_connect_export_enabled';
 const LAST_EXPORT_KEY = '@fitpulse/health_connect_last_export_at';
@@ -17,8 +20,10 @@ export async function setHealthExportEnabled(enabled: boolean): Promise<void> {
   if (!enabled) {
     try {
       await AsyncStorage.removeItem(LAST_EXPORT_KEY);
-    } catch {
-      /* prefs are best-effort */
+    } catch (err) {
+      log.debug('clear last export failed', {
+        err: err instanceof Error ? err.message : String(err),
+      });
     }
   }
 }
@@ -37,7 +42,9 @@ export async function markHealthExportSuccess(
 ): Promise<void> {
   try {
     await AsyncStorage.setItem(LAST_EXPORT_KEY, new Date(atMs).toISOString());
-  } catch {
-    /* prefs are best-effort */
+  } catch (err) {
+    log.warn('markHealthExportSuccess failed', {
+      err: err instanceof Error ? err.message : String(err),
+    });
   }
 }
