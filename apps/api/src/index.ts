@@ -130,8 +130,7 @@ export function createApp(
         return c.json({ error: 'unauthorized' }, 401);
       }
       const subject = verifyJwt(jwtSecret, header.slice('Bearer '.length));
-
- if (!subject) {
+      if (!subject) {
         return c.json({ error: 'unauthorized' }, 401);
       }
       c.set('authUserId', subject);
@@ -291,6 +290,7 @@ export function createApp(
             aggregate_type: op.aggregate_type,
             aggregate_id: op.aggregate_id,
             payload: opPayload ?? resultBody,
+            device_id: op.device_id,
           });
         } catch (err) {
           // Projection failure must not reject an already-accepted op,
@@ -309,8 +309,7 @@ export function createApp(
         return {
           client_operation_id: op.client_operation_id,
           status: 'accepted',
-
-   result_body: resultBody,
+          result_body: resultBody,
         } satisfies SyncPushOperationResult;
       });
 
