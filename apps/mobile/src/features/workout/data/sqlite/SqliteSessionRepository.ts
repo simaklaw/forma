@@ -56,6 +56,7 @@ type OutboxDbRow = {
   payload_hash: string;
   status: string;
   created_at_ms: number;
+  projection_json?: string;
 };
 
 /** Finite positive body mass for the denormalized column; null otherwise. */
@@ -126,8 +127,9 @@ export class SqliteSessionRepository implements SessionRepository {
     events: SessionEvent[];
     payloadHashes: string[];
     checkpoint?: SessionCheckpoint;
+    projections?: Array<{ setLogs: unknown[]; dayProgress: Record<string, Record<string, number>> }>;
   }): Promise<void> {
-    const { session, events, payloadHashes, checkpoint } = input;
+    const { session, events, payloadHashes, checkpoint, projections = [] } = input;
     if (events.length !== payloadHashes.length) {
       throw new Error('payloadHashes length must match events');
     }
@@ -192,17 +194,19 @@ export class SqliteSessionRepository implements SessionRepository {
             ev.operationId
           ]
         );
+        const projectionJson = projections[i] ? JSON.stringify(projections[i]) : null;
         this.db.runSync(
           `INSERT INTO outbox (
-             operation_id, session_id, event_id, aggregate_version, payload_hash, status, created_at_ms
-           ) VALUES (?, ?, ?, ?, ?, 'pending', ?)`,
+             operation_id, session_id, event_id, aggregate_version, payload_hash, status, created_at_ms, projection_json
+           ) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)`,
           [
             ev.operationId,
             session.sessionId,
             ev.eventId,
             session.rowVersion,
             payloadHashes[i]!,
-            now
+            now,
+            projectionJson
           ]
         );
       }
@@ -275,15 +279,19 @@ export class SqliteSessionRepository implements SessionRepository {
       `SELECT * FROM outbox WHERE status = 'pending' ORDER BY created_at_ms ASC LIMIT ?`,
       [limit]
     );
-    return rows.map((r) => ({
-      operationId: r.operation_id,
-      sessionId: r.session_id,
-      eventId: r.event_id,
-      aggregateVersion: r.aggregate_version,
-      payloadHash: r.payload_hash,
-      status: r.status as OutboxStatus,
-      createdAtMs: r.created_at_ms
-    }));
+    return rows.map((r) => {
+      const projection = r.projection_json ? JSON.parse(r.projection_json) : undefined;
+      return {
+        operationId: r.operation_id,
+        sessionId: r.session_id,
+        eventId: r.event_id,
+        aggregateVersion: r.aggregate_version,
+        payloadHash: r.payload_hash,
+        status: r.status as OutboxStatus,
+        createdAtMs: r.created_at_ms,
+        projection
+      };
+    });
   }
 
   async markOutbox(operationId: string, status: OutboxStatus): Promise<void> {

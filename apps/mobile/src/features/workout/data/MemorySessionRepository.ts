@@ -43,6 +43,7 @@ export class MemorySessionRepository implements SessionRepository {
     events: SessionEvent[];
     payloadHashes: string[];
     checkpoint?: SessionCheckpoint;
+    projections?: Array<{ setLogs: unknown[]; dayProgress: Record<string, Record<string, number>> }>;
   }): Promise<void> {
     const { session, events, payloadHashes, checkpoint } = input;
     if (events.length !== payloadHashes.length) {
@@ -84,6 +85,7 @@ export class MemorySessionRepository implements SessionRepository {
       }
 
       const now = Date.now();
+      const projections = input.projections ?? [];
       events.forEach((ev, i) => {
         this.outbox.push({
           operationId: ev.operationId,
@@ -92,7 +94,8 @@ export class MemorySessionRepository implements SessionRepository {
           aggregateVersion: session.rowVersion,
           payloadHash: payloadHashes[i]!,
           status: 'pending',
-          createdAtMs: now
+          createdAtMs: now,
+          projection: projections[i]
         });
       });
     } catch (e) {
