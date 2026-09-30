@@ -1,10 +1,13 @@
 import type { OutboxRow } from './SessionRepository';
 import type { OutboxTransport } from './OutboxDrainService';
 import { LOCAL_USER_ID } from '../session/currentUser';
+import { projectSessionEvents, type SessionProjection } from './sessionProjections';
+import { getSessionService } from './createSessionService';
 
 /**
  * Until real auth, map the local placeholder user to a fixed UUID so
  * Postgres FK / requireUuid paths accept the payload.
+ * Prefer JWT user_id from syncAuth when available (wired by bootstrap).
  */
 export const SYNC_LOCAL_USER_UUID = '00000000-0000-4000-8000-000000000001';
 export const SYNC_LOCAL_DEVICE_UUID = '00000000-0000-4000-8000-0000000000d1';
@@ -23,24 +26,64 @@ export function toSyncPayloadHash(localHash: string): string {
   return h.padEnd(64, '0');
 }
 
+/**
+ * Fields merged into the sync push payload so:
+ * - activity_credit sees terminal status + local date
+ * - change feed / pull can hydrate peers via payload.projection
+ */
+export type PushSessionEnrichment = {
+  status: string;
+  localStartDate: string;
+  projection: SessionProjection;
+};
+
 export type HttpOutboxTransportOptions = {
   baseUrl: string;
   /**
-   * Shared-secret token for the sync API (SYNC_API_TOKEN on the server).
-   * Sent as Authorization: Bearer <token>. When the server has the token
-   * set, requests without it get 401 and every send() fails.
+   * Per-user JWT (preferred) or legacy shared SYNC_API_TOKEN.
+   * Sent as Authorization: Bearer <token>.
    */
   token?: string;
   /** Defaults to SYNC_LOCAL_DEVICE_UUID. */
   deviceId?: string;
-  /** Defaults to resolveSyncUserId(). */
+  /** Defaults to resolveSyncUserId(). Prefer JWT-derived user_id. */
   userId?: string;
   fetchImpl?: typeof fetch;
+  /**
+   * Build enrichment for a session. Defaults to loading the local aggregate
+   * + events and running projectSessionEvents.
+   */
+  resolveEnrichment?: (
+    sessionId: string,
+  ) => Promise<PushSessionEnrichment | null>;
 };
+
+/** Default: project local session journal into setLogs / dayProgress. */
+export async function defaultResolveEnrichment(
+  sessionId: string,
+): Promise<PushSessionEnrichment | null> {
+  try {
+    const svc = getSessionService();
+    const session = await svc.getSession(sessionId);
+    if (!session) return null;
+    const events = await svc.listEvents(sessionId);
+    const projection = projectSessionEvents(session, events);
+    return {
+      status: session.status,
+      localStartDate: session.localStartDate,
+      projection,
+    };
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Pushes one outbox row to FitPulse sync API (POST /api/v1/sync/push).
  * Network errors → 'failed' (row stays retryable after mark failed).
+ *
+ * Payload enrichment (best-effort): status, local_start_date, projection.
+ * payload_hash stays the local event hash — idempotency key is unchanged.
  */
 export function createHttpOutboxTransport(
   opts: HttpOutboxTransportOptions,
@@ -50,6 +93,7 @@ export function createHttpOutboxTransport(
   const userId = opts.userId ?? resolveSyncUserId();
   const token = opts.token;
   const fetchFn = opts.fetchImpl ?? globalThis.fetch.bind(globalThis);
+  const resolveEnrichment = opts.resolveEnrichment ?? defaultResolveEnrichment;
 
   return {
     async send(row: OutboxRow): Promise<'accepted' | 'failed'> {
@@ -58,6 +102,19 @@ export function createHttpOutboxTransport(
         accept: 'application/json',
       };
       if (token) headers.authorization = `Bearer ${token}`;
+
+      const enrichment = await resolveEnrichment(row.sessionId);
+      const payload: Record<string, unknown> = {
+        event_id: row.eventId,
+        aggregate_version: row.aggregateVersion,
+      };
+      if (enrichment) {
+        payload.status = enrichment.status;
+        payload.session_status = enrichment.status;
+        payload.local_start_date = enrichment.localStartDate;
+        payload.local_date = enrichment.localStartDate;
+        payload.projection = enrichment.projection;
+      }
 
       const body = {
         user_id: userId,
@@ -68,10 +125,7 @@ export function createHttpOutboxTransport(
             aggregate_type: 'workout_session',
             aggregate_id: row.sessionId,
             payload_hash: toSyncPayloadHash(row.payloadHash),
-            payload: {
-              event_id: row.eventId,
-              aggregate_version: row.aggregateVersion,
-            },
+            payload,
             occurred_at_client: new Date(row.createdAtMs).toISOString(),
           },
         ],
@@ -99,8 +153,9 @@ export function createHttpOutboxTransport(
 
 /**
  * Build transport from Expo public env, or null if unset (keep noop).
+ * Prefer bootstrapOutboxDrain + syncAuth (per-user JWT).
  * EXPO_PUBLIC_SYNC_API_URL=http://10.0.2.2:8787
- * EXPO_PUBLIC_SYNC_API_TOKEN=<same value as server SYNC_API_TOKEN>
+ * EXPO_PUBLIC_SYNC_API_TOKEN — legacy shared secret only.
  */
 export function createHttpOutboxTransportFromEnv(): OutboxTransport | null {
   const base =
