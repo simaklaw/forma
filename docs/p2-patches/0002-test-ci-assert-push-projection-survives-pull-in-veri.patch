@@ -1,0 +1,140 @@
+From 7c78736697be549bd8eb8a0b72cdcf1cd9e0b491 Mon Sep 17 00:00:00 2001
+From: Grok <grok@x.ai>
+Date: Wed, 30 Sep 2026 06:13:23 +0000
+Subject: [PATCH 2/7] test(ci): assert push projection survives pull in
+ verify-sync
+
+Enriched payload.projection {setLogs, dayProgress} must round-trip
+through change feed so peer devices can hydrate the read model.
+---
+ .github/workflows/verify-sync.yml | 35 ++++++++++++++++++++++++++++++-
+ HANDOFF.md                        | 34 +++++++++++++++---------------
+ 2 files changed, 51 insertions(+), 18 deletions(-)
+
+diff --git a/.github/workflows/verify-sync.yml b/.github/workflows/verify-sync.yml
+index 3279c05..1e7a55c 100644
+--- a/.github/workflows/verify-sync.yml
++++ b/.github/workflows/verify-sync.yml
+@@ -7,7 +7,8 @@ name: Verify sync setup (E2E)
+ #   push 401 without token, accepted with matching token, duplicate on
+ #   replay, 403 on user_id mismatch, cross-user pull isolation,
+ #   activity_credit projection (1 credit for terminal event, none for
+-#   intermediate, no double-credit on replay).
++#   intermediate, no double-credit on replay),
++#   enriched push payload.projection survives pull (setLogs/dayProgress).
+ # A summary table is written to the run's Summary page. On failure,
+ # diagnostics are committed to the ci-logs branch.
+ 
+@@ -210,6 +211,37 @@ jobs:
+           echo "changes=$CHANGES"
+           [ "$CHANGES" = "2" ]
+ 
++      - name: enriched projection survives push → pull
++        run: |
++          HASH=$(printf 'c%.0s' $(seq 1 64))
++          cat > push_proj.json <<EOF
++          {"user_id":"$A_USER","operations":[{"client_operation_id":"018f0000-0000-7000-8000-000000000003","device_id":"00000000-0000-4000-8000-0000000000d1","aggregate_type":"workout_session","aggregate_id":"00000000-0000-4000-8000-0000000000a3","payload_hash":"$HASH","payload":{"status":"completed","local_start_date":"2026-09-30","projection":{"setLogs":[{"id":"e1","exerciseId":7,"dateKey":"2026-09-30","weight":80,"reps":5,"rir":1}],"dayProgress":{"2026-09-30":{"7":1}}}},"occurred_at_client":"2026-09-30T12:00:00.000Z"}]}
++          EOF
++          code=$(curl -s -o resp_proj.json -w '%{http_code}' -X POST http://localhost:8787/api/v1/sync/push \
++            -H 'content-type: application/json' -H "authorization: Bearer $A_TOKEN" --data @push_proj.json)
++          echo "status=$code"; cat resp_proj.json
++          [ "$code" = "200" ]
++          grep -q '"status":"accepted"' resp_proj.json
++          curl -s "http://localhost:8787/api/v1/sync/pull?after_change_id=0" \
++            -H "authorization: Bearer $A_TOKEN" -o pull_proj.json
++          cat pull_proj.json
++          node -e '
++            const j = JSON.parse(require("fs").readFileSync("pull_proj.json","utf8"));
++            const hit = (j.changes || []).find(
++              (c) => c.payload && c.payload.projection && Array.isArray(c.payload.projection.setLogs)
++            );
++            if (!hit) {
++              console.error("no projection in pull");
++              process.exit(1);
++            }
++            const log0 = hit.payload.projection.setLogs[0];
++            if (log0.exerciseId !== 7 || log0.weight !== 80) {
++              console.error("bad setLog", log0);
++              process.exit(2);
++            }
++            console.log("projection_ok change_id=" + hit.change_id);
++          '
++
+       - name: pull as B sees nothing (cross-user isolation)
+         run: |
+           curl -s "http://localhost:8787/api/v1/sync/pull?user_id=$B_USER&after_change_id=0" \
+@@ -243,6 +275,7 @@ jobs:
+             echo "| повтор (идемпотентность) | $(grep -o '"status":"[a-z]*"' resp2.json 2>/dev/null || echo fail) |"
+             echo "| кредит за терминальное событие | $(cat credits_count.log 2>/dev/null || echo fail) строка(и) |"
+             echo "| pull A / pull B | 2 / $(node -e "try{console.log(JSON.parse(require('fs').readFileSync('pull_b.json','utf8')).changes.length)}catch{console.log('fail')}" 2>/dev/null) changes |"
++            echo "| projection push→pull | $(node -e "try{const j=JSON.parse(require('fs').readFileSync('pull_proj.json','utf8'));const h=(j.changes||[]).find(c=>c.payload&&c.payload.projection);console.log(h?'ok':'fail')}catch{console.log('fail')}" 2>/dev/null) |"
+           } >> "$GITHUB_STEP_SUMMARY"
+ 
+       - name: Publish diagnostics on failure
+diff --git a/HANDOFF.md b/HANDOFF.md
+index 01147f8..26f0104 100644
+--- a/HANDOFF.md
++++ b/HANDOFF.md
+@@ -1,43 +1,43 @@
+ # HANDOFF — FitPulse
+ 
+-**Checkpoint:** 2026-09-30 (P2 push payload enrichment)
++**Checkpoint:** 2026-09-30 (P2 push payload enrichment + E2E projection assert)
+ **Brand:** FitPulse in UI/bundle. Packages may use `@forma/*` internally.
+ **APK:** do not build until owner says so.
+ 
+ ## On main (before this branch)
+ 
+ 1. P0 offline-first — #75
+-2. P1 sync skeleton → Postgres → HttpOutbox → App drain — #76–#79
+-3. Sex plans, activity_credit, sync hardening, JWT auth — through #83+
+-4. P2 client auth (device → JWT) + client pull (cursor + applier) — green on 498c49b
++2. P1 sync → Postgres → outbox drain — #76–#79
++3. Sex plans, activity_credit, sync hardening, JWT — through #83+
++4. P2 client auth + client pull — green on 498c49b
+ 
+ ## This branch (`feat/p2-push-payload-enrichment`)
+ 
+-**Problem:** Outbox push sent `{ event_id, aggregate_version }` only. Change feed
+-stored that thin payload; pull appliers skipped it → multi-device read model never hydrated.
++**Problem:** Outbox push sent `{ event_id, aggregate_version }` only → change feed
++thin → pull applier skipped → peer read model never hydrated.
+ 
+-**Fix:** `HttpOutboxTransport` best-effort enriches each push with:
+-- `status` / `session_status` + `local_start_date` (activity_credit)
+-- `projection: { setLogs, dayProgress }` from `projectSessionEvents(session, events)`
+-
+-`payload_hash` remains the local event hash (idempotency unchanged).
+-Missing session → thin payload still accepted (no hard fail).
++**Fix:**
++1. `HttpOutboxTransport` enriches with `status`, `local_start_date`, and
++   `projection: { setLogs, dayProgress }` from `projectSessionEvents`.
++2. `payload_hash` stays the local event hash (idempotency unchanged).
++3. `verify-sync.yml` asserts enriched `payload.projection` survives push → pull.
+ 
+ ## P2 status
+ 
+ | Item | Status |
+ |------|--------|
+-| Per-user JWT (server + client) | yes (main) |
+-| Client pull + change applier | yes (main) |
++| Per-user JWT | yes (main) |
++| Client pull + applier | yes (main) |
+ | Push payload enrichment | **this branch** |
++| E2E projection round-trip | **this branch** |
+ | `exercise_record` Postgres | deferred (FK) |
+ | Real login UI | not started |
+ 
+ ## Next after merge
+ 
+-1. Optionally assert enrichment in verify-sync E2E (push completed session → pull has projection)
+-2. `exercise_record` / soft PR when catalog seed lands
+-3. Real login UI when owner wants accounts
++1. Soft PR / session materialization → unlock hard `exercise_record`
++2. Login UI (email subject) when owner wants accounts
++3. Health Connect (not Google Fit)
+ 
+ ## Rules
+ 
+-- 
+2.43.0
