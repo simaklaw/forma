@@ -13,6 +13,10 @@ import {
   type SessionCheckpoint,
   type SessionRepository
 } from './SessionRepository';
+import { buildSessionProjection } from './sessionProjectionPayload';
+import type { SetLogEntry } from '@/engines/WorkoutStats';
+import type { DayProgress } from '@/engines/WorkoutStats';
+import type { SessionProjection } from './sessionProjections';
 
 export interface DispatchContext {
   /** Injected wall clock; defaults to Date.now() at the adapter edge only. */
@@ -105,6 +109,14 @@ export class SessionCommandService {
     });
 
     const payloadHashes = result.events.map((e) => hashPayload(e.payload));
+    
+    // Build session projections for each event for sync push payload enrichment
+    const projections: SessionProjection[] = [];
+    for (const event of result.events) {
+      const proj = buildSessionProjection(result.session, [event]);
+      projections.push(proj);
+    }
+    
     const checkpoint = {
       sessionId: result.session.sessionId,
       eventOrdinal: result.session.lastEventOrdinal,
@@ -117,7 +129,8 @@ export class SessionCommandService {
       session: result.session,
       events: result.events,
       payloadHashes,
-      checkpoint
+      checkpoint,
+      projections
     });
 
     return result;

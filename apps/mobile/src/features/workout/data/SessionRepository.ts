@@ -10,6 +10,8 @@ export interface OutboxRow {
   payloadHash: string;
   status: OutboxStatus;
   createdAtMs: number;
+  /** Session projection for sync push payload enrichment (P2). */
+  projection?: { setLogs: unknown[]; dayProgress: Record<string, Record<string, number>> };
 }
 
 export interface SessionCheckpoint {
@@ -45,6 +47,8 @@ export interface SessionRepository {
     events: SessionEvent[];
     payloadHashes: string[];
     checkpoint?: SessionCheckpoint;
+    /** Session projection for sync push payload enrichment (P2). */
+    projections?: Array<{ setLogs: unknown[]; dayProgress: Record<string, Record<string, number>> }>;
   }): Promise<void>;
 
   /** Durable recovery point for fast process-restart hydration. */

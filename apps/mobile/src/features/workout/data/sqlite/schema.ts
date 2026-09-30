@@ -62,7 +62,8 @@ export const MIGRATIONS: ReadonlyArray<{ version: number; sql: string }> = [
         aggregate_version INTEGER NOT NULL,
         payload_hash      TEXT    NOT NULL,
         status            TEXT    NOT NULL DEFAULT 'pending',
-        created_at_ms     INTEGER NOT NULL
+        created_at_ms     INTEGER NOT NULL,
+        projection_json   TEXT
       );
 
       CREATE INDEX idx_outbox_pending

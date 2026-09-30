@@ -59,6 +59,12 @@ export function createHttpOutboxTransport(
       };
       if (token) headers.authorization = `Bearer ${token}`;
 
+      const payload = {
+        event_id: row.eventId,
+        aggregate_version: row.aggregateVersion,
+        ...(row.projection ? { projection: row.projection } : {}),
+      };
+
       const body = {
         user_id: userId,
         operations: [
@@ -68,10 +74,7 @@ export function createHttpOutboxTransport(
             aggregate_type: 'workout_session',
             aggregate_id: row.sessionId,
             payload_hash: toSyncPayloadHash(row.payloadHash),
-            payload: {
-              event_id: row.eventId,
-              aggregate_version: row.aggregateVersion,
-            },
+            payload,
             occurred_at_client: new Date(row.createdAtMs).toISOString(),
           },
         ],
