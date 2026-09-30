@@ -30,6 +30,7 @@ import {
   OidcError,
   type OidcProvider,
   type OidcConfig,
+  oidcConfigFromEnv,
 } from './oidc.ts';
 
 const UUID_RE =
@@ -118,9 +119,9 @@ export function createApp(
       }
       const provider = stringFrom(body?.provider) as OidcProvider | undefined;
       const idToken = stringFrom(body?.id_token);
-      if (provider !== 'google' && provider !== 'apple') {
+      if (provider !== 'mailru' && provider !== 'vk') {
         return c.json(
-          { error: 'invalid_provider', message: 'provider must be google|apple' },
+          { error: 'invalid_provider', message: 'provider must be mailru|vk' },
           400,
         );
       }
@@ -391,13 +392,7 @@ export async function createAppFromEnv(): Promise<ReturnType<typeof createApp>> 
   const url = process.env.DATABASE_URL;
   const apiToken = process.env.SYNC_API_TOKEN || undefined;
   const jwtSecret = process.env.JWT_SECRET || undefined;
-  const oidcConfig =
-    process.env.OIDC_GOOGLE_CLIENT_ID || process.env.OIDC_APPLE_CLIENT_ID
-      ? {
-          googleClientId: process.env.OIDC_GOOGLE_CLIENT_ID || undefined,
-          appleClientId: process.env.OIDC_APPLE_CLIENT_ID || undefined,
-        }
-      : undefined;
+  const oidcConfig = oidcConfigFromEnv();
   if (!url) {
     const { MemoryUserRegistry } = await import('./auth.ts');
     return createApp({
