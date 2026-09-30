@@ -15,6 +15,18 @@ function defaultFetch(): typeof fetch {
   throw new Error('fetch_unavailable');
 }
 
+/** Basic http(s) base URL check (no credentials in URL). */
+export function isHttpBaseUrl(raw: string): boolean {
+  try {
+    const u = new URL(raw);
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+const DEFAULT_PUSH_TIMEOUT_MS = 30_000;
+
 /**
  * Until real auth, map the local placeholder user to a fixed UUID so
  * Postgres FK / requireUuid paths accept the payload.
@@ -113,6 +125,10 @@ export function createHttpOutboxTransport(
         log.warn('outbox send skipped: missing userId or token');
         return 'failed';
       }
+      if (!isHttpBaseUrl(base)) {
+        log.warn('outbox send skipped: invalid baseUrl', { base });
+        return 'failed';
+      }
 
       const headers: Record<string, string> = {
         'content-type': 'application/json',
@@ -157,11 +173,22 @@ export function createHttpOutboxTransport(
       };
 
       try {
-        const res = await fetchFn(`${base}/api/v1/sync/push`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(body),
-        });
+        const controller = new AbortController();
+        const timer = setTimeout(
+          () => controller.abort(),
+          DEFAULT_PUSH_TIMEOUT_MS,
+        );
+        let res: Response;
+        try {
+          res = await fetchFn(`${base}/api/v1/sync/push`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(body),
+            signal: controller.signal,
+          });
+        } finally {
+          clearTimeout(timer);
+        }
         if (!res.ok) return 'failed';
         const json = (await res.json()) as {
           results?: Array<{ status?: string }>;
