@@ -1,6 +1,6 @@
 # HANDOFF — FitPulse
 
-**Checkpoint:** 2026-09-30 (P2 per-user JWT done end-to-end: server register/JWT middleware green in E2E; mobile client auto-registers an anonymous device identity, stores JWT in AsyncStorage, drains outbox with Bearer <jwt> — CI + E2E green on 2b29bb2)
+**Checkpoint:** 2026-09-30 (P2 client pull done end-to-end: SyncPullService (cursor-paged, persisted cursor, apply-then-advance) + workoutSessionChangeApplier + runSyncOnce (push then pull) wired into the bootstrap lifecycle — CI + E2E green on 498c49b)
 **Brand:** FitPulse in UI/bundle. Packages may use `@forma/*` internally.
 **APK:** do not build until owner says so.
 
@@ -13,21 +13,21 @@
 5. Sync hardening (strict RLS 003, bearer token, migration 004) + cloud E2E `verify-sync` — PR #83 + follow-ups
 6. P2 per-user JWT (server) — `/api/v1/auth/register` (UUIDv5 identity), HS256 on node:crypto (30-day TTL), JWT middleware on `/api/v1/sync/*`: 401 without token, 403 user_mismatch, pull defaults to token subject. JWT supersedes SYNC_API_TOKEN when JWT_SECRET is set.
 7. P2 client auth — `apps/mobile/src/features/auth/syncAuth.ts`: anonymous device subject (random, persisted), register → JWT, cached in AsyncStorage, re-register on expiry keeps the same subject → same user_id. `bootstrapOutboxDrain` wires token+user_id into HttpOutboxTransport; noop transport when offline or register fails. Tests: syncAuth.test.ts (register/persist/reuse/expired/offline).
+8. P2 client pull — `apps/mobile/src/features/sync/syncPullService.ts`: cursor `fitpulse.sync.pull_cursor` in AsyncStorage, GET /api/v1/sync/pull?after_change_id= with Bearer JWT (user_id never sent — server takes token subject), pages until has_more, apply-then-advance cursor (at-least-once, idempotent appliers), partial failure keeps applied pages, offline-safe, maxPages cap. `workoutSessionChangeApplier.ts` merges payload.projection {setLogs, dayProgress} for entity_type workout_session via applySessionProjection; tombstones acknowledged, unknown shapes skipped. `bootstrapOutboxDrain.ts` exposes runSyncOnce(limit) = push drain + pull, called on cold start and AppState active; fully offline (no URL) stays a no-op. Tests: syncPullService.test.ts, workoutSessionChangeApplier.test.ts. CI fix along the way: TS1323 (mobile tsconfig module does not allow dynamic import()) and TS2307 (import depth data → applySessionProjection is `./`) → static imports.
 
 ## In flight
 
-- `feat/p1-projection-writers` — content superseded by main; branch can be deleted.
-- Next candidates: client-side pull (apply changes from /api/v1/sync/pull to local store); `exercise_record` Postgres projection (FK to session/revision); real login UI (email subject entry) when the owner wants accounts.
+- Next candidates: push payload enrichment (OutboxRow stores no event payload, so pulled workout_session changes carry thin payloads `{event_id, aggregate_version}` and the applier skips them — enrich pushes with a full session projection so pull actually hydrates the read model); `exercise_record` Postgres projection (FK to session/revision); real login UI (email subject entry) when the owner wants accounts.
 
 ## P2 verification (cloud, no computer)
 
 - `verify-sync.yml` E2E (JWT): register A/B with stable user_ids, 401 without token, 403 on user_mismatch, accepted/duplicate push, cross-user pull isolation (A=2/B=0), activity_credit under JWT — **green**.
-- Monorepo CI: Install · Type-check · Test — **green** on 2b29bb2 (incl. auth.test.ts server suite and syncAuth.test.ts client suite).
+- Monorepo CI: Install · Type-check · Test — **green** on 498c49b (incl. auth.test.ts server suite, syncAuth.test.ts, syncPullService.test.ts, workoutSessionChangeApplier.test.ts client suites).
 
 ## Debugging notes (phone-only workflow)
 
 - CI/CI-E2E publish failure logs to the `ci-logs` branch (`ci-logs/<run_id>/`; ci.yml has `permissions: contents: write`). Captured: api_test.log, typecheck_core.log + inline in step summary.
-- Known traps: pg_class column is `relforcerowsecurity`; device platform CHECK needed 'unknown'; template literals in pushed files must be re-checked for dropped brackets; relative import depth from workout/data to features/auth is `../../auth`.
+- Known traps: pg_class column is `relforcerowsecurity`; device platform CHECK needed 'unknown'; template literals in pushed files must be re-checked for dropped brackets; relative import depth from workout/data to features/auth is `../../auth`; mobile tsconfig rejects dynamic import() — use static imports; import depth from workout/data to applySessionProjection is `./`.
 
 ## P1 status
 
@@ -41,6 +41,7 @@
 | `exercise_record` Postgres upsert | deferred (FK to session/revision) |
 | Auth → RLS GUC | per-user JWT end-to-end (server + client) |
 | Cloud E2E (verify-sync workflow) | green under JWT |
+| Client pull (cursor + change applier + lifecycle) | done |
 
 ## Rules
 
