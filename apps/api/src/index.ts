@@ -130,7 +130,8 @@ export function createApp(
         return c.json({ error: 'unauthorized' }, 401);
       }
       const subject = verifyJwt(jwtSecret, header.slice('Bearer '.length));
-      if (!subject) {
+     
+ if (!subject) {
         return c.json({ error: 'unauthorized' }, 401);
       }
       c.set('authUserId', subject);
@@ -193,8 +194,7 @@ export function createApp(
           client_operation_id: op.client_operation_id,
           status: 'rejected',
           error_code: 'invalid_payload_hash',
-   
-       error_message: 'payload_hash must be 64-char hex SHA-256',
+          error_message: 'payload_hash must be 64-char hex SHA-256',
         });
         continue;
       }
@@ -309,7 +309,8 @@ export function createApp(
         return {
           client_operation_id: op.client_operation_id,
           status: 'accepted',
-          result_body: resultBody,
+       
+   result_body: resultBody,
         } satisfies SyncPushOperationResult;
       });
 
