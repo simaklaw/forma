@@ -119,7 +119,7 @@ export function createApp(
       const expiresAt = new Date(
         Date.now() + JWT_TTL_SECONDS * 1000,
       ).toISOString();
-      return c.json({ user_id, created, token, expires_at });
+      return c.json({ user_id, created, token, expires_at: expiresAt });
     });
   }
 
@@ -193,7 +193,8 @@ export function createApp(
           client_operation_id: op.client_operation_id,
           status: 'rejected',
           error_code: 'invalid_payload_hash',
-          error_message: 'payload_hash must be 64-char hex SHA-256',
+   
+       error_message: 'payload_hash must be 64-char hex SHA-256',
         });
         continue;
       }
