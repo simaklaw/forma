@@ -3,6 +3,17 @@ import type { OutboxTransport } from './OutboxDrainService';
 import { LOCAL_USER_ID } from '../session/currentUser';
 import { projectSessionEvents, type SessionProjection } from './sessionProjections';
 import { getSessionService } from './createSessionService';
+import { createLogger } from '@/core/logger';
+
+const log = createLogger('http-outbox');
+
+/** Prefer injected fetch; fall back to global only when present. */
+function defaultFetch(): typeof fetch {
+  if (typeof globalThis.fetch === 'function') {
+    return globalThis.fetch.bind(globalThis);
+  }
+  throw new Error('fetch_unavailable');
+}
 
 /**
  * Until real auth, map the local placeholder user to a fixed UUID so
@@ -46,7 +57,7 @@ export type HttpOutboxTransportOptions = {
   token?: string;
   /** Defaults to SYNC_LOCAL_DEVICE_UUID. */
   deviceId?: string;
-  /** Defaults to resolveSyncUserId(). Prefer JWT-derived user_id. */
+  /** Required for send — JWT-derived user_id from syncAuth. */
   userId?: string;
   fetchImpl?: typeof fetch;
   /**
@@ -90,30 +101,44 @@ export function createHttpOutboxTransport(
 ): OutboxTransport {
   const base = opts.baseUrl.replace(/\/$/, '');
   const deviceId = opts.deviceId ?? SYNC_LOCAL_DEVICE_UUID;
-  const userId = opts.userId ?? resolveSyncUserId();
+  // Prefer explicit JWT-derived userId; only fall back to local map when set.
+  const userId = opts.userId;
   const token = opts.token;
-  const fetchFn = opts.fetchImpl ?? globalThis.fetch.bind(globalThis);
+  const fetchFn = opts.fetchImpl ?? defaultFetch();
   const resolveEnrichment = opts.resolveEnrichment ?? defaultResolveEnrichment;
 
   return {
     async send(row: OutboxRow): Promise<'accepted' | 'failed'> {
+      if (!userId || !token) {
+        log.warn('outbox send skipped: missing userId or token');
+        return 'failed';
+      }
+
       const headers: Record<string, string> = {
         'content-type': 'application/json',
         accept: 'application/json',
+        authorization: `Bearer ${token}`,
       };
-      if (token) headers.authorization = `Bearer ${token}`;
 
-      const enrichment = await resolveEnrichment(row.sessionId);
       const payload: Record<string, unknown> = {
         event_id: row.eventId,
         aggregate_version: row.aggregateVersion,
       };
-      if (enrichment) {
-        payload.status = enrichment.status;
-        payload.session_status = enrichment.status;
-        payload.local_start_date = enrichment.localStartDate;
-        payload.local_date = enrichment.localStartDate;
-        payload.projection = enrichment.projection;
+      // Enrichment is best-effort: failures must not block the push itself.
+      try {
+        const enrichment = await resolveEnrichment(row.sessionId);
+        if (enrichment) {
+          payload.status = enrichment.status;
+          payload.session_status = enrichment.status;
+          payload.local_start_date = enrichment.localStartDate;
+          payload.local_date = enrichment.localStartDate;
+          payload.projection = enrichment.projection;
+        }
+      } catch (err) {
+        log.warn('resolveEnrichment failed; pushing thin payload', {
+          sessionId: row.sessionId,
+          err: err instanceof Error ? err.message : String(err),
+        });
       }
 
       const body = {
@@ -163,11 +188,15 @@ export function createHttpOutboxTransportFromEnv(): OutboxTransport | null {
       process.env?.EXPO_PUBLIC_SYNC_API_URL) ||
     '';
   if (!base || typeof base !== 'string') return null;
+  const token =
+    (typeof process !== 'undefined' &&
+      process.env?.EXPO_PUBLIC_SYNC_API_TOKEN) ||
+    undefined;
+  // Legacy shared-token path only — prefer bootstrapOutboxDrain + syncAuth.
+  if (!token) return null;
   return createHttpOutboxTransport({
     baseUrl: base,
-    token:
-      (typeof process !== 'undefined' &&
-        process.env?.EXPO_PUBLIC_SYNC_API_TOKEN) ||
-      undefined,
+    token,
+    userId: resolveSyncUserId(),
   });
 }
