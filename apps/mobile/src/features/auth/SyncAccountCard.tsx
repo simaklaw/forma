@@ -15,6 +15,7 @@ import {
   linkSyncAccount,
   loadAuthSubject,
   loadSyncCredentials,
+  SyncAuthError,
   type SyncCredentials,
 } from './syncAuth';
 
@@ -76,9 +77,15 @@ export default function SyncAccountCard() {
       setSubject(normalized);
       setMessage('Аккаунт привязан. Данные синка пойдут под этим email.');
     } catch (e) {
-      setError(
-        e instanceof Error ? e.message : 'Не удалось привязать аккаунт',
-      );
+      if (e instanceof SyncAuthError && e.status === 409) {
+        setError('Этот email уже привязан к другому аккаунту.');
+      } else if (e instanceof SyncAuthError && e.message === 'email_already_linked') {
+        setError('Этот email уже привязан к другому аккаунту.');
+      } else {
+        setError(
+          e instanceof Error ? e.message : 'Не удалось привязать аккаунт',
+        );
+      }
     } finally {
       setBusy(false);
     }
@@ -133,12 +140,25 @@ export default function SyncAccountCard() {
 
       <TouchableOpacity
         onPress={() => void onLink()}
-        disabled={busy || !email.trim()}
+        disabled={
+          busy ||
+          !email.trim() ||
+          (subject != null &&
+            isEmailSubject(subject) &&
+            subject === email.trim().toLowerCase())
+        }
         style={[
           styles.btn,
           {
             backgroundColor: colors.lime,
-            opacity: busy || !email.trim() ? 0.5 : 1,
+            opacity:
+              busy ||
+              !email.trim() ||
+              (subject != null &&
+                isEmailSubject(subject) &&
+                subject === email.trim().toLowerCase())
+                ? 0.5
+                : 1,
           },
         ]}
       >
@@ -146,7 +166,9 @@ export default function SyncAccountCard() {
           <ActivityIndicator color={colors.ink} />
         ) : (
           <Text style={[styles.btnText, { color: colors.ink }]}>
-            Привязать email
+            {subject != null && isEmailSubject(subject)
+              ? 'Обновить привязку'
+              : 'Привязать email'}
           </Text>
         )}
       </TouchableOpacity>
