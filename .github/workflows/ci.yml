@@ -73,16 +73,28 @@ jobs:
         if: failure()
         run: |
           set +e
+          SAY() { echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          SAY "## CI failure diagnostics (run ${{ github.run_id }})"
+          if [ -f api_test.log ]; then
+            SAY "### api_test.log"
+            SAY "```"
+            tail -c 12000 api_test.log >> "$GITHUB_STEP_SUMMARY"
+            SAY "```"
+          else
+            SAY "api_test.log NOT FOUND; cwd=$(pwd); files:"
+            ls -la >> "$GITHUB_STEP_SUMMARY"
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
-          git fetch origin ci-logs
+          git fetch origin ci-logs && SAY "fetch ok" || SAY "fetch fail"
           git checkout -B ci-logs origin/ci-logs 2>/dev/null || git checkout -B ci-logs
+          SAY "branch=$(git branch --show-current)"
           DIR="ci-logs/${{ github.run_id }}"
           mkdir -p "$DIR"
-          [ -f api_test.log ] && cp api_test.log "$DIR/"
+          if [ -f api_test.log ]; then cp api_test.log "$DIR/"; fi
           echo "ci failed run: ${{ github.run_id }} commit ${{ github.sha }} date $(date -u +%FT%TZ)" >> "$DIR/README.txt"
-          git add -f ci-logs
-          git commit -m "ci: diagnostics from failed ci run ${{ github.run_id }}"
-          git push --force origin ci-logs
+          git add -f ci-logs && SAY "add ok" || SAY "add fail"
+          git commit -m "ci: diagnostics from failed ci run ${{ github.run_id }}" && SAY "commit ok" || SAY "commit fail: $(git status --short | head -5)"
+          git push --force origin ci-logs 2>&1 | tail -3 >> "$GITHUB_STEP_SUMMARY"
           exit 0
