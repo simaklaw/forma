@@ -9,7 +9,7 @@
     "type-check": "tsc --noEmit",
     "build": "tsc --noEmit",
     "lint": "echo \"@forma/api: no lint yet\"",
-    "test": "node --experimental-strip-types --test src/sync.test.ts src/projections.test.ts src/auth.test.ts"
+    "test": "node --experimental-strip-types --test src/sync.test.ts src/projections.test.ts src/auth.test.ts src/oidc.test.ts"
   },
   "dependencies": {
     "@forma/sync-contract": "workspace:*",

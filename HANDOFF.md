@@ -1,23 +1,25 @@
 # HANDOFF — FitPulse
 
-**Checkpoint:** 2026-09-30 (P2 projections wired — soft PR + materialize)
+**Checkpoint:** 2026-09-30 (OIDC token exchange in progress)
 **Brand:** FitPulse in UI/bundle.
 **APK:** do not build until owner says so.
 
-## Branch `feat/p2-push-enrichment-and-soft-pr`
+## Done
 
-Push path after accepted op:
-1. `pr_observation` (soft max_load from setLogs)
-2. `workout_session` + steps/sets materialize (006 seed)
-3. promote → `exercise_record`
-4. `activity_credit` (terminal only)
+- P0 offline workout + P1 sync/RLS + P2 projections (soft PR → materialize)
+- Email subject → JWT (`POST /api/v1/auth/register`)
+- CI green on main (001–006)
 
-Also: login UI, HC last export, review hardening (auth gate, timeout, clearSyncAccount).
+## In flight — OIDC
 
-## Next after merge
+- `POST /api/v1/auth/oidc` — Google/Apple ID token → app JWT
+- Env: `OIDC_GOOGLE_CLIENT_ID`, `OIDC_APPLE_CLIENT_ID`
+- Mobile: `exchangeOidcCredentials` (native Google/Apple UI next)
 
-1. Green CI / verify-sync (migrations 001–006)
-2. Optional OIDC later
+## Next
+
+1. Finish OIDC (server tests + mobile Google via expo-auth-session)
+2. Native Sign in with Google / Apple buttons
 3. APK only when owner says so
 
 ## Rules
