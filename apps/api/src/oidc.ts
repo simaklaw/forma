@@ -1,32 +1,50 @@
 /**
- * OIDC ID-token verification (Google + Apple) → app auth_subject.
+ * OIDC / ID-token verification for RU providers: Mail.ru + VK ID.
  *
- * No extra deps: fetch provider JWKS, verify RS256 with node:crypto.
- * Env:
- *   OIDC_GOOGLE_CLIENT_ID — expected aud for Google ID tokens
- *   OIDC_APPLE_CLIENT_ID  — expected aud for Apple ID tokens (Services ID)
+ * No Google / Apple (not used in this product).
+ *
+ * Mail.ru — standard OIDC:
+ *   issuer https://account.mail.ru
+ *   jwks   https://account.mail.ru/.well-known/jwks.json
+ *   env    OIDC_MAILRU_CLIENT_ID
+ *
+ * VK ID — JWT id_token signed with VK public key (docs):
+ *   claims: iis|iss="VK", sub, app (=client_id), exp, iat
+ *   env    OIDC_VK_CLIENT_ID
+ *          OIDC_VK_PUBLIC_KEY (PEM from VK ID docs)
+ *
+ * No extra deps: node:crypto only.
  */
 
-import { createPublicKey, createVerify, createHash } from 'node:crypto';
+import {
+  createPublicKey,
+  createVerify,
+  createHash,
+  type KeyObject,
+} from 'node:crypto';
 
-export type OidcProvider = 'google' | 'apple';
+export type OidcProvider = 'mailru' | 'vk';
 
 export type OidcClaims = {
   sub: string;
   email?: string;
   email_verified?: boolean;
-  iss: string;
-  aud: string | string[];
+  /** Standard issuer, or VK's non-standard `iis`. */
+  iss?: string;
+  iis?: string;
+  aud?: string | string[];
+  /** VK ID application id (client_id). */
+  app?: number | string;
   exp: number;
   iat?: number;
 };
 
 export type OidcConfig = {
-  googleClientId?: string;
-  appleClientId?: string;
-  /** Injectable clock for tests. */
+  mailruClientId?: string;
+  vkClientId?: string;
+  /** PEM public key for VK ID tokens. */
+  vkPublicKeyPem?: string;
   nowSeconds?: () => number;
-  /** Injectable JWKS fetch for tests. */
   fetchJwks?: (provider: OidcProvider) => Promise<Jwk[]>;
 };
 
@@ -39,18 +57,10 @@ export type Jwk = {
   e?: string;
 };
 
-const GOOGLE_ISS = new Set([
-  'https://accounts.google.com',
-  'accounts.google.com',
-]);
-const APPLE_ISS = 'https://appleid.apple.com';
+const MAILRU_ISS = 'https://account.mail.ru';
+const MAILRU_JWKS = 'https://account.mail.ru/.well-known/jwks.json';
 
-const JWKS_URL: Record<OidcProvider, string> = {
-  google: 'https://www.googleapis.com/oauth2/v3/certs',
-  apple: 'https://appleid.apple.com/auth/keys',
-};
-
-/** In-memory JWKS cache (per process). */
+/** VK ID: no JWKS URL — PEM via OIDC_VK_PUBLIC_KEY / cfg.vkPublicKeyPem. */
 const jwksCache = new Map<OidcProvider, { at: number; keys: Jwk[] }>();
 const JWKS_TTL_MS = 60 * 60 * 1000;
 
@@ -86,22 +96,23 @@ export function claimsToAuthSubject(
 ): string {
   const email =
     typeof claims.email === 'string' ? claims.email.trim().toLowerCase() : '';
-  const verified =
-    claims.email_verified === true ||
-    // Apple may omit email_verified when email is present on first auth
-    (provider === 'apple' && email.length > 0);
-  if (email && verified && email.includes('@') && email.length <= 200) {
-    return email;
+  if (email && email.includes('@') && email.length <= 200) {
+    if (provider === 'mailru' || claims.email_verified !== false) {
+      return email;
+    }
   }
   return `oidc:${provider}:${claims.sub}`.slice(0, 200);
 }
 
 async function defaultFetchJwks(provider: OidcProvider): Promise<Jwk[]> {
+  if (provider !== 'mailru') {
+    throw new OidcError('jwks_not_used', 'jwks_unavailable');
+  }
   const cached = jwksCache.get(provider);
   if (cached && Date.now() - cached.at < JWKS_TTL_MS) {
     return cached.keys;
   }
-  const res = await fetch(JWKS_URL[provider]);
+  const res = await fetch(MAILRU_JWKS);
   if (!res.ok) {
     throw new OidcError('jwks_fetch_failed', 'jwks_unavailable');
   }
@@ -111,8 +122,7 @@ async function defaultFetchJwks(provider: OidcProvider): Promise<Jwk[]> {
   return keys;
 }
 
-/** Build a PEM-capable KeyObject from a JWK RSA public key. */
-function jwkToKeyObject(jwk: Jwk) {
+function jwkToKeyObject(jwk: Jwk): KeyObject {
   if (jwk.kty !== 'RSA' || !jwk.n || !jwk.e) {
     throw new OidcError('unsupported_jwk', 'invalid_token');
   }
@@ -128,25 +138,28 @@ function audMatches(
   return aud.includes(expected);
 }
 
-/**
- * Verify an OIDC ID token and return claims.
- * Throws OidcError on any failure.
- */
+function verifyRs256(data: string, signature: Buffer, key: KeyObject): boolean {
+  const verifier = createVerify('RSA-SHA256');
+  verifier.update(data);
+  verifier.end();
+  return verifier.verify(key, signature);
+}
+
+function vkPublicKey(cfg: OidcConfig): KeyObject {
+  const pem = cfg.vkPublicKeyPem?.trim();
+  if (!pem) {
+    throw new OidcError('vk_public_key_missing', 'provider_not_configured');
+  }
+  return createPublicKey(pem);
+}
+
 export async function verifyIdToken(
   provider: OidcProvider,
   idToken: string,
   cfg: OidcConfig,
 ): Promise<OidcClaims> {
-  if (provider !== 'google' && provider !== 'apple') {
+  if (provider !== 'mailru' && provider !== 'vk') {
     throw new OidcError('unknown_provider', 'invalid_provider');
-  }
-  const expectedAud =
-    provider === 'google' ? cfg.googleClientId : cfg.appleClientId;
-  if (!expectedAud) {
-    throw new OidcError(
-      `${provider}_not_configured`,
-      'provider_not_configured',
-    );
   }
 
   const parts = idToken.split('.');
@@ -167,30 +180,61 @@ export async function verifyIdToken(
     throw new OidcError('unsupported_alg', 'invalid_token');
   }
 
-  const fetchJwks = cfg.fetchJwks ?? defaultFetchJwks;
-  let keys: Jwk[];
-  try {
-    keys = await fetchJwks(provider);
-  } catch (e) {
-    if (e instanceof OidcError) throw e;
-    throw new OidcError('jwks_fetch_failed', 'jwks_unavailable');
-  }
-
-  const jwk =
-    (header.kid ? keys.find((k) => k.kid === header.kid) : undefined) ??
-    keys[0];
-  if (!jwk) {
-    throw new OidcError('no_matching_jwk', 'invalid_token');
-  }
-
   const data = `${parts[0]}.${parts[1]}`;
   const signature = b64urlToBuf(parts[2]);
-  const key = jwkToKeyObject(jwk);
-  const verifier = createVerify('RSA-SHA256');
-  verifier.update(data);
-  verifier.end();
-  if (!verifier.verify(key, signature)) {
-    throw new OidcError('bad_signature', 'invalid_token');
+
+  if (provider === 'mailru') {
+    const expectedAud = cfg.mailruClientId;
+    if (!expectedAud) {
+      throw new OidcError('mailru_not_configured', 'provider_not_configured');
+    }
+    const fetchJwks = cfg.fetchJwks ?? defaultFetchJwks;
+    let keys: Jwk[];
+    try {
+      keys = await fetchJwks('mailru');
+    } catch (e) {
+      if (e instanceof OidcError) throw e;
+      throw new OidcError('jwks_fetch_failed', 'jwks_unavailable');
+    }
+    const jwk =
+      (header.kid ? keys.find((k) => k.kid === header.kid) : undefined) ??
+      keys[0];
+    if (!jwk) {
+      throw new OidcError('no_matching_jwk', 'invalid_token');
+    }
+    if (!verifyRs256(data, signature, jwkToKeyObject(jwk))) {
+      throw new OidcError('bad_signature', 'invalid_token');
+    }
+    const iss = String(payload.iss ?? '');
+    if (iss !== MAILRU_ISS) {
+      throw new OidcError('bad_issuer', 'issuer_mismatch');
+    }
+    if (!audMatches(payload.aud, expectedAud)) {
+      throw new OidcError('bad_audience', 'audience_mismatch');
+    }
+  } else {
+    const expectedApp = cfg.vkClientId;
+    if (!expectedApp) {
+      throw new OidcError('vk_not_configured', 'provider_not_configured');
+    }
+    let key: KeyObject;
+    try {
+      key = vkPublicKey(cfg);
+    } catch (e) {
+      if (e instanceof OidcError) throw e;
+      throw new OidcError('vk_public_key_invalid', 'provider_not_configured');
+    }
+    if (!verifyRs256(data, signature, key)) {
+      throw new OidcError('bad_signature', 'invalid_token');
+    }
+    const issuer = String(payload.iis ?? payload.iss ?? '');
+    if (issuer !== 'VK' && issuer !== 'https://id.vk.ru') {
+      throw new OidcError('bad_issuer', 'issuer_mismatch');
+    }
+    const app = payload.app != null ? String(payload.app) : '';
+    if (app !== String(expectedApp)) {
+      throw new OidcError('bad_audience', 'audience_mismatch');
+    }
   }
 
   const now = (cfg.nowSeconds ?? (() => Math.floor(Date.now() / 1000)))();
@@ -198,31 +242,28 @@ export async function verifyIdToken(
     throw new OidcError('token_expired', 'expired');
   }
 
-  if (provider === 'google') {
-    if (!GOOGLE_ISS.has(String(payload.iss))) {
-      throw new OidcError('bad_issuer', 'issuer_mismatch');
-    }
-  } else if (payload.iss !== APPLE_ISS) {
-    throw new OidcError('bad_issuer', 'issuer_mismatch');
-  }
-
-  if (!audMatches(payload.aud, expectedAud)) {
-    throw new OidcError('bad_audience', 'audience_mismatch');
-  }
-
-  if (typeof payload.sub !== 'string' || payload.sub.length < 3) {
+  if (payload.sub == null || String(payload.sub).length < 1) {
     throw new OidcError('missing_sub', 'invalid_token');
   }
+  payload.sub = String(payload.sub);
 
   return payload;
 }
 
-/** Test helper: clear JWKS cache between tests. */
 export function clearOidcJwksCache(): void {
   jwksCache.clear();
 }
 
-/** Deterministic fingerprint of a raw id_token (logging only — not auth). */
 export function idTokenFingerprint(idToken: string): string {
   return createHash('sha256').update(idToken).digest('hex').slice(0, 12);
+}
+
+export function oidcConfigFromEnv(
+  env: NodeJS.ProcessEnv = process.env,
+): OidcConfig | undefined {
+  const mailruClientId = env.OIDC_MAILRU_CLIENT_ID || undefined;
+  const vkClientId = env.OIDC_VK_CLIENT_ID || undefined;
+  const vkPublicKeyPem = env.OIDC_VK_PUBLIC_KEY || undefined;
+  if (!mailruClientId && !vkClientId) return undefined;
+  return { mailruClientId, vkClientId, vkPublicKeyPem };
 }
