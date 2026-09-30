@@ -92,11 +92,10 @@ export async function materializeWorkoutSession(
     source: 'sync_materialize',
     status,
     local_start_date: localDate,
+    session_id: input.aggregate_id,
+    user_id: input.user_id,
   });
-  const snapshotHash = (input.aggregate_id.replace(/-/g, '') + '0'.repeat(64)).slice(
-    0,
-    64,
-  );
+  const snapshotHash = createHash('sha256').update(snapshot).digest('hex');
 
   await sql`
     INSERT INTO workout.workout_session (
