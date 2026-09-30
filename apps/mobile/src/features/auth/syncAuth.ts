@@ -23,6 +23,7 @@ export type SyncCredentials = {
 export type KeyValueStorage = {
   getItem(key: string): Promise<string | null>;
   setItem(key: string, value: string): Promise<void>;
+  removeItem?(key: string): Promise<void>;
 };
 
 export const AUTH_SUBJECT_KEY = 'fitpulse.sync.auth_subject';
@@ -89,6 +90,9 @@ export async function registerSyncCredentials(
     body: JSON.stringify({ auth_subject: opts.authSubject }),
   });
   if (!res.ok) {
+    if (res.status === 409) {
+      throw new SyncAuthError('email_already_linked', 409);
+    }
     throw new SyncAuthError('register_failed_' + res.status, res.status);
   }
   const json: unknown = await res.json();
@@ -172,4 +176,90 @@ export async function ensureSyncCredentials(
     });
     return null;
   }
+}
+
+/** Normalize user-entered subject: trim + lowercase. Empty → null. */
+export function normalizeAuthSubject(raw: string): string | null {
+  const s = raw.trim().toLowerCase();
+  return s.length > 0 ? s : null;
+}
+
+/** Loose email check for the account field (server accepts any subject string). */
+export function isEmailSubject(subject: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(subject);
+}
+
+export async function loadAuthSubject(
+  storage: KeyValueStorage,
+): Promise<string | null> {
+  try {
+    return await storage.getItem(AUTH_SUBJECT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export type LinkAccountOptions = {
+  baseUrl: string;
+  storage: KeyValueStorage;
+  /** Email or other stable subject the user typed. */
+  subject: string;
+  fetchImpl?: typeof fetch;
+};
+
+/**
+ * Persist a user-chosen auth subject and register a JWT for it.
+ * Replaces the anonymous device subject. Same email → same user_id
+ * (server UUIDv5). Throws SyncAuthError on network/register failure.
+ */
+export async function linkSyncAccount(
+  opts: LinkAccountOptions,
+): Promise<SyncCredentials> {
+  const subject = normalizeAuthSubject(opts.subject);
+  if (!subject) {
+    throw new SyncAuthError('subject_empty');
+  }
+  await opts.storage.setItem(AUTH_SUBJECT_KEY, subject);
+  const creds = await registerSyncCredentials({
+    baseUrl: opts.baseUrl,
+    authSubject: subject,
+    fetchImpl: opts.fetchImpl,
+  });
+  await saveSyncCredentials(opts.storage, creds);
+  log.info('sync account linked', {
+    user_id: creds.user_id,
+    subject_kind: isEmailSubject(subject) ? 'email' : 'custom',
+  });
+  return creds;
+}
+
+/**
+ * Drop local sync identity + credentials (logout / unlink).
+ * Also clears Health Connect last-export prefs so timestamps do not
+ * leak across accounts on a shared device.
+ */
+export async function clearSyncAccount(
+  storage: KeyValueStorage,
+): Promise<void> {
+  const keys = [AUTH_SUBJECT_KEY, CREDENTIALS_KEY];
+  // Lazy import path avoided — HC keys mirrored here to prevent cycles.
+  keys.push(
+    '@fitpulse/health_connect_export_enabled',
+    '@fitpulse/health_connect_last_export_at',
+  );
+  for (const key of keys) {
+    try {
+      if (typeof storage.removeItem === 'function') {
+        await storage.removeItem(key);
+      } else {
+        await storage.setItem(key, '');
+      }
+    } catch (err) {
+      log.debug('clearSyncAccount key failed', {
+        key,
+        err: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+  log.info('sync account cleared');
 }
