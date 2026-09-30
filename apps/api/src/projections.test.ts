@@ -5,6 +5,7 @@ import {
   MemoryProjectionService,
   shouldGrantActivityCredit,
   extractLocalDate,
+  extractMaxLoadCandidates,
   ACTIVITY_CREDIT_POLICY_VERSION,
 } from './projections.ts';
 
@@ -141,5 +142,39 @@ describe('MemoryProjectionService', () => {
     assert.equal(s.records.length, 2);
     const squat = s.records.find((r) => r.exercise_key === '1');
     assert.equal(squat?.value, 90);
+  });
+});
+
+describe('extractMaxLoadCandidates', () => {
+  it('reads max load from projection.setLogs', () => {
+    const rows = extractMaxLoadCandidates({
+      user_id: 'u1',
+      aggregate_type: 'workout_session',
+      aggregate_id: '00000000-0000-4000-8000-0000000000aa',
+      payload: {
+        local_start_date: '2026-09-30',
+        projection: {
+          setLogs: [
+            { exerciseId: 1, weight: 40, reps: 10 },
+            { exerciseId: 1, weight: 50, reps: 8 },
+            { exerciseId: 7, weight: 80, reps: 5 },
+          ],
+        },
+      },
+    });
+    assert.equal(rows.length, 2);
+    const byKey = Object.fromEntries(rows.map((r) => [r.exercise_key, r.value]));
+    assert.equal(byKey['1'], 50);
+    assert.equal(byKey['7'], 80);
+  });
+
+  it('returns empty when no sets', () => {
+    const rows = extractMaxLoadCandidates({
+      user_id: 'u1',
+      aggregate_type: 'workout_session',
+      aggregate_id: '00000000-0000-4000-8000-0000000000aa',
+      payload: {},
+    });
+    assert.equal(rows.length, 0);
   });
 });
