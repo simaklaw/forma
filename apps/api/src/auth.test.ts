@@ -77,7 +77,7 @@ describe('auth primitives', () => {
   it('JWT rejects tampering, wrong secret and expiry', () => {
     const token = signJwt(SECRET, 'u1');
     const parts = token.split('.');
-    const tampered = `${parts[0]}.${parts[1}.deadbeef`;
+    const tampered = `${parts[0]}.${parts[1]}.deadbeef`;
     assert.equal(verifyJwt(SECRET, tampered), null);
     assert.equal(verifyJwt('other-secret', token), null);
     const now = Math.floor(Date.now() / 1000);
