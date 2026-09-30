@@ -84,7 +84,13 @@ export class MemorySessionRepository implements SessionRepository {
       }
 
       const now = Date.now();
+      // One outbox row per operation: all events of one command share
+      // ctx.operationId, and operationId is the sync idempotency key
+      // (matches SqliteSessionRepository, where operation_id is the PK).
+      const seenOperations = new Set<string>();
       events.forEach((ev, i) => {
+        if (seenOperations.has(ev.operationId)) return;
+        seenOperations.add(ev.operationId);
         this.outbox.push({
           operationId: ev.operationId,
           sessionId: session.sessionId,

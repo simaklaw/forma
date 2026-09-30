@@ -176,6 +176,14 @@ export class SqliteSessionRepository implements SessionRepository {
         ]
       );
 
+      // One outbox row per operation: every event of a single command shares
+      // ctx.operationId (one command = one operation), while operation_id is
+      // the outbox PRIMARY KEY and the API idempotency key. Inserting a row
+      // per event violates the constraint on real SQLite (e.g. complete_set
+      // with auto rest emits set_completed + rest_started) and rolls back the
+      // whole commit. The first event's id/hash represents the operation; the
+      // pushed session projection carries the full journal state.
+      const seenOperations = new Set<string>();
       for (let i = 0; i < events.length; i++) {
         const ev = events[i]!;
         this.db.runSync(
@@ -192,6 +200,8 @@ export class SqliteSessionRepository implements SessionRepository {
             ev.operationId
           ]
         );
+        if (seenOperations.has(ev.operationId)) continue;
+        seenOperations.add(ev.operationId);
         this.db.runSync(
           `INSERT INTO outbox (
              operation_id, session_id, event_id, aggregate_version, payload_hash, status, created_at_ms

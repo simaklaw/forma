@@ -69,7 +69,12 @@ describe('SessionCommandService + MemorySessionRepository', () => {
     );
 
     const outbox = await repo.listPendingOutbox();
-    expect(outbox.length).toBe(events.length);
+    // One outbox row per operation (command), not per event: complete_set with
+    // autoStartRest journals set_completed + rest_started under one
+    // operationId, and operationId is the outbox PK / sync idempotency key.
+    const operationIds = new Set(events.map((e) => e.operationId));
+    expect(outbox.length).toBe(operationIds.size);
+    expect(new Set(outbox.map((r) => r.operationId)).size).toBe(outbox.length);
     expect(outbox.every((r) => r.status === 'pending')).toBe(true);
   });
 
