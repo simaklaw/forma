@@ -191,6 +191,12 @@ export type ParsedSetLog = {
   reps: number | null;
 };
 
+/** Finite and non-negative, else null. */
+export function sanitizeSetNumber(raw: unknown): number | null {
+  if (typeof raw !== 'number' || !Number.isFinite(raw) || raw < 0) return null;
+  return raw;
+}
+
 export function parseSetLogsFromPayload(
   payload: Record<string, unknown>,
 ): ParsedSetLog[] {
@@ -215,13 +221,10 @@ export function parseSetLogsFromPayload(
         if (!key) continue;
         out.push({
           exerciseKey: key,
-          weight:
-            typeof s.weight === 'number'
-              ? s.weight
-              : typeof s.load_kg === 'number'
-                ? s.load_kg
-                : null,
-          reps: typeof s.reps === 'number' ? s.reps : null,
+          weight: sanitizeSetNumber(
+            typeof s.weight === 'number' ? s.weight : s.load_kg,
+          ),
+          reps: sanitizeSetNumber(s.reps),
         });
       }
     }
@@ -241,13 +244,10 @@ export function parseSetLogsFromPayload(
       if (!key) continue;
       out.push({
         exerciseKey: key,
-        weight:
-          typeof s.load_kg === 'number'
-            ? s.load_kg
-            : typeof s.weight === 'number'
-              ? s.weight
-              : null,
-        reps: typeof s.reps === 'number' ? s.reps : null,
+        weight: sanitizeSetNumber(
+          typeof s.load_kg === 'number' ? s.load_kg : s.weight,
+        ),
+        reps: sanitizeSetNumber(s.reps),
       });
     }
   }
