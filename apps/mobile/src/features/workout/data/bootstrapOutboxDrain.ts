@@ -1,9 +1,11 @@
 import { AppState, type AppStateStatus, type NativeEventSubscription } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createLogger } from '@/core/logger';
+import type { SessionProjection } from './sessionProjections';
 import { OutboxDrainService, noopOutboxTransport } from './OutboxDrainService';
 import { createHttpOutboxTransport } from './HttpOutboxTransport';
 import { ensureSyncCredentials } from '../../auth/syncAuth';
+import { SyncPullService } from '../../sync/syncPullService';
 
 const log = createLogger('outbox-bootstrap');
 
@@ -11,6 +13,7 @@ let started = false;
 let appStateSub: NativeEventSubscription | null = null;
 let drainPromise: Promise<OutboxDrainService> | null = null;
 let hasHttpTransport = false;
+let pullService: SyncPullService | null = null;
 
 function syncApiUrl(): string {
   if (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_SYNC_API_URL) {
@@ -21,8 +24,8 @@ function syncApiUrl(): string {
 
 /**
  * Build the drain once per app session:
- * 1. no EXPO_PUBLIC_SYNC_API_URL → noop transport (fully offline);
- * 2. URL set → ensure per-user JWT credentials (register on first use,
+ * 1. no EXPO_PUBLIC_SYNC_API_URL -> noop transport (fully offline);
+ * 2. URL set -> ensure per-user JWT credentials (register on first use,
  *    re-register on expiry) and wire them into the HTTP transport.
  * Credential failure is non-fatal: noop transport for this session,
  * next app start retries registration.
@@ -30,7 +33,7 @@ function syncApiUrl(): string {
 async function buildDrain(): Promise<OutboxDrainService> {
   const base = syncApiUrl();
   if (!base) {
-    log.debug('no EXPO_PUBLIC_SYNC_API_URL — using noop transport');
+    log.debug('no EXPO_PUBLIC_SYNC_API_URL - using noop transport');
     return new OutboxDrainService(noopOutboxTransport);
   }
 
@@ -39,7 +42,7 @@ async function buildDrain(): Promise<OutboxDrainService> {
     storage: AsyncStorage,
   });
   if (!creds) {
-    log.warn('no sync credentials — noop transport this session');
+    log.warn('no sync credentials - noop transport this session');
     return new OutboxDrainService(noopOutboxTransport);
   }
 
@@ -64,6 +67,29 @@ function getDrain(): Promise<OutboxDrainService> {
   return drainPromise;
 }
 
+/**
+ * Lazily build the pull service. Returns null when fully offline
+ * (no EXPO_PUBLIC_SYNC_API_URL). Applier deps are dynamic imports so
+ * node-env unit tests never load the Zustand store chain.
+ */
+async function getPullService(): Promise<SyncPullService | null> {
+  if (pullService) {
+    return pullService;
+  }
+  const base = syncApiUrl();
+  if (!base) {
+    return null;
+  }
+  const { createWorkoutSessionChangeApplier } = await import('../../sync/workoutSessionChangeApplier');
+  const { applySessionProjection } = await import('../applySessionProjection');
+  pullService = new SyncPullService({
+    baseUrl: base,
+    storage: AsyncStorage,
+    applier: createWorkoutSessionChangeApplier((next) => applySessionProjection(next as SessionProjection)),
+  });
+  return pullService;
+}
+
 /** Run a single drain pass; never throws to the UI. */
 export async function runOutboxDrainOnce(limit = 20): Promise<void> {
   try {
@@ -80,8 +106,30 @@ export async function runOutboxDrainOnce(limit = 20): Promise<void> {
 }
 
 /**
- * Start lifecycle: drain on cold start, again when app becomes active.
- * Idempotent — safe to call once from App.tsx.
+ * One full sync pass: push outbox, then pull remote changes and
+ * apply them to the local read model. Never throws to the UI.
+ */
+export async function runSyncOnce(limit = 20): Promise<void> {
+  await runOutboxDrainOnce(limit);
+  try {
+    const pull = await getPullService();
+    if (!pull) {
+      return;
+    }
+    const result = await pull.pullOnce();
+    if (!result.offline && result.applied + result.skipped > 0) {
+      log.info('sync pull', result);
+    }
+  } catch (err) {
+    log.warn('sync pull failed', {
+      err: err instanceof Error ? err.message : String(err),
+    });
+  }
+}
+
+/**
+ * Start lifecycle: sync on cold start, again when app becomes active.
+ * Idempotent - safe to call once from App.tsx.
  */
 export function startOutboxDrainLifecycle(): () => void {
   if (started) {
@@ -90,7 +138,7 @@ export function startOutboxDrainLifecycle(): () => void {
   started = true;
 
   void (async () => {
-    await runOutboxDrainOnce(20);
+    await runSyncOnce(20);
     try {
       const d = await getDrain();
       await d.pruneAccepted(14);
@@ -101,7 +149,7 @@ export function startOutboxDrainLifecycle(): () => void {
 
   const onChange = (next: AppStateStatus) => {
     if (next === 'active') {
-      void runOutboxDrainOnce(20);
+      void runSyncOnce(20);
     }
   };
   appStateSub = AppState.addEventListener('change', onChange);
@@ -113,11 +161,12 @@ export function startOutboxDrainLifecycle(): () => void {
   };
 }
 
-/** Test helper — reset module state. */
+/** Test helper - reset module state. */
 export function resetOutboxDrainBootstrapForTests(): void {
   appStateSub?.remove();
   appStateSub = null;
   started = false;
   drainPromise = null;
   hasHttpTransport = false;
+  pullService = null;
 }
