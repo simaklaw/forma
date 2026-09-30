@@ -1,15 +1,15 @@
 name: Verify sync setup (E2E)
 
 # Full cloud verification of the sync stack — no computer needed.
-# Postgres service -> migrations -> token -> API up -> real HTTP checks:
-#   /health reports bearer, push 401 without token, 200 accepted with token,
-#   replay is duplicate, pull returns the change.
-# Projection check: a terminal workout_session op grants exactly one
-# engagement.activity_credit row (idempotent on replay, no credit for
-# intermediate events).
-# A summary table is written to the run's Summary page.
-# On failure, diagnostics are committed to the ci-logs branch so they
-# can be read without admin access to Actions logs.
+# Postgres service -> migrations -> secrets -> API up -> register users
+# -> real HTTP checks over per-user JWTs:
+#   /health reports jwt, register returns stable user_id + token,
+#   push 401 without token, accepted with matching token, duplicate on
+#   replay, 403 on user_id mismatch, cross-user pull isolation,
+#   activity_credit projection (1 credit for terminal event, none for
+#   intermediate, no double-credit on replay).
+# A summary table is written to the run's Summary page. On failure,
+# diagnostics are committed to the ci-logs branch.
 
 on:
   push:
@@ -25,7 +25,7 @@ permissions:
 
 jobs:
   verify:
-    name: Postgres · Migrations · Token · API E2E
+    name: Postgres · Migrations · JWT · API E2E
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fitpulse
@@ -78,13 +78,14 @@ jobs:
           echo "strict_tables=$STRICT"
           [ "$STRICT" -ge 10 ]
 
-      - name: Generate sync token (pnpm sync:setup)
+      - name: Generate secrets (pnpm sync:setup)
         run: |
           pnpm sync:setup
           test -s apps/api/.env
           grep -q '^SYNC_API_TOKEN=..' apps/api/.env
+          grep -q '^JWT_SECRET=..' apps/api/.env
           grep -q '^EXPO_PUBLIC_SYNC_API_TOKEN=..' apps/mobile/.env
-          echo "token files OK"
+          echo "secrets OK"
 
       - name: Start API
         run: |
@@ -96,8 +97,43 @@ jobs:
           done
           curl -sf http://localhost:8787/health || { cat api.log; exit 1; }
 
-      - name: /health reports bearer auth
-        run: curl -s http://localhost:8787/health | grep '"auth":"bearer"'
+      - name: /health reports jwt auth
+        run: curl -s http://localhost:8787/health | grep '"auth":"jwt"'
+
+      - name: register user A
+        run: |
+          curl -s -X POST http://localhost:8787/api/v1/auth/register \
+            -H 'content-type: application/json' \
+            -d '{"auth_subject":"alice@example.com"}' -o reg_a.json
+          cat reg_a.json
+          A_USER=$(node -e "console.log(JSON.parse(require('fs').readFileSync('reg_a.json','utf8')).user_id)")
+          A_TOKEN=$(node -e "console.log(JSON.parse(require('fs').readFileSync('reg_a.json','utf8')).token)")
+          echo "A_USER=$A_USER"
+          test -n "$A_USER" && test -n "$A_TOKEN"
+          echo "A_USER=$A_USER" >> "$GITHUB_ENV"
+          echo "A_TOKEN=$A_TOKEN" >> "$GITHUB_ENV"
+
+      - name: register user B
+        run: |
+          curl -s -X POST http://localhost:8787/api/v1/auth/register \
+            -H 'content-type: application/json' \
+            -d '{"auth_subject":"bob@example.com"}' -o reg_b.json
+          cat reg_b.json
+          B_USER=$(node -e "console.log(JSON.parse(require('fs').readFileSync('reg_b.json','utf8')).user_id)")
+          B_TOKEN=$(node -e "console.log(JSON.parse(require('fs').readFileSync('reg_b.json','utf8')).token)")
+          echo "B_USER=$B_USER"
+          test -n "$B_USER" && test -n "$B_TOKEN"
+          echo "B_USER=$B_USER" >> "$GITHUB_ENV"
+          echo "B_TOKEN=$B_TOKEN" >> "$GITHUB_ENV"
+
+      - name: re-register A is idempotent (stable user_id)
+        run: |
+          curl -s -X POST http://localhost:8787/api/v1/auth/register \
+            -H 'content-type: application/json' \
+            -d '{"auth_subject":"alice@example.com"}' -o reg_a2.json
+          A2=$(node -e "console.log(JSON.parse(require('fs').readFileSync('reg_a2.json','utf8')).user_id)")
+          echo "A_USER=$A_USER A2=$A2"
+          [ "$A_USER" = "$A2" ]
 
       - name: push without token is 401
         run: |
@@ -106,86 +142,107 @@ jobs:
           echo "status=$code"
           [ "$code" = "401" ]
 
+      - name: push with token but someone else user_id is 403
+        run: |
+          cat > mismatch.json <<EOF
+          {"user_id":"$B_USER","operations":[]}
+          EOF
+          code=$(curl -s -o mismatch_resp.json -w '%{http_code}' -X POST http://localhost:8787/api/v1/sync/push \
+            -H 'content-type: application/json' -H "authorization: Bearer $A_TOKEN" --data @mismatch.json)
+          echo "status=$code"; cat mismatch_resp.json
+          [ "$code" = "403" ]
+
       - name: push with token is 200 accepted (through strict RLS)
         run: |
-          TOKEN=$(grep '^SYNC_API_TOKEN=' apps/api/.env | cut -d= -f2)
           HASH=$(printf 'a%.0s' $(seq 1 64))
           cat > push.json <<EOF
-          {"user_id":"00000000-0000-4000-8000-000000000001","operations":[{"client_operation_id":"018f0000-0000-7000-8000-000000000001","device_id":"00000000-0000-4000-8000-0000000000d1","aggregate_type":"workout_session","aggregate_id":"00000000-0000-4000-8000-0000000000a1","payload_hash":"$HASH","payload":{"event":"complete_set"},"occurred_at_client":"2026-09-29T00:00:00.000Z"}]}
+          {"user_id":"$A_USER","operations":[{"client_operation_id":"018f0000-0000-7000-8000-000000000001","device_id":"00000000-0000-4000-8000-0000000000d1","aggregate_type":"workout_session","aggregate_id":"00000000-0000-4000-8000-0000000000a1","payload_hash":"$HASH","payload":{"event":"complete_set"},"occurred_at_client":"2026-09-29T00:00:00.000Z"}]}
           EOF
           code=$(curl -s -o resp.json -w '%{http_code}' -X POST http://localhost:8787/api/v1/sync/push \
-            -H 'content-type: application/json' -H "authorization: Bearer $TOKEN" --data @push.json)
+            -H 'content-type: application/json' -H "authorization: Bearer $A_TOKEN" --data @push.json)
           echo "status=$code"; cat resp.json
           [ "$code" = "200" ]
           grep -q '"status":"accepted"' resp.json
 
       - name: replay of the same op is duplicate (idempotency E2E)
         run: |
-          TOKEN=$(grep '^SYNC_API_TOKEN=' apps/api/.env | cut -d= -f2)
           code=$(curl -s -o resp2.json -w '%{http_code}' -X POST http://localhost:8787/api/v1/sync/push \
-            -H 'content-type: application/json' -H "authorization: Bearer $TOKEN" --data @push.json)
+            -H 'content-type: application/json' -H "authorization: Bearer $A_TOKEN" --data @push.json)
           echo "status=$code"; cat resp2.json
           [ "$code" = "200" ]
           grep -q '"status":"duplicate"' resp2.json
 
       - name: intermediate event grants no activity credit
         run: |
-          CREDITS=$(psql "$DATABASE_URL" -Atc "select count(*) from engagement.activity_credit where user_id = '00000000-0000-4000-8000-000000000001';")
+          CREDITS=$(psql "$DATABASE_URL" -Atc "select count(*) from engagement.activity_credit where user_id = '$A_USER';")
           echo "credits_after_intermediate=$CREDITS"
           [ "$CREDITS" = "0" ]
 
       - name: terminal session event grants exactly one activity credit
         run: |
-          TOKEN=$(grep '^SYNC_API_TOKEN=' apps/api/.env | cut -d= -f2)
           HASH=$(printf 'b%.0s' $(seq 1 64))
           cat > push_credit.json <<EOF
-          {"user_id":"00000000-0000-4000-8000-000000000001","operations":[{"client_operation_id":"018f0000-0000-7000-8000-000000000002","device_id":"00000000-0000-4000-8000-0000000000d1","aggregate_type":"workout_session","aggregate_id":"00000000-0000-4000-8000-0000000000a2","payload_hash":"$HASH","payload":{"event":"complete_session","local_date":"2026-09-29"},"occurred_at_client":"2026-09-29T00:30:00.000Z"}]}
+          {"user_id":"$A_USER","operations":[{"client_operation_id":"018f0000-0000-7000-8000-000000000002","device_id":"00000000-0000-4000-8000-0000000000d1","aggregate_type":"workout_session","aggregate_id":"00000000-0000-4000-8000-0000000000a2","payload_hash":"$HASH","payload":{"event":"complete_session","local_date":"2026-09-29"},"occurred_at_client":"2026-09-29T00:30:00.000Z"}]}
           EOF
           code=$(curl -s -o resp_credit.json -w '%{http_code}' -X POST http://localhost:8787/api/v1/sync/push \
-            -H 'content-type: application/json' -H "authorization: Bearer $TOKEN" --data @push_credit.json)
+            -H 'content-type: application/json' -H "authorization: Bearer $A_TOKEN" --data @push_credit.json)
           echo "status=$code"; cat resp_credit.json
           [ "$code" = "200" ]
           grep -q '"status":"accepted"' resp_credit.json
 
       - name: credit replay does not double-credit
         run: |
-          TOKEN=$(grep '^SYNC_API_TOKEN=' apps/api/.env | cut -d= -f2)
           code=$(curl -s -o resp_credit2.json -w '%{http_code}' -X POST http://localhost:8787/api/v1/sync/push \
-            -H 'content-type: application/json' -H "authorization: Bearer $TOKEN" --data @push_credit.json)
+            -H 'content-type: application/json' -H "authorization: Bearer $A_TOKEN" --data @push_credit.json)
           echo "status=$code"; cat resp_credit2.json
           [ "$code" = "200" ]
           grep -q '"status":"duplicate"' resp_credit2.json
-          CREDITS=$(psql "$DATABASE_URL" -Atc "select count(*) from engagement.activity_credit where user_id = '00000000-0000-4000-8000-000000000001';" | tee credits_count.log)
+          CREDITS=$(psql "$DATABASE_URL" -Atc "select count(*) from engagement.activity_credit where user_id = '$A_USER';" | tee credits_count.log)
           echo "credits_after_replay=$CREDITS"
           [ "$CREDITS" = "1" ]
-          psql "$DATABASE_URL" -c "select local_date, source_domain, policy_version from engagement.activity_credit where user_id = '00000000-0000-4000-8000-000000000001';"
 
-      - name: pull returns exactly two changes (no duplicates)
+      - name: pull as A returns exactly two changes
         run: |
-          TOKEN=$(grep '^SYNC_API_TOKEN=' apps/api/.env | cut -d= -f2)
-          curl -s "http://localhost:8787/api/v1/sync/pull?user_id=00000000-0000-4000-8000-000000000001&after_change_id=0" \
-            -H "authorization: Bearer $TOKEN" -o pull.json
+          curl -s "http://localhost:8787/api/v1/sync/pull?user_id=$A_USER&after_change_id=0" \
+            -H "authorization: Bearer $A_TOKEN" -o pull.json
           cat pull.json
           CHANGES=$(node -e "console.log(JSON.parse(require('fs').readFileSync('pull.json','utf8')).changes.length)")
           echo "changes=$CHANGES"
           [ "$CHANGES" = "2" ]
 
+      - name: pull as B sees nothing (cross-user isolation)
+        run: |
+          curl -s "http://localhost:8787/api/v1/sync/pull?user_id=$B_USER&after_change_id=0" \
+            -H "authorization: Bearer $B_TOKEN" -o pull_b.json
+          cat pull_b.json
+          CHANGES=$(node -e "console.log(JSON.parse(require('fs').readFileSync('pull_b.json','utf8')).changes.length)")
+          echo "changes_b=$CHANGES"
+          [ "$CHANGES" = "0" ]
+
+      - name: pull as B with A user_id is 403
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:8787/api/v1/sync/pull?user_id=$A_USER&after_change_id=0" \
+            -H "authorization: Bearer $B_TOKEN")
+          echo "status=$code"
+          [ "$code" = "403" ]
+
       - name: Write run summary
         if: always()
         run: |
           {
-            echo "## Sync E2E — результат"
+            echo "## Sync E2E (JWT) — результат"
             echo ""
             echo "| Проверка | Результат |"
             echo "|---|---|"
             echo "| Миграции 001–004 | ${{ job.status }} |"
             echo "| Строгий RLS (FORCE) | $(cat rls_check.log 2>/dev/null || echo n/a) таблиц |"
+            echo "| регистрация A/B | стабильные user_id |"
             echo "| push без токена | 401 |"
-            echo "| push с токеном | $(grep -o '"status":"[a-z]*"' resp.json 2>/dev/null || echo fail) |"
+            echo "| push с чужим user_id | 403 |"
+            echo "| push с токеном A | $(grep -o '"status":"[a-z]*"' resp.json 2>/dev/null || echo fail) |"
             echo "| повтор (идемпотентность) | $(grep -o '"status":"[a-z]*"' resp2.json 2>/dev/null || echo fail) |"
-            echo "| кредит за промежуточное событие | нет |"
             echo "| кредит за терминальное событие | $(cat credits_count.log 2>/dev/null || echo fail) строка(и) |"
-            echo "| pull | $(node -e "try{console.log(JSON.parse(require('fs').readFileSync('pull.json','utf8')).changes.length+' change(s)')}catch{console.log('fail')}" 2>/dev/null) |"
+            echo "| pull A / pull B | 2 / $(node -e "try{console.log(JSON.parse(require('fs').readFileSync('pull_b.json','utf8')).changes.length)}catch{console.log('fail')}" 2>/dev/null) changes |"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish diagnostics on failure
@@ -199,7 +256,7 @@ jobs:
           git checkout -B ci-logs origin/ci-logs 2>/dev/null || git checkout -B ci-logs
           DIR="ci-logs/${{ github.run_id }}"
           mkdir -p "$DIR"
-          for f in migrate_*.log rls_check.log api.log push.json push_credit.json resp.json resp2.json resp_credit*.json pull.json credits_count.log; do
+          for f in migrate_*.log rls_check.log api.log reg_*.json mismatch*.json push*.json resp*.json pull*.json credits_count.log; do
             [ -f "$f" ] && cp "$f" "$DIR/"
           done
           echo "failed run: ${{ github.run_id }} commit ${{ github.sha }} date $(date -u +%FT%TZ)" >> "$DIR/README.txt"
