@@ -57,7 +57,7 @@ export default function SyncAccountCard() {
     setMessage(null);
     const base = syncBaseUrl();
     if (!base) {
-      setError('Синхронизация не настроена (нет URL API).');
+      setError('Синхронизация не настроена: задайте EXPO_PUBLIC_SYNC_API_URL.');
       return;
     }
     setBusy(true);
@@ -79,7 +79,7 @@ export default function SyncAccountCard() {
     }
   }
 
-  const shortId = creds?.user_id ? creds.user_id.slice(0, 8) + '…' : '—';
+  const shortId = creds?.user_id ? creds.user_id.slice(0, 3) + '…' : '—';
   const subjectLabel =
     subject == null
       ? 'ещё не создан'
