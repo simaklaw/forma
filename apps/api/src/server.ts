@@ -4,7 +4,8 @@
  * Runs the Hono app on a plain node:http server (zero extra deps).
  * Env is read from the process AND from apps/api/.env when present:
  *   DATABASE_URL    postgres connection; omit → in-memory stores
- *   SYNC_API_TOKEN  enable Bearer auth on /api/v1/sync/*
+ *   JWT_SECRET      enable per-user JWT auth on /api/v1/sync/* (P2)
+ *   SYNC_API_TOKEN  shared bearer token (legacy fallback)
  *   PORT            default 8787
  */
 import {
@@ -62,11 +63,15 @@ async function main(): Promise<void> {
 
   server.listen(PORT, () => {
     console.log(`[fitpulse-api] listening on http://localhost:${PORT}`);
-    console.log(
-      process.env.SYNC_API_TOKEN
-        ? '[fitpulse-api] auth: bearer (SYNC_API_TOKEN is set)'
-        : '[fitpulse-api] auth: OPEN — set SYNC_API_TOKEN to protect sync endpoints',
-    );
+    if (process.env.JWT_SECRET) {
+      console.log('[fitpulse-api] auth: jwt (JWT_SECRET is set)');
+    } else if (process.env.SYNC_API_TOKEN) {
+      console.log('[fitpulse-api] auth: bearer (SYNC_API_TOKEN is set)');
+    } else {
+      console.log(
+        '[fitpulse-api] auth: OPEN — set JWT_SECRET (or SYNC_API_TOKEN) to protect sync endpoints',
+      );
+    }
   });
 }
 
