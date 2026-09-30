@@ -67,4 +67,12 @@ describe('parseSetLogsFromPayload + planStepsFromSetLogs', () => {
     assert.equal(plans[0].sets.length, 2);
     assert.equal(plans[1].exerciseKey, '7');
   });
+
+  it('returns empty for empty setLogs', () => {
+    const logs = parseSetLogsFromPayload({
+      projection: { setLogs: [] },
+    });
+    assert.equal(logs.length, 0);
+    assert.equal(planStepsFromSetLogs(logs).length, 0);
+  });
 });

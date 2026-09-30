@@ -14,6 +14,13 @@ export async function isHealthExportEnabled(): Promise<boolean> {
 
 export async function setHealthExportEnabled(enabled: boolean): Promise<void> {
   await AsyncStorage.setItem(ENABLED_KEY, enabled ? '1' : '0');
+  if (!enabled) {
+    try {
+      await AsyncStorage.removeItem(LAST_EXPORT_KEY);
+    } catch {
+      /* prefs are best-effort */
+    }
+  }
 }
 
 /** ISO timestamp of last successful HC write, or null. */
