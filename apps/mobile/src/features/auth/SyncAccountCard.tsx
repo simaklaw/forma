@@ -91,13 +91,7 @@ export default function SyncAccountCard() {
     }
   }
 
-  const shortId = creds?.user_id ? creds.user_id.slice(0, 3) + '…' : '—';
-  const subjectLabel =
-    subject == null
-      ? 'ещё не создан'
-      : isEmailSubject(subject)
-        ? subject
-        : 'устройство (анонимно)';
+  const shortId = creds?.user_id ? creds.user_id.slice(0, 3) + '…' : null;
 
   return (
     <View
@@ -106,18 +100,23 @@ export default function SyncAccountCard() {
         { backgroundColor: colors.panel, borderColor: colors.line },
       ]}
     >
-      <Text style={[styles.kicker, { color: colors.lime }]}>СИНХРОНИЗАЦИЯ</Text>
-      <Text style={[styles.title, { color: colors.paper }]}>Аккаунт</Text>
-      <Text style={[styles.meta, { color: colors.paperDim }]}>
-        Субъект: {subjectLabel}
-      </Text>
-      <Text style={[styles.meta, { color: colors.paperFaint }]}>
-        user_id: {shortId}
-      </Text>
+      <Text style={[styles.kicker, { color: colors.paperFaint }]}>АККАУНТ</Text>
+      <Text style={[styles.title, { color: colors.paper }]}>Синхронизация</Text>
 
-      <Text style={[styles.hint, { color: colors.paperDim }]}>
-        Укажи email, чтобы восстановить прогресс на другом телефоне. Это не
-        пароль — сервер выдаёт JWT по стабильному subject.
+      {subject ? (
+        <Text style={[styles.meta, { color: colors.paperDim }]}>
+          Subject: {subject}
+          {shortId ? ` · id ${shortId}` : ''}
+        </Text>
+      ) : (
+        <Text style={[styles.meta, { color: colors.paperDim }]}>
+          Локальный режим — привяжи email, чтобы восстановить прогресс на новом
+          устройстве.
+        </Text>
+      )}
+
+      <Text style={[styles.hint, { color: colors.paperFaint }]}>
+        Email станет стабильным ключом аккаунта (JWT). Пароль не нужен.
       </Text>
 
       <TextInput
@@ -188,17 +187,17 @@ export default function SyncAccountCard() {
 const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
-    borderRadius: radius.lg,
+    borderRadius: radius.card,
     padding: spacing.md,
     gap: spacing.xs,
   },
   kicker: {
-    fontFamily: fonts.display,
+    fontFamily: fonts.mono,
     fontSize: 11,
     letterSpacing: 1.2,
   },
   title: {
-    fontFamily: fonts.display,
+    fontFamily: fonts.mono,
     fontSize: 22,
   },
   meta: {
@@ -212,7 +211,7 @@ const styles = StyleSheet.create({
   input: {
     marginTop: spacing.sm,
     borderWidth: 1,
-    borderRadius: radius.md,
+    borderRadius: radius.control,
     paddingHorizontal: spacing.md,
     paddingVertical: 12,
     fontSize: 16,
@@ -220,12 +219,12 @@ const styles = StyleSheet.create({
   btn: {
     marginTop: spacing.sm,
     minHeight: 44,
-    borderRadius: radius.md,
+    borderRadius: radius.control,
     alignItems: 'center',
     justifyContent: 'center',
   },
   btnText: {
-    fontFamily: fonts.display,
+    fontFamily: fonts.mono,
     fontSize: 16,
   },
   msg: {
