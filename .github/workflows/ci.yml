@@ -47,7 +47,9 @@ jobs:
         run: pnpm --filter @forma/web build
 
       - name: Type-check core packages
-        run: pnpm --filter @forma/core --filter @forma/workout-domain --filter @forma/mobile --filter @forma/web type-check
+        run: |
+          set -o pipefail
+          pnpm --filter @forma/core --filter @forma/workout-domain --filter @forma/mobile --filter @forma/web type-check 2>&1 | tee typecheck_core.log
 
       - name: Type-check P1 packages
         run: pnpm --filter @forma/sync-contract --filter @forma/api type-check
@@ -95,7 +97,7 @@ jobs:
           SAY "branch=$(git branch --show-current)"
           DIR="ci-logs/${{ github.run_id }}"
           mkdir -p "$DIR"
-          if [ -f api_test.log ]; then cp api_test.log "$DIR/"; fi
+          for f in api_test.log typecheck_core.log; do [ -f "$f" ] && cp "$f" "$DIR/"; done
           echo "ci failed run: ${{ github.run_id }} commit ${{ github.sha }} date $(date -u +%FT%TZ)" >> "$DIR/README.txt"
           git add -f ci-logs && SAY "add ok" || SAY "add fail"
           git commit -m "ci: diagnostics from failed ci run ${{ github.run_id }}" && SAY "commit ok" || SAY "commit fail: $(git status --short | head -5)"
