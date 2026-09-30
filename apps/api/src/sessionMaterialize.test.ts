@@ -6,6 +6,7 @@ import {
   detUuid,
   parseSetLogsFromPayload,
   planStepsFromSetLogs,
+  sanitizeSetNumber,
 } from './sessionMaterialize.ts';
 
 describe('mapSessionStatus', () => {
@@ -74,5 +75,18 @@ describe('parseSetLogsFromPayload + planStepsFromSetLogs', () => {
     });
     assert.equal(logs.length, 0);
     assert.equal(planStepsFromSetLogs(logs).length, 0);
+  });
+});
+
+describe('sanitizeSetNumber', () => {
+  it('accepts finite non-negative numbers', () => {
+    assert.equal(sanitizeSetNumber(0), 0);
+    assert.equal(sanitizeSetNumber(80.5), 80.5);
+  });
+
+  it('rejects negative, NaN, non-numbers', () => {
+    assert.equal(sanitizeSetNumber(-1), null);
+    assert.equal(sanitizeSetNumber(Number.NaN), null);
+    assert.equal(sanitizeSetNumber('10'), null);
   });
 });
