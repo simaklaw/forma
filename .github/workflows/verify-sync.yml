@@ -15,6 +15,11 @@ name: Verify sync setup (E2E)
 on:
   push:
     branches: [main]
+  pull_request:
+    paths:
+      - 'apps/api/**'
+      - 'packages/db/**'
+      - '.github/workflows/verify-sync.yml'
   workflow_dispatch:
 
 concurrency:
