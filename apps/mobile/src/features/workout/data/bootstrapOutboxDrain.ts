@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createLogger } from '@/core/logger';
 import { OutboxDrainService, noopOutboxTransport } from './OutboxDrainService';
 import { createHttpOutboxTransport } from './HttpOutboxTransport';
-import { ensureSyncCredentials } from '../auth/syncAuth';
+import { ensureSyncCredentials } from '../../auth/syncAuth';
 
 const log = createLogger('outbox-bootstrap');
 
