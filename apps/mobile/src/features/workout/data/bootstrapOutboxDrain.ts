@@ -6,6 +6,8 @@ import { OutboxDrainService, noopOutboxTransport } from './OutboxDrainService';
 import { createHttpOutboxTransport } from './HttpOutboxTransport';
 import { ensureSyncCredentials } from '../../auth/syncAuth';
 import { SyncPullService } from '../../sync/syncPullService';
+import { createWorkoutSessionChangeApplier } from '../../sync/workoutSessionChangeApplier';
+import { applySessionProjection } from './applySessionProjection';
 
 const log = createLogger('outbox-bootstrap');
 
@@ -69,10 +71,11 @@ function getDrain(): Promise<OutboxDrainService> {
 
 /**
  * Lazily build the pull service. Returns null when fully offline
- * (no EXPO_PUBLIC_SYNC_API_URL). Applier deps are dynamic imports so
- * node-env unit tests never load the Zustand store chain.
+ * (no EXPO_PUBLIC_SYNC_API_URL). The change applier merges pulled
+ * workout_session projections into the local read model via
+ * applySessionProjection.
  */
-async function getPullService(): Promise<SyncPullService | null> {
+function getPullService(): SyncPullService | null {
   if (pullService) {
     return pullService;
   }
@@ -80,8 +83,6 @@ async function getPullService(): Promise<SyncPullService | null> {
   if (!base) {
     return null;
   }
-  const { createWorkoutSessionChangeApplier } = await import('../../sync/workoutSessionChangeApplier');
-  const { applySessionProjection } = await import('../applySessionProjection');
   pullService = new SyncPullService({
     baseUrl: base,
     storage: AsyncStorage,
@@ -112,7 +113,7 @@ export async function runOutboxDrainOnce(limit = 20): Promise<void> {
 export async function runSyncOnce(limit = 20): Promise<void> {
   await runOutboxDrainOnce(limit);
   try {
-    const pull = await getPullService();
+    const pull = getPullService();
     if (!pull) {
       return;
     }
