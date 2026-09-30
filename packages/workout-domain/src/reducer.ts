@@ -19,15 +19,15 @@ function assertNotTerminal(session: WorkoutSession): void {
 }
 
 function totalTargetSets(session: WorkoutSession): number {
-  return session.steps.reduce((n, s) => n + s.snapshot.targetSets, 0);
+  return (session.steps ?? []).reduce((n, s) => n + s.snapshot.targetSets, 0);
 }
 
 function totalCompletedSets(session: WorkoutSession): number {
-  return session.steps.reduce((n, s) => n + s.completedSets.length, 0);
+  return (session.steps ?? []).reduce((n, s) => n + s.completedSets.length, 0);
 }
 
 function allRequiredDone(session: WorkoutSession): boolean {
-  return session.steps.every(
+  return (session.steps ?? []).every(
     (s) => s.skipped || s.completedSets.length >= s.snapshot.targetSets
   );
 }
@@ -169,7 +169,8 @@ export function applyCommand(
       }
 
       const stepIndex = session.currentStepIndex;
-      const step = session.steps[stepIndex];
+      const steps = session.steps ?? [];
+      const step = steps[stepIndex];
       if (!step || step.skipped) {
         throw new DomainError('step_out_of_range', 'No active step');
       }
@@ -202,19 +203,19 @@ export function applyCommand(
         }
       ];
 
-      const steps = session.steps.map((s, i) =>
+      const nextSteps = steps.map((s, i) =>
         i === stepIndex ? { ...s, completedSets } : s
       );
 
       let next: WorkoutSession = {
         ...session,
-        steps,
+        steps: nextSteps,
         restEndsAtMs: null
       };
 
       const events: SessionEvent[] = [setEvent];
       const stepDone = completedSets.length >= step.snapshot.targetSets;
-      const moreSteps = stepIndex + 1 < session.steps.length;
+      const moreSteps = stepIndex + 1 < nextSteps.length;
 
       if (stepDone && moreSteps) {
         next = { ...next, currentStepIndex: stepIndex + 1 };
@@ -225,7 +226,7 @@ export function applyCommand(
         command.autoStartRest !== false &&
         step.snapshot.restSeconds > 0 &&
         (stillWorkOnStep || moreSteps) &&
-        !allRequiredDone({ ...next, steps });
+        !allRequiredDone({ ...next, steps: next.steps });
 
       // Rest between sets of one step AND after the last set when another step remains.
       if (shouldRest) {
@@ -287,7 +288,8 @@ export function applyCommand(
         throw new DomainError('invalid_transition', 'skip_step only while active/paused');
       }
       const stepIndex = session.currentStepIndex;
-      const step = session.steps[stepIndex];
+      const steps = session.steps ?? [];
+      const step = steps[stepIndex];
       if (!step) {
         throw new DomainError('step_out_of_range', 'No current step');
       }
@@ -301,18 +303,18 @@ export function applyCommand(
         payload: { stepIndex, reason: command.reason }
       };
 
-      const steps = session.steps.map((s, i) =>
+      const nextSteps = steps.map((s, i) =>
         i === stepIndex ? { ...s, skipped: true, skipReason: command.reason } : s
       );
       let currentStepIndex = stepIndex;
-      if (stepIndex + 1 < steps.length) {
+      if (stepIndex + 1 < nextSteps.length) {
         currentStepIndex = stepIndex + 1;
       }
 
       const next = bump(
         {
           ...session,
-          steps,
+          steps: nextSteps,
           currentStepIndex,
           restEndsAtMs: null
         },
