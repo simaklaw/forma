@@ -1,0 +1,175 @@
+/**
+ * FitPulse P2 client auth — anonymous per-device identity → per-user JWT.
+ *
+ * Flow: first sync attempt generates a random device subject, stores it
+ * in AsyncStorage, and exchanges it via POST /api/v1/auth/register for a
+ * deterministic user_id (server-side UUIDv5) + HS256 JWT (30-day TTL).
+ * The JWT is sent as Authorization: Bearer on every sync request.
+ * Expired credentials are re-registered with the SAME stored subject, so
+ * the user_id is stable across the app lifetime.
+ */
+
+import { createLogger } from '@/core/logger';
+
+const log = createLogger('sync-auth');
+
+export type SyncCredentials = {
+  user_id: string;
+  token: string;
+  expires_at: string;
+};
+
+/** AsyncStorage-shaped subset (kept minimal for testability). */
+export type KeyValueStorage = {
+  getItem(key: string): Promise<string | null>;
+  setItem(key: string, value: string): Promise<void>;
+};
+
+export const AUTH_SUBJECT_KEY = 'fitpulse.sync.auth_subject';
+export const CREDENTIALS_KEY = 'fitpulse.sync.credentials';
+
+export class SyncAuthError extends Error {
+  readonly status?: number;
+
+  constructor(message: string, status?: number) {
+    super(message);
+    this.name = 'SyncAuthError';
+    this.status = status;
+  }
+}
+
+/**
+ * Random device-scoped subject. It never grants access by itself —
+ * the server derives the identity (UUIDv5) and issues the JWT.
+ */
+export function randomAuthSubject(): string {
+  const part = () => Math.random().toString(36).slice(2, 12);
+  return 'device-' + part() + '-' + part() + '-' + part();
+}
+
+export function isValidCredentials(value: unknown): value is SyncCredentials {
+  if (!value || typeof value !== 'object') return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.user_id === 'string' &&
+    v.user_id.length > 0 &&
+    typeof v.token === 'string' &&
+    v.token.length > 0 &&
+    typeof v.expires_at === 'string' &&
+    !Number.isNaN(Date.parse(v.expires_at))
+  );
+}
+
+/** True when the JWT is expired or expires within the margin. */
+export function isExpired(creds: SyncCredentials, marginMs = 60_000): boolean {
+  return Date.parse(creds.expires_at) - marginMs <= Date.now();
+}
+
+export type RegisterOptions = {
+  baseUrl: string;
+  authSubject: string;
+  fetchImpl?: typeof fetch;
+};
+
+/**
+ * POST /api/v1/auth/register and validate the response shape.
+ * Throws SyncAuthError on HTTP errors or a malformed body.
+ */
+export async function registerSyncCredentials(
+  opts: RegisterOptions,
+): Promise<SyncCredentials> {
+  const base = opts.baseUrl.replace(/\/$/, '');
+  const fetchFn = opts.fetchImpl ?? globalThis.fetch.bind(globalThis);
+  const res = await fetchFn(base + '/api/v1/auth/register', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      accept: 'application/json',
+    },
+    body: JSON.stringify({ auth_subject: opts.authSubject }),
+  });
+  if (!res.ok) {
+    throw new SyncAuthError('register_failed_' + res.status, res.status);
+  }
+  const json: unknown = await res.json();
+  if (!isValidCredentials(json)) {
+    throw new SyncAuthError('register_invalid_response');
+  }
+  return json;
+}
+
+export async function loadSyncCredentials(
+  storage: KeyValueStorage,
+): Promise<SyncCredentials | null> {
+  try {
+    const raw = await storage.getItem(CREDENTIALS_KEY);
+    if (!raw) return null;
+    const parsed: unknown = JSON.parse(raw);
+    return isValidCredentials(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveSyncCredentials(
+  storage: KeyValueStorage,
+  creds: SyncCredentials,
+): Promise<void> {
+  await storage.setItem(CREDENTIALS_KEY, JSON.stringify(creds));
+}
+
+export type EnsureOptions = {
+  baseUrl: string;
+  storage: KeyValueStorage;
+  fetchImpl?: typeof fetch;
+};
+
+/**
+ * Load cached credentials or register a new identity. Never throws —
+ * returns null so the caller can fall back to the noop transport.
+ * Expired credentials are re-registered with the stored subject
+ * (deterministic UUIDv5 → same user_id, fresh JWT).
+ */
+export async function ensureSyncCredentials(
+  opts: EnsureOptions,
+): Promise<SyncCredentials | null> {
+  const existing = await loadSyncCredentials(opts.storage);
+  if (existing && !isExpired(existing)) {
+    return existing;
+  }
+
+  let subject: string | null = null;
+  try {
+    subject = await opts.storage.getItem(AUTH_SUBJECT_KEY);
+  } catch {
+    subject = null;
+  }
+  if (!subject) {
+    subject = randomAuthSubject();
+    try {
+      await opts.storage.setItem(AUTH_SUBJECT_KEY, subject);
+    } catch {
+      // Subject persistence failed — registration still works, but a
+      // later re-register may map to a different user_id.
+    }
+  }
+
+  try {
+    const creds = await registerSyncCredentials({
+      baseUrl: opts.baseUrl,
+      authSubject: subject,
+      fetchImpl: opts.fetchImpl,
+    });
+    await saveSyncCredentials(opts.storage, creds);
+    log.info('sync credentials ready', {
+      user_id: creds.user_id,
+      revalidated: existing != null,
+    });
+    return creds;
+  } catch (err) {
+    log.warn('sync register failed; staying offline', {
+      err: err instanceof Error ? err.message : String(err),
+    });
+    return null;
+  }
+}
