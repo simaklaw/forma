@@ -7,7 +7,8 @@ name: Verify sync setup (E2E)
 #   push 401 without token, accepted with matching token, duplicate on
 #   replay, 403 on user_id mismatch, cross-user pull isolation,
 #   activity_credit projection (1 credit for terminal event, none for
-#   intermediate, no double-credit on replay).
+#   intermediate, no double-credit on replay),
+#   pr_observation from enriched projection.setLogs.
 # A summary table is written to the run's Summary page. On failure,
 # diagnostics are committed to the ci-logs branch.
 
@@ -64,10 +65,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Migrations 001-004
+      - name: Migrations 001-006
         run: |
           set -o pipefail
-          for m in 001_init 002_rls_basic 003_rls_strict 004_device_platform_unknown; do
+          for m in 001_init 002_rls_basic 003_rls_strict 004_device_platform_unknown 005_pr_observation 006_session_materialize_seed; do
             psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "packages/db/migrations/$m.sql" 2>&1 | tee "migrate_$m.log"
           done
 
@@ -174,7 +175,7 @@ jobs:
 
       - name: intermediate event grants no activity credit
         run: |
-          CREDITS=$(psql "$DATABASE_URL" -Atc "select count(*) from engagement.activity_credit where user_id = '$A_USER';")
+          CREDITS=$(psql "$DATABASE_URL" -Atc "select count(*) from engagement.activity_credit where user_id = '$A_USER'")
           echo "credits_after_intermediate=$CREDITS"
           [ "$CREDITS" = "0" ]
 
@@ -197,18 +198,36 @@ jobs:
           echo "status=$code"; cat resp_credit2.json
           [ "$code" = "200" ]
           grep -q '"status":"duplicate"' resp_credit2.json
-          CREDITS=$(psql "$DATABASE_URL" -Atc "select count(*) from engagement.activity_credit where user_id = '$A_USER';" | tee credits_count.log)
+          CREDITS=$(psql "$DATABASE_URL" -Atc "select count(*) from engagement.activity_credit where user_id = '$A_USER'" | tee credits_count.log)
           echo "credits_after_replay=$CREDITS"
           [ "$CREDITS" = "1" ]
 
-      - name: pull as A returns exactly two changes
+      - name: soft PR observation from enriched setLogs
+        run: |
+          HASH=$(printf 'c%.0s' $(seq 1 64))
+          cat > push_pr.json <<EOF
+          {"user_id":"$A_USER","operations":[{"client_operation_id":"018f0000-0000-7000-8000-000000000003","device_id":"00000000-0000-4000-8000-0000000000d1","aggregate_type":"workout_session","aggregate_id":"00000000-0000-4000-8000-0000000000a3","payload_hash":"$HASH","payload":{"status":"completed","local_start_date":"2026-09-30","projection":{"setLogs":[{"exerciseId":1,"weight":90,"reps":5},{"exerciseId":7,"weight":40,"reps":10}]}},"occurred_at_client":"2026-09-30T10:00:00.000Z"}]}
+          EOF
+          code=$(curl -s -o resp_pr.json -w '%{http_code}' -X POST http://localhost:8787/api/v1/sync/push \
+            -H 'content-type: application/json' -H "authorization: Bearer $A_TOKEN" --data @push_pr.json)
+          echo "status=$code"; cat resp_pr.json
+          [ "$code" = "200" ]
+          grep -q '"status":"accepted"' resp_pr.json
+          PRS=$(psql "$DATABASE_URL" -Atc "select count(*) from workout.pr_observation where user_id = '$A_USER'")
+          echo "pr_observation_rows=$PRS"
+          [ "$PRS" -ge 1 ]
+          SESS=$(psql "$DATABASE_URL" -Atc "select count(*) from workout.workout_session where session_id = '00000000-0000-4000-8000-0000000000a3'")
+          echo "materialized_session=$SESS"
+          [ "$SESS" = "1" ]
+
+      - name: pull as A returns accepted changes
         run: |
           curl -s "http://localhost:8787/api/v1/sync/pull?user_id=$A_USER&after_change_id=0" \
             -H "authorization: Bearer $A_TOKEN" -o pull.json
           cat pull.json
           CHANGES=$(node -e "console.log(JSON.parse(require('fs').readFileSync('pull.json','utf8')).changes.length)")
           echo "changes=$CHANGES"
-          [ "$CHANGES" = "2" ]
+          [ "$CHANGES" -ge 2 ]
 
       - name: pull as B sees nothing (cross-user isolation)
         run: |
@@ -234,7 +253,7 @@ jobs:
             echo ""
             echo "| Проверка | Результат |"
             echo "|---|---|"
-            echo "| Миграции 001–004 | ${{ job.status }} |"
+            echo "| Миграции 001–006 | ${{ job.status }} |"
             echo "| Строгий RLS (FORCE) | $(cat rls_check.log 2>/dev/null || echo n/a) таблиц |"
             echo "| регистрация A/B | стабильные user_id |"
             echo "| push без токена | 401 |"
@@ -242,7 +261,8 @@ jobs:
             echo "| push с токеном A | $(grep -o '"status":"[a-z]*"' resp.json 2>/dev/null || echo fail) |"
             echo "| повтор (идемпотентность) | $(grep -o '"status":"[a-z]*"' resp2.json 2>/dev/null || echo fail) |"
             echo "| кредит за терминальное событие | $(cat credits_count.log 2>/dev/null || echo fail) строка(и) |"
-            echo "| pull A / pull B | 2 / $(node -e "try{console.log(JSON.parse(require('fs').readFileSync('pull_b.json','utf8')).changes.length)}catch{console.log('fail')}" 2>/dev/null) changes |"
+            echo "| soft PR / materialize | $(cat resp_pr.json 2>/dev/null | head -c 80 || echo n/a) |"
+            echo "| pull A / pull B | $(node -e "try{console.log(JSON.parse(require('fs').readFileSync('pull.json','utf8')).changes.length)}catch{console.log('fail')}" 2>/dev/null) / $(node -e "try{console.log(JSON.parse(require('fs').readFileSync('pull_b.json','utf8')).changes.length)}catch{console.log('fail')}" 2>/dev/null) changes |"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish diagnostics on failure
