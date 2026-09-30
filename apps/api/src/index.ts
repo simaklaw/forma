@@ -130,7 +130,7 @@ export function createApp(
         return c.json({ error: 'unauthorized' }, 401);
       }
       const subject = verifyJwt(jwtSecret, header.slice('Bearer '.length));
-     
+
  if (!subject) {
         return c.json({ error: 'unauthorized' }, 401);
       }
@@ -309,7 +309,7 @@ export function createApp(
         return {
           client_operation_id: op.client_operation_id,
           status: 'accepted',
-       
+
    result_body: resultBody,
         } satisfies SyncPushOperationResult;
       });
