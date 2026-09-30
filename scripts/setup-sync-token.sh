@@ -1,19 +1,23 @@
 #!/usr/bin/env bash
 # FitPulse — one-shot sync security setup.
 #
-# Generates a shared secret token and writes it into:
-#   apps/api/.env     -> SYNC_API_TOKEN (server)
-#   apps/mobile/.env  -> EXPO_PUBLIC_SYNC_API_TOKEN (client)
+# Generates secrets and writes them into (git-ignored) env files:
+#   apps/api/.env     -> SYNC_API_TOKEN (shared bearer, legacy), JWT_SECRET (per-user auth)
+#   apps/mobile/.env  -> EXPO_PUBLIC_SYNC_API_URL, EXPO_PUBLIC_SYNC_API_TOKEN (legacy client)
 #
-# Both files are git-ignored, so the token never reaches the repository.
-# Safe to re-run: only token lines are replaced, other values are kept.
+# Safe to re-run: only these keys are replaced, other values are kept.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-TOKEN="$(openssl rand -hex 32 2>/dev/null || od -An -N32 -tx1 /dev/urandom 2>/dev/null | tr -d ' \n')"
+gen() {
+  openssl rand -hex 32 2>/dev/null || od -An -N32 -tx1 /dev/urandom 2>/dev/null | tr -d ' \n'
+}
 
-if [ -z "$TOKEN" ]; then
-  echo "ERROR: could not generate a random token (no openssl, no /dev/urandom)." >&2
+TOKEN="$(gen)"
+JWT_SECRET="$(gen)"
+
+if [ -z "$TOKEN" ] || [ -z "$JWT_SECRET" ]; then
+  echo "ERROR: could not generate secrets (no openssl, no /dev/urandom)." >&2
   echo "       Install openssl and re-run: pnpm sync:setup" >&2
   exit 1
 fi
@@ -33,10 +37,11 @@ if [ ! -f "$API_ENV" ]; then
   printf 'DATABASE_URL=postgresql://postgres:postgres@localhost:5432/fitpulse\n' > "$API_ENV"
 fi
 upsert "$API_ENV" SYNC_API_TOKEN "$TOKEN"
+upsert "$API_ENV" JWT_SECRET "$JWT_SECRET"
 
 MOBILE_ENV="apps/mobile/.env"
 upsert "$MOBILE_ENV" EXPO_PUBLIC_SYNC_API_URL "http://10.0.2.2:8787"
 upsert "$MOBILE_ENV" EXPO_PUBLIC_SYNC_API_TOKEN "$TOKEN"
 
-echo "OK: token written to $API_ENV and $MOBILE_ENV"
+echo "OK: secrets written to $API_ENV and $MOBILE_ENV"
 echo "    (both files are git-ignored — safe to keep local)"
