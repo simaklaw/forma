@@ -18,6 +18,12 @@ import {
   defaultProjectionService,
   type ProjectionService,
 } from './projections.ts';
+import {
+  signJwt,
+  verifyJwt,
+  JWT_TTL_SECONDS,
+  type UserRegistry,
+} from './auth.ts';
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -36,11 +42,19 @@ export interface AppDeps {
   /** When true, user_id / device_id / client_operation_id / aggregate_id must be UUID. */
   requireUuid?: boolean;
   /**
-   * Shared-secret API token. When set, every /api/v1/sync/* request must
-   * carry an Authorization: Bearer header. Interim protection against
-   * IDOR until per-user JWT auth (P2) lands.
+   * Shared-secret API token. When set (and no jwtSecret), every
+   * /api/v1/sync/* request must carry Authorization: Bearer <token>.
    */
   apiToken?: string;
+  /**
+   * Per-user JWT secret (P2). When set, /api/v1/sync/* instead requires
+   * Authorization: Bearer <jwt> where the JWT subject IS the user_id —
+   * the client-reported user_id is only accepted when it matches the
+   * verified subject (else 403). Supersedes apiToken when both are set.
+   */
+  jwtSecret?: string;
+  /** Issues user_id for auth_subject. Required for POST /api/v1/auth/register. */
+  registerUser?: UserRegistry;
 }
 
 function stringFrom(value: unknown): string | undefined {
@@ -60,21 +74,69 @@ export function createApp(
     projections = defaultProjectionService,
     requireUuid = false,
     apiToken,
+    jwtSecret,
+    registerUser,
   } = deps;
   const uow: SyncUnitOfWork =
     deps.uow ?? new MemorySyncUnitOfWork(store, feed, projections);
-  const app = new Hono();
+  const app = new Hono<{ Variables: { authUserId: string } }>();
 
   app.get('/health', (c) =>
     c.json({
       ok: true,
       service: 'fitpulse-api',
       store: requireUuid ? 'postgres' : 'memory',
-      auth: apiToken ? 'bearer' : 'open',
+      auth: jwtSecret ? 'jwt' : apiToken ? 'bearer' : 'open',
     }),
   );
 
-  if (apiToken) {
+  /**
+   * POST /api/v1/auth/register
+   * Upserts platform.app_user by auth_subject and returns a signed JWT
+   * whose subject is the user_id. Deterministic identity: the same
+   * auth_subject always maps to the same user_id (UUIDv5).
+   */
+  if (jwtSecret && registerUser) {
+    app.post('/api/v1/auth/register', async (c) => {
+      let body: { auth_subject?: unknown };
+      try {
+        body = await c.req.json();
+      } catch {
+        return c.json({ error: 'invalid_json' }, 400);
+      }
+      const subject = stringFrom(body?.auth_subject);
+      if (!subject || subject.length < 3 || subject.length > 200) {
+        return c.json(
+          {
+            error: 'invalid_auth_subject',
+            message: 'auth_subject must be 3-200 chars',
+          },
+          400,
+        );
+      }
+      const { user_id, created } = await registerUser.register(subject);
+      const token = signJwt(jwtSecret, user_id);
+      const expiresAt = new Date(
+        Date.now() + JWT_TTL_SECONDS * 1000,
+      ).toISOString();
+      return c.json({ user_id, created, token, expires_at });
+    });
+  }
+
+  if (jwtSecret) {
+    app.use('/api/v1/sync/*', async (c, next) => {
+      const header = c.req.header('authorization') ?? '';
+      if (!header.startsWith('Bearer ')) {
+        return c.json({ error: 'unauthorized' }, 401);
+      }
+      const subject = verifyJwt(jwtSecret, header.slice('Bearer '.length));
+      if (!subject) {
+        return c.json({ error: 'unauthorized' }, 401);
+      }
+      c.set('authUserId', subject);
+      await next();
+    });
+  } else if (apiToken) {
     app.use('/api/v1/sync/*', async (c, next) => {
       const header = c.req.header('authorization') ?? '';
       if (header !== `Bearer ${apiToken}`) {
@@ -90,6 +152,7 @@ export function createApp(
    * Each operation is processed inside one unit-of-work transaction:
    * idempotency row + change-feed entry + projections commit or roll back
    * together; a lost race is answered as duplicate, never re-appended.
+   * In JWT mode the verified subject must equal body.user_id.
    */
   app.post('/api/v1/sync/push', async (c) => {
     let body: SyncPushRequest;
@@ -105,6 +168,10 @@ export function createApp(
 
     if (requireUuid && !UUID_RE.test(body.user_id)) {
       return c.json({ error: 'user_id_must_be_uuid' }, 400);
+    }
+
+    if (jwtSecret && body.user_id !== c.get('authUserId')) {
+      return c.json({ error: 'user_mismatch' }, 403);
     }
 
     const results: SyncPushOperationResult[] = [];
@@ -257,7 +324,18 @@ export function createApp(
       return c.json({ error: 'invalid_after_change_id' }, 400);
     }
 
-    const userId = c.req.query('user_id') ?? '';
+    let userId = c.req.query('user_id') ?? '';
+
+    if (jwtSecret) {
+      const authUserId = c.get('authUserId');
+      if (!userId) {
+        // Subject of the verified token is the source of truth.
+        userId = authUserId;
+      } else if (userId !== authUserId) {
+        return c.json({ error: 'user_mismatch' }, 403);
+      }
+    }
+
     if (!userId) {
       return c.json({
         changes: [],
@@ -291,13 +369,17 @@ export const app = createApp();
 export async function createAppFromEnv(): Promise<ReturnType<typeof createApp>> {
   const url = process.env.DATABASE_URL;
   const apiToken = process.env.SYNC_API_TOKEN || undefined;
+  const jwtSecret = process.env.JWT_SECRET || undefined;
   if (!url) {
+    const { MemoryUserRegistry } = await import('./auth.ts');
     return createApp({
       store: defaultIdempotencyStore,
       feed: defaultChangeFeed,
       projections: defaultProjectionService,
       requireUuid: false,
       apiToken,
+      jwtSecret,
+      registerUser: jwtSecret ? new MemoryUserRegistry() : undefined,
     });
   }
   const {
@@ -307,6 +389,7 @@ export async function createAppFromEnv(): Promise<ReturnType<typeof createApp>> 
     PostgresSyncUnitOfWork,
   } = await import('./postgres.ts');
   const { PostgresProjectionService } = await import('./projections.ts');
+  const { PostgresUserRegistry } = await import('./auth.ts');
   const sql = createSql(url);
   return createApp({
     store: new PostgresIdempotencyStore(sql),
@@ -315,5 +398,7 @@ export async function createAppFromEnv(): Promise<ReturnType<typeof createApp>> 
     uow: new PostgresSyncUnitOfWork(sql),
     requireUuid: true,
     apiToken,
+    jwtSecret,
+    registerUser: jwtSecret ? new PostgresUserRegistry(sql) : undefined,
   });
 }
