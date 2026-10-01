@@ -415,70 +415,76 @@ export default function WorkoutScreen() {
         <WorkoutCoachCard dayName={activeDay.name} anyDoneToday={anyDoneToday} exerciseNames={exerciseNames} />
 
         <View style={styles.sectionHead}>
-          <Text style={[styles.sectionTitle, { color: colors.paper }]}>{activeDay.name}</Text>
-          <Text style={[styles.sectionMeta, { color: colors.paperFaint }]}>
-            {todayDoneCount}/{effectiveExercises.length} упражнений
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>УПРАЖНЕНИЯ</Text>
+          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>
+            {todayDoneCount}/{effectiveExercises.length}
           </Text>
+          {overrideIds != null && overrideIds.length > 0 ? (
+            <TouchableOpacity
+              style={[styles.resetOverride, { borderColor: colors.lineStrong }]}
+              onPress={() => {
+                void clearDayOverride(trainingMode, activeDay.id).then(() => setOverrideTick((t) => t + 1));
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Сбросить замены дня"
+            >
+              <Text style={[styles.resetOverrideText, { color: colors.paperDim }]}>Сбросить замены дня</Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
 
-        {effectiveExercises.map((ex) => {
-          const done = completedSetsToday(ex.id) >= ex.totalSets;
-          const setsDone = completedSetsToday(ex.id);
+        {effectiveExercises.map((ex, i) => {
+          const doneSets = completedSetsToday(ex.id);
+          const finished = doneSets >= ex.totalSets;
           const isCurrent = currentStepExerciseId === ex.id;
-          const thumb = EXERCISE_THUMBNAILS[ex.mediaKey ?? ''];
+          const exPr = personalRecords[ex.id];
+          const thumbKey = ex.mediaKey;
+          const thumb = thumbKey ? EXERCISE_THUMBNAILS[thumbKey] : undefined;
           return (
             <TouchableOpacity
               key={ex.id}
               style={[
-                styles.exCard,
+                styles.logRow,
                 { backgroundColor: colors.panel, borderColor: colors.line },
                 isCurrent && { borderColor: colors.lime }
               ]}
               onPress={() => openExercise(ex.id)}
               accessibilityRole="button"
-              accessibilityLabel={`${ex.name}, ${setsDone} из ${ex.totalSets} подходов`}
+              accessibilityLabel={`${ex.name}, ${doneSets} из ${ex.totalSets}`}
             >
-              <View style={styles.exRow}>
-                {thumb ? (
-                  <Image source={thumb} style={styles.exThumb} />
-                ) : (
-                  <View style={[styles.exThumb, { backgroundColor: colors.line }]} />
-                )}
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.exName, { color: colors.paper }]} numberOfLines={2}>
+              {thumb ? (
+                <Image source={thumb} style={styles.logThumb} />
+              ) : (
+                <View style={[styles.logThumb, { backgroundColor: colors.line }]} />
+              )}
+              <Text style={[styles.logIndex, { color: colors.paperFaint }]}>
+                {String(i + 1).padStart(2, '0')}
+              </Text>
+              <View style={{ flex: 1 }}>
+                <View style={styles.logNameRow}>
+                  <Text style={[styles.logName, { color: colors.paper }]} numberOfLines={1}>
                     {ex.name}
                   </Text>
-                  <Text style={[styles.exMeta, { color: colors.paperFaint }]}>
-                    {ex.totalSets}×{ex.workingReps} · {formatLoadLabel(ex, safeWeightKg)}
-                    {done ? ' · готово' : setsDone > 0 ? ` · ${setsDone}/${ex.totalSets}` : ''}
-                  </Text>
+                  {isCurrent ? (
+                    <View style={[styles.nowBadge, { backgroundColor: colors.lime }]}>
+                      <Text style={[styles.nowBadgeText, { color: colors.ink }]}>сейчас</Text>
+                    </View>
+                  ) : null}
                 </View>
-                <TouchableOpacity
-                  onPress={() => {
-                    setReplaceTarget({ dayId: activeDay.id, exerciseId: ex.id, mode: trainingMode });
-                    navigation.navigate('Каталог');
-                  }}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Заменить ${ex.name}`}
-                  style={{ padding: 8 }}
-                >
-                  <Text style={{ color: colors.paperFaint, fontSize: 16 }}>⇄</Text>
-                </TouchableOpacity>
+                <Text style={[styles.logSpec, { color: colors.paperDim }]}>
+                  {ex.totalSets}×{ex.workingReps} · {formatLoadLabel(ex, safeWeightKg)}
+                  {finished ? ' · готово' : doneSets > 0 ? ` · ${doneSets}/${ex.totalSets}` : ''}
+                </Text>
               </View>
+              {exPr != null ? (
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={[styles.logPr, { color: colors.lime }]}>{exPr}</Text>
+                  <Text style={[styles.logPrLbl, { color: colors.paperFaint }]}>кг PR</Text>
+                </View>
+              ) : null}
             </TouchableOpacity>
           );
         })}
-
-        {overrideIds != null && overrideIds.length > 0 ? (
-          <TouchableOpacity
-            style={{ marginTop: 12, alignSelf: 'center' }}
-            onPress={() => {
-              void clearDayOverride(trainingMode, activeDay.id).then(() => setOverrideTick((t) => t + 1));
-            }}
-          >
-            <Text style={{ color: colors.paperFaint, fontSize: 13 }}>Сбросить замены дня</Text>
-          </TouchableOpacity>
-        ) : null}
       </ScrollView>
 
       <ExerciseSheet
