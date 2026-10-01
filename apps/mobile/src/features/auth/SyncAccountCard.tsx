@@ -245,7 +245,7 @@ export default function SyncAccountCard() {
     <View
       style={[
         styles.card,
-        { backgroundColor: colors.surface, borderColor: colors.line },
+        { backgroundColor: colors.panel, borderColor: colors.line },
       ]}
     >
       <Text style={[styles.kicker, { color: colors.paperDim }]}>
