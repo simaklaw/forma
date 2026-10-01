@@ -123,6 +123,11 @@ export const workoutScreenStyles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: spacing.sm
   },
+  logThumb: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.control
+  },
   logIndex: { fontFamily: fonts.mono, fontSize: 14, width: 28 },
   logNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   logName: { fontSize: 15, fontFamily: fonts.bodySemi, flexShrink: 1 },
