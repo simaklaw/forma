@@ -449,6 +449,17 @@ export default function WorkoutScreen() {
                 isCurrent && { borderColor: colors.lime }
               ]}
               onPress={() => openExercise(ex.id)}
+              onLongPress={() => {
+                setReplaceTarget({
+                  mode: trainingMode,
+                  dayId: activeDay.id,
+                  dayName: activeDay.name,
+                  slotIndex: i,
+                  currentExerciseId: ex.id,
+                  currentName: ex.name
+                });
+                navigation.navigate('Каталог');
+              }}
               accessibilityRole="button"
               accessibilityLabel={`${ex.name}, ${doneSets} из ${ex.totalSets}`}
             >
