@@ -42,6 +42,12 @@ describe('oidcClient', () => {
     });
   });
 
+  it('parseOAuthCallback rejects lookalike callback hosts and ports', () => {
+    expect(parseOAuthCallback('fitpulse://oauth.evil?code=abc12345&state=xyz')).toBeNull();
+    expect(parseOAuthCallback('fitpulse://oauth:443?code=abc12345&state=xyz')).toBeNull();
+    expect(parseOAuthCallback('https://oauth?code=abc12345&state=xyz')).toBeNull();
+  });
+
   it('parseOAuthCallback extracts id_token from hash', () => {
     const longJwt = `${'a'.repeat(20)}.${'b'.repeat(20)}.${'c'.repeat(20)}`;
     const r2 = parseOAuthCallback(
