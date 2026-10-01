@@ -13,6 +13,7 @@ export function RecoveryBanner() {
   const colors = useThemeColors();
   const setLogs = useFitPulseStore((s) => s.setLogs);
   const profile = useFitPulseStore((s) => s.profile);
+  const metabolic = useFitPulseStore((s) => s.metabolic);
   const waterGlasses = useFitPulseStore((s) => s.waterGlasses);
   const todayMeals = useFitPulseStore((s) => s.todayMeals);
   const calcTargets = useFitPulseStore((s) => s.calculateTargets);
@@ -37,7 +38,7 @@ export function RecoveryBanner() {
       waterLogsMl: waterGlasses * GLASS_ML,
       waterGoalMl: WATER_GOAL_ML
     });
-  }, [setLogs, todayMeals, profile, waterGlasses, calcTargets]);
+  }, [setLogs, todayMeals, profile, waterGlasses, calcTargets, metabolic]);
 
   return (
     <View
