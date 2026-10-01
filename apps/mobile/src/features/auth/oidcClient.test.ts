@@ -65,10 +65,12 @@ describe('oidcClient', () => {
     expect(r).toEqual({ kind: 'error', error: 'access_denied', state: 'st' });
   });
 
-  it('buildMailruAuthorizeUrl includes state and token response', () => {
-    const url = buildMailruAuthorizeUrl('cid', 'mystate');
-    expect(url).toContain('o2.mail.ru/login');
-    expect(url).toContain('response_type=token');
+  it('buildMailruAuthorizeUrl uses code + PKCE', () => {
+    const url = buildMailruAuthorizeUrl('cid', 'mystate', 'challenge123');
+    expect(url).toContain('oauth.mail.ru/login');
+    expect(url).toContain('response_type=code');
+    expect(url).toContain('code_challenge=challenge123');
+    expect(url).toContain('code_challenge_method=S256');
     expect(url).toContain('state=mystate');
     expect(url).toContain('client_id=cid');
   });
