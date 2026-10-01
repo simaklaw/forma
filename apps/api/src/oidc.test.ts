@@ -13,7 +13,8 @@ import { createApp } from './index.ts';
 import { MemoryIdempotencyStore, MemoryChangeFeed } from './idempotency.ts';
 import { MemoryUserRegistry, verifyJwt } from './auth.ts';
 
-const SECRET = 'oidc-test-secret';
+/** Unit-test only — never used outside node:test. */
+const TEST_JWT_SECRET = 'test-only-jwt-secret-not-for-prod';
 const MAILRU_AUD = 'mailru-client-id-test';
 const VK_APP = '51812311';
 
@@ -45,7 +46,6 @@ async function expectOidcCode(
     await fn();
     assert.fail(`expected OidcError ${code}`);
   } catch (e) {
-    // strip-types can break instanceof across module graphs — check shape.
     const err = e as { name?: string; code?: string };
     assert.equal(err.name, 'OidcError', `expected OidcError, got ${e}`);
     assert.equal(err.code, code);
@@ -170,6 +170,25 @@ describe('verifyIdToken vk', () => {
     );
   });
 
+  it('rejects alg=none before verify', async () => {
+    const h = Buffer.from(JSON.stringify({ alg: 'none', typ: 'JWT' })).toString(
+      'base64url',
+    );
+    const p = Buffer.from(
+      JSON.stringify({
+        iis: 'VK',
+        sub: '1',
+        app: Number(VK_APP),
+        exp: 1_700_000_000 + 3600,
+      }),
+    ).toString('base64url');
+    const token = `${h}.${p}.`;
+    await expectOidcCode(
+      () => verifyIdToken('vk', token, cfg()),
+      'invalid_token',
+    );
+  });
+
   it('rejects expired', async () => {
     const token = signRs256(
       { alg: 'RS256', typ: 'JWT' },
@@ -190,7 +209,7 @@ describe('POST /api/v1/auth/oidc', () => {
       store: new MemoryIdempotencyStore(),
       feed: new MemoryChangeFeed(),
       requireUuid: false,
-      jwtSecret: SECRET,
+      jwtSecret: TEST_JWT_SECRET,
       registerUser: new MemoryUserRegistry(),
       oidcConfig: cfg(),
     });
@@ -222,7 +241,7 @@ describe('POST /api/v1/auth/oidc', () => {
     };
     assert.equal(body.auth_subject, 'oidc-user@mail.ru');
     assert.equal(body.provider, 'mailru');
-    assert.equal(verifyJwt(SECRET, body.token), body.user_id);
+    assert.equal(verifyJwt(TEST_JWT_SECRET, body.token), body.user_id);
   });
 
   it('exchanges VK ID token for app JWT', async () => {
