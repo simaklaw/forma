@@ -1,23 +1,21 @@
 # HANDOFF — FitPulse
 
-**Checkpoint:** 2026-09-30 (P2 projections wired — soft PR + materialize)
+**Checkpoint:** 2026-09-30 (OIDC: Mail.ru + VK ID)
 **Brand:** FitPulse in UI/bundle.
 **APK:** do not build until owner says so.
 
-## Branch `feat/p2-push-enrichment-and-soft-pr`
+## Auth
 
-Push path after accepted op:
-1. `pr_observation` (soft max_load from setLogs)
-2. `workout_session` + steps/sets materialize (006 seed)
-3. promote → `exercise_record`
-4. `activity_credit` (terminal only)
+- Email subject → JWT (`POST /api/v1/auth/register`) — works offline-first
+- **OIDC:** `POST /api/v1/auth/oidc` with `provider: mailru | vk`
+  - **No Google / Apple** (product decision for RU)
+  - Mail.ru: JWKS at account.mail.ru, env `OIDC_MAILRU_CLIENT_ID`
+  - VK ID: RSA public key, env `OIDC_VK_CLIENT_ID` + `OIDC_VK_PUBLIC_KEY` (PEM)
 
-Also: login UI, HC last export, review hardening (auth gate, timeout, clearSyncAccount).
+## Next
 
-## Next after merge
-
-1. Green CI / verify-sync (migrations 001–006)
-2. Optional OIDC later
+1. Green CI on feat/oidc-token-exchange
+2. Optional: native VK ID / Mail.ru login UI (SDK or browser)
 3. APK only when owner says so
 
 ## Rules
@@ -27,3 +25,4 @@ Also: login UI, HC last export, review hardening (auth gate, timeout, clearSyncA
 3. No Google Fit — Health Connect only.
 4. Frozen catalog exercise ids 1–30.
 5. Profile gate: weightKg finite > 0.
+6. No Google/Apple sign-in — Mail.ru / VK ID only.

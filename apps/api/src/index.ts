@@ -24,6 +24,14 @@ import {
   JWT_TTL_SECONDS,
   type UserRegistry,
 } from './auth.ts';
+import {
+  verifyIdToken,
+  claimsToAuthSubject,
+  type OidcProvider,
+  type OidcConfig,
+  oidcConfigFromEnv,
+  createOidcRateLimiter,
+} from './oidc.ts';
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -32,29 +40,12 @@ export interface AppDeps {
   store: IdempotencyStore;
   feed: ChangeFeed;
   projections?: ProjectionService;
-  /**
-   * Transactional unit of work. Defaults to a memory pass-through built
-   * from store/feed/projections; the Postgres env factory wires the real
-   * transactional variant (store + feed + projections in one txn, with
-   * app.current_user_id set for RLS).
-   */
   uow?: SyncUnitOfWork;
-  /** When true, user_id / device_id / client_operation_id / aggregate_id must be UUID. */
   requireUuid?: boolean;
-  /**
-   * Shared-secret API token. When set (and no jwtSecret), every
-   * /api/v1/sync/* request must carry Authorization: Bearer <token>.
-   */
   apiToken?: string;
-  /**
-   * Per-user JWT secret (P2). When set, /api/v1/sync/* instead requires
-   * Authorization: Bearer <jwt> where the JWT subject IS the user_id —
-   * the client-reported user_id is only accepted when it matches the
-   * verified subject (else 403). Supersedes apiToken when both are set.
-   */
   jwtSecret?: string;
-  /** Issues user_id for auth_subject. Required for POST /api/v1/auth/register. */
   registerUser?: UserRegistry;
+  oidcConfig?: OidcConfig;
 }
 
 function stringFrom(value: unknown): string | undefined {
@@ -76,10 +67,12 @@ export function createApp(
     apiToken,
     jwtSecret,
     registerUser,
+    oidcConfig,
   } = deps;
   const uow: SyncUnitOfWork =
     deps.uow ?? new MemorySyncUnitOfWork(store, feed, projections);
   const app = new Hono<{ Variables: { authUserId: string } }>();
+  const oidcRateLimit = createOidcRateLimiter({ windowMs: 60_000, max: 30 });
 
   app.get('/health', (c) =>
     c.json({
@@ -90,12 +83,6 @@ export function createApp(
     }),
   );
 
-  /**
-   * POST /api/v1/auth/register
-   * Upserts platform.app_user by auth_subject and returns a signed JWT
-   * whose subject is the user_id. Deterministic identity: the same
-   * auth_subject always maps to the same user_id (UUIDv5).
-   */
   if (jwtSecret && registerUser) {
     app.post('/api/v1/auth/register', async (c) => {
       let body: { auth_subject?: unknown };
@@ -123,6 +110,69 @@ export function createApp(
     });
   }
 
+  if (jwtSecret && registerUser && oidcConfig) {
+    app.post('/api/v1/auth/oidc', async (c) => {
+      let body: { provider?: unknown; id_token?: unknown };
+      try {
+        body = await c.req.json();
+      } catch {
+        return c.json({ error: 'invalid_json' }, 400);
+      }
+      const provider = stringFrom(body?.provider) as OidcProvider | undefined;
+      const idToken = stringFrom(body?.id_token);
+      const clientKey =
+        c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ||
+        c.req.header('cf-connecting-ip') ||
+        'unknown';
+      if (!oidcRateLimit(clientKey)) {
+        return c.json({ error: 'rate_limited' }, 429);
+      }
+      if (provider !== 'mailru' && provider !== 'vk') {
+        return c.json(
+          { error: 'invalid_provider', message: 'provider must be mailru|vk' },
+          400,
+        );
+      }
+      if (!idToken || idToken.length < 20 || idToken.length > 8192) {
+        return c.json({ error: 'invalid_id_token' }, 400);
+      }
+      try {
+        const claims = await verifyIdToken(provider, idToken, oidcConfig);
+        const subject = claimsToAuthSubject(provider, claims);
+        const { user_id, created } = await registerUser.register(subject);
+        const token = signJwt(jwtSecret, user_id);
+        const expiresAt = new Date(
+          Date.now() + JWT_TTL_SECONDS * 1000,
+        ).toISOString();
+        return c.json({
+          user_id,
+          created,
+          token,
+          expires_at: expiresAt,
+          auth_subject: subject,
+          provider,
+        });
+      } catch (e) {
+        const err = e as { name?: string; code?: string; message?: string };
+        if (err?.name === 'OidcError' && typeof err.code === 'string') {
+          const status =
+            err.code === 'provider_not_configured'
+              ? 503
+              : err.code === 'expired'
+                ? 401
+                : err.code === 'jwks_unavailable'
+                  ? 502
+                  : 401;
+          return c.json(
+            { error: err.code, message: err.message ?? err.code },
+            status,
+          );
+        }
+        throw e;
+      }
+    });
+  }
+
   if (jwtSecret) {
     app.use('/api/v1/sync/*', async (c, next) => {
       const header = c.req.header('authorization') ?? '';
@@ -146,14 +196,6 @@ export function createApp(
     });
   }
 
-  /**
-   * POST /api/v1/sync/push
-   * Idempotent batch from client Transactional Outbox.
-   * Each operation is processed inside one unit-of-work transaction:
-   * idempotency row + change-feed entry + projections commit or roll back
-   * together; a lost race is answered as duplicate, never re-appended.
-   * In JWT mode the verified subject must equal body.user_id.
-   */
   app.post('/api/v1/sync/push', async (c) => {
     let body: SyncPushRequest;
     try {
@@ -253,21 +295,17 @@ export function createApp(
           payload_hash: op.payload_hash,
           result_body: resultBody,
           status: 'accepted',
-          // Client-reported device metadata (see ensureDevice).
           device_platform: stringFrom(opPayload.device_platform),
           app_version: stringFrom(opPayload.app_version),
         });
 
         if (!inserted) {
-          // Another request for the same operation won the race.
           const raced = await deps.store.get(
             body.user_id,
             op.device_id,
             op.client_operation_id,
           );
           if (raced) return duplicateFor(raced);
-          // Extremely unlikely (row vanished); answer duplicate without body
-          // rather than re-appending a change-feed entry.
           return {
             client_operation_id: op.client_operation_id,
             status: 'duplicate',
@@ -293,8 +331,6 @@ export function createApp(
             device_id: op.device_id,
           });
         } catch (err) {
-          // Projection failure must not reject an already-accepted op,
-          // but it MUST be visible for debugging/replay — never silent.
           console.error(
             '[fitpulse-api] projection failed for accepted op',
             {
@@ -330,7 +366,6 @@ export function createApp(
     if (jwtSecret) {
       const authUserId = c.get('authUserId');
       if (!userId) {
-        // Subject of the verified token is the source of truth.
         userId = authUserId;
       } else if (userId !== authUserId) {
         return c.json({ error: 'user_mismatch' }, 403);
@@ -354,7 +389,6 @@ export function createApp(
       500,
     );
 
-    // Inside the unit of work so Postgres runs it with the RLS GUC set.
     const page = await uow.run(userId, (deps) =>
       deps.feed.listAfter(userId, after, limit),
     );
@@ -366,11 +400,11 @@ export function createApp(
 
 export const app = createApp();
 
-/** Build app from env: DATABASE_URL → Postgres stores + projections. */
 export async function createAppFromEnv(): Promise<ReturnType<typeof createApp>> {
   const url = process.env.DATABASE_URL;
   const apiToken = process.env.SYNC_API_TOKEN || undefined;
   const jwtSecret = process.env.JWT_SECRET || undefined;
+  const oidcConfig = oidcConfigFromEnv();
   if (!url) {
     const { MemoryUserRegistry } = await import('./auth.ts');
     return createApp({
@@ -381,6 +415,7 @@ export async function createAppFromEnv(): Promise<ReturnType<typeof createApp>> 
       apiToken,
       jwtSecret,
       registerUser: jwtSecret ? new MemoryUserRegistry() : undefined,
+      oidcConfig,
     });
   }
   const {
@@ -401,5 +436,6 @@ export async function createAppFromEnv(): Promise<ReturnType<typeof createApp>> 
     apiToken,
     jwtSecret,
     registerUser: jwtSecret ? new PostgresUserRegistry(sql) : undefined,
+    oidcConfig,
   });
 }
