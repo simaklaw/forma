@@ -30,6 +30,8 @@ import {
   type OidcProvider,
   type OidcConfig,
   oidcConfigFromEnv,
+  exchangeMailruAuthorizationCode,
+  isAllowedOidcRedirectUri,
   createOidcRateLimiter,
 } from './oidc.ts';
 
@@ -112,14 +114,23 @@ export function createApp(
 
   if (jwtSecret && registerUser && oidcConfig) {
     app.post('/api/v1/auth/oidc', async (c) => {
-      let body: { provider?: unknown; id_token?: unknown };
+      let body: {
+        provider?: unknown;
+        id_token?: unknown;
+        code?: unknown;
+        redirect_uri?: unknown;
+        code_verifier?: unknown;
+      };
       try {
         body = await c.req.json();
       } catch {
         return c.json({ error: 'invalid_json' }, 400);
       }
       const provider = stringFrom(body?.provider) as OidcProvider | undefined;
-      const idToken = stringFrom(body?.id_token);
+      let idToken = stringFrom(body?.id_token);
+      const code = stringFrom(body?.code);
+      const redirectUri = stringFrom(body?.redirect_uri);
+      const codeVerifier = stringFrom(body?.code_verifier);
       const clientKey =
         c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ||
         c.req.header('cf-connecting-ip') ||
@@ -133,10 +144,40 @@ export function createApp(
           400,
         );
       }
-      if (!idToken || idToken.length < 20 || idToken.length > 8192) {
-        return c.json({ error: 'invalid_id_token' }, 400);
-      }
       try {
+        if (!idToken && code && provider === 'mailru') {
+          if (!redirectUri || !isAllowedOidcRedirectUri(redirectUri)) {
+            return c.json(
+              {
+                error: 'invalid_redirect_uri',
+                message: 'redirect_uri must be an allowlisted mobile URI',
+              },
+              400,
+            );
+          }
+          const tokens = await exchangeMailruAuthorizationCode(
+            {
+              code,
+              redirectUri,
+              codeVerifier: codeVerifier || undefined,
+            },
+            oidcConfig,
+          );
+          idToken = tokens.id_token ?? '';
+          if (!idToken || idToken.length < 20) {
+            return c.json(
+              {
+                error: 'mailru_no_id_token',
+                message:
+                  'Token endpoint did not return id_token. Enable OIDC scopes for the Mail.ru app.',
+              },
+              400,
+            );
+          }
+        }
+        if (!idToken || idToken.length < 20 || idToken.length > 8192) {
+          return c.json({ error: 'invalid_id_token' }, 400);
+        }
         const claims = await verifyIdToken(provider, idToken, oidcConfig);
         const subject = claimsToAuthSubject(provider, claims);
         const { user_id, created } = await registerUser.register(subject);
