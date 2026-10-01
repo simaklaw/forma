@@ -126,7 +126,11 @@ function jwkToKeyObject(jwk: Jwk): KeyObject {
   if (jwk.kty !== 'RSA' || !jwk.n || !jwk.e) {
     throw new OidcError('unsupported_jwk', 'invalid_token');
   }
-  return createPublicKey({ key: jwk as unknown as JsonWebKey, format: 'jwk' });
+  // Avoid DOM JsonWebKey — node types alone under api tsconfig.
+  return createPublicKey({
+    key: { kty: 'RSA', n: jwk.n, e: jwk.e },
+    format: 'jwk',
+  });
 }
 
 function audMatches(
