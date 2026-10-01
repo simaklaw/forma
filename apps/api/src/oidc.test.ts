@@ -287,7 +287,7 @@ describe('POST /api/v1/auth/oidc', () => {
         redirect_uri: 'fitpulse://oauth',
       }),
     });
-    assert.equal(res.status, 401);
+    assert.equal(res.status, 400);
     expect(await res.json()).toMatchObject({ error: 'invalid_code_verifier' });
   });
 
