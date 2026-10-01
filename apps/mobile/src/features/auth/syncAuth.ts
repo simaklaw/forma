@@ -39,10 +39,6 @@ export class SyncAuthError extends Error {
   }
 }
 
-/**
- * Random device-scoped subject. It never grants access by itself —
- * the server derives the identity (UUIDv5) and issues the JWT.
- */
 export function randomAuthSubject(): string {
   const part = () => Math.random().toString(36).slice(2, 12);
   return 'device-' + part() + '-' + part() + '-' + part();
@@ -61,7 +57,6 @@ export function isValidCredentials(value: unknown): value is SyncCredentials {
   );
 }
 
-/** True when the JWT is expired or expires within the margin. */
 export function isExpired(creds: SyncCredentials, marginMs = 60_000): boolean {
   return Date.parse(creds.expires_at) - marginMs <= Date.now();
 }
@@ -72,10 +67,6 @@ export type RegisterOptions = {
   fetchImpl?: typeof fetch;
 };
 
-/**
- * POST /api/v1/auth/register and validate the response shape.
- * Throws SyncAuthError on HTTP errors or a malformed body.
- */
 export async function registerSyncCredentials(
   opts: RegisterOptions,
 ): Promise<SyncCredentials> {
@@ -128,12 +119,6 @@ export type EnsureOptions = {
   fetchImpl?: typeof fetch;
 };
 
-/**
- * Load cached credentials or register a new identity. Never throws —
- * returns null so the caller can fall back to the noop transport.
- * Expired credentials are re-registered with the stored subject
- * (deterministic UUIDv5 → same user_id, fresh JWT).
- */
 export async function ensureSyncCredentials(
   opts: EnsureOptions,
 ): Promise<SyncCredentials | null> {
@@ -153,8 +138,7 @@ export async function ensureSyncCredentials(
     try {
       await opts.storage.setItem(AUTH_SUBJECT_KEY, subject);
     } catch {
-      // Subject persistence failed — registration still works, but a
-      // later re-register may map to a different user_id.
+      // ignore
     }
   }
 
@@ -178,13 +162,11 @@ export async function ensureSyncCredentials(
   }
 }
 
-/** Normalize user-entered subject: trim + lowercase. Empty → null. */
 export function normalizeAuthSubject(raw: string): string | null {
   const s = raw.trim().toLowerCase();
   return s.length > 0 ? s : null;
 }
 
-/** Loose email check for the account field (server accepts any subject string). */
 export function isEmailSubject(subject: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(subject);
 }
@@ -202,16 +184,10 @@ export async function loadAuthSubject(
 export type LinkAccountOptions = {
   baseUrl: string;
   storage: KeyValueStorage;
-  /** Email or other stable subject the user typed. */
   subject: string;
   fetchImpl?: typeof fetch;
 };
 
-/**
- * Persist a user-chosen auth subject and register a JWT for it.
- * Replaces the anonymous device subject. Same email → same user_id
- * (server UUIDv5). Throws SyncAuthError on network/register failure.
- */
 export async function linkSyncAccount(
   opts: LinkAccountOptions,
 ): Promise<SyncCredentials> {
@@ -239,26 +215,37 @@ export type ExchangeOidcOptions = {
   baseUrl: string;
   storage: KeyValueStorage;
   provider: OidcProvider;
-  idToken: string;
+  idToken?: string;
+  code?: string;
+  codeVerifier?: string;
+  redirectUri?: string;
   fetchImpl?: typeof fetch;
 };
 
 /**
- * Exchange a Mail.ru / VK ID token for app JWT via POST /api/v1/auth/oidc.
- * Same persistence as linkSyncAccount (credentials + auth_subject).
+ * Exchange Mail.ru / VK credentials for app JWT via POST /api/v1/auth/oidc.
+ * - id_token (VK after client exchange)
+ * - Mail.ru code + PKCE verifier (server holds client_secret)
  */
 export async function exchangeOidcCredentials(
   opts: ExchangeOidcOptions,
 ): Promise<SyncCredentials> {
   const base = opts.baseUrl.replace(/\/$/, '');
   const fetchFn = opts.fetchImpl ?? globalThis.fetch.bind(globalThis);
+  const payload: Record<string, string> = { provider: opts.provider };
+  if (opts.code) {
+    payload.code = opts.code;
+    if (opts.codeVerifier) payload.code_verifier = opts.codeVerifier;
+    if (opts.redirectUri) payload.redirect_uri = opts.redirectUri;
+  } else if (opts.idToken) {
+    payload.id_token = opts.idToken;
+  } else {
+    throw new SyncAuthError('oidc_missing_credentials', 400);
+  }
   const res = await fetchFn(`${base}/api/v1/auth/oidc`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', accept: 'application/json' },
-    body: JSON.stringify({
-      provider: opts.provider,
-      id_token: opts.idToken,
-    }),
+    body: JSON.stringify(payload),
   });
   if (res.status === 401 || res.status === 400) {
     const body = (await res.json().catch(() => ({}))) as { error?: string };
@@ -298,11 +285,6 @@ export async function exchangeOidcCredentials(
   return creds;
 }
 
-/**
- * Drop local sync identity + credentials (logout / unlink).
- * Also clears Health Connect last-export prefs so timestamps do not
- * leak across accounts on a shared device.
- */
 export async function clearSyncAccount(
   storage: KeyValueStorage,
 ): Promise<void> {
