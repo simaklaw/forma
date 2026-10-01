@@ -203,7 +203,9 @@ export function createApp(
                 ? 401
                 : err.code === 'jwks_unavailable'
                   ? 502
-                  : 401;
+                  : err.code === 'invalid_code_verifier'
+                    ? 400
+                    : 401;
           return c.json(
             { error: err.code, message: err.message ?? err.code },
             status,
