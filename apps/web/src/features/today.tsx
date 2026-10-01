@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   CoachEngine,
   analyzeRecovery,
@@ -27,6 +27,21 @@ function countSets(setsDone: Record<string, boolean[]>): { done: number; total: 
     done += arr.filter(Boolean).length;
   }
   return { done, total };
+}
+
+function recoveryRingColor(status: string): string {
+  switch (status) {
+    case "peak":
+      return "var(--color-ok)";
+    case "ready":
+      return "var(--color-accent)";
+    case "active_recovery_recommended":
+      return "var(--color-warn)";
+    case "rest_required":
+      return "var(--color-danger)";
+    default:
+      return "var(--color-accent)";
+  }
 }
 
 export function TodayScreen() {
@@ -183,37 +198,83 @@ export function TodayScreen() {
         <h1 className="mt-1 font-display text-2xl tracking-tight">FORMA</h1>
       </header>
 
-      <div className="mb-4 rounded-2xl bg-surface p-4 shadow-card">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted">Восстановление</p>
-            <p className="mt-1 font-display text-3xl tracking-tight">{recovery.recoveryScore}%</p>
-            <p className="mt-1 text-sm text-accent">{recovery.statusLabel}</p>
+      <div className="animate-rise mb-4 rounded-2xl bg-surface p-4 shadow-card">
+        <div className="flex items-center gap-4">
+          <div
+            className="recovery-score-ring shrink-0"
+            style={
+              {
+                "--ring-pct": recovery.recoveryScore,
+                "--ring-color": recoveryRingColor(recovery.status),
+              } as React.CSSProperties
+            }
+            aria-label={`Восстановление ${recovery.recoveryScore} процентов`}
+          >
+            <span>{recovery.recoveryScore}%</span>
           </div>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-right text-xs text-muted">
-            <span>Мышцы {recovery.muscularReadiness}</span>
-            <span>Энергия {recovery.energyRestoration}</span>
-            <span>ЦНС {recovery.cnsFreshness}</span>
-            <span>Вода {recovery.hydrationScore}</span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">
+              Восстановление
+            </p>
+            <p className="mt-0.5 font-display text-xl tracking-tight text-fg">
+              {recovery.statusLabel}
+            </p>
+            <p className="mt-1 text-sm leading-snug text-muted">
+              {recovery.recommendationTitle}
+            </p>
           </div>
         </div>
-        <p className="mt-3 text-sm leading-relaxed text-fg">{recovery.recommendationTitle}</p>
-        <p className="mt-1 text-sm text-muted">{recovery.recommendationDescription}</p>
-        <p className="mt-2 text-xs text-muted">{recovery.nutritionAdvice}</p>
-        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-surface-2 pt-3">
-          <span className="text-xs text-muted">
-            Вода {(waterMl / 1000).toFixed(1)} / 2.5 л
-          </span>
-          {[250, 500].map((ml) => (
-            <button
-              key={ml}
-              type="button"
-              className="rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-fg"
-              onClick={() => addWater(ml)}
-            >
-              +{ml} мл
-            </button>
+
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          {(
+            [
+              ["Мышцы", recovery.muscularReadiness],
+              ["Энергия", recovery.energyRestoration],
+              ["ЦНС", recovery.cnsFreshness],
+              ["Вода", recovery.hydrationScore],
+            ] as const
+          ).map(([label, value]) => (
+            <div key={label}>
+              <div className="mb-1 flex items-center justify-between text-[11px] text-muted">
+                <span>{label}</span>
+                <span className="tabular-nums text-fg">{value}</span>
+              </div>
+              <div className="pillar-bar">
+                <i style={{ width: `${Math.max(0, Math.min(100, value))}%` }} />
+              </div>
+            </div>
           ))}
+        </div>
+
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          {recovery.recommendationDescription}
+        </p>
+        {recovery.nutritionAdvice ? (
+          <p className="mt-1 text-xs text-muted">{recovery.nutritionAdvice}</p>
+        ) : null}
+
+        <div className="mt-3 border-t border-border pt-3">
+          <div className="mb-2 flex items-center justify-between text-xs text-muted">
+            <span>Вода</span>
+            <span className="tabular-nums text-fg">
+              {(waterMl / 1000).toFixed(1)} / 2.5 л
+            </span>
+          </div>
+          <div className="water-track mb-2">
+            <i style={{ width: `${Math.min(100, (waterMl / 2500) * 100)}%` }} />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {[250, 500].map((ml) => (
+              <button
+                key={ml}
+                type="button"
+                className="rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-fg"
+                onClick={() => addWater(ml)}
+              >
+                +{ml} мл
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
