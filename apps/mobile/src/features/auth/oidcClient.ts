@@ -107,9 +107,7 @@ async function sha256Base64Url(input: string): Promise<string> {
     const hash = await subtle.digest('SHA-256', data);
     return bytesToBase64Url(new Uint8Array(hash));
   }
-  const { createHash } = await import('node:crypto');
-  const hash = createHash('sha256').update(input).digest();
-  return bytesToBase64Url(new Uint8Array(hash));
+  throw new Error('Web Crypto unavailable');
 }
 
 export async function generateCodeChallenge(verifier: string): Promise<string> {

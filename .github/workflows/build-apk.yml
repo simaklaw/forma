@@ -19,6 +19,8 @@ jobs:
     timeout-minutes: 90
 
     env:
+      EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID: ${{ vars.EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID }}
+      EXPO_PUBLIC_SYNC_API_URL: ${{ vars.EXPO_PUBLIC_SYNC_API_URL }}
       # Do NOT set NODE_ENV=production at job level — pnpm then skips
       # devDependencies (babel-plugin-module-resolver) and Metro fails.
       GRADLE_OPTS: -Xmx4g -XX:MaxMetaspaceSize=1g -Dorg.gradle.daemon=false
@@ -71,6 +73,14 @@ jobs:
             "ndk;25.1.8937393" \
             "cmake;3.22.1" || true
 
+      - name: Validate production app configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID" || { echo "::error::Missing GitHub Variable EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID"; exit 1; }
+          test -n "$EXPO_PUBLIC_SYNC_API_URL" || { echo "::error::Missing GitHub Variable EXPO_PUBLIC_SYNC_API_URL"; exit 1; }
+          case "$EXPO_PUBLIC_SYNC_API_URL" in https://*) ;; *) echo "::error::EXPO_PUBLIC_SYNC_API_URL must use HTTPS"; exit 1;; esac
+          echo "Production Mail.ru client ID and HTTPS API URL are configured."
       - name: Install workspace dependencies (incl. devDeps for Babel/Metro)
         shell: bash
         env:

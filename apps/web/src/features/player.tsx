@@ -44,7 +44,7 @@ export function PlayerScreen({ planId }: { planId: string }) {
       : null;
   const expectedIndex =
     sequentialMismatch && expectedId && plan
-      ? plan.exerciseIds.indexOf(expectedId)
+      ? exercises.findIndex((exercise) => exercise.id === expectedId)
       : -1;
 
   const estKcal = useMemo(() => {
@@ -138,11 +138,11 @@ export function PlayerScreen({ planId }: { planId: string }) {
               По плану: {expectedName ?? "предыдущее"}
               {expectedIndex >= 0 ? ` · ${expectedIndex + 1}/${exercises.length}` : ""}
             </p>
-            {expectedId && (
+            {expectedId && expectedIndex >= 0 && (
               <button
                 type="button"
                 className="mt-2 text-sm text-accent underline"
-                onClick={() => goToExercise(expectedId)}
+                onClick={() => goToExercise(expectedIndex)}
               >
                 Перейти
               </button>
@@ -152,7 +152,11 @@ export function PlayerScreen({ planId }: { planId: string }) {
 
         <div className="mt-4 flex flex-wrap gap-2">
           {sets.map((done, i) => {
-            const can = canMarkSet(session?.setsDone ?? {}, ex.id, i, plan.exerciseIds);
+            const can = canMarkSet(
+              { planId: session?.planId ?? plan.id, setsDone: session?.setsDone ?? {} },
+              ex.id,
+              i,
+            );
             return (
               <button
                 key={i}

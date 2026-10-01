@@ -58,6 +58,12 @@ describe('oidcClient', () => {
     expect(short).toBeNull();
   });
 
+  it('parseOAuthCallback rejects lookalike callback hosts and ports', () => {
+    expect(parseOAuthCallback('fitpulse://oauth.evil?code=abc12345&state=xyz')).toBeNull();
+    expect(parseOAuthCallback('fitpulse://oauth:443?code=abc12345&state=xyz')).toBeNull();
+    expect(parseOAuthCallback('https://oauth?code=abc12345&state=xyz')).toBeNull();
+  });
+
   it('parseOAuthCallback returns error', () => {
     const r = parseOAuthCallback(
       'fitpulse://oauth?error=access_denied&state=st',

@@ -288,7 +288,8 @@ describe('POST /api/v1/auth/oidc', () => {
       }),
     });
     assert.equal(res.status, 400);
-    expect(await res.json()).toMatchObject({ error: 'invalid_code_verifier' });
+    const body = (await res.json()) as { error?: string };
+    assert.equal(body.error, 'invalid_code_verifier');
   });
 
   it('returns 400 for google/apple', async () => {

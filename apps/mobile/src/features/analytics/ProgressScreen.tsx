@@ -103,6 +103,13 @@ export default function ProgressScreen() {
     [domainWorkouts, mealTotals.protein, targetSnapshot?.proteinTarget, recovery.status, todayKey]
   );
 
+  const recoveryPillars = [
+    { id: 'muscular', label: 'Мышцы', score: recovery.muscularReadiness },
+    { id: 'energy', label: 'Энергия', score: recovery.energyRestoration },
+    { id: 'hydration', label: 'Вода', score: recovery.hydrationScore },
+    { id: 'cns', label: 'ЦНС', score: recovery.cnsFreshness }
+  ];
+
   const bestPr = selectOverallPersonalRecord(personalRecords);
 
   const topPrs = useMemo(() => {
@@ -165,7 +172,7 @@ export default function ProgressScreen() {
             </View>
           </View>
           <View style={styles.pillars}>
-            {recovery.pillars.map((p) => (
+            {recoveryPillars.map((p) => (
               <View key={p.id} style={[styles.pillar, { borderColor: colors.line }]}>
                 <Text style={[styles.pillarVal, { color: colors.paper }]}>{p.score}</Text>
                 <Text style={[styles.pillarLbl, { color: colors.paperFaint }]}>{p.label}</Text>
