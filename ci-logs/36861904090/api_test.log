@@ -1,0 +1,453 @@
+
+> @forma/api@0.1.0 test /home/runner/work/forma/forma/apps/api
+> node --experimental-strip-types --test src/sync.test.ts src/projections.test.ts src/auth.test.ts src/oidc.test.ts
+
+TAP version 13
+# Subtest: auth primitives
+    # Subtest: subjectUserId is a deterministic UUIDv5
+    ok 1 - subjectUserId is a deterministic UUIDv5
+      ---
+      duration_ms: 2.107293
+      type: 'test'
+      ...
+    # Subtest: JWT sign/verify roundtrip
+    ok 2 - JWT sign/verify roundtrip
+      ---
+      duration_ms: 0.96412
+      type: 'test'
+      ...
+    # Subtest: JWT rejects tampering, wrong secret and expiry
+    ok 3 - JWT rejects tampering, wrong secret and expiry
+      ---
+      duration_ms: 0.65882
+      type: 'test'
+      ...
+    1..3
+ok 1 - auth primitives
+  ---
+  duration_ms: 5.378079
+  type: 'suite'
+  ...
+# Subtest: sync API in JWT mode
+    # Subtest: health reports jwt auth
+    ok 1 - health reports jwt auth
+      ---
+      duration_ms: 39.865284
+      type: 'test'
+      ...
+    # Subtest: register returns a stable user_id and a working token
+    ok 2 - register returns a stable user_id and a working token
+      ---
+      duration_ms: 4.608572
+      type: 'test'
+      ...
+    # Subtest: register rejects short subjects
+    ok 3 - register rejects short subjects
+      ---
+      duration_ms: 1.678834
+      type: 'test'
+      ...
+    # Subtest: sync rejects missing/invalid token with 401
+    ok 4 - sync rejects missing/invalid token with 401
+      ---
+      duration_ms: 3.877157
+      type: 'test'
+      ...
+    # Subtest: push with matching user_id is accepted; mismatch is 403
+    ok 5 - push with matching user_id is accepted; mismatch is 403
+      ---
+      duration_ms: 5.390913
+      type: 'test'
+      ...
+    # Subtest: pull isolates users and rejects spoofed user_id
+    ok 6 - pull isolates users and rejects spoofed user_id
+      ---
+      duration_ms: 7.815509
+      type: 'test'
+      ...
+    # Subtest: pull without user_id uses the token subject
+    ok 7 - pull without user_id uses the token subject
+      ---
+      duration_ms: 2.969623
+      type: 'test'
+      ...
+    1..7
+ok 2 - sync API in JWT mode
+  ---
+  duration_ms: 67.23273
+  type: 'suite'
+  ...
+# Subtest: claimsToAuthSubject
+    # Subtest: prefers email for mailru
+    ok 1 - prefers email for mailru
+      ---
+      duration_ms: 1.049108
+      type: 'test'
+      ...
+    # Subtest: falls back to oidc:provider:sub
+    ok 2 - falls back to oidc:provider:sub
+      ---
+      duration_ms: 0.306472
+      type: 'test'
+      ...
+    1..2
+ok 3 - claimsToAuthSubject
+  ---
+  duration_ms: 2.294793
+  type: 'suite'
+  ...
+# Subtest: verifyIdToken mailru
+    # Subtest: accepts a valid Mail.ru ID token
+    ok 1 - accepts a valid Mail.ru ID token
+      ---
+      duration_ms: 5.286869
+      type: 'test'
+      ...
+    # Subtest: rejects wrong audience
+    ok 2 - rejects wrong audience
+      ---
+      duration_ms: 3.090879
+      type: 'test'
+      ...
+    1..2
+ok 4 - verifyIdToken mailru
+  ---
+  duration_ms: 8.676906
+  type: 'suite'
+  ...
+# Subtest: verifyIdToken vk
+    # Subtest: accepts a valid VK ID token (iis + app)
+    ok 1 - accepts a valid VK ID token (iis + app)
+      ---
+      duration_ms: 3.077224
+      type: 'test'
+      ...
+    # Subtest: rejects wrong app id
+    ok 2 - rejects wrong app id
+      ---
+      duration_ms: 2.51272
+      type: 'test'
+      ...
+    # Subtest: rejects alg=none before verify
+    ok 3 - rejects alg=none before verify
+      ---
+      duration_ms: 0.760189
+      type: 'test'
+      ...
+    # Subtest: rejects expired
+    ok 4 - rejects expired
+      ---
+      duration_ms: 2.473517
+      type: 'test'
+      ...
+    1..4
+ok 5 - verifyIdToken vk
+  ---
+  duration_ms: 9.909227
+  type: 'suite'
+  ...
+# Subtest: POST /api/v1/auth/oidc
+    # Subtest: exchanges Mail.ru ID token for app JWT
+    ok 1 - exchanges Mail.ru ID token for app JWT
+      ---
+      duration_ms: 45.43451
+      type: 'test'
+      ...
+    # Subtest: exchanges VK ID token for app JWT
+    ok 2 - exchanges VK ID token for app JWT
+      ---
+      duration_ms: 4.930724
+      type: 'test'
+      ...
+    # Subtest: accepts Mail.ru authorization code only with PKCE
+    ok 3 - accepts Mail.ru authorization code only with PKCE
+      ---
+      duration_ms: 6.333793
+      type: 'test'
+      ...
+    # Subtest: rejects Mail.ru authorization code without PKCE at the HTTP boundary
+    not ok 4 - rejects Mail.ru authorization code without PKCE at the HTTP boundary
+      ---
+      duration_ms: 2.093938
+      type: 'test'
+      location: '/home/runner/work/forma/forma/apps/api/src/oidc.test.ts:280:3'
+      failureType: 'testCodeFailure'
+      error: 'expect is not defined'
+      code: 'ERR_TEST_FAILURE'
+      name: 'ReferenceError'
+      stack: |-
+        TestContext.<anonymous> (file:///home/runner/work/forma/forma/apps/api/src/oidc.test.ts:291:5)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async Suite.processPendingSubtests (node:internal/test_runner/test:744:7)
+      ...
+    # Subtest: returns 400 for google/apple
+    ok 5 - returns 400 for google/apple
+      ---
+      duration_ms: 5.958632
+      type: 'test'
+      ...
+    1..5
+not ok 6 - POST /api/v1/auth/oidc
+  ---
+  duration_ms: 65.32052
+  type: 'suite'
+  location: '/home/runner/work/forma/forma/apps/api/src/oidc.test.ts:179:1'
+  failureType: 'subtestsFailed'
+  error: '1 subtest failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: exchangeMailruAuthorizationCode
+    # Subtest: rejects non-allowlisted redirect_uri
+    ok 1 - rejects non-allowlisted redirect_uri
+      ---
+      duration_ms: 0.364911
+      type: 'test'
+      ...
+    # Subtest: isAllowedOidcRedirectUri only fitpulse scheme
+    ok 2 - isAllowedOidcRedirectUri only fitpulse scheme
+      ---
+      duration_ms: 0.116227
+      type: 'test'
+      ...
+    # Subtest: posts code + verifier and returns id_token
+    ok 3 - posts code + verifier and returns id_token
+      ---
+      duration_ms: 1.216741
+      type: 'test'
+      ...
+    # Subtest: rejects missing or malformed PKCE verifier
+    ok 4 - rejects missing or malformed PKCE verifier
+      ---
+      duration_ms: 0.365242
+      type: 'test'
+      ...
+    # Subtest: requires client secret
+    ok 5 - requires client secret
+      ---
+      duration_ms: 0.229488
+      type: 'test'
+      ...
+    1..5
+ok 7 - exchangeMailruAuthorizationCode
+  ---
+  duration_ms: 2.533659
+  type: 'suite'
+  ...
+# [fitpulse-api] activity_credit skipped: no local_date in payload { aggregate_id: 'sess-no-date' }
+# Subtest: shouldGrantActivityCredit
+    # Subtest: true for completed workout_session
+    ok 1 - true for completed workout_session
+      ---
+      duration_ms: 2.950806
+      type: 'test'
+      ...
+    # Subtest: true for abandon_session event
+    ok 2 - true for abandon_session event
+      ---
+      duration_ms: 0.245959
+      type: 'test'
+      ...
+    # Subtest: false for complete_set
+    ok 3 - false for complete_set
+      ---
+      duration_ms: 0.18191
+      type: 'test'
+      ...
+    # Subtest: false for non-session aggregate
+    ok 4 - false for non-session aggregate
+      ---
+      duration_ms: 0.166962
+      type: 'test'
+      ...
+    1..4
+ok 8 - shouldGrantActivityCredit
+  ---
+  duration_ms: 4.928758
+  type: 'suite'
+  ...
+# Subtest: extractLocalDate
+    # Subtest: reads local_date
+    ok 1 - reads local_date
+      ---
+      duration_ms: 0.441794
+      type: 'test'
+      ...
+    # Subtest: returns null when no local date is present (no UTC fallback)
+    ok 2 - returns null when no local date is present (no UTC fallback)
+      ---
+      duration_ms: 0.1497
+      type: 'test'
+      ...
+    1..2
+ok 9 - extractLocalDate
+  ---
+  duration_ms: 0.804191
+  type: 'suite'
+  ...
+# Subtest: NoopProjectionService
+    # Subtest: onAccepted resolves
+    ok 1 - onAccepted resolves
+      ---
+      duration_ms: 0.558883
+      type: 'test'
+      ...
+    1..1
+ok 10 - NoopProjectionService
+  ---
+  duration_ms: 0.904708
+  type: 'suite'
+  ...
+# Subtest: MemoryProjectionService
+    # Subtest: grants one credit per session on complete
+    ok 1 - grants one credit per session on complete
+      ---
+      duration_ms: 1.228413
+      type: 'test'
+      ...
+    # Subtest: skips credit when payload has no local date
+    ok 2 - skips credit when payload has no local date
+      ---
+      duration_ms: 1.618682
+      type: 'test'
+      ...
+    # Subtest: ignores intermediate complete_set
+    ok 3 - ignores intermediate complete_set
+      ---
+      duration_ms: 0.421256
+      type: 'test'
+      ...
+    # Subtest: tracks max_load soft records from payload.sets
+    ok 4 - tracks max_load soft records from payload.sets
+      ---
+      duration_ms: 0.370872
+      type: 'test'
+      ...
+    1..4
+ok 11 - MemoryProjectionService
+  ---
+  duration_ms: 3.988104
+  type: 'suite'
+  ...
+# Subtest: extractMaxLoadCandidates
+    # Subtest: reads max load from projection.setLogs
+    ok 1 - reads max load from projection.setLogs
+      ---
+      duration_ms: 0.289501
+      type: 'test'
+      ...
+    # Subtest: returns empty when no sets
+    ok 2 - returns empty when no sets
+      ---
+      duration_ms: 0.197298
+      type: 'test'
+      ...
+    1..2
+ok 12 - extractMaxLoadCandidates
+  ---
+  duration_ms: 0.677464
+  type: 'suite'
+  ...
+# Subtest: sync API
+    # Subtest: health
+    ok 1 - health
+      ---
+      duration_ms: 36.711196
+      type: 'test'
+      ...
+    # Subtest: push accepts valid op and publishes change
+    ok 2 - push accepts valid op and publishes change
+      ---
+      duration_ms: 5.419366
+      type: 'test'
+      ...
+    # Subtest: push accepts empty operations array
+    ok 3 - push accepts empty operations array
+      ---
+      duration_ms: 2.752929
+      type: 'test'
+      ...
+    # Subtest: push returns duplicate on replay
+    ok 4 - push returns duplicate on replay
+      ---
+      duration_ms: 4.379746
+      type: 'test'
+      ...
+    # Subtest: push answers duplicate when the insert loses the race
+    ok 5 - push answers duplicate when the insert loses the race
+      ---
+      duration_ms: 3.522876
+      type: 'test'
+      ...
+    # Subtest: push rejects hash mismatch on same client_operation_id
+    ok 6 - push rejects hash mismatch on same client_operation_id
+      ---
+      duration_ms: 2.182854
+      type: 'test'
+      ...
+    # Subtest: push rejects short payload_hash
+    ok 7 - push rejects short payload_hash
+      ---
+      duration_ms: 1.423458
+      type: 'test'
+      ...
+    # Subtest: pull returns empty page without user_id
+    ok 8 - pull returns empty page without user_id
+      ---
+      duration_ms: 1.010736
+      type: 'test'
+      ...
+    # Subtest: pull defaults after_change_id to 0 when omitted
+    ok 9 - pull defaults after_change_id to 0 when omitted
+      ---
+      duration_ms: 1.004304
+      type: 'test'
+      ...
+    1..9
+ok 13 - sync API
+  ---
+  duration_ms: 62.532746
+  type: 'suite'
+  ...
+# Subtest: sync API bearer token
+    # Subtest: rejects sync routes without a token
+    ok 1 - rejects sync routes without a token
+      ---
+      duration_ms: 2.200668
+      type: 'test'
+      ...
+    # Subtest: rejects a wrong token
+    ok 2 - rejects a wrong token
+      ---
+      duration_ms: 0.867008
+      type: 'test'
+      ...
+    # Subtest: accepts a valid token
+    ok 3 - accepts a valid token
+      ---
+      duration_ms: 1.489821
+      type: 'test'
+      ...
+    # Subtest: keeps /health open
+    ok 4 - keeps /health open
+      ---
+      duration_ms: 1.368605
+      type: 'test'
+      ...
+    1..4
+ok 14 - sync API bearer token
+  ---
+  duration_ms: 6.345284
+  type: 'suite'
+  ...
+1..14
+# tests 54
+# suites 14
+# pass 53
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 572.058807
+/home/runner/work/forma/forma/apps/api:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @forma/api@0.1.0 test: `node --experimental-strip-types --test src/sync.test.ts src/projections.test.ts src/auth.test.ts src/oidc.test.ts`
+Exit status 1

@@ -1,0 +1,9 @@
+Scope: 4 of 8 workspace projects
+packages/core type-check$ tsc --noEmit
+packages/workout-domain type-check$ tsc --noEmit
+packages/workout-domain type-check: Done
+packages/core type-check: Done
+apps/mobile type-check$ tsc --noEmit
+apps/web type-check$ tsc --noEmit
+apps/web type-check: Done
+apps/mobile type-check: Done
