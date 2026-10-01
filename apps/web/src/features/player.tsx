@@ -1,7 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { calculateBurnedCalories, metForExercise } from "@forma/core";
+import {
+  calculateBurnedCalories,
+  getRealtimeSetFeedback,
+  metForExercise,
+} from "@forma/core";
 import { Button } from "@/components/ui/button";
 import { planById, planExercises } from "@/lib/catalog";
 import { canMarkSet, expectedExerciseId } from "@/lib/session-logic.ts";
@@ -63,6 +67,17 @@ export function PlayerScreen({ planId }: { planId: string }) {
   const sets = session?.setsDone[ex.id] ?? Array(ex.sets).fill(false);
   const allDone = sets.every(Boolean);
   const restEndsAt = session?.restEndsAt ?? null;
+  const currentSetIndex = sets.findIndex((d) => !d);
+  const setFeedback =
+    currentSetIndex >= 0
+      ? getRealtimeSetFeedback({
+          exerciseId: ex.id,
+          exerciseName: ex.name,
+          currentSetIndex,
+          totalSets: ex.sets,
+          formCues: ex.cues,
+        })
+      : null;
 
   return (
     <div className="flex min-h-dvh flex-col bg-bg">
@@ -145,13 +160,13 @@ export function PlayerScreen({ planId }: { planId: string }) {
                 disabled={!allowed}
                 onClick={() => {
                   if (!allowed) return;
-                  // Rest timer comes from toggleSet → domain restEndsAtMs.
                   toggleSet(ex.id, i);
                 }}
                 className={cn(
                   "flex size-12 items-center justify-center rounded-full text-sm font-medium",
                   done ? "bg-accent text-accent-fg" : "bg-surface-2 text-fg",
                   !allowed && "opacity-40",
+                  currentSetIndex === i && !done && "ring-2 ring-accent ring-offset-2 ring-offset-bg",
                 )}
               >
                 {done ? <Check className="size-5" /> : i + 1}
@@ -159,6 +174,15 @@ export function PlayerScreen({ planId }: { planId: string }) {
             );
           })}
         </div>
+        {setFeedback && (
+          <div className="mt-4 rounded-lg bg-surface-2 px-3 py-2 text-sm">
+            <p className="font-medium text-fg">
+              Сет {setFeedback.setNumber}/{setFeedback.totalSets}: {setFeedback.adjustmentNote}
+            </p>
+            <p className="mt-1 text-muted">{setFeedback.formFocus}</p>
+            <p className="mt-0.5 text-xs text-muted">{setFeedback.safetyCheck}</p>
+          </div>
+        )}
       </div>
 
       <div className="flex gap-3 px-5 pb-8 pt-2">
