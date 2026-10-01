@@ -152,11 +152,21 @@ export function buildMailruAuthorizeUrl(
 }
 
 export function parseOAuthCallback(url: string): OAuthCallback | null {
-  if (!url.startsWith(OAUTH_REDIRECT_URI)) return null;
   try {
-    const hash = url.includes('#') ? url.split('#')[1]! : '';
-    const query = url.includes('?') ? url.split('?')[1]!.split('#')[0]! : '';
-    const params = new URLSearchParams(hash || query);
+    const parsed = new URL(url);
+    if (
+      parsed.protocol !== 'fitpulse:' ||
+      parsed.hostname !== 'oauth' ||
+      parsed.port !== '' ||
+      parsed.username !== '' ||
+      parsed.password !== ''
+    ) {
+      return null;
+    }
+
+    const params = parsed.hash
+      ? new URLSearchParams(parsed.hash.slice(1))
+      : parsed.searchParams;
     const state = params.get('state');
     const err = params.get('error');
     if (err) {
