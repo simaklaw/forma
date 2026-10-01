@@ -329,7 +329,7 @@ export function isValidPkceCodeVerifier(verifier: string): boolean {
 
 /**
  * Exchange Mail.ru authorization code (server-side).
- * Uses client_secret + optional PKCE code_verifier (RFC 7636).
+ * Uses client_secret + required PKCE code_verifier (RFC 7636).
  * Prefer id_token from the token response; verify with verifyIdToken.
  */
 export async function exchangeMailruAuthorizationCode(
