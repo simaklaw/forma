@@ -68,20 +68,22 @@ const JWKS_FETCH_TIMEOUT_MS = 5_000;
 /** Basic email shape: local@domain.tld (no spaces, length bounds). */
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+export type OidcErrorCode =
+  | 'invalid_token'
+  | 'invalid_provider'
+  | 'provider_not_configured'
+  | 'audience_mismatch'
+  | 'issuer_mismatch'
+  | 'expired'
+  | 'jwks_unavailable';
+
+/** Avoid TS parameter properties — node --experimental-strip-types rejects them. */
 export class OidcError extends Error {
-  constructor(
-    message: string,
-    readonly code:
-      | 'invalid_token'
-      | 'invalid_provider'
-      | 'provider_not_configured'
-      | 'audience_mismatch'
-      | 'issuer_mismatch'
-      | 'expired'
-      | 'jwks_unavailable',
-  ) {
+  code: OidcErrorCode;
+  constructor(message: string, code: OidcErrorCode) {
     super(message);
     this.name = 'OidcError';
+    this.code = code;
   }
 }
 
@@ -100,7 +102,6 @@ export function claimsToAuthSubject(
 ): string {
   const email =
     typeof claims.email === 'string' ? claims.email.trim().toLowerCase() : '';
-  // Prefer well-formed email when present. Reject explicit email_verified=false.
   if (
     email &&
     email.length <= 200 &&
@@ -130,7 +131,6 @@ async function defaultFetchJwks(
     signal: AbortSignal.timeout(JWKS_FETCH_TIMEOUT_MS),
   });
   if (!res.ok) {
-    // Do not poison cache with failures — keep previous keys if any still fresh.
     throw new OidcError('jwks_fetch_failed', 'jwks_unavailable');
   }
   const body = (await res.json()) as { keys?: Jwk[] };
@@ -176,7 +176,6 @@ function vkPublicKey(cfg: OidcConfig): KeyObject {
   return createPublicKey(pem);
 }
 
-/** Reject alg=none / HS* / anything other than RS256 before signature check. */
 function assertRs256Header(header: { alg?: string }): void {
   if (header.alg !== 'RS256') {
     throw new OidcError(
@@ -193,7 +192,6 @@ async function resolveMailruJwk(
   let keys = await fetchJwks('mailru');
   let jwk = header.kid ? keys.find((k) => k.kid === header.kid) : undefined;
   if (!jwk && header.kid) {
-    // Unknown kid — force refresh once (rotation), then fail closed.
     clearOidcJwksCache();
     keys = await fetchJwks('mailru');
     jwk = keys.find((k) => k.kid === header.kid);
@@ -230,7 +228,6 @@ export async function verifyIdToken(
     throw new OidcError('malformed_jwt_json', 'invalid_token');
   }
 
-  // Early alg gate — before any crypto (blocks alg=none / confusion).
   assertRs256Header(header);
 
   const data = `${parts[0]}.${parts[1]}`;
@@ -318,10 +315,6 @@ export function oidcConfigFromEnv(
   return { mailruClientId, vkClientId, vkPublicKeyPem };
 }
 
-/**
- * Tiny in-memory rate limiter for /auth/oidc (per process).
- * Not a substitute for edge/WAF limits in production.
- */
 export function createOidcRateLimiter(opts?: {
   windowMs?: number;
   max?: number;
