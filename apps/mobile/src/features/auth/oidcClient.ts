@@ -152,39 +152,33 @@ export function buildMailruAuthorizeUrl(
 }
 
 export function parseOAuthCallback(url: string): OAuthCallback | null {
-  if (!url.startsWith(OAUTH_REDIRECT_URI)) return null;
   try {
-    const hash = url.includes('#') ? url.split('#')[1]! : '';
-    const query = url.includes('?') ? url.split('?')[1]!.split('#')[0]! : '';
-    const params = new URLSearchParams(hash || query);
+    const parsed = new URL(url);
+    if (
+      parsed.protocol !== 'fitpulse:' ||
+      parsed.hostname !== 'oauth' ||
+      parsed.port !== '' ||
+      parsed.username !== '' ||
+      parsed.password !== ''
+    ) return null;
+
+    const params = parsed.hash
+      ? new URLSearchParams(parsed.hash.slice(1))
+      : parsed.searchParams;
     const state = params.get('state');
     const err = params.get('error');
-    if (err) {
-      return { kind: 'error', error: err, state };
-    }
+    if (err) return { kind: 'error', error: err, state };
     const code = params.get('code');
-    if (code && code.length >= 8) {
-      return {
-        kind: 'code',
-        code,
-        state,
-        deviceId: params.get('device_id'),
-      };
-    }
+    if (code && code.length >= 8) return { kind: 'code', code, state, deviceId: params.get('device_id') };
     const idToken = params.get('id_token');
-    if (idToken && idToken.split('.').length === 3 && idToken.length >= 40) {
-      return { kind: 'id_token', token: idToken, state };
-    }
+    if (idToken && idToken.split('.').length === 3 && idToken.length >= 40) return { kind: 'id_token', token: idToken, state };
     const access = params.get('access_token');
-    if (access && access.length >= 20) {
-      return { kind: 'access_token', token: access, state };
-    }
+    if (access && access.length >= 20) return { kind: 'access_token', token: access, state };
     return null;
   } catch {
     return null;
   }
 }
-
 export type KeyValueStorage = {
   getItem: (key: string) => Promise<string | null>;
   setItem: (key: string, value: string) => Promise<void>;
