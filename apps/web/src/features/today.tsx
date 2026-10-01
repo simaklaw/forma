@@ -2,6 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   CoachEngine,
+  analyzeRecovery,
   calculateBurnedCalories,
   metForExercise,
   type UserContextSnapshot,
@@ -33,6 +34,8 @@ export function TodayScreen() {
   const profile = useAppStore((s) => s.profile);
   const workouts = useAppStore((s) => s.workouts);
   const meals = useAppStore((s) => s.meals);
+  const waterByDate = useAppStore((s) => s.waterByDate);
+  const addWater = useAppStore((s) => s.addWater);
   const session = useAppStore((s) => s.session);
   const startSession = useAppStore((s) => s.startSession);
   const restartSession = useAppStore((s) => s.restartSession);
@@ -103,6 +106,21 @@ export function TodayScreen() {
       ? { done: domainResume.done, total: domainResume.total }
       : null;
 
+  const waterMl = waterByDate[today] ?? 0;
+  const recovery = useMemo(() => {
+    const todayMeals = meals.filter((m) => m.date === today);
+    const macros = dayMacros(todayMeals, FOODS);
+    return analyzeRecovery({
+      workouts,
+      intakeKcal: macros.kcal,
+      intakeProteinG: macros.protein,
+      targetKcal: profile.calorieGoal,
+      targetProteinG: profile.proteinGoal,
+      waterLogsMl: waterMl,
+      waterGoalMl: 2500,
+    });
+  }, [meals, workouts, today, profile.calorieGoal, profile.proteinGoal, waterMl]);
+
   const snapshot = useMemo((): UserContextSnapshot => {
     const todayMeals = meals.filter((m) => m.date === today);
     const macros = dayMacros(todayMeals, FOODS);
@@ -164,6 +182,40 @@ export function TodayScreen() {
         <p className="text-sm text-muted">{greeting(profile.name)}</p>
         <h1 className="mt-1 font-display text-2xl tracking-tight">FORMA</h1>
       </header>
+
+      <div className="mb-4 rounded-2xl bg-surface p-4 shadow-card">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted">Восстановление</p>
+            <p className="mt-1 font-display text-3xl tracking-tight">{recovery.recoveryScore}%</p>
+            <p className="mt-1 text-sm text-accent">{recovery.statusLabel}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-right text-xs text-muted">
+            <span>Мышцы {recovery.muscularReadiness}</span>
+            <span>Энергия {recovery.energyRestoration}</span>
+            <span>ЦНС {recovery.cnsFreshness}</span>
+            <span>Вода {recovery.hydrationScore}</span>
+          </div>
+        </div>
+        <p className="mt-3 text-sm leading-relaxed text-fg">{recovery.recommendationTitle}</p>
+        <p className="mt-1 text-sm text-muted">{recovery.recommendationDescription}</p>
+        <p className="mt-2 text-xs text-muted">{recovery.nutritionAdvice}</p>
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-surface-2 pt-3">
+          <span className="text-xs text-muted">
+            Вода {(waterMl / 1000).toFixed(1)} / 2.5 л
+          </span>
+          {[250, 500].map((ml) => (
+            <button
+              key={ml}
+              type="button"
+              className="rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-fg"
+              onClick={() => addWater(ml)}
+            >
+              +{ml} мл
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="mb-6 rounded-2xl bg-surface p-4 shadow-card">
         <p className="text-sm leading-relaxed text-fg">{line}</p>

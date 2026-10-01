@@ -2,6 +2,7 @@ import React, { forwardRef, useCallback, useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import type { WorkoutSession } from '@forma/workout-domain';
+import { SetFeedbackCard } from './SetFeedbackCard';
 import AppBottomSheet from '@/components/BottomSheet';
 import ExerciseVideo from '@/components/ExerciseVideo';
 import MuscleMap, { MuscleKey } from '@/components/MuscleMap';
@@ -424,6 +425,16 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           })}
         </View>
 
+        {!finished && !blockedBySequence ? (
+          <SetFeedbackCard
+            exerciseId={String(exercise.id)}
+            exerciseName={exercise.name}
+            completedSets={completedSets}
+            totalSets={exercise.totalSets}
+            formCues={cues}
+          />
+        ) : null}
+
         <TouchableOpacity
           style={[styles.cta, ctaDisabled && styles.ctaDisabled]}
           disabled={ctaDisabled}
@@ -504,32 +515,32 @@ function createStyles(colors: ColorTokens) {
       borderColor: colors.line
     },
     refPhotoWrap: { marginTop: spacing.md },
-    refPhoto: {
-      width: '100%',
-      height: 160,
-      backgroundColor: colors.panel,
-      borderRadius: radius.control
+    refPhoto: { width: '100%', height: 160, borderRadius: radius.control },
+    refPhotoCaption: {
+      color: colors.paperFaint,
+      fontSize: 11,
+      fontFamily: fonts.body,
+      marginTop: 4
     },
-    refPhotoCaption: { color: colors.paperFaint, fontSize: 10, marginTop: 4, fontFamily: fonts.body },
-    gridVal: { color: colors.paper, fontSize: 20, fontFamily: fonts.mono },
-    gridLbl: { color: colors.paperFaint, fontSize: 10, marginTop: 2 },
+    gridVal: { color: colors.paper, fontFamily: fonts.mono, fontSize: 16 },
+    gridLbl: { color: colors.paperFaint, fontFamily: fonts.body, fontSize: 11, marginTop: 2 },
     note: {
-      marginTop: 10,
+      marginTop: spacing.md,
       padding: 12,
       borderRadius: radius.control,
       backgroundColor: colors.panel,
       borderWidth: 1,
       borderColor: colors.line
     },
-    noteText: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.body, lineHeight: 18 },
+    noteText: { color: colors.paperDim, fontFamily: fonts.body, fontSize: 13, lineHeight: 18 },
     rirLabel: {
       marginTop: spacing.lg,
       marginBottom: 8,
       color: colors.paperFaint,
-      fontSize: 12,
-      fontFamily: fonts.body
+      fontFamily: fonts.body,
+      fontSize: 12
     },
-    stepperRow: { flexDirection: 'row', gap: 12 },
+    stepperRow: { flexDirection: 'row', gap: 10 },
     stepperBlock: {
       flex: 1,
       flexDirection: 'row',
@@ -537,20 +548,13 @@ function createStyles(colors: ColorTokens) {
       borderWidth: 1,
       borderColor: colors.line,
       borderRadius: radius.control,
-      backgroundColor: colors.panel,
-      overflow: 'hidden'
+      backgroundColor: colors.panel
     },
-    stepperBtn: {
-      width: 40,
-      height: 44,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.panelRaised
-    },
-    stepperBtnText: { color: colors.lime, fontSize: 20, fontFamily: fonts.mono },
+    stepperBtn: { width: 40, height: 44, alignItems: 'center', justifyContent: 'center' },
+    stepperBtnText: { color: colors.lime, fontSize: 22, fontFamily: fonts.mono },
     stepperValueWrap: { flex: 1, alignItems: 'center' },
-    stepperValue: { color: colors.paper, fontSize: 18, fontFamily: fonts.mono },
-    stepperUnit: { color: colors.paperFaint, fontSize: 10 },
+    stepperValue: { color: colors.paper, fontFamily: fonts.mono, fontSize: 18 },
+    stepperUnit: { color: colors.paperFaint, fontFamily: fonts.body, fontSize: 11 },
     rirRow: { flexDirection: 'row', gap: 8 },
     rirBtn: {
       flex: 1,

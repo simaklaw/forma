@@ -1,13 +1,21 @@
 import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { estimateBurnFromSetLogs, estimateDailyBurns, toDateKey } from '@forma/core';
+import {
+  analyzeRecovery,
+  estimateBurnFromSetLogs,
+  estimateDailyBurns,
+  evaluateAchievements,
+  isProfileComplete,
+  toDateKey,
+  type AchievementWorkout
+} from '@forma/core';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import DailyTipCard from '@/components/DailyTipCard';
 import ProfileGateBanner from '@/components/ProfileGateBanner';
 import ScreenHeader from '@/components/ScreenHeader';
-import { useFitPulseStore } from '@/state/useFitPulseStore';
+import { selectDailyTotals, useFitPulseStore } from '@/state/useFitPulseStore';
 import {
   lastNDays,
   ruDayWord,
@@ -38,6 +46,13 @@ function activityStreakDays(
   return streak;
 }
 
+const GLASS_ML = 250;
+
+function workoutsFromSetLogs(setLogs: { dateKey: string }[]): AchievementWorkout[] {
+  const dates = [...new Set(setLogs.map((e) => e.dateKey))].sort();
+  return dates.map((date) => ({ date, completed: true }));
+}
+
 function buildSubtitle(opts: {
   weightKg: number;
   activeDays: number;
@@ -61,10 +76,15 @@ export default function ProgressScreen() {
   const colors = useThemeColors();
   const styles = createStyles(colors);
   const weightHistory = useFitPulseStore((s) => s.weightHistory);
+  const waterGlasses = useFitPulseStore((s) => s.waterGlasses);
+  const todayMeals = useFitPulseStore((s) => s.todayMeals);
+  const profile = useFitPulseStore((s) => s.profile);
+
   const setLogs = useFitPulseStore((s) => s.setLogs);
   const profileWeight = useFitPulseStore((s) => s.profile.weight);
   const dayProgress = useFitPulseStore((s) => s.dayProgress);
   const personalRecords = useFitPulseStore((s) => s.personalRecords);
+  const calcTargets = useFitPulseStore((s) => s.calculateTargets);
 
   const exerciseNames = useMemo(() => allExerciseNames(), []);
   const todayKey = useMemo(() => toDateKey(new Date()), []);
@@ -97,6 +117,48 @@ export default function ProgressScreen() {
   }, [setLogs, weekKeys]);
 
   const streak = useMemo(() => activityStreakDays(setLogs), [setLogs]);
+
+  const domainWorkouts = useMemo(() => workoutsFromSetLogs(setLogs), [setLogs]);
+  const mealTotals = useMemo(() => selectDailyTotals(todayMeals), [todayMeals]);
+  const profileComplete = isProfileComplete({
+    weightKg: profile.weight,
+    heightCm: profile.height,
+    age: profile.age,
+    gender: profile.sex
+  });
+  const targetSnapshot = useMemo(
+    () => (profileComplete ? calcTargets() : null),
+    [profileComplete, calcTargets, profile]
+  );
+
+  const recovery = useMemo(
+    () =>
+      analyzeRecovery({
+        workouts: domainWorkouts,
+        intakeKcal: mealTotals.kcal,
+        intakeProteinG: mealTotals.protein,
+        targetKcal: targetSnapshot?.target,
+        targetProteinG: targetSnapshot?.proteinTarget,
+        waterLogsMl: waterGlasses * GLASS_ML,
+        waterGoalMl: 2500
+      }),
+    [domainWorkouts, mealTotals, targetSnapshot, waterGlasses]
+  );
+
+  const badges = useMemo(
+    () =>
+      evaluateAchievements({
+        workouts: domainWorkouts,
+        proteinTodayG: mealTotals.protein,
+        proteinGoalG: targetSnapshot?.proteinTarget ?? null,
+        restDay:
+          recovery.status === 'rest_required' ||
+          recovery.status === 'active_recovery_recommended',
+        doneToday: domainWorkouts.some((w) => w.date === todayKey && w.completed)
+      }),
+    [domainWorkouts, mealTotals.protein, targetSnapshot?.proteinTarget, recovery.status, todayKey]
+  );
+
   const bestPr = selectOverallPersonalRecord(personalRecords);
 
   const topPrs = useMemo(() => {
@@ -164,6 +226,38 @@ export default function ProgressScreen() {
         ) : null}
 
         <DailyTipCard inset />
+
+        <View style={styles.chartBlock} accessibilityRole="summary">
+          <Text style={styles.chartTitle}>Восстановление</Text>
+          <Text style={styles.recoveryScore}>{recovery.recoveryScore}%</Text>
+          <Text style={styles.recoveryStatus}>{recovery.statusLabel}</Text>
+          <View style={styles.pillarRow}>
+            <Text style={styles.pillar}>Мышцы {recovery.muscularReadiness}</Text>
+            <Text style={styles.pillar}>Энергия {recovery.energyRestoration}</Text>
+            <Text style={styles.pillar}>ЦНС {recovery.cnsFreshness}</Text>
+            <Text style={styles.pillar}>Вода {recovery.hydrationScore}</Text>
+          </View>
+          <Text style={styles.recoveryRec}>{recovery.recommendationTitle}</Text>
+          <Text style={styles.emptyState}>{recovery.recommendationDescription}</Text>
+          {recovery.nutritionAdvice ? (
+            <Text style={[styles.emptyState, { marginTop: 6 }]}>{recovery.nutritionAdvice}</Text>
+          ) : null}
+        </View>
+
+        <View style={styles.chartBlock}>
+          <Text style={styles.chartTitle}>Достижения</Text>
+          <View style={styles.badgeGrid}>
+            {badges.map((b) => (
+              <View
+                key={b.id}
+                style={[styles.badge, b.unlocked ? styles.badgeOn : styles.badgeOff]}
+              >
+                <Text style={styles.badgeTitle}>{b.title}</Text>
+                <Text style={styles.badgeHint}>{b.unlocked ? '✓' : b.hint}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
 
         <View style={styles.statsRow}>
           <View
@@ -398,6 +492,66 @@ function createStyles(colors: ColorTokens) {
     barLabel: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 11 },
     barLabelToday: { color: colors.lime, fontFamily: fonts.bodySemi },
     emptyState: { color: colors.paperFaint, fontFamily: fonts.body, fontSize: 12.5, lineHeight: 18 },
+    recoveryScore: {
+      color: colors.paper,
+      fontSize: 36,
+      fontFamily: fonts.mono,
+      marginTop: 4
+    },
+    recoveryStatus: {
+      color: colors.lime,
+      fontSize: 14,
+      fontFamily: fonts.bodySemi,
+      marginTop: 2
+    },
+    pillarRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginTop: 10
+    },
+    pillar: {
+      color: colors.paperDim,
+      fontSize: 12,
+      fontFamily: fonts.mono
+    },
+    recoveryRec: {
+      color: colors.paper,
+      fontSize: 14,
+      fontFamily: fonts.bodySemi,
+      marginTop: 12
+    },
+    badgeGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8
+    },
+    badge: {
+      width: '47%',
+      borderWidth: 1,
+      borderRadius: radius.card,
+      padding: 10
+    },
+    badgeOn: {
+      borderColor: colors.lime,
+      backgroundColor: colors.panel
+    },
+    badgeOff: {
+      borderColor: colors.line,
+      backgroundColor: colors.ink,
+      opacity: 0.75
+    },
+    badgeTitle: {
+      color: colors.paper,
+      fontSize: 13,
+      fontFamily: fonts.bodySemi
+    },
+    badgeHint: {
+      color: colors.paperFaint,
+      fontSize: 11,
+      fontFamily: fonts.body,
+      marginTop: 4
+    },
     prRow: {
       flexDirection: 'row',
       alignItems: 'center',
