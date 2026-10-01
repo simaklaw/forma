@@ -45,8 +45,10 @@ async function expectOidcCode(
     await fn();
     assert.fail(`expected OidcError ${code}`);
   } catch (e) {
-    assert.ok(e instanceof OidcError, `expected OidcError, got ${e}`);
-    assert.equal(e.code, code);
+    // strip-types can break instanceof across module graphs — check shape.
+    const err = e as { name?: string; code?: string };
+    assert.equal(err.name, 'OidcError', `expected OidcError, got ${e}`);
+    assert.equal(err.code, code);
   }
 }
 
