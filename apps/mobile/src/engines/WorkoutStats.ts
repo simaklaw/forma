@@ -1,3 +1,5 @@
+import { toDateKey } from '@forma/core';
+
 /**
  * Compatibility shim — implementation lives in @forma/core.
  */
