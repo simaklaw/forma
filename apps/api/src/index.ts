@@ -27,7 +27,6 @@ import {
 import {
   verifyIdToken,
   claimsToAuthSubject,
-  OidcError,
   type OidcProvider,
   type OidcConfig,
   oidcConfigFromEnv,
@@ -145,16 +144,20 @@ export function createApp(
           provider,
         });
       } catch (e) {
-        if (e instanceof OidcError) {
+        const err = e as { name?: string; code?: string; message?: string };
+        if (err?.name === 'OidcError' && typeof err.code === 'string') {
           const status =
-            e.code === 'provider_not_configured'
+            err.code === 'provider_not_configured'
               ? 503
-              : e.code === 'expired'
+              : err.code === 'expired'
                 ? 401
-                : e.code === 'jwks_unavailable'
+                : err.code === 'jwks_unavailable'
                   ? 502
                   : 401;
-          return c.json({ error: e.code, message: e.message }, status);
+          return c.json(
+            { error: err.code, message: err.message ?? err.code },
+            status,
+          );
         }
         throw e;
       }
