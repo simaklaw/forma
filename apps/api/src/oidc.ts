@@ -28,7 +28,7 @@ export type OidcProvider = 'mailru' | 'vk';
 export type OidcClaims = {
   sub: string;
   email?: string;
-  email_verified?: boolean;
+  email_verified?: boolean | string;
   /** Standard issuer, or VK's non-standard `iis`. */
   iss?: string;
   iis?: string;
@@ -63,6 +63,10 @@ const MAILRU_JWKS = 'https://account.mail.ru/.well-known/jwks.json';
 /** VK ID: no JWKS URL — PEM via OIDC_VK_PUBLIC_KEY / cfg.vkPublicKeyPem. */
 const jwksCache = new Map<OidcProvider, { at: number; keys: Jwk[] }>();
 const JWKS_TTL_MS = 60 * 60 * 1000;
+const JWKS_FETCH_TIMEOUT_MS = 5_000;
+
+/** Basic email shape: local@domain.tld (no spaces, length bounds). */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export class OidcError extends Error {
   constructor(
@@ -96,28 +100,44 @@ export function claimsToAuthSubject(
 ): string {
   const email =
     typeof claims.email === 'string' ? claims.email.trim().toLowerCase() : '';
-  if (email && email.includes('@') && email.length <= 200) {
-    if (provider === 'mailru' || claims.email_verified !== false) {
-      return email;
-    }
+  // Prefer well-formed email when present. Reject explicit email_verified=false.
+  if (
+    email &&
+    email.length <= 200 &&
+    EMAIL_RE.test(email) &&
+    claims.email_verified !== false &&
+    claims.email_verified !== 'false'
+  ) {
+    return email;
   }
   return `oidc:${provider}:${claims.sub}`.slice(0, 200);
 }
 
-async function defaultFetchJwks(provider: OidcProvider): Promise<Jwk[]> {
+async function defaultFetchJwks(
+  provider: OidcProvider,
+  opts?: { force?: boolean },
+): Promise<Jwk[]> {
   if (provider !== 'mailru') {
     throw new OidcError('jwks_not_used', 'jwks_unavailable');
   }
-  const cached = jwksCache.get(provider);
-  if (cached && Date.now() - cached.at < JWKS_TTL_MS) {
-    return cached.keys;
+  if (!opts?.force) {
+    const cached = jwksCache.get(provider);
+    if (cached && Date.now() - cached.at < JWKS_TTL_MS && cached.keys.length > 0) {
+      return cached.keys;
+    }
   }
-  const res = await fetch(MAILRU_JWKS);
+  const res = await fetch(MAILRU_JWKS, {
+    signal: AbortSignal.timeout(JWKS_FETCH_TIMEOUT_MS),
+  });
   if (!res.ok) {
+    // Do not poison cache with failures — keep previous keys if any still fresh.
     throw new OidcError('jwks_fetch_failed', 'jwks_unavailable');
   }
   const body = (await res.json()) as { keys?: Jwk[] };
   const keys = Array.isArray(body.keys) ? body.keys : [];
+  if (keys.length === 0) {
+    throw new OidcError('jwks_empty', 'jwks_unavailable');
+  }
   jwksCache.set(provider, { at: Date.now(), keys });
   return keys;
 }
@@ -126,7 +146,6 @@ function jwkToKeyObject(jwk: Jwk): KeyObject {
   if (jwk.kty !== 'RSA' || !jwk.n || !jwk.e) {
     throw new OidcError('unsupported_jwk', 'invalid_token');
   }
-  // Avoid DOM JsonWebKey — node types alone under api tsconfig.
   return createPublicKey({
     key: { kty: 'RSA', n: jwk.n, e: jwk.e },
     format: 'jwk',
@@ -157,6 +176,37 @@ function vkPublicKey(cfg: OidcConfig): KeyObject {
   return createPublicKey(pem);
 }
 
+/** Reject alg=none / HS* / anything other than RS256 before signature check. */
+function assertRs256Header(header: { alg?: string }): void {
+  if (header.alg !== 'RS256') {
+    throw new OidcError(
+      `unsupported_alg:${header.alg ?? 'missing'}`,
+      'invalid_token',
+    );
+  }
+}
+
+async function resolveMailruJwk(
+  header: { kid?: string },
+  fetchJwks: (provider: OidcProvider) => Promise<Jwk[]>,
+): Promise<Jwk> {
+  let keys = await fetchJwks('mailru');
+  let jwk = header.kid ? keys.find((k) => k.kid === header.kid) : undefined;
+  if (!jwk && header.kid) {
+    // Unknown kid — force refresh once (rotation), then fail closed.
+    clearOidcJwksCache();
+    keys = await fetchJwks('mailru');
+    jwk = keys.find((k) => k.kid === header.kid);
+  }
+  if (!jwk && !header.kid && keys.length === 1) {
+    jwk = keys[0];
+  }
+  if (!jwk) {
+    throw new OidcError('no_matching_jwk', 'invalid_token');
+  }
+  return jwk;
+}
+
 export async function verifyIdToken(
   provider: OidcProvider,
   idToken: string,
@@ -180,31 +230,27 @@ export async function verifyIdToken(
     throw new OidcError('malformed_jwt_json', 'invalid_token');
   }
 
-  if (header.alg !== 'RS256') {
-    throw new OidcError('unsupported_alg', 'invalid_token');
-  }
+  // Early alg gate — before any crypto (blocks alg=none / confusion).
+  assertRs256Header(header);
 
   const data = `${parts[0]}.${parts[1]}`;
   const signature = b64urlToBuf(parts[2]);
+  if (signature.length < 32) {
+    throw new OidcError('short_signature', 'invalid_token');
+  }
 
   if (provider === 'mailru') {
     const expectedAud = cfg.mailruClientId;
     if (!expectedAud) {
       throw new OidcError('mailru_not_configured', 'provider_not_configured');
     }
-    const fetchJwks = cfg.fetchJwks ?? defaultFetchJwks;
-    let keys: Jwk[];
+    const fetchJwks = cfg.fetchJwks ?? ((p) => defaultFetchJwks(p));
+    let jwk: Jwk;
     try {
-      keys = await fetchJwks('mailru');
+      jwk = await resolveMailruJwk(header, fetchJwks);
     } catch (e) {
       if (e instanceof OidcError) throw e;
       throw new OidcError('jwks_fetch_failed', 'jwks_unavailable');
-    }
-    const jwk =
-      (header.kid ? keys.find((k) => k.kid === header.kid) : undefined) ??
-      keys[0];
-    if (!jwk) {
-      throw new OidcError('no_matching_jwk', 'invalid_token');
     }
     if (!verifyRs256(data, signature, jwkToKeyObject(jwk))) {
       throw new OidcError('bad_signature', 'invalid_token');
@@ -270,4 +316,28 @@ export function oidcConfigFromEnv(
   const vkPublicKeyPem = env.OIDC_VK_PUBLIC_KEY || undefined;
   if (!mailruClientId && !vkClientId) return undefined;
   return { mailruClientId, vkClientId, vkPublicKeyPem };
+}
+
+/**
+ * Tiny in-memory rate limiter for /auth/oidc (per process).
+ * Not a substitute for edge/WAF limits in production.
+ */
+export function createOidcRateLimiter(opts?: {
+  windowMs?: number;
+  max?: number;
+}): (key: string) => boolean {
+  const windowMs = opts?.windowMs ?? 60_000;
+  const max = opts?.max ?? 30;
+  const hits = new Map<string, number[]>();
+  return (key: string): boolean => {
+    const now = Date.now();
+    const arr = (hits.get(key) ?? []).filter((t) => now - t < windowMs);
+    if (arr.length >= max) {
+      hits.set(key, arr);
+      return false;
+    }
+    arr.push(now);
+    hits.set(key, arr);
+    return true;
+  };
 }
