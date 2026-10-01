@@ -133,11 +133,20 @@ export function ProgressScreen() {
               <div
                 key={b.id}
                 className={cn(
-                  "flex flex-col items-center rounded-xl bg-surface-2 p-3 text-center",
-                  !b.unlocked && "opacity-40",
+                  "flex flex-col items-center rounded-xl border p-3 text-center transition-colors",
+                  b.unlocked
+                    ? "border-accent/40 bg-accent-soft"
+                    : "border-border bg-surface-2 opacity-50",
                 )}
               >
-                <span className="mt-1 text-[11px] font-medium leading-tight">{b.title}</span>
+                <span
+                  className={cn(
+                    "text-[11px] font-medium leading-tight",
+                    b.unlocked ? "text-accent" : "text-muted",
+                  )}
+                >
+                  {b.title}
+                </span>
               </div>
             ))}
           </div>
@@ -154,10 +163,10 @@ export function ProgressScreen() {
                 className={cn(
                   "rounded-full px-3 py-1 text-xs font-medium",
                   m.status === "ready"
-                    ? "bg-emerald-500/15 text-emerald-600"
+                    ? "bg-accent-soft text-accent"
                     : m.status === "recovering"
-                      ? "bg-amber-500/15 text-amber-600"
-                      : "bg-rose-500/15 text-rose-600",
+                      ? "bg-[color-mix(in_srgb,var(--color-warn)_16%,transparent)] text-warn"
+                      : "bg-[color-mix(in_srgb,var(--color-danger)_16%,transparent)] text-danger",
                 )}
               >
                 {m.label}

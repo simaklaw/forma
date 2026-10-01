@@ -119,68 +119,70 @@ export function PlayerScreen({ planId }: { planId: string }) {
           playsInline
           controls
         />
-        {restEndsAt && <RestOverlay endsAt={restEndsAt} onDone={clearRest} />}
+        {restEndsAt != null && restEndsAt > Date.now() && (
+          <RestOverlay endsAt={restEndsAt} onDone={clearRest} />
+        )}
       </div>
 
       <div className="flex-1 px-5 pt-4">
-        {sequentialMismatch && expectedName && (
-          <div className="mb-3 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
-            Сначала: <span className="font-medium">{expectedName}</span>. Подходы
-            записываются по порядку упражнений.
-            {expectedIndex >= 0 && (
+        <h1 className="font-display text-2xl tracking-tight">{ex.name}</h1>
+        <p className="mt-1 text-sm text-muted">
+          {ex.sets}×{ex.reps}
+          {ex.unit === "sec" ? " с" : ""} · ~{Math.round(estKcal)} ккал
+        </p>
+
+        {sequentialMismatch && (
+          <div className="mt-3 rounded-lg border border-warn/40 bg-[color-mix(in_srgb,var(--color-warn)_12%,transparent)] px-3 py-2 text-sm">
+            <p className="font-medium text-warn">Сначала другое упражнение</p>
+            <p className="mt-0.5 text-muted">
+              По плану: {expectedName ?? "предыдущее"}
+              {expectedIndex >= 0 ? ` · ${expectedIndex + 1}/${exercises.length}` : ""}
+            </p>
+            {expectedId && (
               <button
                 type="button"
-                className="mt-2 block text-sm font-medium text-accent underline"
-                onClick={() => goToExercise(expectedIndex)}
+                className="mt-2 text-sm text-accent underline"
+                onClick={() => goToExercise(expectedId)}
               >
-                Перейти к упражнению
+                Перейти
               </button>
             )}
           </div>
         )}
-        <h1 className="font-display text-xl">{ex.name}</h1>
-        <p className="mt-1 text-sm text-muted">
-          {ex.sets} × {ex.reps} {ex.unit === "sec" ? "сек" : "повт"} · отдых {ex.restSec} с
-          {" · ~"}
-          {estKcal} ккал
-        </p>
-        <ul className="mt-3 space-y-1 text-sm text-muted">
-          {ex.cues.map((c) => (
-            <li key={c}>· {c}</li>
-          ))}
-        </ul>
 
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap gap-2">
           {sets.map((done, i) => {
-            const allowed = session ? canMarkSet(session, ex.id, i) : false;
+            const can = canMarkSet(session?.setsDone ?? {}, ex.id, i, plan.exerciseIds);
             return (
               <button
                 key={i}
                 type="button"
-                disabled={!allowed}
-                onClick={() => {
-                  if (!allowed) return;
-                  toggleSet(ex.id, i);
-                }}
+                disabled={!can && !done}
+                onClick={() => toggleSet(ex.id, i)}
                 className={cn(
-                  "flex size-12 items-center justify-center rounded-full text-sm font-medium",
-                  done ? "bg-accent text-accent-fg" : "bg-surface-2 text-fg",
-                  !allowed && "opacity-40",
-                  currentSetIndex === i && !done && "ring-2 ring-accent ring-offset-2 ring-offset-bg",
+                  "flex size-11 items-center justify-center rounded-full border text-sm font-medium",
+                  done
+                    ? "border-accent bg-accent text-accent-fg"
+                    : can
+                      ? "border-border bg-surface"
+                      : "border-border bg-surface-2 opacity-40",
                 )}
+                aria-label={`Подход ${i + 1}`}
               >
-                {done ? <Check className="size-5" /> : i + 1}
+                {done ? <Check className="size-4" /> : i + 1}
               </button>
             );
           })}
         </div>
+
         {setFeedback && (
-          <div className="mt-4 rounded-lg bg-surface-2 px-3 py-2 text-sm">
-            <p className="font-medium text-fg">
-              Сет {setFeedback.setNumber}/{setFeedback.totalSets}: {setFeedback.adjustmentNote}
+          <div className="set-feedback-card animate-rise mt-3 px-4 py-3">
+            <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-accent">
+              Подход {setFeedback.setNumber}/{setFeedback.totalSets}
             </p>
-            <p className="mt-1 text-muted">{setFeedback.formFocus}</p>
-            <p className="mt-0.5 text-xs text-muted">{setFeedback.safetyCheck}</p>
+            <p className="mt-1 text-sm font-medium text-fg">{setFeedback.adjustmentNote}</p>
+            <p className="mt-1 text-sm leading-snug text-muted">{setFeedback.formFocus}</p>
+            <p className="mt-1 text-xs text-muted">{setFeedback.safetyCheck}</p>
           </div>
         )}
       </div>
