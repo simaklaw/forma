@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Linking,
@@ -12,6 +12,22 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import {
+  buildMailruAuthorizeUrl,
+  buildVkAuthorizeUrl,
+  clearPendingOidc,
+  configuredOidcProviders,
+  createMutex,
+  exchangeVkCode,
+  generateCodeChallenge,
+  generateCodeVerifier,
+  generateState,
+  getOidcClientConfig,
+  isOidcProviderConfigured,
+  loadPendingOidc,
+  parseOAuthCallback,
+  savePendingOidc,
+} from './oidcClient';
+import {
   exchangeOidcCredentials,
   isEmailSubject,
   linkSyncAccount,
@@ -22,60 +38,6 @@ import {
   type SyncCredentials,
 } from './syncAuth';
 
-function syncBaseUrl(): string {
-  const base =
-    (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_SYNC_API_URL) ||
-    '';
-  return typeof base === 'string' ? base.replace(/\/$/, '') : '';
-}
-
-function envClientId(provider: OidcProvider): string {
-  const key =
-    provider === 'vk'
-      ? 'EXPO_PUBLIC_OIDC_VK_CLIENT_ID'
-      : 'EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID';
-  const v =
-    (typeof process !== 'undefined' &&
-      (process.env as Record<string, string | undefined>)?.[key]) ||
-    '';
-  return typeof v === 'string' ? v.trim() : '';
-}
-
-function oauthRedirectUri(): string {
-  return 'fitpulse://oauth';
-}
-
-function mailruAuthUrl(clientId: string): string {
-  const q = new URLSearchParams({
-    client_id: clientId,
-    response_type: 'token',
-    redirect_uri: oauthRedirectUri(),
-    scope: 'userinfo',
-  });
-  return `https://o2.mail.ru/login?${q.toString()}`;
-}
-
-function vkAuthUrl(clientId: string): string {
-  const q = new URLSearchParams({
-    response_type: 'token',
-    client_id: clientId,
-    redirect_uri: oauthRedirectUri(),
-    scope: 'email',
-  });
-  return `https://id.vk.ru/authorize?${q.toString()}`;
-}
-
-function parseTokenFromUrl(url: string): string | null {
-  try {
-    const hash = url.includes('#') ? url.split('#')[1] : '';
-    const query = url.includes('?') ? url.split('?')[1].split('#')[0] : '';
-    const params = new URLSearchParams(hash || query);
-    return params.get('id_token') || params.get('access_token') || null;
-  } catch {
-    return null;
-  }
-}
-
 export default function SyncAccountCard() {
   const colors = useThemeColors();
   const [subject, setSubject] = useState<string | null>(null);
@@ -84,6 +46,11 @@ export default function SyncAccountCard() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const cfg = useMemo(() => getOidcClientConfig(), []);
+  const oidcProviders = useMemo(() => configuredOidcProviders(cfg), [cfg]);
+  const runExclusive = useMemo(() => createMutex(), []);
+  const handlingUrl = useRef(false);
 
   const reload = useCallback(async () => {
     const [s, c] = await Promise.all([
@@ -101,60 +68,119 @@ export default function SyncAccountCard() {
 
   useEffect(() => {
     const onUrl = async ({ url }: { url: string }) => {
-      if (!url.startsWith('fitpulse://oauth')) return;
-      const token = parseTokenFromUrl(url);
-      if (!token || token.length < 20) {
-        setError(
-          'OAuth: токен не получен. Проверь redirect URI в кабинете провайдера.',
-        );
-        return;
-      }
-      const base = syncBaseUrl();
-      if (!base) {
-        setError('Синхронизация не настроена: задайте EXPO_PUBLIC_SYNC_API_URL.');
-        return;
-      }
-      const provider: OidcProvider =
-        token.split('.').length === 3
-          ? envClientId('mailru')
-            ? 'mailru'
-            : 'vk'
-          : envClientId('vk')
-            ? 'vk'
-            : 'mailru';
-      setBusy(true);
-      setError(null);
-      setMessage(null);
-      try {
-        const next = await exchangeOidcCredentials({
-          baseUrl: base,
-          storage: AsyncStorage,
-          provider,
-          idToken: token,
-        });
-        setCreds(next);
-        const s = await loadAuthSubject(AsyncStorage);
-        setSubject(s);
-        setMessage(
-          provider === 'vk'
-            ? 'Вход через VK ID выполнен.'
-            : 'Вход через Mail.ru выполнен.',
-        );
-      } catch (e) {
-        if (e instanceof SyncAuthError) {
-          setError(
-            e.status === 429
-              ? 'Слишком много попыток. Подожди минуту.'
-              : e.status === 503
-                ? 'OIDC на сервере не настроен.'
-                : `Не удалось войти (${e.message}).`,
+      const parsed = parseOAuthCallback(url);
+      if (!parsed) return;
+      if (handlingUrl.current) return;
+
+      await runExclusive(async () => {
+        handlingUrl.current = true;
+        setBusy(true);
+        setError(null);
+        setMessage(null);
+        try {
+          const pending = await loadPendingOidc(AsyncStorage);
+          if (!pending) {
+            setError('OAuth: сессия входа истекла. Нажми VK / Mail.ru ещё раз.');
+            return;
+          }
+          if (!parsed.state || parsed.state !== pending.state) {
+            setError('OAuth: неверный state (возможна подмена). Повтори вход.');
+            await clearPendingOidc(AsyncStorage);
+            return;
+          }
+          if (parsed.kind === 'error') {
+            setError(
+              parsed.error === 'access_denied'
+                ? 'Вход отменён.'
+                : `OAuth ошибка: ${parsed.error}`,
+            );
+            await clearPendingOidc(AsyncStorage);
+            return;
+          }
+
+          const base = cfg.syncApiUrl;
+          if (!base) {
+            setError('Синхронизация не настроена: задайте EXPO_PUBLIC_SYNC_API_URL.');
+            return;
+          }
+
+          let idToken: string | null = null;
+          let provider = pending.provider;
+
+          if (parsed.kind === 'code') {
+            if (pending.provider !== 'vk' || !pending.codeVerifier || !cfg.vkClientId) {
+              setError('OAuth: получен code, но PKCE-сессия VK недоступна.');
+              await clearPendingOidc(AsyncStorage);
+              return;
+            }
+            try {
+              const tokens = await exchangeVkCode({
+                clientId: cfg.vkClientId,
+                code: parsed.code,
+                codeVerifier: pending.codeVerifier,
+                deviceId: parsed.deviceId,
+              });
+              idToken = tokens.id_token ?? null;
+              if (!idToken && tokens.access_token) {
+                setError(
+                  'VK не вернул id_token. Проверь scope/настройки приложения в id.vk.ru.',
+                );
+                await clearPendingOidc(AsyncStorage);
+                return;
+              }
+            } catch {
+              setError('Не удалось обменять code VK на токен. Повтори вход.');
+              await clearPendingOidc(AsyncStorage);
+              return;
+            }
+          } else if (parsed.kind === 'id_token') {
+            idToken = parsed.token;
+          } else if (parsed.kind === 'access_token') {
+            setError(
+              'Mail.ru вернул access_token. Нужен id_token (OIDC). Проверь тип приложения o2.mail.ru.',
+            );
+            await clearPendingOidc(AsyncStorage);
+            return;
+          }
+
+          if (!idToken || idToken.split('.').length !== 3) {
+            setError('OAuth: токен не похож на JWT id_token.');
+            await clearPendingOidc(AsyncStorage);
+            return;
+          }
+
+          const next = await exchangeOidcCredentials({
+            baseUrl: base,
+            storage: AsyncStorage,
+            provider,
+            idToken,
+          });
+          setCreds(next);
+          const s = await loadAuthSubject(AsyncStorage);
+          setSubject(s);
+          setMessage(
+            provider === 'vk'
+              ? 'Вход через VK ID выполнен.'
+              : 'Вход через Mail.ru выполнен.',
           );
-        } else {
-          setError('Не удалось войти через провайдера.');
+          await clearPendingOidc(AsyncStorage);
+        } catch (e) {
+          if (e instanceof SyncAuthError) {
+            setError(
+              e.status === 429
+                ? 'Слишком много попыток. Подожди минуту.'
+                : e.status === 503
+                  ? 'OIDC на сервере не настроен.'
+                  : `Не удалось войти (${e.message}).`,
+            );
+          } else {
+            setError('Не удалось войти через провайдера.');
+          }
+        } finally {
+          setBusy(false);
+          handlingUrl.current = false;
         }
-      } finally {
-        setBusy(false);
-      }
+      });
     };
 
     const sub = Linking.addEventListener('url', onUrl);
@@ -162,74 +188,97 @@ export default function SyncAccountCard() {
       if (url) void onUrl({ url });
     });
     return () => sub.remove();
-  }, []);
+  }, [cfg, runExclusive]);
 
   async function onLink() {
-    setError(null);
-    setMessage(null);
-    const base = syncBaseUrl();
-    if (!base) {
-      setError('Синхронизация не настроена: задайте EXPO_PUBLIC_SYNC_API_URL.');
-      return;
-    }
-    const normalized = email.trim().toLowerCase();
-    if (!isEmailSubject(normalized)) {
-      setError('Укажи корректный email (например you@example.com).');
-      return;
-    }
-    setBusy(true);
-    try {
-      const next = await linkSyncAccount({
-        baseUrl: base,
-        storage: AsyncStorage,
-        subject: normalized,
-      });
-      setCreds(next);
-      setSubject(normalized);
-      setMessage('Аккаунт привязан. Данные синка пойдут под этим email.');
-    } catch (e) {
-      if (e instanceof SyncAuthError && e.status === 409) {
-        setError('Этот email уже привязан к другому аккаунту.');
-      } else if (e instanceof SyncAuthError && e.message === 'network') {
-        setError('Нет сети. Проверь соединение и повтори.');
-      } else {
-        setError('Не удалось привязать. Попробуй ещё раз.');
+    await runExclusive(async () => {
+      setError(null);
+      setMessage(null);
+      const base = cfg.syncApiUrl;
+      if (!base) {
+        setError('Синхронизация не настроена: задайте EXPO_PUBLIC_SYNC_API_URL.');
+        return;
       }
-    } finally {
-      setBusy(false);
-    }
+      const normalized = email.trim().toLowerCase();
+      if (!isEmailSubject(normalized)) {
+        setError('Укажи корректный email (например you@example.com).');
+        return;
+      }
+      setBusy(true);
+      try {
+        const next = await linkSyncAccount({
+          baseUrl: base,
+          storage: AsyncStorage,
+          subject: normalized,
+        });
+        setCreds(next);
+        setSubject(normalized);
+        setMessage('Аккаунт привязан. Данные синка пойдут под этим email.');
+      } catch (e) {
+        if (e instanceof SyncAuthError && e.status === 409) {
+          setError('Этот email уже привязан к другому аккаунту.');
+        } else if (e instanceof SyncAuthError && e.message === 'network') {
+          setError('Нет сети. Проверь соединение и повтори.');
+        } else {
+          setError('Не удалось привязать. Попробуй ещё раз.');
+        }
+      } finally {
+        setBusy(false);
+      }
+    });
   }
 
   async function onOidc(provider: OidcProvider) {
-    setError(null);
-    setMessage(null);
-    const base = syncBaseUrl();
-    if (!base) {
-      setError('Синхронизация не настроена: задайте EXPO_PUBLIC_SYNC_API_URL.');
-      return;
-    }
-    const clientId = envClientId(provider);
-    if (!clientId) {
-      setError(
+    await runExclusive(async () => {
+      setError(null);
+      setMessage(null);
+      if (!cfg.syncApiUrl) {
+        setError('Синхронизация не настроена: задайте EXPO_PUBLIC_SYNC_API_URL.');
+        return;
+      }
+      if (!isOidcProviderConfigured(provider, cfg)) {
+        setError(
+          provider === 'vk'
+            ? 'Задай EXPO_PUBLIC_OIDC_VK_CLIENT_ID (кабинет id.vk.ru).'
+            : 'Задай EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID (o2.mail.ru).',
+        );
+        return;
+      }
+
+      const state = generateState();
+      let url: string;
+      if (provider === 'vk') {
+        const verifier = generateCodeVerifier();
+        const challenge = await generateCodeChallenge(verifier);
+        await savePendingOidc(AsyncStorage, {
+          provider: 'vk',
+          state,
+          codeVerifier: verifier,
+          createdAt: Date.now(),
+        });
+        url = await buildVkAuthorizeUrl(cfg.vkClientId!, state, challenge);
+      } else {
+        await savePendingOidc(AsyncStorage, {
+          provider: 'mailru',
+          state,
+          createdAt: Date.now(),
+        });
+        url = buildMailruAuthorizeUrl(cfg.mailruClientId!, state);
+      }
+
+      const ok = await Linking.canOpenURL(url);
+      if (!ok) {
+        setError('Не удалось открыть браузер для входа.');
+        await clearPendingOidc(AsyncStorage);
+        return;
+      }
+      setMessage(
         provider === 'vk'
-          ? 'Задай EXPO_PUBLIC_OIDC_VK_CLIENT_ID (кабинет id.vk.ru).'
-          : 'Задай EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID (o2.mail.ru).',
+          ? 'Открываю VK ID… После входа вернись в приложение.'
+          : 'Открываю Mail.ru… После входа вернись в приложение.',
       );
-      return;
-    }
-    const url =
-      provider === 'vk' ? vkAuthUrl(clientId) : mailruAuthUrl(clientId);
-    const ok = await Linking.canOpenURL(url);
-    if (!ok) {
-      setError('Не удалось открыть браузер для входа.');
-      return;
-    }
-    setMessage(
-      provider === 'vk'
-        ? 'Открываю VK ID… После входа вернись в приложение.'
-        : 'Открываю Mail.ru… После входа вернись в приложение.',
-    );
-    await Linking.openURL(url);
+      await Linking.openURL(url);
+    });
   }
 
   const linkedEmail =
@@ -263,37 +312,52 @@ export default function SyncAccountCard() {
         </Text>
       ) : (
         <Text style={[styles.meta, { color: colors.paperDim }]}>
-          Локальный режим — привяжи email или войди через VK / Mail.ru.
+          Локальный режим — привяжи email
+          {oidcProviders.length > 0 ? ' или войди через VK / Mail.ru' : ''}.
         </Text>
       )}
 
-      <Text style={[styles.hint, { color: colors.paperDim }]}>
-        Вход через VK ID или Mail.ru (без Google / Apple). Redirect URI:
-        fitpulse://oauth
-      </Text>
-
-      <View style={styles.row}>
-        <TouchableOpacity
-          onPress={() => void onOidc('vk')}
-          disabled={busy}
-          style={[
-            styles.btnSecondary,
-            { borderColor: colors.line, opacity: busy ? 0.5 : 1 },
-          ]}
-        >
-          <Text style={[styles.btnText, { color: colors.paper }]}>VK ID</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => void onOidc('mailru')}
-          disabled={busy}
-          style={[
-            styles.btnSecondary,
-            { borderColor: colors.line, opacity: busy ? 0.5 : 1 },
-          ]}
-        >
-          <Text style={[styles.btnText, { color: colors.paper }]}>Mail.ru</Text>
-        </TouchableOpacity>
-      </View>
+      {oidcProviders.length > 0 ? (
+        <>
+          <Text style={[styles.hint, { color: colors.paperDim }]}>
+            Вход через VK ID или Mail.ru (без Google / Apple). Redirect URI:
+            fitpulse://oauth
+          </Text>
+          <View style={styles.row}>
+            {oidcProviders.includes('vk') ? (
+              <TouchableOpacity
+                onPress={() => void onOidc('vk')}
+                disabled={busy}
+                style={[
+                  styles.btnSecondary,
+                  { borderColor: colors.line, opacity: busy ? 0.5 : 1 },
+                ]}
+              >
+                <Text style={[styles.btnText, { color: colors.paper }]}>VK ID</Text>
+              </TouchableOpacity>
+            ) : null}
+            {oidcProviders.includes('mailru') ? (
+              <TouchableOpacity
+                onPress={() => void onOidc('mailru')}
+                disabled={busy}
+                style={[
+                  styles.btnSecondary,
+                  { borderColor: colors.line, opacity: busy ? 0.5 : 1 },
+                ]}
+              >
+                <Text style={[styles.btnText, { color: colors.paper }]}>
+                  Mail.ru
+                </Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        </>
+      ) : (
+        <Text style={[styles.hint, { color: colors.paperDim }]}>
+          OIDC не настроен (нет EXPO_PUBLIC_OIDC_*_CLIENT_ID). Доступна привязка
+          email.
+        </Text>
+      )}
 
       <Text style={[styles.hint, { color: colors.paperDim }]}>
         Или привяжи email — тот же аккаунт на новом устройстве.
