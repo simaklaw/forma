@@ -82,7 +82,8 @@ export type OidcErrorCode =
   | 'audience_mismatch'
   | 'issuer_mismatch'
   | 'expired'
-  | 'jwks_unavailable';
+  | 'jwks_unavailable'
+  | 'invalid_code_verifier';
 
 /** Avoid TS parameter properties — node --experimental-strip-types rejects them. */
 export class OidcError extends Error {
@@ -320,6 +321,12 @@ export function isAllowedOidcRedirectUri(uri: string): boolean {
   return (ALLOWED_OIDC_REDIRECT_URIS as readonly string[]).includes(u);
 }
 
+const PKCE_VERIFIER_RE = /^[A-Za-z0-9._~-]{43,128}$/;
+
+export function isValidPkceCodeVerifier(verifier: string): boolean {
+  return PKCE_VERIFIER_RE.test(verifier.trim());
+}
+
 /**
  * Exchange Mail.ru authorization code (server-side).
  * Uses client_secret + optional PKCE code_verifier (RFC 7636).
@@ -345,6 +352,10 @@ export async function exchangeMailruAuthorizationCode(
   if (code.length < 8 || code.length > 512) {
     throw new OidcError('invalid_authorization_code', 'invalid_token');
   }
+  const codeVerifier = input.codeVerifier?.trim();
+  if (!codeVerifier || !isValidPkceCodeVerifier(codeVerifier)) {
+    throw new OidcError('invalid_code_verifier', 'invalid_code_verifier');
+  }
 
   const tokenUrl = cfg.mailruTokenUrl ?? 'https://oauth.mail.ru/token';
   const body = new URLSearchParams({
@@ -352,9 +363,7 @@ export async function exchangeMailruAuthorizationCode(
     code,
     redirect_uri: input.redirectUri,
   });
-  if (input.codeVerifier && input.codeVerifier.length >= 43) {
-    body.set('code_verifier', input.codeVerifier);
-  }
+  body.set('code_verifier', codeVerifier);
 
   const basic = Buffer.from(`${clientId}:${secret}`, 'utf8').toString('base64');
   const fetchFn = cfg.fetchImpl ?? globalThis.fetch;
@@ -372,6 +381,7 @@ export async function exchangeMailruAuthorizationCode(
         Accept: 'application/json',
       },
       body: body.toString(),
+      signal: AbortSignal.timeout(10_000),
     });
   } catch {
     throw new OidcError('mailru_token_network', 'jwks_unavailable');
