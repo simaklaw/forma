@@ -5,6 +5,7 @@ import {
   verifyIdToken,
   claimsToAuthSubject,
   clearOidcJwksCache,
+  OidcError,
   type Jwk,
   type OidcConfig,
 } from './oidc.ts';
@@ -34,6 +35,19 @@ function signRs256(header: object, payload: object): string {
   signer.end();
   const sig = signer.sign(privateKeyPem);
   return `${data}.${b64url(sig)}`;
+}
+
+async function expectOidcCode(
+  fn: () => Promise<unknown>,
+  code: OidcError['code'],
+): Promise<void> {
+  try {
+    await fn();
+    assert.fail(`expected OidcError ${code}`);
+  } catch (e) {
+    assert.ok(e instanceof OidcError, `expected OidcError, got ${e}`);
+    assert.equal(e.code, code);
+  }
 }
 
 before(() => {
@@ -115,9 +129,9 @@ describe('verifyIdToken mailru', () => {
         exp: 1_700_000_000 + 3600,
       },
     );
-    await assert.rejects(
+    await expectOidcCode(
       () => verifyIdToken('mailru', token, cfg()),
-      (e: Error & { code?: string }) => e.code === 'audience_mismatch',
+      'audience_mismatch',
     );
   });
 });
@@ -148,9 +162,9 @@ describe('verifyIdToken vk', () => {
         exp: 1_700_000_000 + 3600,
       },
     );
-    await assert.rejects(
+    await expectOidcCode(
       () => verifyIdToken('vk', token, cfg()),
-      (e: Error & { code?: string }) => e.code === 'audience_mismatch',
+      'audience_mismatch',
     );
   });
 
@@ -164,10 +178,7 @@ describe('verifyIdToken vk', () => {
         exp: 1_700_000_000 - 10,
       },
     );
-    await assert.rejects(
-      () => verifyIdToken('vk', token, cfg()),
-      (e: Error & { code?: string }) => e.code === 'expired',
-    );
+    await expectOidcCode(() => verifyIdToken('vk', token, cfg()), 'expired');
   });
 });
 
@@ -201,7 +212,12 @@ describe('POST /api/v1/auth/oidc', () => {
       body: JSON.stringify({ provider: 'mailru', id_token: idToken }),
     });
     assert.equal(res.status, 200);
-    const body = await res.json();
+    const body = (await res.json()) as {
+      auth_subject: string;
+      provider: string;
+      token: string;
+      user_id: string;
+    };
     assert.equal(body.auth_subject, 'oidc-user@mail.ru');
     assert.equal(body.provider, 'mailru');
     assert.equal(verifyJwt(SECRET, body.token), body.user_id);
@@ -223,7 +239,10 @@ describe('POST /api/v1/auth/oidc', () => {
       body: JSON.stringify({ provider: 'vk', id_token: idToken }),
     });
     assert.equal(res.status, 200);
-    const body = await res.json();
+    const body = (await res.json()) as {
+      auth_subject: string;
+      provider: string;
+    };
     assert.equal(body.auth_subject, 'oidc:vk:777');
     assert.equal(body.provider, 'vk');
   });
