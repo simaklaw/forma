@@ -73,8 +73,7 @@ export function ProgressScreen() {
 
   const badges = evaluateAchievements({
     workouts,
-    meals,
-    foods: FOODS,
+    proteinTodayG: dayMacros(meals, FOODS).protein,
     proteinGoalG: profile.proteinGoal,
   });
 
@@ -89,13 +88,12 @@ export function ProgressScreen() {
         if (!ex) continue;
         exerciseCompletions.push({
           exerciseId: id,
+          name: ex.name,
           date: w.date,
-          sets: Array.from({ length: ex.sets }, () => ({
-            weightKg: ex.weightKg ?? 0,
-            reps: ex.reps,
-            completed: true,
-          })),
-          primaryRegion: (ex.primaryRegion as MuscleRegion) ?? "full",
+          completed: true,
+          regions: ex.regions as ExerciseCompletion["regions"],
+          equipment: ex.equipment,
+          unit: ex.unit,
         });
       }
     }
@@ -139,7 +137,6 @@ export function ProgressScreen() {
                   !b.unlocked && "opacity-40",
                 )}
               >
-                <span className="text-2xl">{b.emoji}</span>
                 <span className="mt-1 text-[11px] font-medium leading-tight">{b.title}</span>
               </div>
             ))}
@@ -156,14 +153,14 @@ export function ProgressScreen() {
                 key={m.region}
                 className={cn(
                   "rounded-full px-3 py-1 text-xs font-medium",
-                  m.readiness >= 80
+                  m.status === "ready"
                     ? "bg-emerald-500/15 text-emerald-600"
-                    : m.readiness >= 50
+                    : m.status === "recovering"
                       ? "bg-amber-500/15 text-amber-600"
                       : "bg-rose-500/15 text-rose-600",
                 )}
               >
-                {m.label} {m.readiness}%
+                {m.label}
               </span>
             ))}
           </div>
