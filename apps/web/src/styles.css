@@ -16,6 +16,7 @@
   --color-accent: #00b894;
   --color-accent-fg: #f8fafc;
   --color-accent-soft: rgb(0 184 148 / 0.12);
+  --color-ok: #10b981;
   --color-warn: #f59e0b;
   --color-danger: #ef4444;
   --color-scrim: rgb(11 15 20 / 0.55);
@@ -45,6 +46,7 @@
     --color-accent: #00e5a8;
     --color-accent-fg: #0b0f14;
     --color-accent-soft: rgb(0 229 168 / 0.14);
+    --color-ok: #34d399;
     --color-warn: #ff6a39;
     --color-danger: #f87171;
     --color-scrim: rgb(0 0 0 / 0.62);
@@ -117,4 +119,71 @@
   .animate-rise {
     animation: none;
   }
+}
+
+/* Recovery / performance status surfaces */
+.recovery-score-ring {
+  --ring-pct: 100;
+  --ring-color: var(--color-accent);
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 9999px;
+  display: grid;
+  place-items: center;
+  background: conic-gradient(
+    var(--ring-color) calc(var(--ring-pct) * 1%),
+    var(--color-surface-2) 0
+  );
+  box-shadow: var(--shadow-card);
+}
+
+.recovery-score-ring > span {
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 9999px;
+  display: grid;
+  place-items: center;
+  background: var(--color-surface);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+
+.pillar-bar {
+  height: 0.35rem;
+  border-radius: 9999px;
+  background: var(--color-surface-2);
+  overflow: hidden;
+}
+
+.pillar-bar > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-accent);
+  transition: width 400ms var(--ease-smooth);
+}
+
+.water-track {
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: var(--color-surface-2);
+  overflow: hidden;
+}
+
+.water-track > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #38bdf8, var(--color-accent));
+  transition: width 400ms var(--ease-smooth);
+}
+
+.set-feedback-card {
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
 }

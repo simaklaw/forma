@@ -8,6 +8,16 @@ import { selectDailyTotals, useFitPulseStore } from '@/state/useFitPulseStore';
 const GLASS_ML = 250;
 const WATER_GOAL_ML = 2500;
 
+function statusTint(
+  status: string,
+  colors: { lime: string; ember: string; paper: string }
+): string {
+  if (status === 'peak' || status === 'ready') return colors.lime;
+  if (status === 'active_recovery_recommended') return colors.ember;
+  if (status === 'rest_required') return colors.ember;
+  return colors.lime;
+}
+
 /** Compact recovery strip for Workout tab (pure RecoveryEngine). */
 export function RecoveryBanner() {
   const colors = useThemeColors();
@@ -74,7 +84,13 @@ export function RecoveryBanner() {
           {recovery.statusLabel}
         </Text>
       </View>
-      <Text style={{ color: colors.lime, fontFamily: fonts.mono, fontSize: 22 }}>
+      <Text
+        style={{
+          color: statusTint(recovery.status, colors),
+          fontFamily: fonts.mono,
+          fontSize: 22
+        }}
+      >
         {recovery.recoveryScore}%
       </Text>
     </View>
