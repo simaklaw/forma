@@ -30,6 +30,7 @@ import {
   type OidcProvider,
   type OidcConfig,
   oidcConfigFromEnv,
+  createOidcRateLimiter,
 } from './oidc.ts';
 
 const UUID_RE =
@@ -71,6 +72,7 @@ export function createApp(
   const uow: SyncUnitOfWork =
     deps.uow ?? new MemorySyncUnitOfWork(store, feed, projections);
   const app = new Hono<{ Variables: { authUserId: string } }>();
+  const oidcRateLimit = createOidcRateLimiter({ windowMs: 60_000, max: 30 });
 
   app.get('/health', (c) =>
     c.json({
@@ -118,6 +120,13 @@ export function createApp(
       }
       const provider = stringFrom(body?.provider) as OidcProvider | undefined;
       const idToken = stringFrom(body?.id_token);
+      const clientKey =
+        c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ||
+        c.req.header('cf-connecting-ip') ||
+        'unknown';
+      if (!oidcRateLimit(clientKey)) {
+        return c.json({ error: 'rate_limited' }, 429);
+      }
       if (provider !== 'mailru' && provider !== 'vk') {
         return c.json(
           { error: 'invalid_provider', message: 'provider must be mailru|vk' },
