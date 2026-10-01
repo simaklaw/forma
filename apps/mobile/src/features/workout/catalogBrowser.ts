@@ -6,13 +6,7 @@ import { catalogFor, type TrainingMode } from './catalog';
 export type CatalogItem = ExerciseDef & { mode: TrainingMode; dayName: string };
 
 export type Equipment =
-  | 'none'
-  | 'bands'
-  | 'dumbbells'
-  | 'barbell'
-  | 'machine'
-  | 'pullup-bar'
-  | 'bench';
+  'none' | 'bands' | 'dumbbells' | 'barbell' | 'machine' | 'pullup-bar' | 'bench';
 
 export const EQUIPMENT_LABELS: Record<Equipment, string> = {
   none: 'Без оборудования',
