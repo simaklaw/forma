@@ -25,4 +25,26 @@ describe("analyzeRecovery", () => {
     assert.equal(r.status, "rest_required");
     assert.equal(r.consecutiveTrainingDays, 4);
   });
+
+  it("low hydration pulls score down", () => {
+    const now = new Date("2026-10-01T12:00:00");
+    const dry = analyzeRecovery({
+      workouts: [],
+      waterLogsMl: 200,
+      waterGoalMl: 2500,
+      intakeKcal: 2200,
+      intakeProteinG: 140,
+      now,
+    });
+    const wet = analyzeRecovery({
+      workouts: [],
+      waterLogsMl: 2500,
+      waterGoalMl: 2500,
+      intakeKcal: 2200,
+      intakeProteinG: 140,
+      now,
+    });
+    assert.ok(dry.recoveryScore < wet.recoveryScore);
+    assert.ok(dry.hydrationScore < wet.hydrationScore);
+  });
 });

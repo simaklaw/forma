@@ -30,12 +30,15 @@ export function SetFeedbackCard({
   });
   return (
     <View style={styles.feedbackCard} accessibilityRole="summary">
-      <Text style={styles.feedbackKicker}>
-        Подход {setFeedback.setNumber}/{setFeedback.totalSets}
-      </Text>
-      <Text style={styles.feedbackNote}>{setFeedback.adjustmentNote}</Text>
-      <Text style={styles.feedbackFocus}>{setFeedback.formFocus}</Text>
-      <Text style={styles.feedbackSafety}>{setFeedback.safetyCheck}</Text>
+      <View style={styles.accentBar} />
+      <View style={styles.feedbackBody}>
+        <Text style={styles.feedbackKicker}>
+          ПОДХОД {setFeedback.setNumber}/{setFeedback.totalSets}
+        </Text>
+        <Text style={styles.feedbackNote}>{setFeedback.adjustmentNote}</Text>
+        <Text style={styles.feedbackFocus}>{setFeedback.formFocus}</Text>
+        <Text style={styles.feedbackSafety}>{setFeedback.safetyCheck}</Text>
+      </View>
     </View>
   );
 }
@@ -45,16 +48,26 @@ function createStyles(colors: ColorTokens) {
     feedbackCard: {
       marginTop: spacing.md,
       marginBottom: spacing.sm,
-      padding: 12,
       borderRadius: radius.control,
       borderWidth: 1,
       borderColor: colors.line,
-      backgroundColor: colors.panel
+      backgroundColor: colors.panel,
+      flexDirection: 'row',
+      overflow: 'hidden'
+    },
+    accentBar: {
+      width: 3,
+      backgroundColor: colors.lime
+    },
+    feedbackBody: {
+      flex: 1,
+      padding: 12
     },
     feedbackKicker: {
       color: colors.lime,
       fontFamily: fonts.mono,
       fontSize: 11,
+      letterSpacing: 0.8,
       marginBottom: 4
     },
     feedbackNote: {

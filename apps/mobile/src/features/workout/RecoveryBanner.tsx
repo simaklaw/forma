@@ -50,49 +50,55 @@ export function RecoveryBanner() {
     });
   }, [setLogs, todayMeals, profile, waterGlasses, calcTargets, metabolic]);
 
+  const tint = statusTint(recovery.status, colors);
+
   return (
     <View
       style={{
         marginHorizontal: 16,
         marginTop: 10,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
         borderRadius: 12,
         borderWidth: 1,
         borderColor: colors.line,
         backgroundColor: colors.panel,
         flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 12
+        alignItems: 'stretch',
+        overflow: 'hidden'
       }}
       accessibilityRole="summary"
       accessibilityLabel={`Восстановление ${recovery.recoveryScore} процентов, ${recovery.statusLabel}`}
     >
-      <View style={{ flex: 1 }}>
-        <Text style={{ color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 11 }}>
-          ВОССТАНОВЛЕНИЕ
-        </Text>
-        <Text
-          style={{
-            color: colors.paper,
-            fontFamily: fonts.bodySemi,
-            fontSize: 14,
-            marginTop: 2
-          }}
-        >
-          {recovery.statusLabel}
-        </Text>
-      </View>
-      <Text
+      <View style={{ width: 3, backgroundColor: tint }} />
+      <View
         style={{
-          color: statusTint(recovery.status, colors),
-          fontFamily: fonts.mono,
-          fontSize: 22
+          flex: 1,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          paddingHorizontal: 12,
+          paddingVertical: 10
         }}
       >
-        {recovery.recoveryScore}%
-      </Text>
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 11 }}>
+            ВОССТАНОВЛЕНИЕ
+          </Text>
+          <Text
+            style={{
+              color: colors.paper,
+              fontFamily: fonts.bodySemi,
+              fontSize: 14,
+              marginTop: 2
+            }}
+          >
+            {recovery.statusLabel}
+          </Text>
+        </View>
+        <Text style={{ color: tint, fontFamily: fonts.mono, fontSize: 22 }}>
+          {recovery.recoveryScore}%
+        </Text>
+      </View>
     </View>
   );
 }
