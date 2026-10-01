@@ -301,6 +301,31 @@ describe('exchangeMailruAuthorizationCode', () => {
     assert.match(auth, /^Basic /);
   });
 
+  it('rejects missing or malformed PKCE verifier', async () => {
+    await assert.rejects(
+      () =>
+        exchangeMailruAuthorizationCode(
+          { code: 'code12345', redirectUri: 'fitpulse://oauth' },
+          { mailruClientId: 'cid', mailruClientSecret: 'sec' },
+        ),
+      (e: unknown) =>
+        e instanceof OidcError && e.code === 'invalid_code_verifier',
+    );
+    await assert.rejects(
+      () =>
+        exchangeMailruAuthorizationCode(
+          {
+            code: 'code12345',
+            redirectUri: 'fitpulse://oauth',
+            codeVerifier: 'short',
+          },
+          { mailruClientId: 'cid', mailruClientSecret: 'sec' },
+        ),
+      (e: unknown) =>
+        e instanceof OidcError && e.code === 'invalid_code_verifier',
+    );
+  });
+
   it('requires client secret', async () => {
     await assert.rejects(
       () =>
