@@ -138,11 +138,11 @@ export function PlayerScreen({ planId }: { planId: string }) {
               По плану: {expectedName ?? "предыдущее"}
               {expectedIndex >= 0 ? ` · ${expectedIndex + 1}/${exercises.length}` : ""}
             </p>
-            {expectedId && (
+            {expectedId && expectedIndex >= 0 && (
               <button
                 type="button"
                 className="mt-2 text-sm text-accent underline"
-                onClick={() => goToExercise(expectedId)}
+                onClick={() => goToExercise(expectedIndex)}
               >
                 Перейти
               </button>
