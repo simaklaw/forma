@@ -230,6 +230,67 @@ describe('POST /api/v1/auth/oidc', () => {
     assert.equal(body.provider, 'vk');
   });
 
+  it('accepts Mail.ru authorization code only with PKCE', async () => {
+    const tokenFetch: typeof fetch = async () =>
+      new Response(
+        JSON.stringify({
+          id_token: signRs256(
+            { alg: 'RS256', typ: 'JWT', kid },
+            {
+              iss: 'https://account.mail.ru',
+              sub: 'u-code',
+              aud: MAILRU_AUD,
+              email: 'code-user@mail.ru',
+              email_verified: true,
+              exp: 1_700_000_000 + 3600,
+            },
+          ),
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    const testApp = createApp({
+      store: new MemoryIdempotencyStore(),
+      feed: new MemoryChangeFeed(),
+      jwtSecret: TEST_JWT_SECRET,
+      registerUser: new MemoryUserRegistry(),
+      oidcConfig: cfg({
+        mailruClientSecret: 'test-secret',
+        fetchImpl: tokenFetch,
+        fetchJwks: async () => [publicJwk],
+      }),
+    });
+
+    const verifier = 'v' + 'a'.repeat(63);
+    const res = await testApp.request('/api/v1/auth/oidc', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        provider: 'mailru',
+        code: 'code12345',
+        redirect_uri: 'fitpulse://oauth',
+        code_verifier: verifier,
+      }),
+    });
+    assert.equal(res.status, 200);
+    const body = (await res.json()) as { auth_subject: string; provider: string };
+    assert.equal(body.auth_subject, 'code-user@mail.ru');
+    assert.equal(body.provider, 'mailru');
+  });
+
+  it('rejects Mail.ru authorization code without PKCE at the HTTP boundary', async () => {
+    const res = await app().request('/api/v1/auth/oidc', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        provider: 'mailru',
+        code: 'code12345',
+        redirect_uri: 'fitpulse://oauth',
+      }),
+    });
+    assert.equal(res.status, 401);
+    expect(await res.json()).toMatchObject({ error: 'invalid_code_verifier' });
+  });
+
   it('returns 400 for google/apple', async () => {
     for (const provider of ['google', 'apple', 'facebook']) {
       const res = await app().request('/api/v1/auth/oidc', {
@@ -299,6 +360,25 @@ describe('exchangeMailruAuthorizationCode', () => {
       (calls[0]!.init?.headers as Record<string, string>)?.Authorization ?? '',
     );
     assert.match(auth, /^Basic /);
+  });
+
+  it('rejects missing or malformed PKCE verifier', async () => {
+    await assert.rejects(
+      () =>
+        exchangeMailruAuthorizationCode(
+          { code: 'code12345', redirectUri: 'fitpulse://oauth' },
+          { mailruClientId: 'cid', mailruClientSecret: 'sec' },
+        ),
+      (e: unknown) => e instanceof OidcError && e.code === 'invalid_code_verifier',
+    );
+    await assert.rejects(
+      () =>
+        exchangeMailruAuthorizationCode(
+          { code: 'code12345', redirectUri: 'fitpulse://oauth', codeVerifier: 'short' },
+          { mailruClientId: 'cid', mailruClientSecret: 'sec' },
+        ),
+      (e: unknown) => e instanceof OidcError && e.code === 'invalid_code_verifier',
+    );
   });
 
   it('requires client secret', async () => {
