@@ -13,6 +13,7 @@ import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import {
   buildMailruAuthorizeUrl,
+  OAUTH_REDIRECT_URI,
   buildVkAuthorizeUrl,
   clearPendingOidc,
   configuredOidcProviders,
@@ -107,6 +108,37 @@ export default function SyncAccountCard() {
           let idToken: string | null = null;
           let provider = pending.provider;
 
+          if (parsed.kind === 'code' && pending.provider === 'mailru') {
+            if (!pending.codeVerifier) {
+              setError('Mail.ru: нет PKCE verifier. Повтори вход.');
+              await clearPendingOidc(AsyncStorage);
+              return;
+            }
+            try {
+              const next = await exchangeOidcCredentials({
+                baseUrl: base,
+                storage: AsyncStorage,
+                provider: 'mailru',
+                code: parsed.code,
+                codeVerifier: pending.codeVerifier,
+                redirectUri: OAUTH_REDIRECT_URI,
+              });
+              setCreds(next);
+              const s = await loadAuthSubject(AsyncStorage);
+              setSubject(s);
+              setMessage('Вход через Mail.ru выполнен.');
+              await clearPendingOidc(AsyncStorage);
+            } catch (e) {
+              if (e instanceof SyncAuthError && e.status === 503) {
+                setError('Mail.ru на сервере не настроен (OIDC_MAILRU_CLIENT_SECRET).');
+              } else {
+                setError('Не удалось войти через Mail.ru. Повтори вход.');
+              }
+              await clearPendingOidc(AsyncStorage);
+            }
+            return;
+          }
+
           if (parsed.kind === 'code') {
             if (pending.provider !== 'vk' || !pending.codeVerifier || !cfg.vkClientId) {
               setError('OAuth: получен code, но PKCE-сессия VK недоступна.');
@@ -137,7 +169,7 @@ export default function SyncAccountCard() {
             idToken = parsed.token;
           } else if (parsed.kind === 'access_token') {
             setError(
-              'Mail.ru вернул access_token. Нужен id_token (OIDC). Проверь тип приложения o2.mail.ru.',
+              'Провайдер вернул access_token без id_token. Для Mail.ru нужен code flow.',
             );
             await clearPendingOidc(AsyncStorage);
             return;
@@ -217,8 +249,6 @@ export default function SyncAccountCard() {
       } catch (e) {
         if (e instanceof SyncAuthError && e.status === 409) {
           setError('Этот email уже привязан к другому аккаунту.');
-        } else if (e instanceof SyncAuthError && e.message === 'network') {
-          setError('Нет сети. Проверь соединение и повтори.');
         } else {
           setError('Не удалось привязать. Попробуй ещё раз.');
         }
@@ -240,7 +270,7 @@ export default function SyncAccountCard() {
         setError(
           provider === 'vk'
             ? 'Задай EXPO_PUBLIC_OIDC_VK_CLIENT_ID (кабинет id.vk.ru).'
-            : 'Задай EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID (o2.mail.ru).',
+            : 'Задай EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID.',
         );
         return;
       }
@@ -258,12 +288,15 @@ export default function SyncAccountCard() {
         });
         url = await buildVkAuthorizeUrl(cfg.vkClientId!, state, challenge);
       } else {
+        const verifier = generateCodeVerifier();
+        const challenge = await generateCodeChallenge(verifier);
         await savePendingOidc(AsyncStorage, {
           provider: 'mailru',
           state,
+          codeVerifier: verifier,
           createdAt: Date.now(),
         });
-        url = buildMailruAuthorizeUrl(cfg.mailruClientId!, state);
+        url = buildMailruAuthorizeUrl(cfg.mailruClientId!, state, challenge);
       }
 
       const ok = await Linking.canOpenURL(url);
