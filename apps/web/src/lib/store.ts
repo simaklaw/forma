@@ -81,6 +81,8 @@ type State = {
   weights: WeightEntry[];
   measurements: MeasurementEntry[];
   photos: { before: string | null; after: string | null };
+  /** ml logged per date key YYYY-MM-DD */
+  waterByDate: Record<string, number>;
   session: Session | null;
   coachMessages: CoachMessage[];
   setProfile: (p: Partial<Profile>) => void;
@@ -92,6 +94,7 @@ type State = {
   addWeight: (kg: number) => void;
   addMeasurement: (waist: number) => void;
   setPhoto: (slot: "before" | "after", dataUrl: string) => void;
+  addWater: (ml: number) => void;
   startSession: (planId: string) => void;
   restartSession: (planId: string) => void;
   toggleSet: (exerciseId: string, setIndex: number) => void;
@@ -151,6 +154,7 @@ export const useAppStore = create<State>()(
       weights: [],
       measurements: [],
       photos: { before: null, after: null },
+      waterByDate: {},
       session: null,
       coachMessages: defaultCoachMessages(),
 
@@ -219,6 +223,17 @@ export const useAppStore = create<State>()(
 
       setPhoto: (slot, dataUrl) =>
         set((s) => ({ photos: { ...s.photos, [slot]: dataUrl } })),
+
+      addWater: (ml) => {
+        if (!Number.isFinite(ml) || ml === 0) return;
+        const date = todayKey();
+        set((s) => ({
+          waterByDate: {
+            ...s.waterByDate,
+            [date]: Math.max(0, (s.waterByDate[date] ?? 0) + ml),
+          },
+        }));
+      },
 
       startSession: (planId) => {
         const plan = planById(planId);
@@ -412,6 +427,7 @@ export const useAppStore = create<State>()(
           weights: [],
           measurements: [],
           photos: { before: null, after: null },
+          waterByDate: {},
           session: null,
           coachMessages: defaultCoachMessages(),
         }),
@@ -425,6 +441,7 @@ export const useAppStore = create<State>()(
         weights: s.weights,
         measurements: s.measurements,
         photos: s.photos,
+        waterByDate: s.waterByDate,
         coachMessages: s.coachMessages,
         session: s.session,
       }),
