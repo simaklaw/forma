@@ -5,6 +5,18 @@ const code = process.env.MAILRU_E2E_CODE || '';
 const verifier = process.env.MAILRU_E2E_CODE_VERIFIER || '';
 const redirectUri = process.env.MAILRU_E2E_REDIRECT_URI || 'fitpulse://oauth';
 
+let apiUrl;
+try {
+  apiUrl = new URL(baseUrl);
+} catch {
+  console.error('MAILRU_E2E_API_URL must be a valid URL.');
+  process.exit(2);
+}
+if (apiUrl.protocol !== 'https:') {
+  console.error('MAILRU_E2E_API_URL must use HTTPS.');
+  process.exit(2);
+}
+
 if (!baseUrl || !code || !verifier) {
   console.error('Set MAILRU_E2E_API_URL, MAILRU_E2E_CODE and MAILRU_E2E_CODE_VERIFIER.');
   process.exit(2);
@@ -12,6 +24,7 @@ if (!baseUrl || !code || !verifier) {
 
 const res = await fetch(baseUrl + '/api/v1/auth/oidc', {
   method: 'POST',
+  redirect: 'error',
   headers: { 'content-type': 'application/json', accept: 'application/json' },
   body: JSON.stringify({
     provider: 'mailru',
