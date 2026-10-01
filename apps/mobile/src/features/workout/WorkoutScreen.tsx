@@ -8,6 +8,7 @@ import { estimateBurnFromSetLogs, toDateKey as coreToDateKey } from '@forma/core
 import { fonts } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import ExerciseSheet from './ExerciseSheet';
+import { RecoveryBanner } from './RecoveryBanner';
 import { WorkoutCoachCard } from './WorkoutCoachCard';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { useTrainingModeStore } from '@/state/useTrainingModeStore';
@@ -331,6 +332,8 @@ export default function WorkoutScreen() {
         </View>
       </View>
 
+      <RecoveryBanner />
+
       {SHOW_GYM_MODE_TOGGLE && (
         <View style={styles.modeTabs} accessibilityRole="tablist">
           {([{ id: 'gym' as const, label: 'Зал' }, { id: 'home' as const, label: 'Дом' }] as const).map((m) => {
@@ -412,84 +415,70 @@ export default function WorkoutScreen() {
         <WorkoutCoachCard dayName={activeDay.name} anyDoneToday={anyDoneToday} exerciseNames={exerciseNames} />
 
         <View style={styles.sectionHead}>
-          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>УПРАЖНЕНИЯ</Text>
-          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>
-            {todayDoneCount}/{effectiveExercises.length}
+          <Text style={[styles.sectionTitle, { color: colors.paper }]}>{activeDay.name}</Text>
+          <Text style={[styles.sectionMeta, { color: colors.paperFaint }]}>
+            {todayDoneCount}/{effectiveExercises.length} упражнений
           </Text>
         </View>
 
-        {overrideIds != null && overrideIds.length > 0 && (
-          <TouchableOpacity
-            style={[styles.resetOverride, { borderColor: colors.lineStrong }]}
-            onPress={() => {
-              void clearDayOverride(trainingMode, activeDay.id).then(() => setOverrideTick((t) => t + 1));
-            }}
-            accessibilityRole="button"
-            accessibilityLabel="Вернуть упражнения дня по умолчанию"
-          >
-            <Text style={[styles.resetOverrideText, { color: colors.paperDim }]}>Сбросить замены дня</Text>
-          </TouchableOpacity>
-        )}
-
-        {effectiveExercises.map((ex, i) => {
+        {effectiveExercises.map((ex) => {
+          const done = completedSetsToday(ex.id) >= ex.totalSets;
           const setsDone = completedSetsToday(ex.id);
-          const done = setsDone >= ex.totalSets;
-          const isCurrentStep = currentStepExerciseId === ex.id;
-          const thumb = ex.mediaKey ? EXERCISE_THUMBNAILS[ex.mediaKey] : undefined;
-          const exPr = personalRecords[ex.id];
+          const isCurrent = currentStepExerciseId === ex.id;
+          const thumb = EXERCISE_THUMBNAILS[ex.mediaKey ?? ''];
           return (
             <TouchableOpacity
               key={ex.id}
               style={[
-                styles.logRow,
+                styles.exCard,
                 { backgroundColor: colors.panel, borderColor: colors.line },
-                done && { borderColor: colors.lime },
-                isCurrentStep && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                isCurrent && { borderColor: colors.lime }
               ]}
+              onPress={() => openExercise(ex.id)}
               accessibilityRole="button"
               accessibilityLabel={`${ex.name}, ${setsDone} из ${ex.totalSets} подходов`}
-              onPress={() => openExercise(ex.id)}
-              onLongPress={() => {
-                setReplaceTarget({
-                  mode: trainingMode,
-                  dayId: activeDay.id,
-                  dayName: activeDay.name,
-                  slotIndex: i,
-                  currentExerciseId: ex.id,
-                  currentName: ex.name
-                });
-                navigation.navigate('Каталог');
-              }}
             >
-              {thumb != null ? (
-                <Image source={thumb} style={{ width: 44, height: 44, borderRadius: 8 }} />
-              ) : (
-                <Text style={[styles.logIndex, { color: colors.paperFaint }]}>{String(i + 1).padStart(2, '0')}</Text>
-              )}
-              <View style={{ flex: 1 }}>
-                <View style={styles.logNameRow}>
-                  <Text style={[styles.logName, { color: colors.paper }]} numberOfLines={1}>
+              <View style={styles.exRow}>
+                {thumb ? (
+                  <Image source={thumb} style={styles.exThumb} />
+                ) : (
+                  <View style={[styles.exThumb, { backgroundColor: colors.line }]} />
+                )}
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.exName, { color: colors.paper }]} numberOfLines={2}>
                     {ex.name}
                   </Text>
-                  {isCurrentStep && (
-                    <View style={[styles.nowBadge, { backgroundColor: colors.lime }]}>
-                      <Text style={[styles.nowBadgeText, { color: colors.ink }]}>сейчас</Text>
-                    </View>
-                  )}
+                  <Text style={[styles.exMeta, { color: colors.paperFaint }]}>
+                    {ex.totalSets}×{ex.workingReps} · {formatLoadLabel(ex, safeWeightKg)}
+                    {done ? ' · готово' : setsDone > 0 ? ` · ${setsDone}/${ex.totalSets}` : ''}
+                  </Text>
                 </View>
-                <Text style={[styles.logSpec, { color: colors.paperDim }]}>
-                  {setsDone}/{ex.totalSets} · {formatLoadLabel(ex, safeWeightKg)} × {ex.workingReps}
-                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setReplaceTarget({ dayId: activeDay.id, exerciseId: ex.id, mode: trainingMode });
+                    navigation.navigate('Каталог');
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Заменить ${ex.name}`}
+                  style={{ padding: 8 }}
+                >
+                  <Text style={{ color: colors.paperFaint, fontSize: 16 }}>⇄</Text>
+                </TouchableOpacity>
               </View>
-              {exPr != null && (
-                <View style={{ alignItems: 'flex-end' }}>
-                  <Text style={[styles.logPr, { color: colors.lime }]}>{exPr}</Text>
-                  <Text style={[styles.logPrLbl, { color: colors.paperFaint }]}>кг PR</Text>
-                </View>
-              )}
             </TouchableOpacity>
           );
         })}
+
+        {overrideIds != null && overrideIds.length > 0 ? (
+          <TouchableOpacity
+            style={{ marginTop: 12, alignSelf: 'center' }}
+            onPress={() => {
+              void clearDayOverride(trainingMode, activeDay.id).then(() => setOverrideTick((t) => t + 1));
+            }}
+          >
+            <Text style={{ color: colors.paperFaint, fontSize: 13 }}>Сбросить замены дня</Text>
+          </TouchableOpacity>
+        ) : null}
       </ScrollView>
 
       <ExerciseSheet
