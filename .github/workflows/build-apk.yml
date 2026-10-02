@@ -4,6 +4,15 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      sync_api_url:
+        description: "HTTPS sync API URL for this test APK"
+        required: false
+        default: "https://8787-i3mhfw1s8tu1g7pz6uw6e-a7c0b6ca.us3.manus.computer"
+      mailru_client_id:
+        description: "Public Mail.ru OIDC client ID"
+        required: false
+        default: "01a0f7166d967e68a13e38353948a6a5"
 
 permissions:
   contents: read
@@ -19,8 +28,9 @@ jobs:
     timeout-minutes: 90
 
     env:
-      EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID: ${{ vars.EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID }}
-      EXPO_PUBLIC_SYNC_API_URL: ${{ vars.EXPO_PUBLIC_SYNC_API_URL }}
+      # Repository Variables override these test defaults when configured.
+      EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID: ${{ inputs.mailru_client_id || vars.EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID || '01a0f7166d967e68a13e38353948a6a5' }}
+      EXPO_PUBLIC_SYNC_API_URL: ${{ inputs.sync_api_url || vars.EXPO_PUBLIC_SYNC_API_URL || 'https://8787-i3mhfw1s8tu1g7pz6uw6e-a7c0b6ca.us3.manus.computer' }}
       # Do NOT set NODE_ENV=production at job level — pnpm then skips
       # devDependencies (babel-plugin-module-resolver) and Metro fails.
       GRADLE_OPTS: -Xmx4g -XX:MaxMetaspaceSize=1g -Dorg.gradle.daemon=false
