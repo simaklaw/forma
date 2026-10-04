@@ -91,6 +91,7 @@ jobs:
           test -n "$EXPO_PUBLIC_SYNC_API_URL" || { echo "::error::Missing GitHub Variable EXPO_PUBLIC_SYNC_API_URL"; exit 1; }
           case "$EXPO_PUBLIC_SYNC_API_URL" in https://*) ;; *) echo "::error::EXPO_PUBLIC_SYNC_API_URL must use HTTPS"; exit 1;; esac
           echo "Production Mail.ru client ID and HTTPS API URL are configured."
+
       - name: Install workspace dependencies (incl. devDeps for Babel/Metro)
         shell: bash
         env:
@@ -100,6 +101,26 @@ jobs:
           pnpm install --frozen-lockfile
           node -e "require.resolve('babel-plugin-module-resolver')"
           echo "babel-plugin-module-resolver OK"
+
+      - name: Patch expo-modules-core for compileSdk 35 nullability
+        shell: bash
+        run: |
+          set -euo pipefail
+          # PackageInfo.requestedPermissions is nullable on API 35 stubs.
+          # Expo SDK 51 still calls .contains without safe-call → Kotlin compile fails.
+          mapfile -t files < <(find node_modules -path '*/expo-modules-core/android/src/main/java/expo/modules/adapters/react/permissions/PermissionsService.kt' 2>/dev/null || true)
+          if [[ ${#files[@]} -eq 0 ]]; then
+            echo "::warning::PermissionsService.kt not found under node_modules"
+            exit 0
+          fi
+          for f in "${files[@]}"; do
+            if grep -q 'requestedPermissions\.contains(permission)' "$f"; then
+              sed -i 's/requestedPermissions\.contains(permission)/requestedPermissions?.contains(permission) ?: false/g' "$f"
+              echo "Patched $f"
+            else
+              echo "No unsafe contains() in $f (already safe or different upstream)"
+            fi
+          done
 
       - name: Generate Android project (expo prebuild)
         working-directory: apps/mobile
