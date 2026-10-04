@@ -7,6 +7,7 @@ import {
   type SessionRepository
 } from '../SessionRepository';
 import { WORKOUT_DB_NAME } from './schema';
+import { parseWorkoutSessionJson } from '../normalizeWorkoutSession';
 
 /**
  * Minimal surface of expo-sqlite sync API.
@@ -89,7 +90,7 @@ export class SqliteSessionRepository implements SessionRepository {
       [sessionId]
     );
     if (!row) return null;
-    return JSON.parse(row.aggregate_json) as WorkoutSession;
+    return parseWorkoutSessionJson(row.aggregate_json);
   }
 
   async getResumableSession(userId: string): Promise<WorkoutSession | null> {
@@ -101,7 +102,7 @@ export class SqliteSessionRepository implements SessionRepository {
       [userId]
     );
     if (!row) return null;
-    return JSON.parse(row.aggregate_json) as WorkoutSession;
+    return parseWorkoutSessionJson(row.aggregate_json);
   }
 
   async listEvents(sessionId: string): Promise<SessionEvent[]> {
@@ -271,11 +272,13 @@ export class SqliteSessionRepository implements SessionRepository {
       [sessionId]
     );
     if (!row) return null;
+    const aggregate = parseWorkoutSessionJson(row.aggregate_json);
+    if (!aggregate) return null;
     return {
       sessionId: row.session_id,
       eventOrdinal: row.event_ordinal,
       rowVersion: row.row_version,
-      aggregate: JSON.parse(row.aggregate_json) as WorkoutSession,
+      aggregate,
       createdAtMs: row.created_at_ms
     };
   }
