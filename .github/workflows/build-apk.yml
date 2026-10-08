@@ -28,11 +28,8 @@ jobs:
     timeout-minutes: 90
 
     env:
-      # Repository Variables override these test defaults when configured.
       EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID: ${{ inputs.mailru_client_id || vars.EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID || '01a0f7166d967e68a13e38353948a6a5' }}
       EXPO_PUBLIC_SYNC_API_URL: ${{ inputs.sync_api_url || vars.EXPO_PUBLIC_SYNC_API_URL || 'https://8787-i3mhfw1s8tu1g7pz6uw6e-a7c0b6ca.us3.manus.computer' }}
-      # Do NOT set NODE_ENV=production at job level — pnpm then skips
-      # devDependencies (babel-plugin-module-resolver) and Metro fails.
       GRADLE_OPTS: -Xmx4g -XX:MaxMetaspaceSize=1g -Dorg.gradle.daemon=false
 
     steps:
@@ -91,6 +88,7 @@ jobs:
           test -n "$EXPO_PUBLIC_SYNC_API_URL" || { echo "::error::Missing GitHub Variable EXPO_PUBLIC_SYNC_API_URL"; exit 1; }
           case "$EXPO_PUBLIC_SYNC_API_URL" in https://*) ;; *) echo "::error::EXPO_PUBLIC_SYNC_API_URL must use HTTPS"; exit 1;; esac
           echo "Production Mail.ru client ID and HTTPS API URL are configured."
+
       - name: Install workspace dependencies (incl. devDeps for Babel/Metro)
         shell: bash
         env:
@@ -100,6 +98,28 @@ jobs:
           pnpm install --frozen-lockfile
           node -e "require.resolve('babel-plugin-module-resolver')"
           echo "babel-plugin-module-resolver OK"
+
+      - name: Materialize exercise media (no symlinks into APK)
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEST="apps/mobile/assets/exercises"
+          SRC="apps/web/public/exercises"
+          mkdir -p "$DEST"
+          for f in "$SRC"/*.{mp4,jpg}; do
+            [ -f "$f" ] || continue
+            base=$(basename "$f")
+            rm -f "$DEST/$base"
+            cp "$f" "$DEST/$base"
+            echo "materialized $base ($(wc -c < "$DEST/$base") bytes)"
+          done
+          left=$(find "$DEST" -type l | wc -l | tr -d ' ')
+          if [[ "$left" != "0" ]]; then
+            echo "::error::$left symlinks remain under $DEST"
+            find "$DEST" -type l
+            exit 1
+          fi
+          ls -la "$DEST"
 
       - name: Generate Android project (expo prebuild)
         working-directory: apps/mobile
