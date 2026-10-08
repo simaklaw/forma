@@ -45,6 +45,7 @@ export const EXERCISE_THUMBNAILS: Partial<Record<ExerciseMediaKey, number>> = {
   'side-plank': require('../../../assets/exercises/side-plank.jpg')
 };
 
+/** Technique demo clips — all 12 home media keys. */
 export const EXERCISE_VIDEOS: Partial<Record<ExerciseMediaKey, number>> = {
   pushup: require('../../../assets/exercises/pushup.mp4'),
   squat: require('../../../assets/exercises/squat.mp4'),
@@ -59,20 +60,3 @@ export const EXERCISE_VIDEOS: Partial<Record<ExerciseMediaKey, number>> = {
   'shoulder-press': require('../../../assets/exercises/shoulder-press.mp4'),
   'side-plank': require('../../../assets/exercises/side-plank.mp4')
 };
-
-export function mediaKeyForExerciseName(name: string): ExerciseMediaKey | null {
-  const n = name.toLowerCase();
-  if (n.includes('отжим') && n.includes('стул')) return 'chair-dip';
-  if (n.includes('отжим')) return 'pushup';
-  if (n.includes('присед')) return 'squat';
-  if (n.includes('подтяг')) return 'pullup';
-  if (n.includes('выпад')) return 'lunge';
-  if (n.includes('боков') && n.includes('планк')) return 'side-plank';
-  if (n.includes('планк')) return 'plank';
-  if (n.includes('жук') || n.includes('dead')) return 'dead-bug';
-  if (n.includes('мост')) return 'glute-bridge';
-  if (n.includes('тяг') && n.includes('резин')) return 'row-band';
-  if (n.includes('thrust') || n.includes('таз')) return 'hip-thrust';
-  if (n.includes('жим') && n.includes('голов')) return 'shoulder-press';
-  return null;
-}
