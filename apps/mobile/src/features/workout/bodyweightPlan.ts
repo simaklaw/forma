@@ -11,7 +11,7 @@ export interface WorkoutDay {
 export const WORKOUT_PLAN: WorkoutDay[] = [
   {
     id: 'chest',
-    name: 'Грудь — отжимания',
+    name: 'Мощная грудь и трицепс',
     meta: '≈30 мин',
     exercises: [
       {
@@ -57,7 +57,7 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
   },
   {
     id: 'back',
-    name: 'Спина — подтягивания и тяга',
+    name: 'Широкая спина и хват',
     meta: '≈35 мин',
     exercises: [
       {
@@ -103,7 +103,7 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
   },
   {
     id: 'legs',
-    name: 'Ноги — присед и выпады',
+    name: 'Сильные ноги и ягодицы',
     meta: '≈35 мин',
     exercises: [
       {
@@ -162,7 +162,7 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
   },
   {
     id: 'core',
-    name: 'Пресс — планка и контроль',
+    name: 'Стальной кор',
     meta: '≈25 мин',
     exercises: [
       {
@@ -234,7 +234,7 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
   },
   {
     id: 'arms',
-    name: 'Руки — от стула и жим',
+    name: 'Руки и плечи',
     meta: '≈30 мин',
     exercises: [
       {
@@ -280,7 +280,7 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
   },
   {
     id: 'glutes',
-    name: 'Ягодицы — мостик',
+    name: 'Ягодицы и задняя цепь',
     meta: '≈25 мин',
     exercises: [
       {
@@ -339,7 +339,7 @@ export const WORKOUT_PLAN: WorkoutDay[] = [
   },
   {
     id: 'full-home',
-    name: 'Дом · всё тело',
+    name: 'Всё тело за 20 минут',
     meta: '≈30 мин',
     exercises: [
       {
