@@ -146,6 +146,18 @@ jobs:
             exit 1
           fi
 
+          # SDK 35 / newer AGP: PackageInfo.requestedPermissions is Array<String>?
+          # expo-modules-core (SDK 51) still uses non-null contains() — patch until
+          # dependency bumps past the null-safe call.
+          PERM_KT=$(find ../../node_modules/expo-modules-core -path '*/permissions/PermissionsService.kt' 2>/dev/null | head -1)
+          if [[ -n "${PERM_KT:-}" && -f "$PERM_KT" ]]; then
+            echo "Patching null-safe requestedPermissions in $PERM_KT"
+            sed -i 's/return requestedPermissions\.contains(permission)/return requestedPermissions?.contains(permission) ?: false/' "$PERM_KT"
+            grep -n 'requestedPermissions' "$PERM_KT" | head -5 || true
+          else
+            echo "::warning::PermissionsService.kt not found — skip nullability patch"
+          fi
+
       - name: Prefetch SQLite amalgamation
         shell: bash
         run: |
