@@ -24,8 +24,6 @@ function requiresUnsupportedEquipment(ex) {
   const instructions = (ex.instructions ?? []).join(' ');
   if (!UNSUPPORTED_EQUIPMENT.test(instructions)) return false;
 
-  // Keep instructions that explicitly provide a no-equipment alternative;
-  // e.g. floor/mat instead of a bench, or standing on the band instead of an anchor.
   const hasNoEquipmentAlternative =
     /\b(?:ground|floor|mat)\b[^.!?]{0,100}\bor\b[^.!?]{0,100}\b(?:bench|chair|equipment)\b/i.test(
       instructions
@@ -119,7 +117,6 @@ const NAME_TRANSLATIONS = {
   'Neck Flexion': 'Сгибание шеи',
   'Neck Extension': 'Разгибание шеи',
 
-  // Manual batch from review (exact nameEn matches only)
   '3/4 Sit-Up': 'Скручивания на ¾',
   '90/90 Hamstring': 'Разгибание ноги 90/90',
   'Air Bike': 'Велосипед (пресс)',
@@ -146,7 +143,7 @@ const NAME_TRANSLATIONS = {
   'Freehand Jump Squat': 'Приседания с выпрыгиванием',
   'Frog Sit-Ups': 'Скручивания «лягушка»',
   'Glute Kickback': 'Махи ногой назад (ягодичные)',
-  Groiners: 'Шаги стопами к ладоням из планки (гроинеры)',
+  Groiners: 'Альпинист с поворотом (гроинеры)',
   'Handstand Push-Ups': 'Отжимания в стойке на руках',
   'Hip Circles (prone)': 'Круги бедром лёжа на животе',
   'Hip Extension with Bands': 'Разгибание бедра с резинкой',
@@ -187,7 +184,29 @@ const NAME_TRANSLATIONS = {
   'Toe Touchers': 'Складка до носков лёжа',
   'Tuck Crunch': 'Скручивания с подтягиванием колен',
   'Upright Row - With Bands': 'Тяга к подбородку с резинкой',
-  'Wrist Circles': 'Круги кистями'
+  'Wrist Circles': 'Круги кистями',
+
+  'Bottoms Up': 'Подъём таза «bottoms up»',
+  Cocoons: 'Коконы (скручивания)',
+  'Cross Over - With Bands': 'Кроссовер с резинкой',
+  'Flat Bench Leg Pull-In': 'Подтягивание коленей лёжа',
+  'Isometric Neck Exercise - Front And Back': 'Изометрия шеи вперёд-назад',
+  'Isometric Neck Exercise - Sides': 'Изометрия шеи в стороны',
+  'Isometric Wipers': 'Изометрические «дворники»',
+  'Lying Glute': 'Ягодичные лёжа',
+  'Lying Prone Quadriceps': 'Растяжка квадрицепса лёжа на животе',
+  'Oblique Crunches - On The Floor': 'Скручивания на косые на полу',
+  'Push-Ups - Close Triceps Position': 'Отжимания узким хватом (трицепс)',
+  'Pushups (Close and Wide Hand Positions)': 'Отжимания узким и широким хватом',
+  'Rocket Jump': 'Прыжок «ракета»',
+  'Seated Front Deltoid': 'Передняя дельта сидя',
+  'Seated Glute': 'Ягодичные сидя',
+  'Side Jackknife': 'Боковая складка',
+  'Speed Band Overhead Triceps': 'Разгибание на трицепс с резинкой стоя',
+  'Spider Crawl': 'Паучий краул',
+  'Standing Hip Circles': 'Круги бедром стоя',
+  'Standing Towel Triceps Extension': 'Разгибание на трицепс полотенцем стоя',
+  'Stomach Vacuum': 'Вакуум живота'
 };
 
 function translateName(nameEn) {
@@ -267,8 +286,6 @@ for (const ex of filtered) {
   });
 }
 
-// Remove only stale JPGs in this generated asset tree so filtered exercises do
-// not leave unreferenced images behind after a dataset refresh.
 for (const dirEntry of fs.readdirSync(OUT_ASSETS_DIR, { withFileTypes: true })) {
   if (!dirEntry.isDirectory()) continue;
   const exerciseDir = path.join(OUT_ASSETS_DIR, dirEntry.name);
