@@ -146,7 +146,7 @@ const NAME_TRANSLATIONS = {
   'Freehand Jump Squat': 'Приседания с выпрыгиванием',
   'Frog Sit-Ups': 'Скручивания «лягушка»',
   'Glute Kickback': 'Махи ногой назад (ягодичные)',
-  Groiners: 'Альпинист с поворотом (гроинеры)',
+  Groiners: 'Шаги стопами к ладоням из планки (гроинеры)',
   'Handstand Push-Ups': 'Отжимания в стойке на руках',
   'Hip Circles (prone)': 'Круги бедром лёжа на животе',
   'Hip Extension with Bands': 'Разгибание бедра с резинкой',

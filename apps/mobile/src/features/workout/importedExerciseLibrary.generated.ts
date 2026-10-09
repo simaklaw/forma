@@ -780,7 +780,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-groiners",
     "nameEn": "Groiners",
-    "nameRu": "Альпинист с поворотом (гроинеры)",
+    "nameRu": "Шаги стопами к ладоням из планки (гроинеры)",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "intermediate",
