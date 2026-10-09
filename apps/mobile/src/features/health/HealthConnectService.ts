@@ -156,7 +156,7 @@ export class HealthConnectService {
           }
         }
       ]);
-      log.info('writeWeightKg ok', { weightKg });
+      log.info('writeWeightKg ok');
       return true;
     } catch (err) {
       log.debug('writeWeightKg swallowed', {
