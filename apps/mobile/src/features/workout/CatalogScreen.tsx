@@ -14,6 +14,7 @@ import {
   type Equipment
 } from './catalogBrowser';
 import ExerciseDetailModal from './ExerciseDetailModal';
+import ImportedLibraryPanel from './ImportedLibraryPanel';
 import { favoriteKey, loadFavorites, loadRecent, parseFavoriteKey } from './exerciseFavorites';
 import {
   clearReplaceTarget,
@@ -45,6 +46,7 @@ export default function CatalogScreen() {
   const [recentKeys, setRecentKeys] = useState<string[]>([]);
   const [selected, setSelected] = useState<CatalogItem | null>(null);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [catalogScope, setCatalogScope] = useState<'plans' | 'library'>('plans');
   const [replaceTarget, setReplaceTargetState] = useState<ReplaceTarget | null>(getReplaceTarget());
 
   useEffect(() => subscribeReplaceTarget(() => setReplaceTargetState(getReplaceTarget())), []);
@@ -120,7 +122,11 @@ export default function CatalogScreen() {
       <ScreenHeader
         eyebrow="Библиотека"
         title="Каталог"
-        subtitle={`Офлайн · дом · ${filtered.length} из ${items.length}`}
+        subtitle={
+          catalogScope === 'library'
+            ? 'Справочник · bodyweight / резинки'
+            : `Офлайн · дом · ${filtered.length} из ${items.length}`
+        }
       />
 
       {replaceTarget ? (
@@ -147,6 +153,38 @@ export default function CatalogScreen() {
         </View>
       ) : null}
 
+      <View style={styles.modeTabs} accessibilityRole="tablist">
+        {(
+          [
+            { id: 'plans' as const, label: 'Планы' },
+            { id: 'library' as const, label: 'Справочник' }
+          ] as const
+        ).map((item) => {
+          const active = catalogScope === item.id;
+          return (
+            <TouchableOpacity
+              key={item.id}
+              onPress={() => setCatalogScope(item.id)}
+              style={[
+                styles.modeTab,
+                { borderColor: colors.lineStrong, backgroundColor: colors.panel },
+                active && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+              ]}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: active }}
+            >
+              <Text style={[styles.modeText, { color: active ? colors.lime : colors.paperDim }]}>
+                {item.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      {catalogScope === 'library' ? (
+        <ImportedLibraryPanel />
+      ) : (
+      <>
       {SHOW_GYM_MODE_TOGGLE && (
         <View style={styles.modeTabs} accessibilityRole="tablist">
           {(
@@ -363,6 +401,8 @@ export default function CatalogScreen() {
         keyboardShouldPersistTaps="handled"
       />
 
+      </>
+      )}
       <ExerciseDetailModal
         item={selected}
         visible={selected != null}
