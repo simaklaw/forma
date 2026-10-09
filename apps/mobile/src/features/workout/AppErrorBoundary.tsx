@@ -10,7 +10,7 @@ type State = { error: Error | null };
 
 const LAST_ERROR_KEY = 'fitpulse_last_error';
 
-class WorkoutErrorBoundaryView extends Component<ViewProps, State> {
+class AppErrorBoundaryView extends Component<ViewProps, State> {
   state: State = { error: null };
 
   static getDerivedStateFromError(error: Error): State {
@@ -47,10 +47,10 @@ class WorkoutErrorBoundaryView extends Component<ViewProps, State> {
   }
 }
 
-export function WorkoutErrorBoundary({ children }: Props) {
+export function AppErrorBoundary({ children }: Props) {
   const colors = useThemeColors();
   const styles = createStyles(colors);
-  return <WorkoutErrorBoundaryView styles={styles}>{children}</WorkoutErrorBoundaryView>;
+  return <AppErrorBoundaryView styles={styles}>{children}</AppErrorBoundaryView>;
 }
 
 export async function readLastError(): Promise<string> {

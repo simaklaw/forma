@@ -15,6 +15,21 @@ module.exports = {
   ignorePatterns: ['web-prototype/', 'node_modules/'],
   rules: {
     'import/order': 'off',
-    'import/no-restricted-paths': ['error', { zones: featureZones }]
+    'import/no-restricted-paths': ['error', { zones: featureZones }],
+    'no-restricted-imports': [
+      'error',
+      {
+        paths: [
+          {
+            name: '@forma/core',
+            importNames: ['useFormaStore'],
+            message:
+              'useFormaStore is web-only (apps/web). Mobile uses useFitPulseStore ' +
+              '(apps/mobile/src/state/useFitPulseStore.ts) as the single source of ' +
+              'truth for profile/biometrics/nutrition. See packages/core/src/state/README.md.'
+          }
+        ]
+      }
+    ]
   }
 };

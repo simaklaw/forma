@@ -11,7 +11,7 @@ import { resolveColors } from '@/core/theme/tokens';
 import { useThemeStore } from '@/state/useThemeStore';
 import RootNavigator from '@/navigation/RootNavigator';
 import OnboardingScreen from '@/features/onboarding/OnboardingScreen';
-import { WorkoutErrorBoundary } from '@/features/workout/WorkoutErrorBoundary';
+import { AppErrorBoundary } from '@/features/workout/AppErrorBoundary';
 import { LlamaLocalAITrainer } from '@/ai/LlamaLocalAITrainer';
 import { setMobileTrainerProgress } from '@/ai/trainerProgress';
 import {
@@ -99,9 +99,9 @@ export default function App() {
       <SafeAreaProvider>
         <StatusBar style={themeMode === 'light' ? 'dark' : 'light'} />
         {complete ? (
-          <WorkoutErrorBoundary>
+          <AppErrorBoundary>
             <RootNavigator />
-          </WorkoutErrorBoundary>
+          </AppErrorBoundary>
         ) : (
           <OnboardingScreen />
         )}
