@@ -1,5 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  FlatList,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { MUSCLE_LABELS, type MuscleKey } from '@/components/MuscleMap';
@@ -52,7 +60,10 @@ export default function CatalogScreen() {
   useEffect(() => subscribeReplaceTarget(() => setReplaceTargetState(getReplaceTarget())), []);
 
   useEffect(() => {
-    if (replaceTarget) setMode(replaceTarget.mode);
+    if (replaceTarget) {
+      setMode(replaceTarget.mode);
+      setCatalogScope('plans');
+    }
   }, [replaceTarget]);
 
   const refreshLists = useCallback(async () => {
@@ -161,17 +172,25 @@ export default function CatalogScreen() {
           ] as const
         ).map((item) => {
           const active = catalogScope === item.id;
+          const disabled = Boolean(replaceTarget && item.id === 'library');
           return (
             <TouchableOpacity
               key={item.id}
-              onPress={() => setCatalogScope(item.id)}
+              onPress={() => {
+                if (!disabled) setCatalogScope(item.id);
+              }}
+              disabled={disabled}
               style={[
                 styles.modeTab,
                 { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                active && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                active && { borderColor: colors.lime, backgroundColor: colors.limeDim },
+                disabled && { opacity: 0.5 }
               ]}
               accessibilityRole="tab"
-              accessibilityState={{ selected: active }}
+              accessibilityState={{ selected: active, disabled }}
+              accessibilityHint={
+                disabled ? 'Завершите или отмените замену, чтобы открыть справочник.' : undefined
+              }
             >
               <Text style={[styles.modeText, { color: active ? colors.lime : colors.paperDim }]}>
                 {item.label}
@@ -184,224 +203,237 @@ export default function CatalogScreen() {
       {catalogScope === 'library' ? (
         <ImportedLibraryPanel />
       ) : (
-      <>
-      {SHOW_GYM_MODE_TOGGLE && (
-        <View style={styles.modeTabs} accessibilityRole="tablist">
-          {(
-            [
-              { id: 'gym' as const, label: 'Зал', count: gymCount },
-              { id: 'home' as const, label: 'Дом', count: homeCount }
-            ] as const
-          ).map((item) => {
-            const active = mode === item.id;
-            return (
-              <TouchableOpacity
-                key={item.id}
-                onPress={() => changeMode(item.id)}
-                style={[
-                  styles.modeTab,
-                  { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                  active && { borderColor: colors.lime, backgroundColor: colors.limeDim }
-                ]}
-                accessibilityRole="tab"
-                accessibilityState={{ selected: active }}
-              >
-                <Text style={[styles.modeText, { color: active ? colors.lime : colors.paperDim }]}>
-                  {item.label}
-                </Text>
-                <Text style={[styles.modeCount, { color: active ? colors.lime : colors.paperFaint }]}>
-                  {item.count}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      )}
-      <TextInput
-        value={query}
-        onChangeText={setQuery}
-        placeholder="Найти упражнение или группу мышц"
-        placeholderTextColor={colors.paperFaint}
-        style={[
-          styles.search,
-          { backgroundColor: colors.panel, borderColor: colors.lineStrong, color: colors.paper }
-        ]}
-        accessibilityLabel="Поиск упражнений"
-        returnKeyType="search"
-      />
-      <View style={styles.favRow}>
-        <TouchableOpacity
-          onPress={() => setShowFavoritesOnly((value) => !value)}
-          style={[
-            styles.chip,
-            { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-            showFavoritesOnly && { borderColor: colors.lime, backgroundColor: colors.limeDim }
-          ]}
-          accessibilityRole="button"
-          accessibilityState={{ selected: showFavoritesOnly }}
-          accessibilityLabel="Показать только избранное"
-        >
-          <Text
+        <>
+          {SHOW_GYM_MODE_TOGGLE && (
+            <View style={styles.modeTabs} accessibilityRole="tablist">
+              {(
+                [
+                  { id: 'gym' as const, label: 'Зал', count: gymCount },
+                  { id: 'home' as const, label: 'Дом', count: homeCount }
+                ] as const
+              ).map((item) => {
+                const active = mode === item.id;
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    onPress={() => changeMode(item.id)}
+                    style={[
+                      styles.modeTab,
+                      { borderColor: colors.lineStrong, backgroundColor: colors.panel },
+                      active && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                    ]}
+                    accessibilityRole="tab"
+                    accessibilityState={{ selected: active }}
+                  >
+                    <Text
+                      style={[styles.modeText, { color: active ? colors.lime : colors.paperDim }]}
+                    >
+                      {item.label}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.modeCount,
+                        { color: active ? colors.lime : colors.paperFaint }
+                      ]}
+                    >
+                      {item.count}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Найти упражнение или группу мышц"
+            placeholderTextColor={colors.paperFaint}
             style={[
-              styles.chipText,
-              { color: showFavoritesOnly ? colors.lime : colors.paperDim }
+              styles.search,
+              { backgroundColor: colors.panel, borderColor: colors.lineStrong, color: colors.paper }
             ]}
-          >
-            ★ Избранное{favoriteItems.length ? ` (${favoriteItems.length})` : ''}
-          </Text>
-        </TouchableOpacity>
-      </View>
+            accessibilityLabel="Поиск упражнений"
+            returnKeyType="search"
+          />
+          <View style={styles.favRow}>
+            <TouchableOpacity
+              onPress={() => setShowFavoritesOnly((value) => !value)}
+              style={[
+                styles.chip,
+                { borderColor: colors.lineStrong, backgroundColor: colors.panel },
+                showFavoritesOnly && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+              ]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: showFavoritesOnly }}
+              accessibilityLabel="Показать только избранное"
+            >
+              <Text
+                style={[
+                  styles.chipText,
+                  { color: showFavoritesOnly ? colors.lime : colors.paperDim }
+                ]}
+              >
+                ★ Избранное{favoriteItems.length ? ` (${favoriteItems.length})` : ''}
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-      {recentItems.length > 0 && !showFavoritesOnly && !query && !muscle && !equipment ? (
-        <View style={styles.recentBlock}>
-          <Text style={[styles.recentLabel, { color: colors.paperFaint }]}>НЕДАВНИЕ</Text>
+          {recentItems.length > 0 && !showFavoritesOnly && !query && !muscle && !equipment ? (
+            <View style={styles.recentBlock}>
+              <Text style={[styles.recentLabel, { color: colors.paperFaint }]}>НЕДАВНИЕ</Text>
+              <FlatList
+                data={recentItems}
+                horizontal
+                keyExtractor={(item) => `recent-${item.mode}-${item.id}`}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.chips}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    onPress={() => setSelected(item)}
+                    style={[
+                      styles.recentChip,
+                      { borderColor: colors.lineStrong, backgroundColor: colors.panel }
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${item.name}. Недавнее упражнение`}
+                  >
+                    <Text style={[styles.chipText, { color: colors.paper }]} numberOfLines={1}>
+                      {item.name}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+          ) : null}
+
           <FlatList
-            data={recentItems}
+            data={equipmentOptions}
             horizontal
-            keyExtractor={(item) => `recent-${item.mode}-${item.id}`}
+            keyExtractor={(item) => item}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.chips}
-            renderItem={({ item }) => (
+            ListHeaderComponent={
               <TouchableOpacity
-                onPress={() => setSelected(item)}
+                onPress={() => setEquipment(null)}
                 style={[
-                  styles.recentChip,
-                  { borderColor: colors.lineStrong, backgroundColor: colors.panel }
+                  styles.chip,
+                  { borderColor: colors.lineStrong, backgroundColor: colors.panel },
+                  equipment === null && {
+                    borderColor: colors.lime,
+                    backgroundColor: colors.limeDim
+                  }
                 ]}
                 accessibilityRole="button"
-                accessibilityLabel={`${item.name}. Недавнее упражнение`}
+                accessibilityState={{ selected: equipment === null }}
+                accessibilityLabel="Все виды оборудования"
               >
-                <Text style={[styles.chipText, { color: colors.paper }]} numberOfLines={1}>
-                  {item.name}
+                <Text
+                  style={[
+                    styles.chipText,
+                    { color: equipment === null ? colors.lime : colors.paperDim }
+                  ]}
+                >
+                  Всё оборудование
                 </Text>
               </TouchableOpacity>
-            )}
+            }
+            renderItem={({ item }) => {
+              const active = equipment === item;
+              return (
+                <TouchableOpacity
+                  onPress={() => setEquipment(active ? null : item)}
+                  style={[
+                    styles.chip,
+                    { borderColor: colors.lineStrong, backgroundColor: colors.panel },
+                    active && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={EQUIPMENT_LABELS[item]}
+                >
+                  <Text
+                    style={[styles.chipText, { color: active ? colors.lime : colors.paperDim }]}
+                  >
+                    {EQUIPMENT_LABELS[item]}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }}
           />
-        </View>
-      ) : null}
-
-      <FlatList
-        data={equipmentOptions}
-        horizontal
-        keyExtractor={(item) => item}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.chips}
-        ListHeaderComponent={
-          <TouchableOpacity
-            onPress={() => setEquipment(null)}
-            style={[
-              styles.chip,
-              { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-              equipment === null && { borderColor: colors.lime, backgroundColor: colors.limeDim }
-            ]}
-            accessibilityRole="button"
-            accessibilityState={{ selected: equipment === null }}
-            accessibilityLabel="Все виды оборудования"
-          >
-            <Text
-              style={[
-                styles.chipText,
-                { color: equipment === null ? colors.lime : colors.paperDim }
-              ]}
-            >
-              Всё оборудование
-            </Text>
-          </TouchableOpacity>
-        }
-        renderItem={({ item }) => {
-          const active = equipment === item;
-          return (
-            <TouchableOpacity
-              onPress={() => setEquipment(active ? null : item)}
-              style={[
-                styles.chip,
-                { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                active && { borderColor: colors.lime, backgroundColor: colors.limeDim }
-              ]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-              accessibilityLabel={EQUIPMENT_LABELS[item]}
-            >
-              <Text style={[styles.chipText, { color: active ? colors.lime : colors.paperDim }]}>
-                {EQUIPMENT_LABELS[item]}
-              </Text>
-            </TouchableOpacity>
-          );
-        }}
-      />
-      <FlatList
-        data={muscles}
-        horizontal
-        keyExtractor={(item) => item}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.chips}
-        renderItem={({ item }) => {
-          const active = muscle === item;
-          return (
-            <TouchableOpacity
-              onPress={() => setMuscle(active ? null : item)}
-              style={[
-                styles.chip,
-                { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                active && { borderColor: colors.cyan, backgroundColor: colors.limeDim }
-              ]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-            >
-              <Text style={[styles.chipText, { color: active ? colors.cyan : colors.paperDim }]}>
-                {MUSCLE_LABELS[item]}
-              </Text>
-            </TouchableOpacity>
-          );
-        }}
-      />
-      <FlatList
-        data={filtered}
-        keyExtractor={(item) => `${item.mode}-${item.id}-${item.dayName}`}
-        contentContainerStyle={styles.list}
-        renderItem={({ item, index }) => {
-          const isFav = favoriteKeys.includes(favoriteKey(item.mode, item.id));
-          return (
-            <TouchableOpacity
-              onPress={() => setSelected(item)}
-              style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}
-              accessibilityRole="button"
-              accessibilityLabel={`${item.name}. Открыть детали`}
-            >
-              <View style={styles.cardTop}>
-                <Text style={[styles.index, { color: colors.lime }]}>
-                  {String(index + 1).padStart(2, '0')}
-                </Text>
-                <View style={styles.cardCopy}>
-                  <Text style={[styles.name, { color: colors.paper }]}>
-                    {isFav ? '★ ' : ''}
-                    {item.name}
+          <FlatList
+            data={muscles}
+            horizontal
+            keyExtractor={(item) => item}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chips}
+            renderItem={({ item }) => {
+              const active = muscle === item;
+              return (
+                <TouchableOpacity
+                  onPress={() => setMuscle(active ? null : item)}
+                  style={[
+                    styles.chip,
+                    { borderColor: colors.lineStrong, backgroundColor: colors.panel },
+                    active && { borderColor: colors.cyan, backgroundColor: colors.limeDim }
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                >
+                  <Text
+                    style={[styles.chipText, { color: active ? colors.cyan : colors.paperDim }]}
+                  >
+                    {MUSCLE_LABELS[item]}
                   </Text>
-                  <Text style={[styles.meta, { color: colors.paperFaint }]}>
-                    {item.dayName} · {EQUIPMENT_LABELS[inferEquipment(item)]}
+                </TouchableOpacity>
+              );
+            }}
+          />
+          <FlatList
+            data={filtered}
+            keyExtractor={(item) => `${item.mode}-${item.id}-${item.dayName}`}
+            contentContainerStyle={styles.list}
+            renderItem={({ item, index }) => {
+              const isFav = favoriteKeys.includes(favoriteKey(item.mode, item.id));
+              return (
+                <TouchableOpacity
+                  onPress={() => setSelected(item)}
+                  style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${item.name}. Открыть детали`}
+                >
+                  <View style={styles.cardTop}>
+                    <Text style={[styles.index, { color: colors.lime }]}>
+                      {String(index + 1).padStart(2, '0')}
+                    </Text>
+                    <View style={styles.cardCopy}>
+                      <Text style={[styles.name, { color: colors.paper }]}>
+                        {isFav ? '★ ' : ''}
+                        {item.name}
+                      </Text>
+                      <Text style={[styles.meta, { color: colors.paperFaint }]}>
+                        {item.dayName} · {EQUIPMENT_LABELS[inferEquipment(item)]}
+                      </Text>
+                    </View>
+                    <Text style={[styles.load, { color: colors.paperDim }]}>
+                      {item.workingWeight > 0 ? `${item.workingWeight} кг` : 'свой вес'}
+                    </Text>
+                  </View>
+                  <Text style={[styles.muscles, { color: colors.paperDim }]}>
+                    {item.targetMuscles.map((key) => MUSCLE_LABELS[key]).join(' · ')}
                   </Text>
-                </View>
-                <Text style={[styles.load, { color: colors.paperDim }]}>
-                  {item.workingWeight > 0 ? `${item.workingWeight} кг` : 'свой вес'}
-                </Text>
-              </View>
-              <Text style={[styles.muscles, { color: colors.paperDim }]}>
-                {item.targetMuscles.map((key) => MUSCLE_LABELS[key]).join(' · ')}
+                </TouchableOpacity>
+              );
+            }}
+            ListEmptyComponent={
+              <Text style={[styles.empty, { color: colors.paperFaint }]}>
+                {showFavoritesOnly
+                  ? 'В избранном пока пусто. Откройте упражнение и нажмите «В избранное».'
+                  : 'Ничего не найдено. Измените запрос или фильтр.'}
               </Text>
-            </TouchableOpacity>
-          );
-        }}
-        ListEmptyComponent={
-          <Text style={[styles.empty, { color: colors.paperFaint }]}>
-            {showFavoritesOnly
-              ? 'В избранном пока пусто. Откройте упражнение и нажмите «В избранное».'
-              : 'Ничего не найдено. Измените запрос или фильтр.'}
-          </Text>
-        }
-        keyboardShouldPersistTaps="handled"
-      />
-
-      </>
+            }
+            keyboardShouldPersistTaps="handled"
+          />
+        </>
       )}
       <ExerciseDetailModal
         item={selected}

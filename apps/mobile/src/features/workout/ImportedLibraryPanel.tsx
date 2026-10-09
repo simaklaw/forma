@@ -40,9 +40,8 @@ export default function ImportedLibraryPanel() {
   const filtered = useMemo(() => {
     const q = query.trim().toLocaleLowerCase('ru-RU');
     return IMPORTED_EXERCISE_LIBRARY.filter((ex) => {
-      const hay = `${ex.nameEn} ${ex.nameRu ?? ''} ${ex.primaryMuscles.join(' ')}`.toLocaleLowerCase(
-        'ru-RU'
-      );
+      const hay =
+        `${ex.nameEn} ${ex.nameRu ?? ''} ${ex.primaryMuscles.join(' ')}`.toLocaleLowerCase('ru-RU');
       const matchesQuery = !q || hay.includes(q);
       const matchesCategory = !category || ex.category === category;
       return matchesQuery && matchesCategory;
@@ -104,6 +103,7 @@ export default function ImportedLibraryPanel() {
         data={filtered}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        keyboardShouldPersistTaps="handled"
         renderItem={({ item }) => {
           const thumbKey = item.imageKeys[0];
           const src = thumbKey ? IMPORTED_EXERCISE_IMAGES[thumbKey] : undefined;
@@ -141,7 +141,11 @@ export default function ImportedLibraryPanel() {
         }}
       />
 
-      <Modal visible={selected != null} animationType="slide" onRequestClose={() => setSelected(null)}>
+      <Modal
+        visible={selected != null}
+        animationType="slide"
+        onRequestClose={() => setSelected(null)}
+      >
         {selected ? (
           <View style={[styles.modalRoot, { backgroundColor: colors.ink }]}>
             <View style={styles.modalHeader}>
@@ -150,13 +154,12 @@ export default function ImportedLibraryPanel() {
               </TouchableOpacity>
             </View>
             <ScrollView contentContainerStyle={styles.modalBody}>
-              {selected.imageKeys[0] && IMPORTED_EXERCISE_IMAGES[selected.imageKeys[0]] ? (
-                <Image
-                  source={IMPORTED_EXERCISE_IMAGES[selected.imageKeys[0]]}
-                  style={styles.hero}
-                  resizeMode="contain"
-                />
-              ) : null}
+              {selected.imageKeys.map((imageKey) => {
+                const source = IMPORTED_EXERCISE_IMAGES[imageKey];
+                return source ? (
+                  <Image key={imageKey} source={source} style={styles.hero} resizeMode="contain" />
+                ) : null;
+              })}
               <View style={styles.titleRow}>
                 <Text style={[styles.modalTitle, { color: colors.paper }]}>
                   {displayName(selected)}

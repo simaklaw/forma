@@ -142,31 +142,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Alternate_Heel_Touchers.json"
   },
   {
-    "id": "lib-back-flyes-with-bands",
-    "nameEn": "Back Flyes - With Bands",
-    "nameRu": null,
-    "category": "arms",
-    "equipment": "bands",
-    "level": "beginner",
-    "primaryMuscles": [
-      "shoulders"
-    ],
-    "instructionsEn": [
-      "Run a band around a stationary post like that of a squat rack.",
-      "Grab the band by the handles and stand back so that the tension in the band rises.",
-      "Extend and lift the arms straight in front of you. Tip: Your arms should be straight and parallel to the floor while perpendicular to your torso. Your feet should be firmly planted on the floor spread at shoulder width. This will be your starting position.",
-      "As you exhale, move your arms to the sides and back. Keep your arms extended and parallel to the floor. Continue the movement until the arms are extended to your sides.",
-      "After a pause, go back to the original position as you inhale.",
-      "Repeat for the recommended amount of repetitions."
-    ],
-    "imageKeys": [
-      "back-flyes-with-bands-0",
-      "back-flyes-with-bands-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Back_Flyes_-_With_Bands.json"
-  },
-  {
     "id": "lib-band-good-morning",
     "nameEn": "Band Good Morning",
     "nameRu": null,
@@ -259,101 +234,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Band_Pull_Apart.json"
   },
   {
-    "id": "lib-band-skull-crusher",
-    "nameEn": "Band Skull Crusher",
-    "nameRu": null,
-    "category": "arms",
-    "equipment": "bands",
-    "level": "beginner",
-    "primaryMuscles": [
-      "triceps"
-    ],
-    "instructionsEn": [
-      "Secure a band to the base of a rack or the bench. Lay on the bench so that the band is lined up with your head.",
-      "Take hold of the band, raising your elbows so that the upper arm is perpendicular to the floor. With the elbow flexed, the band should be above your head. This will be your starting position.",
-      "Extend through the elbow to straighten your arm, keeping your upper arm in place. Pause at the top of the motion, and return to the starting position."
-    ],
-    "imageKeys": [
-      "band-skull-crusher-0",
-      "band-skull-crusher-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Band_Skull_Crusher.json"
-  },
-  {
-    "id": "lib-bench-dips",
-    "nameEn": "Bench Dips",
-    "nameRu": null,
-    "category": "arms",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "triceps"
-    ],
-    "instructionsEn": [
-      "For this exercise you will need to place a bench behind your back. With the bench perpendicular to your body, and while looking away from it, hold on to the bench on its edge with the hands fully extended, separated at shoulder width. The legs will be extended forward, bent at the waist and perpendicular to your torso. This will be your starting position.",
-      "Slowly lower your body as you inhale by bending at the elbows until you lower yourself far enough to where there is an angle slightly smaller than 90 degrees between the upper arm and the forearm. Tip: Keep the elbows as close as possible throughout the movement. Forearms should always be pointing down.",
-      "Using your triceps to bring your torso up again, lift yourself back to the starting position.",
-      "Repeat for the recommended amount of repetitions."
-    ],
-    "imageKeys": [
-      "bench-dips-0",
-      "bench-dips-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Bench_Dips.json"
-  },
-  {
-    "id": "lib-bench-jump",
-    "nameEn": "Bench Jump",
-    "nameRu": null,
-    "category": "legs",
-    "equipment": "bodyweight",
-    "level": "intermediate",
-    "primaryMuscles": [
-      "quadriceps"
-    ],
-    "instructionsEn": [
-      "Begin with a box or bench 1-2 feet in front of you. Stand with your feet shoulder width apart. This will be your starting position.",
-      "Perform a short squat in preparation for the jump; swing your arms behind you.",
-      "Rebound out of this position, extending through the hips, knees, and ankles to jump as high as possible. Swing your arms forward and up.",
-      "Jump over the bench, landing with the knees bent, absorbing the impact through the legs.",
-      "Turn around and face the opposite direction, then jump back over the bench."
-    ],
-    "imageKeys": [
-      "bench-jump-0",
-      "bench-jump-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Bench_Jump.json"
-  },
-  {
-    "id": "lib-bench-press-with-bands",
-    "nameEn": "Bench Press - With Bands",
-    "nameRu": null,
-    "category": "chest",
-    "equipment": "bands",
-    "level": "beginner",
-    "primaryMuscles": [
-      "chest"
-    ],
-    "instructionsEn": [
-      "Using a flat bench secure a band under the leg of the bench that is nearest to your head.",
-      "Once the band is secure, grab it by both handles and lie down on the bench.",
-      "Extend your arms so that you are holding the band handles in front of you at shoulder width.",
-      "Once at shoulder width, rotate your wrists forward so that the palms of your hands are facing away from you. This will be your starting position.",
-      "Bring down the handles slowly until your elbow forms a 90 degree angle. Keep full control at all times.",
-      "As you breathe out, bring the handles up using your pectoral muscles. Lock your arms in the contracted position, squeeze your chest, hold for a second and then start coming down slowly. Tip: It should take at least twice as long to go down than to come up.",
-      "Repeat the movement for the prescribed amount of repetitions of your training program."
-    ],
-    "imageKeys": [
-      "bench-press-with-bands-0",
-      "bench-press-with-bands-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Bench_Press_-_With_Bands.json"
-  },
-  {
     "id": "lib-bent-knee-hip-raise",
     "nameEn": "Bent-Knee Hip Raise",
     "nameRu": null,
@@ -399,30 +279,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     ],
     "sourceLicense": "Unlicense",
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Body-Up.json"
-  },
-  {
-    "id": "lib-body-tricep-press",
-    "nameEn": "Body Tricep Press",
-    "nameRu": null,
-    "category": "arms",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "triceps"
-    ],
-    "instructionsEn": [
-      "Position a bar in a rack at chest height.",
-      "Standing, take a shoulder width grip on the bar and step a yard or two back, feet together and arms extended so that you are leaning on the bar. This will be your starting position.",
-      "Begin by flexing the elbow, lowering yourself towards the bar.",
-      "Pause, and then reverse the motion by extending the elbows.",
-      "Progress from bodyweight by adding chains over your shoulders."
-    ],
-    "imageKeys": [
-      "body-tricep-press-0",
-      "body-tricep-press-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Body_Tricep_Press.json"
   },
   {
     "id": "lib-bodyweight-squat",
@@ -539,30 +395,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Calf_Raises_-_With_Bands.json"
   },
   {
-    "id": "lib-chin-up",
-    "nameEn": "Chin-Up",
-    "nameRu": "Подтягивания обратным хватом",
-    "category": "back",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "lats"
-    ],
-    "instructionsEn": [
-      "Grab the pull-up bar with the palms facing your torso and a grip closer than the shoulder width.",
-      "As you have both arms extended in front of you holding the bar at the chosen grip width, keep your torso as straight as possible while creating a curvature on your lower back and sticking your chest out. This is your starting position. Tip: Keeping the torso as straight as possible maximizes biceps stimulation while minimizing back involvement.",
-      "As you breathe out, pull your torso up until your head is around the level of the pull-up bar. Concentrate on using the biceps muscles in order to perform the movement. Keep the elbows close to your body. Tip: The upper torso should remain stationary as it moves through space and only the arms should move. The forearms should do no other work other than hold the bar.",
-      "After a second of squeezing the biceps in the contracted position, slowly lower your torso back to the starting position; when your arms are fully extended. Breathe in as you perform this portion of the movement.",
-      "Repeat this motion for the prescribed amount of repetitions."
-    ],
-    "imageKeys": [
-      "chin-up-0",
-      "chin-up-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Chin-Up.json"
-  },
-  {
     "id": "lib-clock-push-up",
     "nameEn": "Clock Push-Up",
     "nameRu": null,
@@ -586,29 +418,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     ],
     "sourceLicense": "Unlicense",
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Clock_Push-Up.json"
-  },
-  {
-    "id": "lib-close-grip-push-up-off-of-a-dumbbell",
-    "nameEn": "Close-Grip Push-Up off of a Dumbbell",
-    "nameRu": null,
-    "category": "arms",
-    "equipment": "bodyweight",
-    "level": "intermediate",
-    "primaryMuscles": [
-      "triceps"
-    ],
-    "instructionsEn": [
-      "Lie on the floor and place your hands on an upright dumbbell. Supporting your weight on your toes and hands, keep your torso rigid and your elbows in with your arms straight. This will be your starting position.",
-      "Lower your body, allowing the elbows to flex while you inhale. Keep your body straight, not allowing your hips to rise or sag.",
-      "Press yourself back up to the starting position by extending the elbows. Breathe out as you perform this step.",
-      "After a pause at the contracted position, repeat the movement for the prescribed amount of repetitions."
-    ],
-    "imageKeys": [
-      "close-grip-push-up-off-of-a-dumbbell-0",
-      "close-grip-push-up-off-of-a-dumbbell-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Close-Grip_Push-Up_off_of_a_Dumbbell.json"
   },
   {
     "id": "lib-cocoons",
@@ -706,32 +515,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Crunch_-_Hands_Overhead.json"
   },
   {
-    "id": "lib-crunch-legs-on-exercise-ball",
-    "nameEn": "Crunch - Legs On Exercise Ball",
-    "nameRu": null,
-    "category": "abs",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "abdominals"
-    ],
-    "instructionsEn": [
-      "Lie flat on your back with your feet resting on an exercise ball and your knees bent at a 90 degree angle.",
-      "Place your feet three to four inches apart and point your toes inward so they touch.",
-      "Place your hands lightly on either side of your head keeping your elbows in. Tip: Don't lock your fingers behind your head.",
-      "Push the small of your back down in the floor in order to better isolate your abdominal muscles. This will be your starting position.",
-      "Begin to roll your shoulders off the floor and continue to push down as hard as you can with your lower back. Your shoulders should come up off the floor only about four inches, and your lower back should remain on the floor. Breathe out as you execute this portion of the movement. Squeeze your abdominals hard at the top of the contraction and hold for a second. Tip: Focus on a slow, controlled movement. Refrain from using momentum at any time.",
-      "Slowly go back down to the starting position as you inhale.",
-      "Repeat for the recommended amount of repetitions."
-    ],
-    "imageKeys": [
-      "crunch-legs-on-exercise-ball-0",
-      "crunch-legs-on-exercise-ball-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Crunch_-_Legs_On_Exercise_Ball.json"
-  },
-  {
     "id": "lib-crunches",
     "nameEn": "Crunches",
     "nameRu": null,
@@ -781,80 +564,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     ],
     "sourceLicense": "Unlicense",
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Dead_Bug.json"
-  },
-  {
-    "id": "lib-decline-crunch",
-    "nameEn": "Decline Crunch",
-    "nameRu": null,
-    "category": "abs",
-    "equipment": "bodyweight",
-    "level": "intermediate",
-    "primaryMuscles": [
-      "abdominals"
-    ],
-    "instructionsEn": [
-      "Secure your legs at the end of the decline bench and lie down.",
-      "Now place your hands lightly on either side of your head keeping your elbows in. Tip: Don't lock your fingers behind your head.",
-      "While pushing the small of your back down in the bench to better isolate your abdominal muscles, begin to roll your shoulders off it.",
-      "Continue to push down as hard as you can with your lower back as you contract your abdominals and exhale. Your shoulders should come up off the bench only about four inches, and your lower back should remain on the bench. At the top of the movement, contract your abdominals hard and keep the contraction for a second. Tip: Focus on slow, controlled movement - don't cheat yourself by using momentum.",
-      "After the one second contraction, begin to come down slowly again to the starting position as you inhale.",
-      "Repeat for the recommended amount of repetitions."
-    ],
-    "imageKeys": [
-      "decline-crunch-0",
-      "decline-crunch-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Decline_Crunch.json"
-  },
-  {
-    "id": "lib-decline-oblique-crunch",
-    "nameEn": "Decline Oblique Crunch",
-    "nameRu": null,
-    "category": "abs",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "abdominals"
-    ],
-    "instructionsEn": [
-      "Secure your legs at the end of the decline bench and slowly lay down on the bench.",
-      "Raise your upper body off the bench until your torso is about 35-45 degrees if measured from the floor.",
-      "Put one hand beside your head and the other on your thigh. This will be your starting position.",
-      "Raise your upper body slowly from the starting position while turning your torso to the left. Continue crunching up as you exhale until your right elbow touches your left knee. Hold this contracted position for a second. Tip: Focus on keeping your abs tight and keeping the movement slow and controlled.",
-      "Lower your body back down slowly to the starting position as you inhale.",
-      "After completing one set on the right for the recommended amount of repetitions, switch to your left side. Tip: Focus on really twisting your torso and feeling the contraction when you are in the up position."
-    ],
-    "imageKeys": [
-      "decline-oblique-crunch-0",
-      "decline-oblique-crunch-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Decline_Oblique_Crunch.json"
-  },
-  {
-    "id": "lib-decline-reverse-crunch",
-    "nameEn": "Decline Reverse Crunch",
-    "nameRu": null,
-    "category": "abs",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "abdominals"
-    ],
-    "instructionsEn": [
-      "Lie on your back on a decline bench and hold on to the top of the bench with both hands. Don't let your body slip down from this position.",
-      "Hold your legs parallel to the floor using your abs to hold them there while keeping your knees and feet together. Tip: Your legs should be fully extended with a slight bend on the knee. This will be your starting position.",
-      "While exhaling, move your legs towards the torso as you roll your pelvis backwards and you raise your hips off the bench. At the end of this movement your knees will be touching your chest.",
-      "Hold the contraction for a second and move your legs back to the starting position while inhaling.",
-      "Repeat for the recommended amount of repetitions."
-    ],
-    "imageKeys": [
-      "decline-reverse-crunch-0",
-      "decline-reverse-crunch-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Decline_Reverse_Crunch.json"
   },
   {
     "id": "lib-dips-triceps-version",
@@ -995,53 +704,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Flat_Bench_Leg_Pull-In.json"
   },
   {
-    "id": "lib-flat-bench-lying-leg-raise",
-    "nameEn": "Flat Bench Lying Leg Raise",
-    "nameRu": null,
-    "category": "abs",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "abdominals"
-    ],
-    "instructionsEn": [
-      "Lie with your back flat on a bench and your legs extended in front of you off the end.",
-      "Place your hands either under your glutes with your palms down or by the sides holding on to the bench. This will be your starting position.",
-      "As you keep your legs extended, straight as possible with your knees slightly bent but locked raise your legs until they make a 90-degree angle with the floor. Exhale as you perform this portion of the movement and hold the contraction at the top for a second.",
-      "Now, as you inhale, slowly lower your legs back down to the starting position."
-    ],
-    "imageKeys": [
-      "flat-bench-lying-leg-raise-0",
-      "flat-bench-lying-leg-raise-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Flat_Bench_Lying_Leg_Raise.json"
-  },
-  {
-    "id": "lib-flutter-kicks",
-    "nameEn": "Flutter Kicks",
-    "nameRu": null,
-    "category": "glutes",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "glutes"
-    ],
-    "instructionsEn": [
-      "On a flat bench lie facedown with the hips on the edge of the bench, the legs straight with toes high off the floor and with the arms on top of the bench holding on to the front edge.",
-      "Squeeze your glutes and hamstrings and straighten the legs until they are level with the hips. This will be your starting position.",
-      "Start the movement by lifting the left leg higher than the right leg.",
-      "Then lower the left leg as you lift the right leg.",
-      "Continue alternating in this manner (as though you are doing a flutter kick in water) until you have done the recommended amount of repetitions for each leg. Make sure that you keep a controlled movement at all times. Tip: You will breathe normally as you perform this movement."
-    ],
-    "imageKeys": [
-      "flutter-kicks-0",
-      "flutter-kicks-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Flutter_Kicks.json"
-  },
-  {
     "id": "lib-freehand-jump-squat",
     "nameEn": "Freehand Jump Squat",
     "nameRu": null,
@@ -1093,27 +755,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Frog_Sit-Ups.json"
   },
   {
-    "id": "lib-front-leg-raises",
-    "nameEn": "Front Leg Raises",
-    "nameRu": null,
-    "category": "legs",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "hamstrings"
-    ],
-    "instructionsEn": [
-      "Stand next to a chair or other support, holding on with one hand.",
-      "Swing your leg forward, keeping the leg straight. Continue with a downward swing, bringing the leg as far back as your flexibility allows. Repeat 5-10 times, and then switch legs."
-    ],
-    "imageKeys": [
-      "front-leg-raises-0",
-      "front-leg-raises-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Front_Leg_Raises.json"
-  },
-  {
     "id": "lib-glute-kickback",
     "nameEn": "Glute Kickback",
     "nameRu": null,
@@ -1135,30 +776,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     ],
     "sourceLicense": "Unlicense",
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Glute_Kickback.json"
-  },
-  {
-    "id": "lib-gorilla-chin-crunch",
-    "nameEn": "Gorilla Chin/Crunch",
-    "nameRu": null,
-    "category": "abs",
-    "equipment": "bodyweight",
-    "level": "intermediate",
-    "primaryMuscles": [
-      "abdominals"
-    ],
-    "instructionsEn": [
-      "Hang from a chin-up bar using an underhand grip (palms facing you) that is slightly wider than shoulder width.",
-      "Now bend your knees at a 90 degree angle so that the calves are parallel to the floor while the thighs remain perpendicular to it. This will be your starting position.",
-      "As you exhale, pull yourself up while crunching your knees up at the same time until your knees are at chest level. You will stop going up as soon as your nose is at the same level as the bar. Tip: When you get to this point you should also be finishing the crunch at the same time.",
-      "Slowly start to inhale as you return to the starting position.",
-      "Repeat for the recommended amount of repetitions."
-    ],
-    "imageKeys": [
-      "gorilla-chin-crunch-0",
-      "gorilla-chin-crunch-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Gorilla_Chin_Crunch.json"
   },
   {
     "id": "lib-groiners",
@@ -1205,53 +822,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     ],
     "sourceLicense": "Unlicense",
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Handstand_Push-Ups.json"
-  },
-  {
-    "id": "lib-hanging-leg-raise",
-    "nameEn": "Hanging Leg Raise",
-    "nameRu": "Подъём ног в висе",
-    "category": "abs",
-    "equipment": "bodyweight",
-    "level": "expert",
-    "primaryMuscles": [
-      "abdominals"
-    ],
-    "instructionsEn": [
-      "Hang from a chin-up bar with both arms extended at arms length in top of you using either a wide grip or a medium grip. The legs should be straight down with the pelvis rolled slightly backwards. This will be your starting position.",
-      "Raise your legs until the torso makes a 90-degree angle with the legs. Exhale as you perform this movement and hold the contraction for a second or so.",
-      "Go back slowly to the starting position as you breathe in.",
-      "Repeat for the recommended amount of repetitions."
-    ],
-    "imageKeys": [
-      "hanging-leg-raise-0",
-      "hanging-leg-raise-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Hanging_Leg_Raise.json"
-  },
-  {
-    "id": "lib-hanging-pike",
-    "nameEn": "Hanging Pike",
-    "nameRu": null,
-    "category": "abs",
-    "equipment": "bodyweight",
-    "level": "expert",
-    "primaryMuscles": [
-      "abdominals"
-    ],
-    "instructionsEn": [
-      "Hang from a chin-up bar with your legs and feet together using an overhand grip (palms facing away from you) that is slightly wider than shoulder width. Tip: You may use wrist wraps in order to facilitate holding on to the bar.",
-      "Now bend your knees at a 90 degree angle and bring the upper legs forward so that the calves are perpendicular to the floor while the thighs remain parallel to it. This will be your starting position.",
-      "Pull your legs up as you exhale until you almost touch your shins with the bar above you. Tip: Try to straighten your legs as much as possible while at the top.",
-      "Lower your legs as slowly as possible until you reach the starting position. Tip: Avoid swinging and using momentum at all times.",
-      "Repeat for the recommended amount of repetitions."
-    ],
-    "imageKeys": [
-      "hanging-pike-0",
-      "hanging-pike-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Hanging_Pike.json"
   },
   {
     "id": "lib-hip-circles-prone",
@@ -1322,53 +892,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Hip_Flexion_with_Band.json"
   },
   {
-    "id": "lib-hip-lift-with-band",
-    "nameEn": "Hip Lift with Band",
-    "nameRu": null,
-    "category": "glutes",
-    "equipment": "bands",
-    "level": "beginner",
-    "primaryMuscles": [
-      "glutes"
-    ],
-    "instructionsEn": [
-      "After choosing a suitable band, lay down in the middle of the rack, after securing the band on either side of you. If your rack doesn't have pegs, the band can be secured using heavy dumbbells or similar objects, just ensure they won't move.",
-      "Adjust your position so that the band is directly over your hips. Bend your knees and place your feet flat on the floor. Your hands can be on the floor or holding the band in position.",
-      "Keeping your shoulders on the ground, drive through your heels to raise your hips, pushing into the band as high as you can.",
-      "Pause at the top of the motion, and return to the starting position."
-    ],
-    "imageKeys": [
-      "hip-lift-with-band-0",
-      "hip-lift-with-band-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Hip_Lift_with_Band.json"
-  },
-  {
-    "id": "lib-hyperextensions-with-no-hyperextension-bench",
-    "nameEn": "Hyperextensions With No Hyperextension Bench",
-    "nameRu": null,
-    "category": "back",
-    "equipment": "bodyweight",
-    "level": "intermediate",
-    "primaryMuscles": [
-      "lower back"
-    ],
-    "instructionsEn": [
-      "With someone holding down your legs, slide yourself down to the edge a flat bench until your hips hang off the end of the bench. Tip: Your entire upper body should be hanging down towards the floor. Also, you will be in the same position as if you were on a hyperextension bench but the range of motion will be shorter due to the height of the flat bench vs. that of the hyperextension bench.",
-      "With your body straight, cross your arms in front of you (my preference) or behind your head. This will be your starting position. Tip: You can also hold a weight plate for extra resistance in front of you under your crossed arms.",
-      "Start bending forward slowly at the waist as far as you can while keeping your back flat. Inhale as you perform this movement. Keep moving forward until you almost touch the floor or you feel a nice stretch on the hamstrings (whichever comes first). Tip: Never round the back as you perform this exercise.",
-      "Slowly raise your torso back to the initial position as you exhale. Tip: Avoid the temptation to arch your back past a straight line. Also, do not swing the torso at any time in order to protect the back from injury.",
-      "Repeat for the recommended amount of repetitions."
-    ],
-    "imageKeys": [
-      "hyperextensions-with-no-hyperextension-bench-0",
-      "hyperextensions-with-no-hyperextension-bench-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Hyperextensions_With_No_Hyperextension_Bench.json"
-  },
-  {
     "id": "lib-inchworm",
     "nameEn": "Inchworm",
     "nameRu": null,
@@ -1391,124 +914,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     ],
     "sourceLicense": "Unlicense",
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Inchworm.json"
-  },
-  {
-    "id": "lib-incline-push-up",
-    "nameEn": "Incline Push-Up",
-    "nameRu": "Отжимания с возвышения рук",
-    "category": "chest",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "chest"
-    ],
-    "instructionsEn": [
-      "Stand facing bench or sturdy elevated platform. Place hands on edge of bench or platform, slightly wider than shoulder width.",
-      "Position forefoot back from bench or platform with arms and body straight. Arms should be perpendicular to body. Keeping body straight, lower chest to edge of box or platform by bending arms.",
-      "Push body up until arms are extended. Repeat."
-    ],
-    "imageKeys": [
-      "incline-push-up-0",
-      "incline-push-up-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Incline_Push-Up.json"
-  },
-  {
-    "id": "lib-incline-push-up-close-grip",
-    "nameEn": "Incline Push-Up Close-Grip",
-    "nameRu": null,
-    "category": "arms",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "triceps"
-    ],
-    "instructionsEn": [
-      "Stand facing a Smith machine bar or sturdy elevated platform at an appropriate height.",
-      "Place your hands next to one another on the bar.",
-      "Position your feet back from the bar with arms and body straight. This will be your starting position.",
-      "Keeping your body straight, lower your chest to the bar by bending the arms.",
-      "Return to the starting position by extending the elbows, pressing yourself back up."
-    ],
-    "imageKeys": [
-      "incline-push-up-close-grip-0",
-      "incline-push-up-close-grip-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Incline_Push-Up_Close-Grip.json"
-  },
-  {
-    "id": "lib-incline-push-up-medium",
-    "nameEn": "Incline Push-Up Medium",
-    "nameRu": null,
-    "category": "chest",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "chest"
-    ],
-    "instructionsEn": [
-      "Stand facing a Smith machine bar or sturdy elevated platform at an appropriate height.",
-      "Place your hands on the bar, with your hands about shoulder width apart.",
-      "Position your feet back from the bar with arms and body straight. This will be your starting position.",
-      "Keeping your body straight, lower your chest to the bar by bending the arms.",
-      "Return to the starting position by extending the elbows, pressing yourself back up."
-    ],
-    "imageKeys": [
-      "incline-push-up-medium-0",
-      "incline-push-up-medium-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Incline_Push-Up_Medium.json"
-  },
-  {
-    "id": "lib-incline-push-up-reverse-grip",
-    "nameEn": "Incline Push-Up Reverse Grip",
-    "nameRu": null,
-    "category": "chest",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "chest"
-    ],
-    "instructionsEn": [
-      "Stand facing a Smith machine bar or sturdy elevated platform at an appropriate height.",
-      "Place your hands on the bar palms up, with your hands about shoulder width apart.",
-      "Position your feet back from the bar with arms and body straight. This will be your starting position.",
-      "Keeping your body straight, lower your chest to the bar by bending the arms.",
-      "Return to the starting position by extending the elbows, pressing yourself back up."
-    ],
-    "imageKeys": [
-      "incline-push-up-reverse-grip-0",
-      "incline-push-up-reverse-grip-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Incline_Push-Up_Reverse_Grip.json"
-  },
-  {
-    "id": "lib-incline-push-up-wide",
-    "nameEn": "Incline Push-Up Wide",
-    "nameRu": null,
-    "category": "chest",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "chest"
-    ],
-    "instructionsEn": [
-      "Stand facing a Smith machine bar or sturdy elevated platform at an appropriate height.",
-      "Place your hands on the bar, with your hands wider than shoulder width.",
-      "Position your feet back from the bar with arms and body straight. Your arms should be perpendicular to the body. This will be your starting position.",
-      "Keeping your body straight, lower your chest to the bar by bending the arms.",
-      "Return to the starting position by extending the elbows, pressing yourself back up."
-    ],
-    "imageKeys": [
-      "incline-push-up-wide-0",
-      "incline-push-up-wide-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Incline_Push-Up_Wide.json"
   },
   {
     "id": "lib-internal-rotation-with-band",
@@ -1767,30 +1172,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Lateral_Raise_-_With_Bands.json"
   },
   {
-    "id": "lib-leg-lift",
-    "nameEn": "Leg Lift",
-    "nameRu": null,
-    "category": "glutes",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "glutes"
-    ],
-    "instructionsEn": [
-      "While standing up straight with both feet next to each other at around shoulder width, grab a sturdy surface such as the sides of a squat rack or the top of a chair to brace yourself and keep balance.",
-      "With or without an ankle weight, lift one leg behind you as if performing a leg curl but standing up while keeping the other leg straight. Breathe out as you perform this movement.",
-      "Slowly bring the raised leg back to the floor as you breathe in.",
-      "Repeat for the recommended amount of repetitions.",
-      "Repeat the movement with the opposite leg."
-    ],
-    "imageKeys": [
-      "leg-lift-0",
-      "leg-lift-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Leg_Lift.json"
-  },
-  {
     "id": "lib-leg-pull-in",
     "nameEn": "Leg Pull-In",
     "nameRu": null,
@@ -1926,29 +1307,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Monster_Walk.json"
   },
   {
-    "id": "lib-natural-glute-ham-raise",
-    "nameEn": "Natural Glute Ham Raise",
-    "nameRu": null,
-    "category": "legs",
-    "equipment": "bodyweight",
-    "level": "intermediate",
-    "primaryMuscles": [
-      "hamstrings"
-    ],
-    "instructionsEn": [
-      "Using the leg pad of a lat pulldown machine or a preacher bench, position yourself so that your ankles are under the pads, knees on the seat, and you are facing away from the machine. You should be upright and maintaining good posture.",
-      "This will be your starting position. Lower yourself under control until your knees are almost completely straight.",
-      "Remaining in control, raise yourself back up to the starting position.",
-      "If you are unable to complete a rep, use a band, a partner, or push off of a box to aid in completing a repetition."
-    ],
-    "imageKeys": [
-      "natural-glute-ham-raise-0",
-      "natural-glute-ham-raise-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Natural_Glute_Ham_Raise.json"
-  },
-  {
     "id": "lib-oblique-crunches",
     "nameEn": "Oblique Crunches",
     "nameRu": null,
@@ -2067,30 +1425,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Plyo_Push-up.json"
   },
   {
-    "id": "lib-pullups",
-    "nameEn": "Pullups",
-    "nameRu": null,
-    "category": "back",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "lats"
-    ],
-    "instructionsEn": [
-      "Grab the pull-up bar with the palms facing forward using the prescribed grip. Note on grips: For a wide grip, your hands need to be spaced out at a distance wider than your shoulder width. For a medium grip, your hands need to be spaced out at a distance equal to your shoulder width and for a close grip at a distance smaller than your shoulder width.",
-      "As you have both arms extended in front of you holding the bar at the chosen grip width, bring your torso back around 30 degrees or so while creating a curvature on your lower back and sticking your chest out. This is your starting position.",
-      "Pull your torso up until the bar touches your upper chest by drawing the shoulders and the upper arms down and back. Exhale as you perform this portion of the movement. Tip: Concentrate on squeezing the back muscles once you reach the full contracted position. The upper torso should remain stationary as it moves through space and only the arms should move. The forearms should do no other work other than hold the bar.",
-      "After a second on the contracted position, start to inhale and slowly lower your torso back to the starting position when your arms are fully extended and the lats are fully stretched.",
-      "Repeat this motion for the prescribed amount of repetitions."
-    ],
-    "imageKeys": [
-      "pullups-0",
-      "pullups-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Pullups.json"
-  },
-  {
     "id": "lib-push-up-wide",
     "nameEn": "Push-Up Wide",
     "nameRu": null,
@@ -2135,30 +1469,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     ],
     "sourceLicense": "Unlicense",
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Push-Ups_-_Close_Triceps_Position.json"
-  },
-  {
-    "id": "lib-push-ups-with-feet-elevated",
-    "nameEn": "Push-Ups With Feet Elevated",
-    "nameRu": null,
-    "category": "chest",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "chest"
-    ],
-    "instructionsEn": [
-      "Lie on the floor face down and place your hands about 36 inches apart from each other holding your torso up at arms length.",
-      "Place your toes on top of a flat bench. This will allow your body to be elevated. Note: The higher the elevation of the flat bench, the higher the resistance of the exercise is.",
-      "Lower yourself until your chest almost touches the floor as you inhale.",
-      "Using your pectoral muscles, press your upper body back up to the starting position and squeeze your chest. Breathe out as you perform this step.",
-      "After a second pause at the contracted position, repeat the movement for the prescribed amount of repetitions."
-    ],
-    "imageKeys": [
-      "push-ups-with-feet-elevated-0",
-      "push-ups-with-feet-elevated-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Push-Ups_With_Feet_Elevated.json"
   },
   {
     "id": "lib-push-up-to-side-plank",
@@ -2391,29 +1701,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Seated_Biceps.json"
   },
   {
-    "id": "lib-seated-flat-bench-leg-pull-in",
-    "nameEn": "Seated Flat Bench Leg Pull-In",
-    "nameRu": null,
-    "category": "abs",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "abdominals"
-    ],
-    "instructionsEn": [
-      "Sit on a bench with the legs stretched out in front of you slightly below parallel and your arms holding on to the sides of the bench. Your torso should be leaning backwards around a 45-degree angle from the bench. This will be your starting position.",
-      "Bring the knees in toward you as you move your torso closer to them at the same time. Breathe out as you perform this movement.",
-      "After a second pause, go back to the starting position as you inhale.",
-      "Repeat for the recommended amount of repetitions."
-    ],
-    "imageKeys": [
-      "seated-flat-bench-leg-pull-in-0",
-      "seated-flat-bench-leg-pull-in-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Seated_Flat_Bench_Leg_Pull-In.json"
-  },
-  {
     "id": "lib-seated-front-deltoid",
     "nameEn": "Seated Front Deltoid",
     "nameRu": null,
@@ -2456,29 +1743,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     ],
     "sourceLicense": "Unlicense",
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Seated_Glute.json"
-  },
-  {
-    "id": "lib-seated-leg-tucks",
-    "nameEn": "Seated Leg Tucks",
-    "nameRu": null,
-    "category": "abs",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "abdominals"
-    ],
-    "instructionsEn": [
-      "Sit on a bench with the legs stretched out in front of you slightly below parallel and your arms holding on to the sides of the bench. Your torso should be leaning backwards around a 45-degree angle from the bench. This will be your starting position.",
-      "Bring the knees in toward you as you move your torso closer to them at the same time. Breathe out as you perform this movement.",
-      "After a second pause, go back to the starting position as you inhale.",
-      "Repeat for the recommended amount of repetitions."
-    ],
-    "imageKeys": [
-      "seated-leg-tucks-0",
-      "seated-leg-tucks-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Seated_Leg_Tucks.json"
   },
   {
     "id": "lib-shoulder-press-with-bands",
@@ -2838,28 +2102,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Star_Jump.json"
   },
   {
-    "id": "lib-step-up-with-knee-raise",
-    "nameEn": "Step-up with Knee Raise",
-    "nameRu": null,
-    "category": "glutes",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "glutes"
-    ],
-    "instructionsEn": [
-      "Stand facing a box or bench of an appropriate height with your feet together. This will be your starting position.",
-      "Begin the movement by stepping up, putting your left foot on the top of the bench. Extend through the hip and knee of your front leg to stand up on the box. As you stand on the box with your left leg, flex your right knee and hip, bringing your knee as high as you can.",
-      "Reverse this motion to step down off the box, and then repeat the sequence on the opposite leg."
-    ],
-    "imageKeys": [
-      "step-up-with-knee-raise-0",
-      "step-up-with-knee-raise-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Step-up_with_Knee_Raise.json"
-  },
-  {
     "id": "lib-stomach-vacuum",
     "nameEn": "Stomach Vacuum",
     "nameRu": null,
@@ -2978,77 +2220,6 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     ],
     "sourceLicense": "Unlicense",
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Upright_Row_-_With_Bands.json"
-  },
-  {
-    "id": "lib-v-bar-pullup",
-    "nameEn": "V-Bar Pullup",
-    "nameRu": null,
-    "category": "back",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "lats"
-    ],
-    "instructionsEn": [
-      "Start by placing the middle of the V-bar in the middle of the pull-up bar (assuming that the pull-up station you are using does not have neutral grip handles). The V-Bar handles will be facing down so that you can hang from the pull-up bar through the use of the handles.",
-      "Once you securely place the V-bar, take a hold of the bar from each side and hang from it. Stick your chest out and lean yourself back slightly in order to better engage the lats. This will be your starting position.",
-      "Using your lats, pull your torso up while leaning your head back slightly so that you do not hit yourself with the chin-up bar. Continue until your chest nearly touches the V-bar. Exhale as you execute this motion.",
-      "After a second hold on the contracted position, slowly lower your body back to the starting position as you breathe in.",
-      "Repeat for the prescribed number of repetitions."
-    ],
-    "imageKeys": [
-      "v-bar-pullup-0",
-      "v-bar-pullup-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/V-Bar_Pullup.json"
-  },
-  {
-    "id": "lib-wide-grip-rear-pull-up",
-    "nameEn": "Wide-Grip Rear Pull-Up",
-    "nameRu": null,
-    "category": "back",
-    "equipment": "bodyweight",
-    "level": "intermediate",
-    "primaryMuscles": [
-      "lats"
-    ],
-    "instructionsEn": [
-      "Grab the pull-up bar with the palms facing forward using a wide grip.",
-      "As you have both arms extended in front of you holding the bar, bring your torso forward and head so that there is an imaginary line from the pull-up bar to the back of your neck. This is your starting position.",
-      "Pull your torso up until the bar is near the back of your neck. To do this, draw the shoulders and upper arms down and back while slightly leaning your head forward. Exhale as you perform this portion of the movement. Tip: Concentrate on squeezing the back muscles once you reach the full contracted position. The upper torso should remain stationary as it moves through space and only the arms should move. The forearms should do no other work other than hold the bar.",
-      "After a second on the contracted position, start to inhale and slowly lower your torso back to the starting position when your arms are fully extended and the lats are fully stretched.",
-      "Repeat this motion for the prescribed amount of repetitions."
-    ],
-    "imageKeys": [
-      "wide-grip-rear-pull-up-0",
-      "wide-grip-rear-pull-up-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Wide-Grip_Rear_Pull-Up.json"
-  },
-  {
-    "id": "lib-wind-sprints",
-    "nameEn": "Wind Sprints",
-    "nameRu": null,
-    "category": "abs",
-    "equipment": "bodyweight",
-    "level": "beginner",
-    "primaryMuscles": [
-      "abdominals"
-    ],
-    "instructionsEn": [
-      "Hang from a pull-up bar using a pronated grip. Your arms and legs should be extended. This will be your starting position.",
-      "Begin by quickly raising one knee as high as you can. Do not swing your body or your legs. 3",
-      "Immediately reverse the motion, returning that leg to the starting position. Simultaneously raise the opposite knee as high as possible.",
-      "Continue alternating between legs until the set is complete."
-    ],
-    "imageKeys": [
-      "wind-sprints-0",
-      "wind-sprints-1"
-    ],
-    "sourceLicense": "Unlicense",
-    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Wind_Sprints.json"
   },
   {
     "id": "lib-wrist-circles",
