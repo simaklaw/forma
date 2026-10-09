@@ -26,7 +26,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-3-4-sit-up",
     "nameEn": "3/4 Sit-Up",
-    "nameRu": null,
+    "nameRu": "Скручивания на ¾",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -50,7 +50,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-90-90-hamstring",
     "nameEn": "90/90 Hamstring",
-    "nameRu": null,
+    "nameRu": "Разгибание ноги 90/90",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -73,7 +73,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-air-bike",
     "nameEn": "Air Bike",
-    "nameRu": null,
+    "nameRu": "Велосипед (пресс)",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -98,7 +98,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-all-fours-quad-stretch",
     "nameEn": "All Fours Quad Stretch",
-    "nameRu": null,
+    "nameRu": "Растяжка квадрицепса в упоре на четвереньках",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "intermediate",
@@ -120,7 +120,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-alternate-heel-touchers",
     "nameEn": "Alternate Heel Touchers",
-    "nameRu": null,
+    "nameRu": "Касания пяток поочерёдно",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -144,7 +144,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-band-good-morning",
     "nameEn": "Band Good Morning",
-    "nameRu": null,
+    "nameRu": "Наклоны с резинкой (гуд морнинг)",
     "category": "legs",
     "equipment": "bands",
     "level": "beginner",
@@ -166,7 +166,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-band-good-morning-pull-through",
     "nameEn": "Band Good Morning (Pull Through)",
-    "nameRu": null,
+    "nameRu": "Наклоны с резинкой (протяжка)",
     "category": "legs",
     "equipment": "bands",
     "level": "beginner",
@@ -188,7 +188,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-band-hip-adductions",
     "nameEn": "Band Hip Adductions",
-    "nameRu": null,
+    "nameRu": "Приведение бедра с резинкой",
     "category": "legs",
     "equipment": "bands",
     "level": "beginner",
@@ -213,7 +213,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-band-pull-apart",
     "nameEn": "Band Pull Apart",
-    "nameRu": null,
+    "nameRu": "Разведение резинки перед собой",
     "category": "arms",
     "equipment": "bands",
     "level": "beginner",
@@ -236,7 +236,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-bent-knee-hip-raise",
     "nameEn": "Bent-Knee Hip Raise",
-    "nameRu": null,
+    "nameRu": "Подъём таза с согнутыми коленями",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -260,7 +260,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-body-up",
     "nameEn": "Body-Up",
-    "nameRu": null,
+    "nameRu": "Подъём корпуса (боди-ап)",
     "category": "arms",
     "equipment": "bodyweight",
     "level": "intermediate",
@@ -283,7 +283,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-bodyweight-squat",
     "nameEn": "Bodyweight Squat",
-    "nameRu": "Приседания",
+    "nameRu": "Приседания с собственным весом",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -327,7 +327,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-butt-ups",
     "nameEn": "Butt-Ups",
-    "nameRu": null,
+    "nameRu": "Подъёмы таза",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -351,7 +351,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-butt-lift-bridge",
     "nameEn": "Butt Lift (Bridge)",
-    "nameRu": null,
+    "nameRu": "Ягодичный мостик",
     "category": "glutes",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -373,7 +373,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-calf-raises-with-bands",
     "nameEn": "Calf Raises - With Bands",
-    "nameRu": null,
+    "nameRu": "Подъёмы на носки с резинкой",
     "category": "legs",
     "equipment": "bands",
     "level": "beginner",
@@ -397,7 +397,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-clock-push-up",
     "nameEn": "Clock Push-Up",
-    "nameRu": null,
+    "nameRu": "Отжимания «часы»",
     "category": "chest",
     "equipment": "bodyweight",
     "level": "intermediate",
@@ -444,7 +444,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-cross-body-crunch",
     "nameEn": "Cross-Body Crunch",
-    "nameRu": null,
+    "nameRu": "Скручивания крест-накрест",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -493,7 +493,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-crunch-hands-overhead",
     "nameEn": "Crunch - Hands Overhead",
-    "nameRu": null,
+    "nameRu": "Скручивания с руками над головой",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -517,7 +517,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-crunches",
     "nameEn": "Crunches",
-    "nameRu": null,
+    "nameRu": "Скручивания",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -568,7 +568,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-dips-triceps-version",
     "nameEn": "Dips - Triceps Version",
-    "nameRu": null,
+    "nameRu": "Отжимания на трицепс (брусья/опора)",
     "category": "arms",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -591,7 +591,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-double-leg-butt-kick",
     "nameEn": "Double Leg Butt Kick",
-    "nameRu": null,
+    "nameRu": "Захлёст голени двумя ногами",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -614,7 +614,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-elbow-to-knee",
     "nameEn": "Elbow to Knee",
-    "nameRu": null,
+    "nameRu": "Локоть к колену",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -636,7 +636,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-external-rotation-with-band",
     "nameEn": "External Rotation with Band",
-    "nameRu": null,
+    "nameRu": "Наружная ротация плеча с резинкой",
     "category": "arms",
     "equipment": "bands",
     "level": "beginner",
@@ -660,7 +660,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-fast-skipping",
     "nameEn": "Fast Skipping",
-    "nameRu": null,
+    "nameRu": "Бег на месте высокий темп",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -706,7 +706,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-freehand-jump-squat",
     "nameEn": "Freehand Jump Squat",
-    "nameRu": null,
+    "nameRu": "Приседания с выпрыгиванием",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "intermediate",
@@ -731,7 +731,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-frog-sit-ups",
     "nameEn": "Frog Sit-Ups",
-    "nameRu": null,
+    "nameRu": "Скручивания «лягушка»",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "intermediate",
@@ -757,7 +757,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-glute-kickback",
     "nameEn": "Glute Kickback",
-    "nameRu": null,
+    "nameRu": "Махи ногой назад (ягодичные)",
     "category": "glutes",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -780,7 +780,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-groiners",
     "nameEn": "Groiners",
-    "nameRu": null,
+    "nameRu": "Альпинист с поворотом (гроинеры)",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "intermediate",
@@ -802,7 +802,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-handstand-push-ups",
     "nameEn": "Handstand Push-Ups",
-    "nameRu": null,
+    "nameRu": "Отжимания в стойке на руках",
     "category": "arms",
     "equipment": "bodyweight",
     "level": "expert",
@@ -826,7 +826,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-hip-circles-prone",
     "nameEn": "Hip Circles (prone)",
-    "nameRu": null,
+    "nameRu": "Круги бедром лёжа на животе",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -848,7 +848,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-hip-extension-with-bands",
     "nameEn": "Hip Extension with Bands",
-    "nameRu": null,
+    "nameRu": "Разгибание бедра с резинкой",
     "category": "glutes",
     "equipment": "bands",
     "level": "beginner",
@@ -871,7 +871,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-hip-flexion-with-band",
     "nameEn": "Hip Flexion with Band",
-    "nameRu": null,
+    "nameRu": "Сгибание бедра с резинкой",
     "category": "legs",
     "equipment": "bands",
     "level": "beginner",
@@ -894,7 +894,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-inchworm",
     "nameEn": "Inchworm",
-    "nameRu": null,
+    "nameRu": "Инчворм (шагающая планка)",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -918,7 +918,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-internal-rotation-with-band",
     "nameEn": "Internal Rotation with Band",
-    "nameRu": null,
+    "nameRu": "Внутренняя ротация плеча с резинкой",
     "category": "arms",
     "equipment": "bands",
     "level": "beginner",
@@ -942,7 +942,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-isometric-chest-squeezes",
     "nameEn": "Isometric Chest Squeezes",
-    "nameRu": null,
+    "nameRu": "Изометрическое сведение груди",
     "category": "chest",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1037,7 +1037,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-jackknife-sit-up",
     "nameEn": "Jackknife Sit-Up",
-    "nameRu": null,
+    "nameRu": "Складка (джекнайф)",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1060,7 +1060,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-janda-sit-up",
     "nameEn": "Janda Sit-Up",
-    "nameRu": null,
+    "nameRu": "Скручивания Янда",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1083,7 +1083,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-knee-circles",
     "nameEn": "Knee Circles",
-    "nameRu": null,
+    "nameRu": "Круги коленями",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1105,7 +1105,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-knee-tuck-jump",
     "nameEn": "Knee Tuck Jump",
-    "nameRu": null,
+    "nameRu": "Прыжки с подтягиванием колен",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1127,7 +1127,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-lateral-bound",
     "nameEn": "Lateral Bound",
-    "nameRu": null,
+    "nameRu": "Прыжки в сторону",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1151,7 +1151,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-lateral-raise-with-bands",
     "nameEn": "Lateral Raise - With Bands",
-    "nameRu": null,
+    "nameRu": "Разведение рук в стороны с резинкой",
     "category": "arms",
     "equipment": "bands",
     "level": "beginner",
@@ -1174,7 +1174,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-leg-pull-in",
     "nameEn": "Leg Pull-In",
-    "nameRu": null,
+    "nameRu": "Подтягивание коленей лёжа",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1197,7 +1197,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-lower-back-curl",
     "nameEn": "Lower Back Curl",
-    "nameRu": null,
+    "nameRu": "Разгибание поясницы",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1218,7 +1218,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-lying-crossover",
     "nameEn": "Lying Crossover",
-    "nameRu": null,
+    "nameRu": "Скручивания крест-накрест лёжа",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "expert",
@@ -1287,7 +1287,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-monster-walk",
     "nameEn": "Monster Walk",
-    "nameRu": null,
+    "nameRu": "Ходьба с резинкой (монстр-walk)",
     "category": "legs",
     "equipment": "bands",
     "level": "beginner",
@@ -1309,7 +1309,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-oblique-crunches",
     "nameEn": "Oblique Crunches",
-    "nameRu": null,
+    "nameRu": "Скручивания на косые мышцы",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1359,7 +1359,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-overhead-triceps",
     "nameEn": "Overhead Triceps",
-    "nameRu": null,
+    "nameRu": "Разгибание рук на трицепс над головой",
     "category": "arms",
     "equipment": "bodyweight",
     "level": "expert",
@@ -1402,7 +1402,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-plyo-push-up",
     "nameEn": "Plyo Push-up",
-    "nameRu": null,
+    "nameRu": "Плиометрические отжимания",
     "category": "chest",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1427,7 +1427,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-push-up-wide",
     "nameEn": "Push-Up Wide",
-    "nameRu": null,
+    "nameRu": "Отжимания широким хватом",
     "category": "chest",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1473,7 +1473,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-push-up-to-side-plank",
     "nameEn": "Push Up to Side Plank",
-    "nameRu": null,
+    "nameRu": "Отжимание с выходом в боковую планку",
     "category": "chest",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1497,7 +1497,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-pushups",
     "nameEn": "Pushups",
-    "nameRu": null,
+    "nameRu": "Отжимания",
     "category": "chest",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1543,7 +1543,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-rear-leg-raises",
     "nameEn": "Rear Leg Raises",
-    "nameRu": null,
+    "nameRu": "Махи ногой назад стоя",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1634,7 +1634,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-scissor-kick",
     "nameEn": "Scissor Kick",
-    "nameRu": null,
+    "nameRu": "Ножницы (мах ногами)",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1658,7 +1658,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-scissors-jump",
     "nameEn": "Scissors Jump",
-    "nameRu": null,
+    "nameRu": "Прыжки ножницы",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1681,7 +1681,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-seated-biceps",
     "nameEn": "Seated Biceps",
-    "nameRu": null,
+    "nameRu": "Сгибание рук на бицепс сидя",
     "category": "arms",
     "equipment": "bodyweight",
     "level": "expert",
@@ -1747,7 +1747,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-shoulder-press-with-bands",
     "nameEn": "Shoulder Press - With Bands",
-    "nameRu": null,
+    "nameRu": "Жим плеч с резинкой",
     "category": "arms",
     "equipment": "bands",
     "level": "beginner",
@@ -1769,7 +1769,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-side-bridge",
     "nameEn": "Side Bridge",
-    "nameRu": null,
+    "nameRu": "Боковая планка",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1805,7 +1805,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-side-leg-raises",
     "nameEn": "Side Leg Raises",
-    "nameRu": null,
+    "nameRu": "Махи ногой в сторону лёжа",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1827,7 +1827,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-single-arm-push-up",
     "nameEn": "Single-Arm Push-Up",
-    "nameRu": null,
+    "nameRu": "Отжимания на одной руке",
     "category": "chest",
     "equipment": "bodyweight",
     "level": "intermediate",
@@ -1850,7 +1850,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-single-leg-butt-kick",
     "nameEn": "Single Leg Butt Kick",
-    "nameRu": null,
+    "nameRu": "Захлёст голени одной ногой",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1873,7 +1873,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-single-leg-glute-bridge",
     "nameEn": "Single Leg Glute Bridge",
-    "nameRu": null,
+    "nameRu": "Ягодичный мостик на одной ноге",
     "category": "glutes",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1896,7 +1896,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-sit-up",
     "nameEn": "Sit-Up",
-    "nameRu": "Скручивания",
+    "nameRu": "Подъём корпуса (ситап)",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1965,7 +1965,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-split-jump",
     "nameEn": "Split Jump",
-    "nameRu": null,
+    "nameRu": "Прыжки в выпаде со сменой ног",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1989,7 +1989,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-squats-with-bands",
     "nameEn": "Squats - With Bands",
-    "nameRu": null,
+    "nameRu": "Приседания с резинкой",
     "category": "legs",
     "equipment": "bands",
     "level": "beginner",
@@ -2036,7 +2036,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-standing-long-jump",
     "nameEn": "Standing Long Jump",
-    "nameRu": null,
+    "nameRu": "Прыжок в длину с места",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -2082,7 +2082,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-star-jump",
     "nameEn": "Star Jump",
-    "nameRu": null,
+    "nameRu": "Прыжок звездой",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -2151,7 +2151,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-toe-touchers",
     "nameEn": "Toe Touchers",
-    "nameRu": null,
+    "nameRu": "Складка до носков лёжа",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -2176,7 +2176,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-tuck-crunch",
     "nameEn": "Tuck Crunch",
-    "nameRu": null,
+    "nameRu": "Скручивания с подтягиванием колен",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -2201,7 +2201,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-upright-row-with-bands",
     "nameEn": "Upright Row - With Bands",
-    "nameRu": null,
+    "nameRu": "Тяга к подбородку с резинкой",
     "category": "back",
     "equipment": "bands",
     "level": "beginner",
@@ -2224,7 +2224,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-wrist-circles",
     "nameEn": "Wrist Circles",
-    "nameRu": null,
+    "nameRu": "Круги кистями",
     "category": "arms",
     "equipment": "bodyweight",
     "level": "beginner",
