@@ -305,7 +305,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-bottoms-up",
     "nameEn": "Bottoms Up",
-    "nameRu": null,
+    "nameRu": "Подъём таза «bottoms up»",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -422,7 +422,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-cocoons",
     "nameEn": "Cocoons",
-    "nameRu": null,
+    "nameRu": "Коконы (скручивания)",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -468,7 +468,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-cross-over-with-bands",
     "nameEn": "Cross Over - With Bands",
-    "nameRu": null,
+    "nameRu": "Кроссовер с резинкой",
     "category": "chest",
     "equipment": "bands",
     "level": "beginner",
@@ -682,7 +682,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-flat-bench-leg-pull-in",
     "nameEn": "Flat Bench Leg Pull-In",
-    "nameRu": null,
+    "nameRu": "Подтягивание коленей лёжа",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -780,7 +780,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-groiners",
     "nameEn": "Groiners",
-    "nameRu": "Шаги стопами к ладоням из планки (гроинеры)",
+    "nameRu": "Альпинист с поворотом (гроинеры)",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "intermediate",
@@ -966,7 +966,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-isometric-neck-exercise-front-and-back",
     "nameEn": "Isometric Neck Exercise - Front And Back",
-    "nameRu": null,
+    "nameRu": "Изометрия шеи вперёд-назад",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -990,7 +990,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-isometric-neck-exercise-sides",
     "nameEn": "Isometric Neck Exercise - Sides",
-    "nameRu": null,
+    "nameRu": "Изометрия шеи в стороны",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1014,7 +1014,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-isometric-wipers",
     "nameEn": "Isometric Wipers",
-    "nameRu": null,
+    "nameRu": "Изометрические «дворники»",
     "category": "chest",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1241,7 +1241,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-lying-glute",
     "nameEn": "Lying Glute",
-    "nameRu": null,
+    "nameRu": "Ягодичные лёжа",
     "category": "glutes",
     "equipment": "bodyweight",
     "level": "expert",
@@ -1264,7 +1264,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-lying-prone-quadriceps",
     "nameEn": "Lying Prone Quadriceps",
-    "nameRu": null,
+    "nameRu": "Растяжка квадрицепса лёжа на животе",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "expert",
@@ -1335,7 +1335,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-oblique-crunches-on-the-floor",
     "nameEn": "Oblique Crunches - On The Floor",
-    "nameRu": null,
+    "nameRu": "Скручивания на косые на полу",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1450,7 +1450,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-push-ups-close-triceps-position",
     "nameEn": "Push-Ups - Close Triceps Position",
-    "nameRu": null,
+    "nameRu": "Отжимания узким хватом (трицепс)",
     "category": "arms",
     "equipment": "bodyweight",
     "level": "intermediate",
@@ -1520,7 +1520,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-pushups-close-and-wide-hand-positions",
     "nameEn": "Pushups (Close and Wide Hand Positions)",
-    "nameRu": null,
+    "nameRu": "Отжимания узким и широким хватом",
     "category": "chest",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1588,7 +1588,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-rocket-jump",
     "nameEn": "Rocket Jump",
-    "nameRu": null,
+    "nameRu": "Прыжок «ракета»",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1703,7 +1703,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-seated-front-deltoid",
     "nameEn": "Seated Front Deltoid",
-    "nameRu": null,
+    "nameRu": "Передняя дельта сидя",
     "category": "arms",
     "equipment": "bodyweight",
     "level": "expert",
@@ -1725,7 +1725,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-seated-glute",
     "nameEn": "Seated Glute",
-    "nameRu": null,
+    "nameRu": "Ягодичные сидя",
     "category": "glutes",
     "equipment": "bodyweight",
     "level": "expert",
@@ -1787,7 +1787,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-side-jackknife",
     "nameEn": "Side Jackknife",
-    "nameRu": null,
+    "nameRu": "Боковая складка",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -1920,7 +1920,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-speed-band-overhead-triceps",
     "nameEn": "Speed Band Overhead Triceps",
-    "nameRu": null,
+    "nameRu": "Разгибание на трицепс с резинкой стоя",
     "category": "arms",
     "equipment": "bands",
     "level": "beginner",
@@ -1943,7 +1943,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-spider-crawl",
     "nameEn": "Spider Crawl",
-    "nameRu": null,
+    "nameRu": "Паучий краул",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -2013,7 +2013,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-standing-hip-circles",
     "nameEn": "Standing Hip Circles",
-    "nameRu": null,
+    "nameRu": "Круги бедром стоя",
     "category": "legs",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -2059,7 +2059,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-standing-towel-triceps-extension",
     "nameEn": "Standing Towel Triceps Extension",
-    "nameRu": null,
+    "nameRu": "Разгибание на трицепс полотенцем стоя",
     "category": "arms",
     "equipment": "bodyweight",
     "level": "beginner",
@@ -2104,7 +2104,7 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
   {
     "id": "lib-stomach-vacuum",
     "nameEn": "Stomach Vacuum",
-    "nameRu": null,
+    "nameRu": "Вакуум живота",
     "category": "abs",
     "equipment": "bodyweight",
     "level": "beginner",
