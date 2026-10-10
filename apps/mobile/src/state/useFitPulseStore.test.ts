@@ -53,6 +53,13 @@ describe('mergePersistedAppState', () => {
     expect(merged.waterGlasses).toBe(current.waterGlasses);
   });
 
+  it('falls back when todayMeals is not a DayMeals shape', () => {
+    const current = baseline();
+    const merged = mergePersistedAppState({ todayMeals: [] as unknown as object }, current);
+    expect(Array.isArray(merged.todayMeals)).toBe(false);
+    expect(merged.todayMeals).toEqual(current.todayMeals);
+  });
+
   it('merges metabolic object onto current defaults', () => {
     const current = baseline();
     const merged = mergePersistedAppState(
