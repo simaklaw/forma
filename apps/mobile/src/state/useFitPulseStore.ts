@@ -26,16 +26,6 @@ import { uuidv7 } from '@/features/workout/data/ids';
 export type { SetLogEntry, DayProgress } from '@/engines/WorkoutStats';
 
 const SET_LOG_RETENTION_DAYS = 180;
-const COACH_MESSAGE_CAP = 40;
-
-export const COACH_WELCOME =
-  'Я локальный тренер. Данные не уходят в облако. Спроси про белок, калории, сон, воду или тренировку — или нажми чип.';
-
-export interface CoachMessage {
-  id: string;
-  role: 'user' | 'coach';
-  text: string;
-}
 
 export interface FoodItem {
   id: string;
@@ -75,24 +65,6 @@ export type StoredProfile = {
 
 function generateId(): string {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-}
-
-function defaultCoachMessages(): CoachMessage[] {
-  return [{ id: 'welcome', role: 'coach', text: COACH_WELCOME }];
-}
-
-function sanitizeCoachMessages(value: unknown): CoachMessage[] {
-  if (!Array.isArray(value)) return defaultCoachMessages();
-  const cleaned = value.filter(
-    (m): m is CoachMessage =>
-      !!m &&
-      typeof m === 'object' &&
-      typeof (m as CoachMessage).id === 'string' &&
-      ((m as CoachMessage).role === 'user' || (m as CoachMessage).role === 'coach') &&
-      typeof (m as CoachMessage).text === 'string'
-  );
-  if (cleaned.length === 0) return defaultCoachMessages();
-  return cleaned.slice(-COACH_MESSAGE_CAP);
 }
 
 function asPositiveNumber(value: unknown): number | null {
@@ -150,8 +122,6 @@ interface AppStore {
   setLogs: SetLogEntry[];
   dayProgress: DayProgress;
   personalRecords: Record<number, number>;
-  coachMessages: CoachMessage[];
-
   updateProfile: (newProfile: Partial<StoredProfile>) => void;
   triggerRefeed: () => void;
   triggerDietBreak: () => void;
@@ -163,9 +133,6 @@ interface AppStore {
 
   recordSet: (exerciseId: number, weight: number, reps: number, rir: number) => number;
   completedSetsToday: (exerciseId: number) => number;
-
-  setCoachMessages: (messages: CoachMessage[]) => void;
-  clearCoachMessages: () => void;
 
   calculateTargets: () => Targets;
   isPlateauSuspected: () => boolean;
@@ -182,7 +149,6 @@ interface AppStore {
         | 'setLogs'
         | 'dayProgress'
         | 'personalRecords'
-        | 'coachMessages'
       >
     >
   ) => void;
@@ -199,13 +165,15 @@ function isDayMeals(value: unknown): value is DayMeals {
  * Malformed shapes fall back to `current` defaults (same idea as customFoods guard).
  */
 export function mergePersistedAppState(persisted: unknown, current: AppStore): AppStore {
-  const p = (persisted ?? {}) as Partial<AppStore>;
+  // Drop legacy coachMessages from older AsyncStorage snapshots (chat UI removed).
+  const raw = (persisted ?? {}) as Record<string, unknown>;
+  const { coachMessages: _legacyCoach, ...rest } = raw;
+  const p = rest as Partial<AppStore>;
   return {
     ...current,
     ...p,
     profile: mergeProfile(current.profile, p.profile),
     customFoods: Array.isArray(p.customFoods) ? p.customFoods : current.customFoods,
-    coachMessages: sanitizeCoachMessages(p.coachMessages ?? current.coachMessages),
     setLogs: Array.isArray(p.setLogs) ? p.setLogs : current.setLogs,
     weightHistory: Array.isArray(p.weightHistory) ? p.weightHistory : current.weightHistory,
     dayProgress:
@@ -239,7 +207,6 @@ export const useFitPulseStore = create<AppStore>()(
       setLogs: [],
       dayProgress: {},
       personalRecords: {},
-      coachMessages: defaultCoachMessages(),
 
       updateProfile: (newProfile) => {
         const prevWeight = get().profile.weight;
@@ -336,9 +303,6 @@ export const useFitPulseStore = create<AppStore>()(
         return get().dayProgress[todayKey]?.[exerciseId] ?? 0;
       },
 
-      setCoachMessages: (messages) => set({ coachMessages: messages.slice(-COACH_MESSAGE_CAP) }),
-      clearCoachMessages: () => set({ coachMessages: defaultCoachMessages() }),
-
       calculateTargets: () => {
         const { profile, metabolic } = get();
         const domainProfile: ProfileState = {
@@ -399,7 +363,8 @@ export const useFitPulseStore = create<AppStore>()(
         ) {
           next.setLogs = data.setLogs;
         }
-        if (data.dayProgress && typeof data.dayProgress === 'object') next.dayProgress = data.dayProgress;
+        if (data.dayProgress && typeof data.dayProgress === 'object')
+          next.dayProgress = data.dayProgress;
         if (
           data.personalRecords &&
           typeof data.personalRecords === 'object' &&
@@ -407,13 +372,10 @@ export const useFitPulseStore = create<AppStore>()(
         ) {
           next.personalRecords = data.personalRecords;
         }
-        if (data.coachMessages !== undefined) {
-          next.coachMessages = sanitizeCoachMessages(data.coachMessages);
-        }
 
         if (Object.keys(next).length === 0) {
           throw new Error(
-            'Backup file has none of the expected fields (profile/metabolic/todayMeals/waterGlasses/weightHistory/setLogs/dayProgress/personalRecords/coachMessages)'
+            'Backup file has none of the expected fields (profile/metabolic/todayMeals/waterGlasses/weightHistory/setLogs/dayProgress/personalRecords)'
           );
         }
         set(next);
