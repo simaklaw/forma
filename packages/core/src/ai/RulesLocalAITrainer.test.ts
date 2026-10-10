@@ -80,6 +80,27 @@ describe("RulesLocalAITrainer", () => {
     assert.match(text, /дефицит/i);
   });
 
+  it("answers a weight-loss question with a dedicated reply, not the calorie fallback", async () => {
+    const trainer = new RulesLocalAITrainer();
+    const text = await trainer.generateAdvice(context, "Как похудеть?");
+    assert.match(text, /дефицит/i);
+    assert.match(text, /белк/i);
+    assert.doesNotMatch(text, /Держи темп/); // не должен быть тем же текстом, что и generic-фолбэк
+  });
+
+  it("gives a different reply to a second, distinct question in the same session", async () => {
+    const trainer = new RulesLocalAITrainer();
+    const first = await trainer.generateAdvice(context, "Дай совет на сегодня");
+    const second = await trainer.generateAdvice(context, "Как похудеть?");
+    assert.notStrictEqual(first, second);
+  });
+
+  it("answers progress chip without only repeating calorie-delta fallback", async () => {
+    const trainer = new RulesLocalAITrainer();
+    const text = await trainer.generateAdvice(context, "Мой прогресс за неделю");
+    assert.match(text, /Прогресс|сесс/i);
+  });
+
   it("still falls back to the calorie-delta reply for a truly generic message", async () => {
     const trainer = new RulesLocalAITrainer();
     const text = await trainer.generateAdvice(context, "как у меня дела сегодня?");
