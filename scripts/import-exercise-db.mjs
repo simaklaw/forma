@@ -1,6 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  requiresUnsupportedEquipment,
+  translateName,
+  slugify,
+  categoryFor
+} from './lib/exerciseImportRules.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -17,26 +23,6 @@ const OUT_IMAGES_FILE = path.resolve(
 );
 
 const HOME_EQUIPMENT = new Set(['body only', 'bands']);
-const UNSUPPORTED_EQUIPMENT =
-  /\b(?:dumbbells?|barbells?|benches|bench|cables?|machines?|kettlebells?|exercise balls?|stability balls?|medicine balls?|swiss balls?|pull[ -]?up bars?|chin[ -]?up bars?|racks?|smith machines?|weight plates?|step platforms?|chairs?|dip stations?|parallel bars?)\b/i;
-
-function requiresUnsupportedEquipment(ex) {
-  const instructions = (ex.instructions ?? []).join(' ');
-  if (!UNSUPPORTED_EQUIPMENT.test(instructions)) return false;
-
-  const hasNoEquipmentAlternative =
-    /\b(?:ground|floor|mat)\b[^.!?]{0,100}\bor\b[^.!?]{0,100}\b(?:bench|chair|equipment)\b/i.test(
-      instructions
-    ) ||
-    /\b(?:bench|chair|equipment)\b[^.!?]{0,100}\bor\b[^.!?]{0,100}\b(?:ground|floor|mat)\b/i.test(
-      instructions
-    ) ||
-    /\bmay hold onto\b[^.!?]{0,80}\b(?:chair|support)\b/i.test(instructions) ||
-    /\balternatively\b[^.!?]{0,120}\bstanding on (?:the )?band\b/i.test(instructions);
-
-  return !hasNoEquipmentAlternative;
-}
-
 const MUSCLE_TO_CATEGORY = {
   chest: 'chest',
   lats: 'back',
@@ -209,25 +195,6 @@ const NAME_TRANSLATIONS = {
   'Stomach Vacuum': 'Вакуум живота'
 };
 
-function translateName(nameEn) {
-  if (NAME_TRANSLATIONS[nameEn]) return NAME_TRANSLATIONS[nameEn];
-  return null;
-}
-
-function slugify(id) {
-  return id
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-}
-
-function categoryFor(primaryMuscles) {
-  for (const m of primaryMuscles) {
-    if (MUSCLE_TO_CATEGORY[m]) return MUSCLE_TO_CATEGORY[m];
-  }
-  return 'abs';
-}
-
 const exercises = JSON.parse(
   fs.readFileSync(path.join(DATASET_DIR, 'dist/exercises.json'), 'utf-8')
 );
@@ -246,12 +213,12 @@ let unmappedCategoryCount = 0;
 
 for (const ex of filtered) {
   const slug = slugify(ex.id);
-  const category = categoryFor(ex.primaryMuscles ?? []);
+  const category = categoryFor(ex.primaryMuscles ?? [], MUSCLE_TO_CATEGORY);
   if (!(ex.primaryMuscles ?? []).some((m) => MUSCLE_TO_CATEGORY[m])) {
     unmappedCategoryCount++;
   }
 
-  const nameRu = translateName(ex.name);
+  const nameRu = translateName(ex.name, NAME_TRANSLATIONS);
   if (!nameRu) untranslatedCount++;
 
   const localImageKeys = [];
