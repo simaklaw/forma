@@ -3,7 +3,7 @@ import { Text, View } from 'react-native';
 import { analyzeRecovery, isProfileComplete } from '@forma/core';
 import { fonts } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
-import { selectDailyTotals, useFitPulseStore } from '@/state/useFitPulseStore';
+import { selectDailyTotals, selectTodayMeals, useFitPulseStore } from '@/state/useFitPulseStore';
 
 const GLASS_ML = 250;
 const WATER_GOAL_ML = 2500;
@@ -25,7 +25,8 @@ export function RecoveryBanner() {
   const profile = useFitPulseStore((s) => s.profile);
   const metabolic = useFitPulseStore((s) => s.metabolic);
   const waterGlasses = useFitPulseStore((s) => s.waterGlasses);
-  const todayMeals = useFitPulseStore((s) => s.todayMeals);
+  const allMeals = useFitPulseStore((s) => s.todayMeals);
+  const todayMeals = useMemo(() => selectTodayMeals(allMeals), [allMeals]);
   const calcTargets = useFitPulseStore((s) => s.calculateTargets);
 
   const recovery = useMemo(() => {
