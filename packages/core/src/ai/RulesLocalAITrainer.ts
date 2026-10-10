@@ -87,6 +87,50 @@ function advise(ctx: UserContextSnapshot, userPrompt: string): string {
     );
   }
 
+  // «Как похудеть / сбросить вес» — before numerical calorie fallback
+  if (
+    q.includes("похуд") ||
+    q.includes("сброс") ||
+    q.includes("сбросить") ||
+    q.includes("убрать вес") ||
+    q.includes("lose weight")
+  ) {
+    const proteinHint =
+      proteinLeft > 0
+        ? ` До белка ещё ~${proteinLeft} г — без этого при сильном дефиците теряешь мышцы.`
+        : " Белок на сегодня уже закрыт — держи этот уровень.";
+    return (
+      `Похудение = устойчивый дефицит (~300–500 ккал), а не голод на ${Math.abs(delta)} ккал. ` +
+      `Цель ${ctx.dailyMetrics.targetCalories} ккал, съедено ${ctx.dailyMetrics.consumedCalories}.` +
+      proteinHint +
+      ` Закрой день тренировкой или прогулкой и не режь калории ещё сильнее.`
+    );
+  }
+
+  // Coach chips: «Мой прогресс за неделю»
+  if (q.includes("прогресс") || q.includes("недел")) {
+    if (ctx.lastWorkout) {
+      return (
+        `Последняя сессия «${ctx.lastWorkout.name}» в логе. ` +
+        `За неделю смотри вкладку «Прогресс»: серия, дни плана и калории. ` +
+        `Сегодня цель ${ctx.dailyMetrics.targetCalories} ккал, съедено ${ctx.dailyMetrics.consumedCalories}.`
+      );
+    }
+    return (
+      `Пока в журнале нет закрытых подходов — открой «Тренировки» и заверши день плана. ` +
+      `Серия и статистика недели появятся после первой полной сессии.`
+    );
+  }
+
+  // Coach chips: «Восстановление» (без слова «сон», чтобы не пересекаться с sleep-веткой)
+  if (q.includes("восстанов")) {
+    return (
+      `Восстановление: сон 7–9 ч, белок и вода важнее «ещё одного жёсткого дня». ` +
+      `Если усталость сильная — лёгкая ходьба вместо добивания. ` +
+      `Сейчас белок ${Math.round(proteinConsumed)} / ${proteinTarget} г.`
+    );
+  }
+
   if (delta > 250) {
     return `По калориям плюс ${delta}. До вечера — больше белка и овощей, меньше жидких калорий. Прогулка 20 минут лучше дополнительного подхода.`;
   }

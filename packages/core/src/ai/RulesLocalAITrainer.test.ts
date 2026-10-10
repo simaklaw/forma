@@ -80,6 +80,31 @@ describe("RulesLocalAITrainer", () => {
     assert.match(text, /дефицит/i);
   });
 
+  it("answers a weight-loss question with sustainable deficit advice", async () => {
+    const trainer = new RulesLocalAITrainer();
+    const deepDeficit: UserContextSnapshot = {
+      ...context,
+      dailyMetrics: {
+        ...context.dailyMetrics,
+        consumedCalories: 185,
+        targetCalories: 2025,
+        burnedCalories: 0,
+        proteinConsumed: 27,
+        proteinTarget: 146,
+      },
+    };
+    const text = await trainer.generateAdvice(deepDeficit, "Как похудеть");
+    assert.match(text, /устойчивый дефицит|300–500/i);
+    assert.match(text, /белк/i); // «белка» in proteinHint
+    assert.equal(text.includes("уже не «лёгкий режим»"), false);
+  });
+
+  it("answers progress chip without only repeating calorie-delta fallback", async () => {
+    const trainer = new RulesLocalAITrainer();
+    const text = await trainer.generateAdvice(context, "Мой прогресс за неделю");
+    assert.match(text, /Прогресс|сесс/i);
+  });
+
   it("still falls back to the calorie-delta reply for a truly generic message", async () => {
     const trainer = new RulesLocalAITrainer();
     const text = await trainer.generateAdvice(context, "как у меня дела сегодня?");
