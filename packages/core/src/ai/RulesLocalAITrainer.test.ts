@@ -80,23 +80,19 @@ describe("RulesLocalAITrainer", () => {
     assert.match(text, /дефицит/i);
   });
 
-  it("answers a weight-loss question with sustainable deficit advice", async () => {
+  it("answers a weight-loss question with a dedicated reply, not the calorie fallback", async () => {
     const trainer = new RulesLocalAITrainer();
-    const deepDeficit: UserContextSnapshot = {
-      ...context,
-      dailyMetrics: {
-        ...context.dailyMetrics,
-        consumedCalories: 185,
-        targetCalories: 2025,
-        burnedCalories: 0,
-        proteinConsumed: 27,
-        proteinTarget: 146,
-      },
-    };
-    const text = await trainer.generateAdvice(deepDeficit, "Как похудеть");
-    assert.match(text, /устойчивый дефицит|300–500/i);
-    assert.match(text, /белк/i); // «белка» in proteinHint
-    assert.equal(text.includes("уже не «лёгкий режим»"), false);
+    const text = await trainer.generateAdvice(context, "Как похудеть?");
+    assert.match(text, /дефицит/i);
+    assert.match(text, /белк/i);
+    assert.doesNotMatch(text, /Держи темп/); // не должен быть тем же текстом, что и generic-фолбэк
+  });
+
+  it("gives a different reply to a second, distinct question in the same session", async () => {
+    const trainer = new RulesLocalAITrainer();
+    const first = await trainer.generateAdvice(context, "Дай совет на сегодня");
+    const second = await trainer.generateAdvice(context, "Как похудеть?");
+    assert.notStrictEqual(first, second);
   });
 
   it("answers progress chip without only repeating calorie-delta fallback", async () => {

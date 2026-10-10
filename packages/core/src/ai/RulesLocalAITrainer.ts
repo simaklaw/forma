@@ -89,21 +89,17 @@ function advise(ctx: UserContextSnapshot, userPrompt: string): string {
 
   // «Как похудеть / сбросить вес» — before numerical calorie fallback
   if (
-    q.includes("похуд") ||
-    q.includes("сброс") ||
-    q.includes("сбросить") ||
-    q.includes("убрать вес") ||
-    q.includes("lose weight")
+    q.includes("похуде") ||
+    q.includes("сбросить вес") ||
+    q.includes("скинуть вес") ||
+    q.includes("lose weight") ||
+    (q.includes("вес") && (q.includes("сниз") || q.includes("уйт")))
   ) {
-    const proteinHint =
-      proteinLeft > 0
-        ? ` До белка ещё ~${proteinLeft} г — без этого при сильном дефиците теряешь мышцы.`
-        : " Белок на сегодня уже закрыт — держи этот уровень.";
     return (
-      `Похудение = устойчивый дефицит (~300–500 ккал), а не голод на ${Math.abs(delta)} ккал. ` +
-      `Цель ${ctx.dailyMetrics.targetCalories} ккал, съедено ${ctx.dailyMetrics.consumedCalories}.` +
-      proteinHint +
-      ` Закрой день тренировкой или прогулкой и не режь калории ещё сильнее.`
+      `Похудение — это стабильный дефицит калорий, не разовые ограничения. ` +
+      `Сейчас цель ${ctx.dailyMetrics.targetCalories} ккал, фактический дефицит ≈${Math.abs(delta)} ккал. ` +
+      `Держи ${proteinTarget} г белка в день (сейчас осталось ${proteinLeft} г) — это сохраняет мышцы при похудении. ` +
+      `Оптимальный темп — не больше 0.5-1% веса в неделю, более резкий дефицит обычно не держится долго.`
     );
   }
 
