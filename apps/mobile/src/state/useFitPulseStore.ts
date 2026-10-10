@@ -128,7 +128,7 @@ interface AppStore {
   addFoodItem: (mealType: keyof DayMeals, item: Omit<FoodItem, 'id'>) => void;
   removeFoodItem: (mealType: keyof DayMeals, id: string) => void;
   addCustomFood: (item: Omit<CustomFoodDef, 'id'>) => CustomFoodDef;
-  setWater: (count: number) => void;
+  setWater: (count) => void;
   logWeight: (weight: number) => void;
 
   recordSet: (exerciseId: number, weight: number, reps: number, rir: number) => number;
@@ -165,7 +165,6 @@ function isDayMeals(value: unknown): value is DayMeals {
  * Malformed shapes fall back to `current` defaults (same idea as customFoods guard).
  */
 export function mergePersistedAppState(persisted: unknown, current: AppStore): AppStore {
-  // Drop legacy coachMessages from older AsyncStorage snapshots (chat UI removed).
   const raw = (persisted ?? {}) as Record<string, unknown>;
   const { coachMessages: _legacyCoach, ...rest } = raw;
   const p = rest as Partial<AppStore>;
@@ -219,7 +218,7 @@ export const useFitPulseStore = create<AppStore>()(
         }
       },
 
-      triggerRefeed: () => set({ metabolic: startDietBreak() }),
+      triggerRefeed: () => set({ metabolic: startRefeed() }),
       triggerDietBreak: () => set({ metabolic: startDietBreak() }),
 
       addFoodItem: (mealType, item) =>
@@ -381,15 +380,6 @@ export const useFitPulseStore = create<AppStore>()(
         set(next);
       }
     }),
-    /**
-     * `version` + `migrate` here follow the same pattern as the SQLite migration
-     * runner (apps/mobile/src/features/workout/data/sqlite/runMigrations.ts):
-     * bump `version` and add a `migrate(persistedState, fromVersion)` function
-     * whenever a field's shape changes in a backward-incompatible way. Right
-     * now version 1 is just the baseline — `merge` below defends against
-     * malformed/missing fields from an older or corrupted store, but does not
-     * yet need to transform data between shapes.
-     */
     {
       name: 'fitpulse_production_state',
       storage: createJSONStorage(() => AsyncStorage),
