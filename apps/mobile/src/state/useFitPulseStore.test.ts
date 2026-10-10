@@ -1,6 +1,7 @@
 import {
   mergePersistedAppState,
   selectTodayMeals,
+  selectYesterdayMealItems,
   useFitPulseStore,
   type SetLogEntry
 } from './useFitPulseStore';
@@ -98,5 +99,55 @@ describe('selectTodayMeals', () => {
     const result = selectTodayMeals(meals, now);
     expect(result.breakfast).toHaveLength(1);
     expect(result.breakfast[0].id).toBe('2');
+  });
+});
+
+describe('selectYesterdayMealItems', () => {
+  it('returns only items logged yesterday for the given meal type', () => {
+    const now = new Date(2026, 9, 10, 10, 0);
+    const yesterday = new Date(2026, 9, 9, 8, 0).getTime();
+    const today = new Date(2026, 9, 10, 8, 0).getTime();
+    const meals = {
+      breakfast: [
+        { id: '1', name: 'oats', kcal: 1, protein: 0, fat: 0, carbs: 0, loggedAt: yesterday },
+        { id: '2', name: 'today', kcal: 1, protein: 0, fat: 0, carbs: 0, loggedAt: today }
+      ],
+      lunch: [],
+      snack: [],
+      dinner: []
+    };
+    const result = selectYesterdayMealItems(meals, 'breakfast', now);
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe('1');
+  });
+});
+
+describe('copyFoodItems action', () => {
+  it('appends copied items with fresh ids and current timestamp', () => {
+    const { copyFoodItems } = useFitPulseStore.getState();
+    const before = useFitPulseStore.getState().todayMeals.breakfast.length;
+    copyFoodItems('breakfast', [
+      { id: 'old-id', name: 'oats', kcal: 300, protein: 10, fat: 5, carbs: 50, loggedAt: 1 }
+    ]);
+    const after = useFitPulseStore.getState().todayMeals.breakfast;
+    expect(after.length).toBe(before + 1);
+    expect(after[after.length - 1].id).not.toBe('old-id');
+  });
+});
+
+describe('saveMealAsTemplate / logSavedMeal', () => {
+  it('saves a template without id/loggedAt and logs it with fresh values', () => {
+    const { saveMealAsTemplate, logSavedMeal } = useFitPulseStore.getState();
+    const template = saveMealAsTemplate('Мой завтрак', [
+      { id: 'x', name: 'oats', kcal: 300, protein: 10, fat: 5, carbs: 50, loggedAt: 123 }
+    ]);
+    expect(template.items[0]).not.toHaveProperty('id');
+    expect(template.items[0]).not.toHaveProperty('loggedAt');
+
+    const beforeLen = useFitPulseStore.getState().todayMeals.lunch.length;
+    logSavedMeal('lunch', template.id);
+    const after = useFitPulseStore.getState().todayMeals.lunch;
+    expect(after.length).toBe(beforeLen + 1);
+    expect(after[after.length - 1].name).toBe('oats');
   });
 });
