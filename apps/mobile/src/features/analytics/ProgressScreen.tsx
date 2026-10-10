@@ -11,8 +11,8 @@ import {
 } from '@forma/core';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
-import { selectDailyTotals, useFitPulseStore } from '@/state/useFitPulseStore';
-import { activityStreakDays, lastNDays } from '@/engines/WorkoutStats';
+import { selectDailyTotals, selectTodayMeals, useFitPulseStore } from '@/state/useFitPulseStore';
+import { unifiedStreakDays, lastNDays } from '@/engines/WorkoutStats';
 import { allExerciseNames } from '@/features/workout/catalog';
 
 const GLASS_ML = 250;
@@ -42,7 +42,8 @@ export default function ProgressScreen() {
   const personalRecords = useFitPulseStore((s) => s.personalRecords);
   const profile = useFitPulseStore((s) => s.profile);
   const waterGlasses = useFitPulseStore((s) => s.waterGlasses);
-  const todayMeals = useFitPulseStore((s) => s.todayMeals);
+  const allMeals = useFitPulseStore((s) => s.todayMeals);
+  const todayMeals = useMemo(() => selectTodayMeals(allMeals), [allMeals]);
   const calcTargets = useFitPulseStore((s) => s.calculateTargets);
   const metabolic = useFitPulseStore((s) => s.metabolic);
 
@@ -60,7 +61,7 @@ export default function ProgressScreen() {
     return weekKeys.filter((k) => dates.has(k)).length;
   }, [setLogs, weekKeys]);
 
-  const streak = useMemo(() => activityStreakDays(setLogs), [setLogs]);
+  const streak = useMemo(() => unifiedStreakDays(setLogs, allMeals), [setLogs, allMeals]);
 
   const domainWorkouts = useMemo(() => workoutsFromSetLogs(setLogs), [setLogs]);
   const mealTotals = useMemo(() => selectDailyTotals(todayMeals), [todayMeals]);
