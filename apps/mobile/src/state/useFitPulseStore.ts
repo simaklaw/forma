@@ -188,6 +188,12 @@ interface AppStore {
   ) => void;
 }
 
+function isDayMeals(value: unknown): value is DayMeals {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const keys: (keyof DayMeals)[] = ['breakfast', 'lunch', 'snack', 'dinner'];
+  return keys.every((k) => Array.isArray((value as DayMeals)[k]));
+}
+
 /**
  * Defensive rehydrate merge for AsyncStorage snapshots.
  * Malformed shapes fall back to `current` defaults (same idea as customFoods guard).
@@ -216,7 +222,8 @@ export function mergePersistedAppState(persisted: unknown, current: AppStore): A
     metabolic:
       p.metabolic != null && typeof p.metabolic === 'object'
         ? { ...current.metabolic, ...p.metabolic }
-        : current.metabolic
+        : current.metabolic,
+    todayMeals: isDayMeals(p.todayMeals) ? p.todayMeals : current.todayMeals
   };
 }
 
