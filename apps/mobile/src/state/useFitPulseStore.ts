@@ -188,6 +188,38 @@ interface AppStore {
   ) => void;
 }
 
+/**
+ * Defensive rehydrate merge for AsyncStorage snapshots.
+ * Malformed shapes fall back to `current` defaults (same idea as customFoods guard).
+ */
+export function mergePersistedAppState(persisted: unknown, current: AppStore): AppStore {
+  const p = (persisted ?? {}) as Partial<AppStore>;
+  return {
+    ...current,
+    ...p,
+    profile: mergeProfile(current.profile, p.profile),
+    customFoods: Array.isArray(p.customFoods) ? p.customFoods : current.customFoods,
+    coachMessages: sanitizeCoachMessages(p.coachMessages ?? current.coachMessages),
+    setLogs: Array.isArray(p.setLogs) ? p.setLogs : current.setLogs,
+    weightHistory: Array.isArray(p.weightHistory) ? p.weightHistory : current.weightHistory,
+    dayProgress:
+      p.dayProgress != null && typeof p.dayProgress === 'object' && !Array.isArray(p.dayProgress)
+        ? p.dayProgress
+        : current.dayProgress,
+    personalRecords:
+      p.personalRecords != null &&
+      typeof p.personalRecords === 'object' &&
+      !Array.isArray(p.personalRecords)
+        ? p.personalRecords
+        : current.personalRecords,
+    waterGlasses: typeof p.waterGlasses === 'number' ? p.waterGlasses : current.waterGlasses,
+    metabolic:
+      p.metabolic != null && typeof p.metabolic === 'object'
+        ? { ...current.metabolic, ...p.metabolic }
+        : current.metabolic
+  };
+}
+
 export const useFitPulseStore = create<AppStore>()(
   persist(
     (set, get) => ({
@@ -380,19 +412,20 @@ export const useFitPulseStore = create<AppStore>()(
         set(next);
       }
     }),
+    /**
+     * `version` + `migrate` here follow the same pattern as the SQLite migration
+     * runner (apps/mobile/src/features/workout/data/sqlite/runMigrations.ts):
+     * bump `version` and add a `migrate(persistedState, fromVersion)` function
+     * whenever a field's shape changes in a backward-incompatible way. Right
+     * now version 1 is just the baseline — `merge` below defends against
+     * malformed/missing fields from an older or corrupted store, but does not
+     * yet need to transform data between shapes.
+     */
     {
       name: 'fitpulse_production_state',
       storage: createJSONStorage(() => AsyncStorage),
-      merge: (persisted, current) => {
-        const p = (persisted ?? {}) as Partial<AppStore>;
-        return {
-          ...current,
-          ...p,
-          profile: mergeProfile(current.profile, p.profile),
-          customFoods: Array.isArray(p.customFoods) ? p.customFoods : current.customFoods,
-          coachMessages: sanitizeCoachMessages(p.coachMessages ?? current.coachMessages)
-        };
-      }
+      version: 1,
+      merge: (persisted, current) => mergePersistedAppState(persisted, current)
     }
   )
 );
