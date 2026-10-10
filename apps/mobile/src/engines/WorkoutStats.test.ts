@@ -6,6 +6,7 @@ import {
   pruneOldSetLogs,
   selectCurrentStreak,
   selectStreakDays,
+  unifiedStreakDays,
   ruDayWord,
   roundToStep,
   toDateKey,
@@ -48,7 +49,9 @@ describe('selectWeeklyVolume', () => {
   });
 
   it('ignores logs outside the requested window', () => {
-    const logs: SetLogEntry[] = [{ id: '1', exerciseId: 1, dateKey: toDateKey(daysAgo(30)), weight: 80, reps: 8, rir: 2 }];
+    const logs: SetLogEntry[] = [
+      { id: '1', exerciseId: 1, dateKey: toDateKey(daysAgo(30)), weight: 80, reps: 8, rir: 2 }
+    ];
     const result = selectWeeklyVolume(logs, 7, NOW);
     expect(result.every((r) => r.volumeKg === 0)).toBe(true);
   });
@@ -105,7 +108,9 @@ describe('selectPersonalRecord', () => {
   });
 
   it('returns null for an exercise with no logs even if other exercises have some', () => {
-    const logs: SetLogEntry[] = [{ id: '1', exerciseId: 1, dateKey: '2026-09-10', weight: 80, reps: 8, rir: 2 }];
+    const logs: SetLogEntry[] = [
+      { id: '1', exerciseId: 1, dateKey: '2026-09-10', weight: 80, reps: 8, rir: 2 }
+    ];
     expect(selectPersonalRecord(logs, 99)).toBeNull();
   });
 });
@@ -132,7 +137,9 @@ describe('pruneOldSetLogs', () => {
   });
 
   it('keeps everything when nothing is old enough to prune', () => {
-    const logs: SetLogEntry[] = [{ id: '1', exerciseId: 1, dateKey: toDateKey(daysAgo(5)), weight: 80, reps: 8, rir: 2 }];
+    const logs: SetLogEntry[] = [
+      { id: '1', exerciseId: 1, dateKey: toDateKey(daysAgo(5)), weight: 80, reps: 8, rir: 2 }
+    ];
     expect(pruneOldSetLogs(logs, 180, NOW)).toHaveLength(1);
   });
 
@@ -231,5 +238,87 @@ describe('ruDayWord', () => {
     expect(ruDayWord(21)).toBe('день');
     expect(ruDayWord(22)).toBe('дня');
     expect(ruDayWord(25)).toBe('дней');
+  });
+});
+
+describe('unifiedStreakDays', () => {
+  const emptyMeals = () => ({ breakfast: [], lunch: [], snack: [], dinner: [] });
+  const dateKeyDaysAgo = (days: number) => toDateKey(daysAgo(days));
+
+  it('returns 0 when there are no workouts or meals', () => {
+    expect(unifiedStreakDays([], emptyMeals(), NOW)).toBe(0);
+  });
+
+  it('counts consecutive workout-only days', () => {
+    expect(
+      unifiedStreakDays(
+        [{ dateKey: dateKeyDaysAgo(0) }, { dateKey: dateKeyDaysAgo(1) }],
+        emptyMeals(),
+        NOW
+      )
+    ).toBe(2);
+  });
+
+  it('counts consecutive nutrition-only days', () => {
+    const meals = {
+      ...emptyMeals(),
+      breakfast: [
+        {
+          id: 'today',
+          name: 'Oats',
+          kcal: 100,
+          protein: 5,
+          fat: 2,
+          carbs: 12,
+          loggedAt: daysAgo(0).getTime()
+        },
+        {
+          id: 'yesterday',
+          name: 'Rice',
+          kcal: 100,
+          protein: 2,
+          fat: 1,
+          carbs: 20,
+          loggedAt: daysAgo(1).getTime()
+        }
+      ]
+    };
+    expect(unifiedStreakDays([], meals, NOW)).toBe(2);
+  });
+
+  it('unifies workout and nutrition days and stops at the first gap', () => {
+    const meals = {
+      ...emptyMeals(),
+      lunch: [
+        {
+          id: 'today',
+          name: 'Meal',
+          kcal: 100,
+          protein: 5,
+          fat: 2,
+          carbs: 12,
+          loggedAt: NOW.getTime()
+        },
+        {
+          id: 'three-days-ago',
+          name: 'Meal',
+          kcal: 100,
+          protein: 5,
+          fat: 2,
+          carbs: 12,
+          loggedAt: daysAgo(3).getTime()
+        }
+      ]
+    };
+    const workouts = [{ dateKey: dateKeyDaysAgo(1) }];
+    expect(unifiedStreakDays(workouts, meals, NOW)).toBe(2);
+  });
+
+  it('counts a legacy meal without loggedAt as activity today', () => {
+    const meals = {
+      ...emptyMeals(),
+      dinner: [{ id: 'legacy', name: 'Meal', kcal: 100, protein: 5, fat: 2, carbs: 12 }]
+    };
+    expect(unifiedStreakDays([], meals, NOW)).toBe(1);
   });
 });

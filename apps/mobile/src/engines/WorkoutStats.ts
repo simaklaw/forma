@@ -36,15 +36,17 @@ export function activityStreakDays(setLogs: { dateKey: string }[]): number {
   return streak;
 }
 
-/** Did the user log at least one food item on this date? */
-function hasLoggedFoodOn(allMeals: DayMeals, dateKey: string): boolean {
+/** Dates with at least one food log; legacy items without timestamps count today. */
+function foodLogDates(allMeals: DayMeals, todayKey: string): Set<string> {
   const allItems: FoodItem[] = [
     ...allMeals.breakfast,
     ...allMeals.lunch,
     ...allMeals.snack,
     ...allMeals.dinner
   ];
-  return allItems.some((i) => i.loggedAt && toDateKey(new Date(i.loggedAt)) === dateKey);
+  return new Set(
+    allItems.map((item) => (item.loggedAt ? toDateKey(new Date(item.loggedAt)) : todayKey))
+  );
 }
 
 /**
@@ -57,12 +59,11 @@ export function unifiedStreakDays(
   now: Date = new Date()
 ): number {
   const workoutDates = new Set(setLogs.map((e) => e.dateKey));
+  const todayKey = toDateKey(now);
+  const mealDates = foodLogDates(allMeals, todayKey);
   let streak = 0;
   const cursor = new Date(now);
-  while (
-    workoutDates.has(toDateKey(cursor)) ||
-    hasLoggedFoodOn(allMeals, toDateKey(cursor))
-  ) {
+  while (workoutDates.has(toDateKey(cursor)) || mealDates.has(toDateKey(cursor))) {
     streak += 1;
     cursor.setDate(cursor.getDate() - 1);
   }
