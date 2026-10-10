@@ -1,8 +1,4 @@
-import {
-  mergePersistedAppState,
-  useFitPulseStore,
-  type SetLogEntry
-} from './useFitPulseStore';
+import { mergePersistedAppState, useFitPulseStore, type SetLogEntry } from './useFitPulseStore';
 
 function baseline() {
   return useFitPulseStore.getState();
@@ -42,7 +38,10 @@ describe('mergePersistedAppState', () => {
 
   it('falls back when personalRecords is not a plain object', () => {
     const current = baseline();
-    const merged = mergePersistedAppState({ personalRecords: [1, 2, 3] as unknown as object }, current);
+    const merged = mergePersistedAppState(
+      { personalRecords: [1, 2, 3] as unknown as object },
+      current
+    );
     expect(Array.isArray(merged.personalRecords)).toBe(false);
     expect(merged.personalRecords).toEqual(current.personalRecords);
   });
@@ -60,12 +59,18 @@ describe('mergePersistedAppState', () => {
     expect(merged.todayMeals).toEqual(current.todayMeals);
   });
 
-  it('merges metabolic object onto current defaults', () => {
+  it('drops legacy coachMessages from persisted snapshots', () => {
     const current = baseline();
     const merged = mergePersistedAppState(
-      { metabolic: { type: 'refeed', endsAt: 123 } },
+      { coachMessages: [{ id: 'x', role: 'user', text: 'hi' }] } as object,
       current
     );
+    expect('coachMessages' in merged).toBe(false);
+  });
+
+  it('merges metabolic object onto current defaults', () => {
+    const current = baseline();
+    const merged = mergePersistedAppState({ metabolic: { type: 'refeed', endsAt: 123 } }, current);
     expect(merged.metabolic.type).toBe('refeed');
     expect(merged.metabolic.endsAt).toBe(123);
   });
