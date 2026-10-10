@@ -17,6 +17,7 @@ import {
   type ImportedExercise
 } from './importedExerciseLibrary.generated';
 import { IMPORTED_EXERCISE_IMAGES } from './importedExerciseImages.generated';
+import { filterImportedLibrary } from './importedLibraryFilter';
 
 const CATEGORY_LABELS: Record<ImportedExercise['category'], string> = {
   chest: 'Грудь',
@@ -37,16 +38,10 @@ export default function ImportedLibraryPanel() {
   const [category, setCategory] = useState<ImportedExercise['category'] | null>(null);
   const [selected, setSelected] = useState<ImportedExercise | null>(null);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLocaleLowerCase('ru-RU');
-    return IMPORTED_EXERCISE_LIBRARY.filter((ex) => {
-      const hay =
-        `${ex.nameEn} ${ex.nameRu ?? ''} ${ex.primaryMuscles.join(' ')}`.toLocaleLowerCase('ru-RU');
-      const matchesQuery = !q || hay.includes(q);
-      const matchesCategory = !category || ex.category === category;
-      return matchesQuery && matchesCategory;
-    });
-  }, [query, category]);
+  const filtered = useMemo(
+    () => filterImportedLibrary(IMPORTED_EXERCISE_LIBRARY, query, category),
+    [query, category]
+  );
 
   const categories = useMemo(
     () =>
