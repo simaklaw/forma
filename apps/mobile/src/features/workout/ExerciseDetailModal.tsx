@@ -105,7 +105,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
             accessibilityLabel="Закрыть"
             style={[styles.barBtn, { borderColor: colors.lineStrong }]}
           >
-            <Text style={[styles.barBtnText, { color: colors.paper }]}>Закрыть</Text>
+            <Text style={[styles.barBtnText, { color: colors.lime }]}>Закрыть</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={onToggleFavorite}
