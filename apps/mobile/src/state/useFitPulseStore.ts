@@ -219,7 +219,7 @@ export const useFitPulseStore = create<AppStore>()(
         }
       },
 
-      triggerRefeed: () => set({ metabolic: startRefeed() }),
+      triggerRefeed: () => set({ metabolic: startDietBreak() }),
       triggerDietBreak: () => set({ metabolic: startDietBreak() }),
 
       addFoodItem: (mealType, item) =>
@@ -398,6 +398,19 @@ export const useFitPulseStore = create<AppStore>()(
     }
   )
 );
+
+/** Meals logged today (by FoodItem.loggedAt). Items without loggedAt count as today. */
+export function selectTodayMeals(meals: DayMeals, now: Date = new Date()): DayMeals {
+  const todayKey = toDateKey(now);
+  const filterToday = (items: FoodItem[]) =>
+    items.filter((i) => !i.loggedAt || toDateKey(new Date(i.loggedAt)) === todayKey);
+  return {
+    breakfast: filterToday(meals.breakfast),
+    lunch: filterToday(meals.lunch),
+    snack: filterToday(meals.snack),
+    dinner: filterToday(meals.dinner)
+  };
+}
 
 export function selectDailyTotals(meals: DayMeals) {
   const all = [...meals.breakfast, ...meals.lunch, ...meals.snack, ...meals.dinner];
