@@ -9,7 +9,6 @@ import { RestTimerEngine } from '@/engines/RestTimerEngine';
 import WorkoutScreen from '@/features/workout/WorkoutScreen';
 import CatalogScreen from '@/features/workout/CatalogScreen';
 import NutritionScreen from '@/features/nutrition/NutritionScreen';
-import CoachScreen from '@/features/coach/CoachScreen';
 import ProgressScreen from '@/features/analytics/ProgressScreen';
 import ProfileScreen from '@/features/profile/ProfileScreen';
 import type { TabParamList } from './types';
@@ -21,7 +20,6 @@ const ICONS: Record<string, string> = {
   Тренировки: '🏋',
   Каталог: '☰',
   Питание: '🍽',
-  Тренер: '◎',
   Прогресс: '↗',
   Профиль: '◉'
 };
@@ -100,7 +98,7 @@ export default function RootNavigator() {
             paddingTop: 6
           },
           tabBarActiveTintColor: colors.lime,
-          tabBarInactiveTintColor: colors.paperFaint,
+          tabBarInactiveTintColor: colors.paperDim,
           tabBarLabelStyle: {
             fontSize: 10,
             fontFamily: fonts.bodySemi,
@@ -111,7 +109,7 @@ export default function RootNavigator() {
               name={route.name}
               focused={focused}
               active={colors.lime}
-              inactive={colors.paperFaint}
+              inactive={colors.paperDim}
             />
           )
         })}
@@ -122,7 +120,6 @@ export default function RootNavigator() {
         <Tab.Screen name="Тренировки" component={WorkoutScreen} />
         <Tab.Screen name="Каталог" component={CatalogScreen} />
         <Tab.Screen name="Питание" component={NutritionScreen} />
-        <Tab.Screen name="Тренер" component={CoachScreen} />
         <Tab.Screen name="Прогресс" component={ProgressScreen} />
         <Tab.Screen name="Профиль" component={ProfileScreen} />
       </Tab.Navigator>

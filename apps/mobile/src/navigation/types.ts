@@ -3,7 +3,6 @@ export type TabParamList = {
   Тренировки: undefined;
   Каталог: undefined;
   Питание: undefined;
-  Тренер: undefined;
   Прогресс: undefined;
   Профиль: undefined;
 };

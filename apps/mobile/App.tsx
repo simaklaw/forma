@@ -13,7 +13,6 @@ import RootNavigator from '@/navigation/RootNavigator';
 import OnboardingScreen from '@/features/onboarding/OnboardingScreen';
 import { AppErrorBoundary } from '@/features/workout/AppErrorBoundary';
 import { LlamaLocalAITrainer } from '@/ai/LlamaLocalAITrainer';
-import { setMobileTrainerProgress } from '@/ai/trainerProgress';
 import {
   configureSessionPersistence,
   getSessionPersistenceMode,
@@ -73,7 +72,7 @@ export default function App() {
 
     const trainer = new LlamaLocalAITrainer();
     CoachEngine.setTrainer(trainer);
-    void trainer.initialize((ratio) => setMobileTrainerProgress(ratio));
+    void trainer.initialize();
 
     const unsub = useFitPulseStore.persist.onFinishHydration(() => setHydrated(true));
     if (useFitPulseStore.persist.hasHydrated()) setHydrated(true);
