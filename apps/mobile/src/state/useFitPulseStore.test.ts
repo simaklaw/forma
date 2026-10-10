@@ -1,4 +1,9 @@
-import { mergePersistedAppState, useFitPulseStore, type SetLogEntry } from './useFitPulseStore';
+import {
+  mergePersistedAppState,
+  selectTodayMeals,
+  useFitPulseStore,
+  type SetLogEntry
+} from './useFitPulseStore';
 
 function baseline() {
   return useFitPulseStore.getState();
@@ -73,5 +78,25 @@ describe('mergePersistedAppState', () => {
     const merged = mergePersistedAppState({ metabolic: { type: 'refeed', endsAt: 123 } }, current);
     expect(merged.metabolic.type).toBe('refeed');
     expect(merged.metabolic.endsAt).toBe(123);
+  });
+});
+
+describe('selectTodayMeals', () => {
+  it('filters out food items from previous days', () => {
+    const now = new Date(2026, 9, 10, 15, 0);
+    const yesterday = new Date(2026, 9, 9, 12, 0).getTime();
+    const today = new Date(2026, 9, 10, 8, 0).getTime();
+    const meals = {
+      breakfast: [
+        { id: '1', name: 'old', kcal: 1, protein: 0, fat: 0, carbs: 0, loggedAt: yesterday },
+        { id: '2', name: 'new', kcal: 1, protein: 0, fat: 0, carbs: 0, loggedAt: today }
+      ],
+      lunch: [],
+      snack: [],
+      dinner: []
+    };
+    const result = selectTodayMeals(meals, now);
+    expect(result.breakfast).toHaveLength(1);
+    expect(result.breakfast[0].id).toBe('2');
   });
 });

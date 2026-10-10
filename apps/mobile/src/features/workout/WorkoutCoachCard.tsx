@@ -7,7 +7,7 @@ import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
 import type { TabParamList } from '@/navigation/types';
-import { useFitPulseStore } from '@/state/useFitPulseStore';
+import { selectTodayMeals, useFitPulseStore } from '@/state/useFitPulseStore';
 
 type Props = {
   dayName: string;
@@ -21,7 +21,8 @@ export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames }: Props
   const styles = createStyles(colors);
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const profile = useFitPulseStore((s) => s.profile);
-  const todayMeals = useFitPulseStore((s) => s.todayMeals);
+  const allMeals = useFitPulseStore((s) => s.todayMeals);
+  const todayMeals = useMemo(() => selectTodayMeals(allMeals), [allMeals]);
   const setLogs = useFitPulseStore((s) => s.setLogs);
   const calculateTargets = useFitPulseStore((s) => s.calculateTargets);
   const [advice, setAdvice] = useState('');
