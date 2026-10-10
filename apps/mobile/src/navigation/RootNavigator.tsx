@@ -41,8 +41,7 @@ function TabIcon({
         style={{
           fontSize: 16,
           lineHeight: 18,
-          color: focused ? active : inactive,
-          opacity: focused ? 1 : 0.75
+          color: focused ? active : inactive
         }}
       >
         {ICONS[name] ?? '·'}
