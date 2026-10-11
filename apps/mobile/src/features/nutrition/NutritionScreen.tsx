@@ -5,7 +5,13 @@ import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { isProfileComplete, toDateKey } from '@forma/core';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
-import { useFitPulseStore, selectDailyTotals, DayMeals } from '@/state/useFitPulseStore';
+import {
+  useFitPulseStore,
+  selectDailyTotals,
+  selectTodayMeals,
+  selectYesterdayMealItems,
+  DayMeals
+} from '@/state/useFitPulseStore';
 import { estimateWorkoutBurnKcal } from '@/engines/estimateWorkoutBurn';
 import CalorieRing from '@/components/CalorieRing';
 import DailyTipCard from '@/components/DailyTipCard';
@@ -35,8 +41,12 @@ export default function NutritionScreen() {
   const sheetRef = useRef<GorhomBottomSheet>(null);
   const [activeMeal, setActiveMeal] = React.useState<keyof DayMeals>('breakfast');
 
-  const meals = useFitPulseStore((s) => s.todayMeals);
+  const allMeals = useFitPulseStore((s) => s.todayMeals);
+  const meals = React.useMemo(() => selectTodayMeals(allMeals), [allMeals]);
   const removeFoodItem = useFitPulseStore((s) => s.removeFoodItem);
+  const copyFoodItems = useFitPulseStore((s) => s.copyFoodItems);
+  const savedMeals = useFitPulseStore((s) => s.savedMeals);
+  const logSavedMeal = useFitPulseStore((s) => s.logSavedMeal);
   const waterGlasses = useFitPulseStore((s) => s.waterGlasses);
   const setWater = useFitPulseStore((s) => s.setWater);
   const profile = useFitPulseStore((s) => s.profile);
@@ -169,6 +179,27 @@ export default function NutritionScreen() {
           </View>
         </View>
 
+        {savedMeals.length > 0 ? (
+          <View style={styles.savedMealsRow}>
+            <Text style={styles.sectionTitle}>Мои блюда</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {savedMeals.map((m) => (
+                <TouchableOpacity
+                  key={m.id}
+                  style={styles.savedMealChip}
+                  onPress={() => logSavedMeal(activeMeal, m.id)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Добавить «${m.name}» в ${MEAL_LABELS[activeMeal]}`}
+                >
+                  <Text style={styles.savedMealChipText} numberOfLines={1}>
+                    {m.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        ) : null}
+
         <View style={styles.sectionHead}>
           <Text style={styles.sectionTitle}>Приёмы пищи</Text>
           <Text style={styles.sectionCount}>{totals.kcal.toLocaleString('ru-RU')} ккал</Text>
@@ -190,6 +221,20 @@ export default function NutritionScreen() {
                 <Text style={styles.addBtnText}>+ Добавить</Text>
               </TouchableOpacity>
             </View>
+            {meals[key].length === 0 && selectYesterdayMealItems(allMeals, key).length > 0 ? (
+              <TouchableOpacity
+                style={styles.repeatBtn}
+                onPress={() => copyFoodItems(key, selectYesterdayMealItems(allMeals, key))}
+                accessibilityRole="button"
+                accessibilityLabel={`Повторить вчерашний ${MEAL_LABELS[key].toLowerCase()}`}
+              >
+                <Text style={styles.repeatBtnText}>
+                  ⟲ Повторить вчера ·{' '}
+                  {selectYesterdayMealItems(allMeals, key).reduce((sum, i) => sum + i.kcal, 0)}{' '}
+                  ккал
+                </Text>
+              </TouchableOpacity>
+            ) : null}
             {meals[key].length === 0 ? (
               <TouchableOpacity onPress={() => openAddFood(key)} accessibilityRole="button">
                 <Text style={styles.empty}>Нет записей · нажмите «Добавить»</Text>
@@ -338,6 +383,19 @@ function createStyles(colors: ColorTokens) {
       marginBottom: 10
     },
     sectionTitle: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.bodySemi },
+    savedMealsRow: { marginHorizontal: spacing.xl, marginTop: spacing.md },
+    savedMealChip: {
+      marginTop: 8,
+      marginRight: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: radius.control,
+      borderWidth: 1,
+      borderColor: colors.lineStrong,
+      backgroundColor: colors.panel,
+      maxWidth: 160
+    },
+    savedMealChipText: { color: colors.paper, fontSize: 12, fontFamily: fonts.bodySemi },
     sectionCount: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 13 },
     mealGroup: {
       marginHorizontal: spacing.xl,
@@ -362,6 +420,17 @@ function createStyles(colors: ColorTokens) {
       backgroundColor: colors.limeDim
     },
     addBtnText: { color: colors.lime, fontSize: 12, fontFamily: fonts.bodySemi },
+    repeatBtn: {
+      marginBottom: 8,
+      paddingVertical: 8,
+      paddingHorizontal: 10,
+      borderRadius: radius.control,
+      borderWidth: 1,
+      borderStyle: 'dashed',
+      borderColor: colors.lineStrong,
+      alignItems: 'center'
+    },
+    repeatBtnText: { color: colors.paperDim, fontSize: 12, fontFamily: fonts.body },
     empty: { color: colors.paperFaint, fontSize: 12, paddingVertical: 4 },
     foodRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
     foodTime: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 11, width: 34 },

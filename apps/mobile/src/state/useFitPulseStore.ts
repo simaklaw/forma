@@ -47,6 +47,13 @@ export interface CustomFoodDef {
   carbs: number;
 }
 
+/** User-defined reusable meal — a saved bundle of food items logged together. */
+export interface SavedMeal {
+  id: string;
+  name: string;
+  items: Omit<FoodItem, 'id' | 'loggedAt'>[];
+}
+
 export interface DayMeals {
   breakfast: FoodItem[];
   lunch: FoodItem[];
@@ -117,6 +124,7 @@ interface AppStore {
   metabolic: MetabolicStatus;
   todayMeals: DayMeals;
   customFoods: CustomFoodDef[];
+  savedMeals: SavedMeal[];
   waterGlasses: number;
   weightHistory: number[];
   setLogs: SetLogEntry[];
@@ -127,7 +135,11 @@ interface AppStore {
   triggerDietBreak: () => void;
   addFoodItem: (mealType: keyof DayMeals, item: Omit<FoodItem, 'id'>) => void;
   removeFoodItem: (mealType: keyof DayMeals, id: string) => void;
+  copyFoodItems: (mealType: keyof DayMeals, items: FoodItem[]) => void;
   addCustomFood: (item: Omit<CustomFoodDef, 'id'>) => CustomFoodDef;
+  saveMealAsTemplate: (name: string, items: FoodItem[]) => SavedMeal;
+  logSavedMeal: (mealType: keyof DayMeals, savedMealId: string) => void;
+  deleteSavedMeal: (id: string) => void;
   setWater: (count: number) => void;
   logWeight: (weight: number) => void;
 
@@ -144,6 +156,7 @@ interface AppStore {
         | 'metabolic'
         | 'todayMeals'
         | 'customFoods'
+        | 'savedMeals'
         | 'waterGlasses'
         | 'weightHistory'
         | 'setLogs'
@@ -174,6 +187,7 @@ export function mergePersistedAppState(persisted: unknown, current: AppStore): A
     ...p,
     profile: mergeProfile(current.profile, p.profile),
     customFoods: Array.isArray(p.customFoods) ? p.customFoods : current.customFoods,
+    savedMeals: Array.isArray(p.savedMeals) ? p.savedMeals : current.savedMeals,
     setLogs: Array.isArray(p.setLogs) ? p.setLogs : current.setLogs,
     weightHistory: Array.isArray(p.weightHistory) ? p.weightHistory : current.weightHistory,
     dayProgress:
@@ -202,6 +216,7 @@ export const useFitPulseStore = create<AppStore>()(
       metabolic: { type: null, endsAt: null },
       todayMeals: { breakfast: [], lunch: [], snack: [], dinner: [] },
       customFoods: [],
+      savedMeals: [],
       waterGlasses: 0,
       weightHistory: [],
       setLogs: [],
@@ -241,6 +256,21 @@ export const useFitPulseStore = create<AppStore>()(
           }
         })),
 
+      copyFoodItems: (mealType, items) =>
+        set((state) => ({
+          todayMeals: {
+            ...state.todayMeals,
+            [mealType]: [
+              ...state.todayMeals[mealType],
+              ...items.map((i) => ({
+                ...i,
+                id: generateId(),
+                loggedAt: Date.now()
+              }))
+            ]
+          }
+        })),
+
       addCustomFood: (item) => {
         const key = item.name.trim().toLowerCase();
         const existing = get().customFoods.find((f) => f.name.trim().toLowerCase() === key);
@@ -255,6 +285,33 @@ export const useFitPulseStore = create<AppStore>()(
         set((s) => ({ customFoods: [...s.customFoods, created] }));
         return created;
       },
+
+      saveMealAsTemplate: (name, items) => {
+        const template: SavedMeal = {
+          id: uuidv7(),
+          name: name.trim() || 'Без названия',
+          items: items.map(({ id: _id, loggedAt: _loggedAt, ...rest }) => rest)
+        };
+        set((s) => ({ savedMeals: [...s.savedMeals, template] }));
+        return template;
+      },
+
+      logSavedMeal: (mealType, savedMealId) => {
+        const template = get().savedMeals.find((m) => m.id === savedMealId);
+        if (!template) return;
+        set((state) => ({
+          todayMeals: {
+            ...state.todayMeals,
+            [mealType]: [
+              ...state.todayMeals[mealType],
+              ...template.items.map((i) => ({ ...i, id: generateId(), loggedAt: Date.now() }))
+            ]
+          }
+        }));
+      },
+
+      deleteSavedMeal: (id) =>
+        set((s) => ({ savedMeals: s.savedMeals.filter((m) => m.id !== id) })),
 
       setWater: (count) => set({ waterGlasses: count }),
 
@@ -344,6 +401,9 @@ export const useFitPulseStore = create<AppStore>()(
         if (Array.isArray(data.customFoods)) {
           next.customFoods = data.customFoods as CustomFoodDef[];
         }
+        if (Array.isArray(data.savedMeals)) {
+          next.savedMeals = data.savedMeals as SavedMeal[];
+        }
         if (typeof data.waterGlasses === 'number') next.waterGlasses = data.waterGlasses;
         if (
           Array.isArray(data.weightHistory) &&
@@ -410,6 +470,24 @@ export function selectTodayMeals(meals: DayMeals, now: Date = new Date()): DayMe
     snack: filterToday(meals.snack),
     dinner: filterToday(meals.dinner)
   };
+}
+
+/**
+ * Food items logged yesterday for a given meal slot, for the "повторить
+ * вчера" shortcut. Reads from the same loggedAt-derived history as
+ * selectTodayMeals (todayMeals never resets by date).
+ */
+export function selectYesterdayMealItems(
+  allMeals: DayMeals,
+  mealType: keyof DayMeals,
+  now: Date = new Date()
+): FoodItem[] {
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayKey = toDateKey(yesterday);
+  return allMeals[mealType].filter(
+    (i) => i.loggedAt && toDateKey(new Date(i.loggedAt)) === yesterdayKey
+  );
 }
 
 export function selectDailyTotals(meals: DayMeals) {

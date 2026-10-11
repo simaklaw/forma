@@ -5,7 +5,7 @@ import Slider from '@react-native-community/slider';
 import AppBottomSheet from '@/components/BottomSheet';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
-import { useFitPulseStore, DayMeals } from '@/state/useFitPulseStore';
+import { useFitPulseStore, selectTodayMeals, DayMeals } from '@/state/useFitPulseStore';
 import { OpenFoodFactsService, NormalizedFood } from '@/services/OpenFoodFactsService';
 
 /** Offline-first RU presets — always visible when sheet opens / query empty. Values per 100g unless noted in name. */
@@ -75,6 +75,9 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
   const addFoodItem = useFitPulseStore((s) => s.addFoodItem);
   const customFoods = useFitPulseStore((s) => s.customFoods);
   const addCustomFood = useFitPulseStore((s) => s.addCustomFood);
+  const saveMealAsTemplate = useFitPulseStore((s) => s.saveMealAsTemplate);
+  const allMeals = useFitPulseStore((s) => s.todayMeals);
+  const mealItems = selectTodayMeals(allMeals)[mealKey];
 
   const [tab, setTab] = useState<Tab>('database');
   const [query, setQuery] = useState('');
@@ -88,6 +91,8 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
   const [protein100, setProtein100] = useState('10');
   const [fat100, setFat100] = useState('5');
   const [carbs100, setCarbs100] = useState('10');
+  const [templateName, setTemplateName] = useState('');
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -305,6 +310,60 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
           </TouchableOpacity>
         </ScrollView>
       )}
+
+      {mealItems.length > 0 ? (
+        <View style={styles.saveTemplateBox}>
+          {!showSaveTemplate ? (
+            <TouchableOpacity
+              style={styles.saveTemplateBtn}
+              onPress={() => setShowSaveTemplate(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Сохранить как блюдо"
+            >
+              <Text style={styles.saveTemplateBtnText}>
+                Сохранить как блюдо · {mealItems.length} поз. ·{' '}
+                {mealItems.reduce((s, i) => s + i.kcal, 0)} ккал
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <View>
+              <Text style={styles.label}>Название блюда</Text>
+              <TextInput
+                style={styles.input}
+                value={templateName}
+                onChangeText={setTemplateName}
+                placeholder="Мой завтрак"
+                placeholderTextColor={colors.paperFaint}
+              />
+              <View style={styles.saveTemplateActions}>
+                <TouchableOpacity
+                  style={styles.saveTemplateCancel}
+                  onPress={() => {
+                    setShowSaveTemplate(false);
+                    setTemplateName('');
+                  }}
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.saveTemplateCancelText}>Отмена</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.saveTemplateConfirm}
+                  onPress={() => {
+                    saveMealAsTemplate(templateName, mealItems);
+                    setShowSaveTemplate(false);
+                    setTemplateName('');
+                    onClose();
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Сохранить блюдо"
+                >
+                  <Text style={styles.saveTemplateConfirmText}>Сохранить</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </View>
+      ) : null}
     </AppBottomSheet>
   );
 });
@@ -368,6 +427,41 @@ function createStyles(colors: ColorTokens) {
     fontSize: 14
   },
   cta: { marginTop: 10, marginBottom: 30, padding: 14, backgroundColor: colors.lime, alignItems: 'center' },
-  ctaText: { color: colors.ink, fontSize: 16, fontFamily: fonts.mono }
+  ctaText: { color: colors.ink, fontSize: 16, fontFamily: fonts.mono },
+  saveTemplateBox: {
+    marginTop: 8,
+    marginBottom: 24,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.line
+  },
+  saveTemplateBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: colors.lineStrong,
+    alignItems: 'center'
+  },
+  saveTemplateBtnText: { color: colors.paperDim, fontSize: 12, fontFamily: fonts.bodySemi },
+  saveTemplateActions: { flexDirection: 'row', gap: 8, marginTop: 8 },
+  saveTemplateCancel: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: radius.control,
+    borderWidth: 1,
+    borderColor: colors.lineStrong
+  },
+  saveTemplateCancelText: { color: colors.paperDim, fontFamily: fonts.bodySemi, fontSize: 13 },
+  saveTemplateConfirm: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: radius.control,
+    backgroundColor: colors.lime
+  },
+  saveTemplateConfirmText: { color: colors.ink, fontFamily: fonts.bodySemi, fontSize: 13 }
 });
 }
