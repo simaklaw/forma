@@ -1,12 +1,17 @@
 import React, { forwardRef, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import GorhomBottomSheet from '@gorhom/bottom-sheet';
+import { Alert, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import GorhomBottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { workoutResultMessage } from './workoutResult';
 import AppBottomSheet from '@/components/BottomSheet';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import type { FeelRating, PerceivedDifficulty } from '@/state/useSessionFeedbackStore';
 
 interface Props {
+  dayName: string;
+  burnedKcal: number;
+  totalSets: number;
+  currentStreak: number;
   onSubmit: (feedback: {
     feel: FeelRating;
     difficulty: PerceivedDifficulty;
@@ -31,7 +36,7 @@ const DIFFICULTY_OPTIONS: { value: PerceivedDifficulty; label: string }[] = [
 ];
 
 const CompletionFeedbackSheet = forwardRef<GorhomBottomSheet, Props>(
-  ({ onSubmit, onSkip }, ref) => {
+  ({ dayName, burnedKcal, totalSets, currentStreak, onSubmit, onSkip }, ref) => {
     const colors = useThemeColors();
     const styles = createStyles(colors);
 
@@ -42,6 +47,15 @@ const CompletionFeedbackSheet = forwardRef<GorhomBottomSheet, Props>(
 
     const canSubmit = feel != null && difficulty != null && hadPain != null && wouldRepeat != null;
 
+    async function shareResult() {
+      const message = workoutResultMessage({ dayName, burnedKcal, totalSets, currentStreak });
+      try {
+        await Share.share({ message });
+      } catch {
+        Alert.alert('Не удалось поделиться', 'Попробуйте ещё раз.');
+      }
+    }
+
     return (
       <AppBottomSheet
         ref={ref}
@@ -49,7 +63,24 @@ const CompletionFeedbackSheet = forwardRef<GorhomBottomSheet, Props>(
         snapPoints={['70%']}
         onClose={onSkip}
       >
-        <View style={styles.body}>
+        <BottomSheetScrollView style={{ flex: 1 }} contentContainerStyle={styles.body}>
+          <View style={[styles.summaryCard, { borderColor: colors.line }]}>
+            <Text style={[styles.summaryLine, { color: colors.paperDim }]}>
+              {totalSets} подходов{burnedKcal > 0 ? ` · ~${burnedKcal} ккал` : ''}
+              {currentStreak > 0 ? ` · серия ${currentStreak} дн.` : ''}
+            </Text>
+            <TouchableOpacity
+              style={[styles.shareBtn, { borderColor: colors.lineStrong }]}
+              onPress={() => {
+                void shareResult();
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Поделиться результатом"
+            >
+              <Text style={[styles.shareBtnText, { color: colors.paperDim }]}>↗ Поделиться</Text>
+            </TouchableOpacity>
+          </View>
+
           <Text style={[styles.question, { color: colors.paperDim }]}>Как самочувствие?</Text>
           <View style={styles.row}>
             {FEEL_OPTIONS.map((opt) => (
@@ -192,7 +223,7 @@ const CompletionFeedbackSheet = forwardRef<GorhomBottomSheet, Props>(
           >
             <Text style={[styles.skipText, { color: colors.paperFaint }]}>Пропустить</Text>
           </TouchableOpacity>
-        </View>
+        </BottomSheetScrollView>
       </AppBottomSheet>
     );
   }
@@ -204,6 +235,25 @@ export default CompletionFeedbackSheet;
 function createStyles(_colors: ColorTokens) {
   return StyleSheet.create({
     body: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, paddingBottom: spacing.xl },
+    summaryCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      borderWidth: 1,
+      borderRadius: radius.control,
+      padding: spacing.sm,
+      marginBottom: spacing.md
+    },
+    summaryLine: { flex: 1, fontFamily: fonts.mono, fontSize: 12, paddingRight: 8 },
+    shareBtn: {
+      paddingHorizontal: 12,
+      height: 32,
+      borderRadius: radius.control,
+      borderWidth: 1,
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    shareBtnText: { fontFamily: fonts.bodySemi, fontSize: 12 },
     question: { fontFamily: fonts.bodySemi, fontSize: 13, marginTop: spacing.md, marginBottom: 8 },
     row: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
     feelBtn: {

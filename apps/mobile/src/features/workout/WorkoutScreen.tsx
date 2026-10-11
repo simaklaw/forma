@@ -10,6 +10,7 @@ import { useThemeColors } from '@/core/theme/useThemeColors';
 import ExerciseSheet from './ExerciseSheet';
 import WorkoutPreviewSheet from './WorkoutPreviewSheet';
 import CompletionFeedbackSheet from './CompletionFeedbackSheet';
+import { summarizeWorkoutResult, type WorkoutResult } from './workoutResult';
 import { RecoveryBanner } from './RecoveryBanner';
 import { WorkoutCoachCard } from './WorkoutCoachCard';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
@@ -45,6 +46,7 @@ export default function WorkoutScreen() {
   const [feedbackContext, setFeedbackContext] = useState<{
     sessionId: string;
     dayId: string;
+    result: WorkoutResult;
   } | null>(null);
   const [selectedDayId, setSelectedDayId] = useState<string | null>(null);
   const [userPickedDay, setUserPickedDay] = useState(false);
@@ -532,7 +534,15 @@ export default function WorkoutScreen() {
         }}
         onDayComplete={(ctx) => {
           sheetRef.current?.close();
-          setFeedbackContext(ctx);
+          setFeedbackContext({
+            sessionId: ctx.sessionId,
+            dayId: ctx.dayId,
+            result: summarizeWorkoutResult(
+              ctx.session,
+              plan.find((day) => day.id === ctx.dayId)?.name ?? activeDay.name,
+              selectPlanCurrentStreak(plan, useFitPulseStore.getState().dayProgress)
+            )
+          });
           // brief delay so ExerciseSheet can close/settle before feedback opens
           setTimeout(() => feedbackSheetRef.current?.expand(), 300);
         }}
@@ -540,6 +550,10 @@ export default function WorkoutScreen() {
       />
       <CompletionFeedbackSheet
         ref={feedbackSheetRef}
+        dayName={feedbackContext?.result.dayName ?? activeDay.name}
+        burnedKcal={feedbackContext?.result.burnedKcal ?? 0}
+        totalSets={feedbackContext?.result.totalSets ?? 0}
+        currentStreak={feedbackContext?.result.currentStreak ?? 0}
         onSkip={() => feedbackSheetRef.current?.close()}
         onSubmit={(feedback) => {
           if (feedbackContext) {
