@@ -7,6 +7,7 @@ import {
   selectCurrentStreak,
   selectStreakDays,
   unifiedStreakDays,
+  selectMonthActivity,
   ruDayWord,
   roundToStep,
   toDateKey,
@@ -320,5 +321,65 @@ describe('unifiedStreakDays', () => {
       dinner: [{ id: 'legacy', name: 'Meal', kcal: 100, protein: 5, fat: 2, carbs: 12 }]
     };
     expect(unifiedStreakDays([], meals, NOW)).toBe(1);
+  });
+});
+
+describe('selectMonthActivity', () => {
+  const emptyMeals = { breakfast: [], lunch: [], snack: [], dinner: [] };
+
+  it('marks a day "full" when both workout and food were logged', () => {
+    const setLogs = [{ dateKey: '2026-10-05' }];
+    const loggedAt = new Date(2026, 9, 5, 12, 0).getTime();
+    const meals = {
+      ...emptyMeals,
+      breakfast: [{ id: '1', name: 'x', kcal: 1, protein: 0, fat: 0, carbs: 0, loggedAt }]
+    };
+    const result = selectMonthActivity(setLogs, meals, 2026, 9);
+    const day5 = result.find((d) => d.dayOfMonth === 5);
+    expect(day5?.level).toBe('full');
+  });
+
+  it('marks a day "light" when only workout was logged', () => {
+    const setLogs = [{ dateKey: '2026-10-05' }];
+    const result = selectMonthActivity(setLogs, emptyMeals, 2026, 9);
+    expect(result.find((d) => d.dayOfMonth === 5)?.level).toBe('light');
+  });
+
+  it('marks a day "light" when only food was logged', () => {
+    const loggedAt = new Date(2026, 9, 5, 12, 0).getTime();
+    const meals = {
+      ...emptyMeals,
+      breakfast: [{ id: '1', name: 'x', kcal: 1, protein: 0, fat: 0, carbs: 0, loggedAt }]
+    };
+    const result = selectMonthActivity([], meals, 2026, 9);
+    expect(result.find((d) => d.dayOfMonth === 5)?.level).toBe('light');
+  });
+
+  it('counts a legacy meal without loggedAt as activity today', () => {
+    const now = new Date(2026, 9, 10);
+    const meals = {
+      ...emptyMeals,
+      dinner: [{ id: 'legacy', name: 'x', kcal: 1, protein: 0, fat: 0, carbs: 0 }]
+    };
+    const result = selectMonthActivity([], meals, 2026, 9, now);
+    expect(result.find((d) => d.dayOfMonth === 10)?.level).toBe('light');
+  });
+
+  it('marks a day "none" when nothing was logged', () => {
+    const result = selectMonthActivity([], emptyMeals, 2026, 9);
+    expect(result.find((d) => d.dayOfMonth === 15)?.level).toBe('none');
+  });
+
+  it('returns exactly the number of days in the month', () => {
+    const result = selectMonthActivity([], emptyMeals, 2026, 1); // Feb 2026, not leap
+    expect(result).toHaveLength(28);
+  });
+
+  it('flags today and future days correctly', () => {
+    const now = new Date(2026, 9, 10);
+    const result = selectMonthActivity([], emptyMeals, 2026, 9, now);
+    expect(result.find((d) => d.dayOfMonth === 10)?.isToday).toBe(true);
+    expect(result.find((d) => d.dayOfMonth === 15)?.isFuture).toBe(true);
+    expect(result.find((d) => d.dayOfMonth === 5)?.isFuture).toBe(false);
   });
 });
