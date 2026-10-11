@@ -14,6 +14,7 @@ import { useThemeColors } from '@/core/theme/useThemeColors';
 import { selectDailyTotals, selectTodayMeals, useFitPulseStore } from '@/state/useFitPulseStore';
 import { unifiedStreakDays, lastNDays } from '@/engines/WorkoutStats';
 import { allExerciseNames } from '@/features/workout/catalog';
+import ActivityCalendar from '@/components/ActivityCalendar';
 
 const GLASS_ML = 250;
 
@@ -198,6 +199,8 @@ export default function ProgressScreen() {
             <Text style={[styles.statLbl, { color: colors.paperFaint }]}>ккал сегодня</Text>
           </View>
         </View>
+
+        <ActivityCalendar setLogs={setLogs} allMeals={allMeals} />
 
         {badges.length > 0 ? (
           <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
