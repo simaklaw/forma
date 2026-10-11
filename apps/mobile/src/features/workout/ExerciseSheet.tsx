@@ -15,7 +15,7 @@ import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { toDateKey, roundToStep } from '@/engines/WorkoutStats';
 import { formatRestClock, techniqueCuesFromNote } from '@/lib/techniqueCues';
 import { useExerciseReference } from './useExerciseReference';
-import { ActiveSessionController } from './session/ActiveSessionController';
+import { ActiveSessionController, dayIdFromTemplate } from './session/ActiveSessionController';
 import { sequentialStepInfo } from './session/sequentialStep';
 import { applySessionProjection } from './data/applySessionProjection';
 import { getSessionService } from './data';
@@ -45,6 +45,8 @@ interface Props {
   dayExercises?: ExerciseDef[];
   onFinished?: (exerciseId: number) => void;
   onGoToExpected?: (exerciseId: number) => void;
+  /** Fired when the whole day session completes (all sets done). */
+  onDayComplete?: (ctx: { sessionId: string; dayId: string }) => void;
 }
 
 function remainingRestSeconds(restEndsAtMs: number | null | undefined, nowMs = Date.now()): number | null {
@@ -54,7 +56,7 @@ function remainingRestSeconds(restEndsAtMs: number | null | undefined, nowMs = D
 }
 
 const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
-  ({ exercise, dayId, dayExercises, onFinished, onGoToExpected }, ref) => {
+  ({ exercise, dayId, dayExercises, onFinished, onGoToExpected, onDayComplete }, ref) => {
     const colors = useThemeColors();
     const styles = createStyles(colors);
     const completedSetsToday = useFitPulseStore((s) => s.completedSetsToday);
@@ -180,12 +182,18 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           const next =
             useFitPulseStore.getState().dayProgress[toDateKey(new Date())]?.[exercise.id] ?? 0;
           setCompletedSets(next);
+          const sessionIdForFeedback = session.sessionId;
+          const dayIdForFeedback =
+            dayIdFromTemplate(session.templateRevisionId) ?? dayId ?? '';
           await ActiveSessionController.completeDayIfDone();
           if (next >= exercise.totalSets) {
             const dayComplete = ActiveSessionController.getSessionId() == null;
             if (dayComplete) {
               RestTimerEngine.hapticDayComplete();
               VoiceCuesEngine.announceDayComplete();
+              if (sessionIdForFeedback && dayIdForFeedback) {
+                onDayComplete?.({ sessionId: sessionIdForFeedback, dayId: dayIdForFeedback });
+              }
             } else {
               RestTimerEngine.hapticSetComplete();
               VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);

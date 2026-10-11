@@ -1,8 +1,32 @@
 import { Alert } from 'react-native';
-import { ActiveSessionController } from './ActiveSessionController';
+import { ActiveSessionController, dayIdFromTemplate } from './ActiveSessionController';
 import { RestTimerEngine } from '@/engines/RestTimerEngine';
+import { useSessionFeedbackStore, type EarlyLeaveReason } from '@/state/useSessionFeedbackStore';
 
 export type EarlyLeaveOutcome = 'paused' | 'finished' | 'abandoned' | 'cancelled';
+
+const REASON_LABELS: Record<EarlyLeaveReason, string> = {
+  no_time: 'Нет времени',
+  too_tired: 'Устал(а)',
+  pain: 'Боль/дискомфорт',
+  equipment: 'Нет инвентаря',
+  not_motivated: 'Нет настроя',
+  other: 'Другое'
+};
+
+function askEarlyLeaveReason(sessionId: string | undefined, dayId: string | undefined): void {
+  if (!sessionId || !dayId) return;
+  const { recordEarlyLeave } = useSessionFeedbackStore.getState();
+  Alert.alert(
+    'Почему прерываем?',
+    'Это поможет нам точнее планировать тренировки',
+    (Object.keys(REASON_LABELS) as EarlyLeaveReason[]).map((reason) => ({
+      text: REASON_LABELS[reason],
+      onPress: () => recordEarlyLeave(sessionId, dayId, reason)
+    })),
+    { cancelable: true }
+  );
+}
 
 /**
  * P0 Early Leave dialog (FitPulse branding).
@@ -49,6 +73,8 @@ export function presentEarlyLeave(onDone?: (outcome: EarlyLeaveOutcome) => void)
               onDone?.('cancelled');
               return;
             }
+            const dayId = dayIdFromTemplate(session.templateRevisionId);
+            askEarlyLeaveReason(session.sessionId, dayId ?? undefined);
             onDone?.('finished');
           })();
         }
@@ -64,6 +90,8 @@ export function presentEarlyLeave(onDone?: (outcome: EarlyLeaveOutcome) => void)
               onDone?.('cancelled');
               return;
             }
+            const dayId = dayIdFromTemplate(session.templateRevisionId);
+            askEarlyLeaveReason(session.sessionId, dayId ?? undefined);
             onDone?.('abandoned');
           })();
         }

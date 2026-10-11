@@ -9,9 +9,11 @@ import { fonts } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import ExerciseSheet from './ExerciseSheet';
 import WorkoutPreviewSheet from './WorkoutPreviewSheet';
+import CompletionFeedbackSheet from './CompletionFeedbackSheet';
 import { RecoveryBanner } from './RecoveryBanner';
 import { WorkoutCoachCard } from './WorkoutCoachCard';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
+import { useSessionFeedbackStore } from '@/state/useSessionFeedbackStore';
 import { useTrainingModeStore } from '@/state/useTrainingModeStore';
 import { ruDayWord, toDateKey } from '@/engines/WorkoutStats';
 import type { WorkoutSession } from '@forma/workout-domain';
@@ -39,6 +41,11 @@ export default function WorkoutScreen() {
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const sheetRef = useRef<GorhomBottomSheet>(null);
   const previewSheetRef = useRef<GorhomBottomSheet>(null);
+  const feedbackSheetRef = useRef<GorhomBottomSheet>(null);
+  const [feedbackContext, setFeedbackContext] = useState<{
+    sessionId: string;
+    dayId: string;
+  } | null>(null);
   const [selectedDayId, setSelectedDayId] = useState<string | null>(null);
   const [userPickedDay, setUserPickedDay] = useState(false);
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
@@ -517,7 +524,24 @@ export default function WorkoutScreen() {
         onFinished={() => {
           void refreshResumable();
         }}
+        onDayComplete={(ctx) => {
+          setFeedbackContext(ctx);
+          // brief delay so ExerciseSheet can close/settle before feedback opens
+          setTimeout(() => feedbackSheetRef.current?.expand(), 300);
+        }}
         onGoToExpected={(id) => openExercise(id)}
+      />
+      <CompletionFeedbackSheet
+        ref={feedbackSheetRef}
+        onSkip={() => feedbackSheetRef.current?.close()}
+        onSubmit={(feedback) => {
+          if (feedbackContext) {
+            useSessionFeedbackStore
+              .getState()
+              .recordCompletionFeedback(feedbackContext.sessionId, feedbackContext.dayId, feedback);
+          }
+          feedbackSheetRef.current?.close();
+        }}
       />
     </SafeAreaView>
   );
