@@ -19,6 +19,11 @@ on:
     paths:
       - 'apps/api/**'
       - 'packages/db/**'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'fly.toml'
+      - 'scripts/apply-db-migrations.sh'
+      - 'scripts/start-api-container.sh'
       - '.github/workflows/verify-sync.yml'
   workflow_dispatch:
 
@@ -73,9 +78,9 @@ jobs:
       - name: Migrations 001-006
         run: |
           set -o pipefail
-          for m in 001_init 002_rls_basic 003_rls_strict 004_device_platform_unknown 005_pr_observation 006_session_materialize_seed; do
-            psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "packages/db/migrations/$m.sql" 2>&1 | tee "migrate_$m.log"
-          done
+          ./scripts/apply-db-migrations.sh 2>&1 | tee migrate_all.log
+          ./scripts/apply-db-migrations.sh 2>&1 | tee migrate_repeat.log
+          test "$(psql "$DATABASE_URL" -X -Atc 'SELECT count(*) FROM public.forma_schema_migration')" = 6
 
       - name: RLS strict check
         run: |
