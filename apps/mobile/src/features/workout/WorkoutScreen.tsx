@@ -8,6 +8,7 @@ import { estimateBurnFromSetLogs, toDateKey as coreToDateKey } from '@forma/core
 import { fonts } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import ExerciseSheet from './ExerciseSheet';
+import WorkoutPreviewSheet from './WorkoutPreviewSheet';
 import { RecoveryBanner } from './RecoveryBanner';
 import { WorkoutCoachCard } from './WorkoutCoachCard';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
@@ -37,6 +38,7 @@ export default function WorkoutScreen() {
   const colors = useThemeColors();
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const sheetRef = useRef<GorhomBottomSheet>(null);
+  const previewSheetRef = useRef<GorhomBottomSheet>(null);
   const [selectedDayId, setSelectedDayId] = useState<string | null>(null);
   const [userPickedDay, setUserPickedDay] = useState(false);
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
@@ -281,17 +283,8 @@ export default function WorkoutScreen() {
             <TouchableOpacity
               style={[styles.startPill, { backgroundColor: colors.lime }]}
               accessibilityRole="button"
-              accessibilityLabel="Начать тренировку"
-              onPress={() => {
-                void ActiveSessionController.ensureDaySession(activeDay.id, effectiveExercises)
-                  .then((session) => {
-                    if (!session) return;
-                    void refreshResumable();
-                    const first = effectiveExercises[0];
-                    if (first) openExercise(first.id);
-                  })
-                  .catch(() => {});
-              }}
+              accessibilityLabel="Посмотреть тренировку"
+              onPress={() => previewSheetRef.current?.expand()}
             >
               <Text style={[styles.startPillText, { color: colors.ink }]}>▶  Начать тренировку</Text>
             </TouchableOpacity>
@@ -498,6 +491,24 @@ export default function WorkoutScreen() {
         })}
       </ScrollView>
 
+      <WorkoutPreviewSheet
+        ref={previewSheetRef}
+        dayName={activeDay.name}
+        dayMeta={activeDay.meta}
+        exercises={effectiveExercises}
+        onClose={() => previewSheetRef.current?.close()}
+        onStart={() => {
+          previewSheetRef.current?.close();
+          void ActiveSessionController.ensureDaySession(activeDay.id, effectiveExercises)
+            .then((session) => {
+              if (!session) return;
+              void refreshResumable();
+              const first = effectiveExercises[0];
+              if (first) openExercise(first.id);
+            })
+            .catch(() => {});
+        }}
+      />
       <ExerciseSheet
         ref={sheetRef}
         exercise={selectedExercise}
