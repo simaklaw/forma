@@ -46,7 +46,7 @@ interface Props {
   onFinished?: (exerciseId: number) => void;
   onGoToExpected?: (exerciseId: number) => void;
   /** Fired when the whole day session completes (all sets done). */
-  onDayComplete?: (ctx: { sessionId: string; dayId: string }) => void;
+  onDayComplete?: (ctx: { sessionId: string; dayId: string; session: WorkoutSession }) => void;
 }
 
 function remainingRestSeconds(restEndsAtMs: number | null | undefined, nowMs = Date.now()): number | null {
@@ -192,7 +192,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
               RestTimerEngine.hapticDayComplete();
               VoiceCuesEngine.announceDayComplete();
               if (sessionIdForFeedback && dayIdForFeedback) {
-                onDayComplete?.({ sessionId: sessionIdForFeedback, dayId: dayIdForFeedback });
+                onDayComplete?.({ sessionId: sessionIdForFeedback, dayId: dayIdForFeedback, session });
               }
             } else {
               RestTimerEngine.hapticSetComplete();
