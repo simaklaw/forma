@@ -22,6 +22,7 @@ import {
 } from '@/engines/MetabolicEngine';
 import { SetLogEntry, DayProgress, toDateKey, pruneOldSetLogs } from '@/engines/WorkoutStats';
 import { uuidv7 } from '@/features/workout/data/ids';
+import type { MuscleKey } from '@/components/MuscleMap';
 
 export type { SetLogEntry, DayProgress } from '@/engines/WorkoutStats';
 
@@ -68,6 +69,7 @@ export type StoredProfile = {
   weight: number | null;
   pal: number;
   goal: Goal;
+  focusAreas: MuscleKey[];
 };
 
 function generateId(): string {
@@ -89,8 +91,27 @@ function emptyProfile(): StoredProfile {
     height: null,
     weight: null,
     pal: 1.375,
-    goal: 'recomp'
+    goal: 'recomp',
+    focusAreas: []
   };
+}
+
+function asFocusAreas(value: unknown): MuscleKey[] {
+  const VALID: MuscleKey[] = [
+    'chest',
+    'shoulders',
+    'biceps',
+    'triceps',
+    'core',
+    'quads',
+    'hamstrings',
+    'glutes',
+    'lowerback',
+    'back',
+    'calves'
+  ];
+  if (!Array.isArray(value)) return [];
+  return value.filter((v): v is MuscleKey => VALID.includes(v as MuscleKey));
 }
 
 function mergeProfile(base: StoredProfile, patch: unknown): StoredProfile {
@@ -102,7 +123,8 @@ function mergeProfile(base: StoredProfile, patch: unknown): StoredProfile {
     height: 'height' in p ? asPositiveNumber(p.height) : base.height,
     weight: 'weight' in p ? asPositiveNumber(p.weight) : base.weight,
     pal: typeof p.pal === 'number' && Number.isFinite(p.pal) ? p.pal : base.pal,
-    goal: p.goal === 'gain' || p.goal === 'maintain' || p.goal === 'recomp' ? p.goal : base.goal
+    goal: p.goal === 'gain' || p.goal === 'maintain' || p.goal === 'recomp' ? p.goal : base.goal,
+    focusAreas: 'focusAreas' in p ? asFocusAreas(p.focusAreas) : base.focusAreas
   };
 }
 
