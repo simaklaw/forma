@@ -9,6 +9,7 @@ import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { useThemeStore } from '@/state/useThemeStore';
+import { useVoiceCuesStore } from '@/state/useVoiceCuesStore';
 import { Goal, Sex } from '@/engines/MetabolicEngine';
 import ProtocolBanner from '@/components/ProtocolBanner';
 import HealthConnectCard from '@/features/health/HealthConnectCard';
@@ -22,6 +23,8 @@ export default function ProfileScreen() {
   const colors = useThemeColors();
   const themeMode = useThemeStore((s) => s.mode);
   const setThemeMode = useThemeStore((s) => s.setMode);
+  const voiceCuesEnabled = useVoiceCuesStore((s) => s.enabled);
+  const setVoiceCuesEnabled = useVoiceCuesStore((s) => s.setEnabled);
 
   const profile = useFitPulseStore((s) => s.profile);
   const updateProfile = useFitPulseStore((s) => s.updateProfile);
@@ -177,6 +180,52 @@ export default function ProfileScreen() {
                 ? `Цель ${targets.target.toLocaleString('ru-RU')} ккал · BMR ${targets.bmr}`
                 : 'Заполните профиль для расчёта КБЖУ'}
             </Text>
+          </View>
+        </View>
+
+        <View style={styles.sectionHead}>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>Тренировка</Text>
+          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>голос</Text>
+        </View>
+        <View style={[styles.themeCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <Text style={[styles.settingName, { color: colors.paper }]}>Голосовые подсказки</Text>
+          <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>
+            Название упражнения, номер подхода и отсчёт отдыха вслух — удобно, когда не смотрите в
+            экран
+          </Text>
+          <View style={styles.themeRow}>
+            {(
+              [
+                { id: false, label: 'Выкл' },
+                { id: true, label: 'Вкл' }
+              ] as const
+            ).map((opt) => {
+              const on = voiceCuesEnabled === opt.id;
+              return (
+                <TouchableOpacity
+                  key={String(opt.id)}
+                  style={[
+                    styles.themeBtn,
+                    { borderColor: colors.lineStrong, backgroundColor: colors.ink },
+                    on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                  ]}
+                  onPress={() => setVoiceCuesEnabled(opt.id)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: on }}
+                  accessibilityLabel={opt.label}
+                >
+                  <Text
+                    style={[
+                      styles.themeBtnText,
+                      { color: colors.paperDim },
+                      on && { color: colors.lime }
+                    ]}
+                  >
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
