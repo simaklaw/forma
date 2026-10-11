@@ -182,8 +182,14 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           setCompletedSets(next);
           await ActiveSessionController.completeDayIfDone();
           if (next >= exercise.totalSets) {
-            RestTimerEngine.hapticDayComplete();
-            VoiceCuesEngine.announceDayComplete();
+            const dayComplete = ActiveSessionController.getSessionId() == null;
+            if (dayComplete) {
+              RestTimerEngine.hapticDayComplete();
+              VoiceCuesEngine.announceDayComplete();
+            } else {
+              RestTimerEngine.hapticSetComplete();
+              VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
+            }
             onFinished?.(exercise.id);
             return;
           }
@@ -199,8 +205,8 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       setCompletedSets(next);
 
       if (next >= exercise.totalSets) {
-        RestTimerEngine.hapticDayComplete();
-        VoiceCuesEngine.announceDayComplete();
+        RestTimerEngine.hapticSetComplete();
+        VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
         onFinished?.(exercise.id);
         return;
       }

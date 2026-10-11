@@ -13,19 +13,27 @@ const VOICE_OPTIONS = {
 
 export class VoiceCuesEngine {
   private static enabled = false;
+  private static speechRequest = 0;
 
   static setEnabled(value: boolean) {
     this.enabled = value;
     if (!value) {
-      Speech.stop().catch(() => {});
+      this.speechRequest += 1;
+      void Speech.stop().catch(() => {});
     }
   }
 
   private static speak(text: string) {
     if (!this.enabled) return;
+    const request = ++this.speechRequest;
     try {
-      Speech.stop(); // avoid overlapping/queued phrases stacking up
-      Speech.speak(text, VOICE_OPTIONS);
+      // stop() is async: wait until queued speech is cleared before starting the new cue.
+      void Speech.stop()
+        .then(() => {
+          if (!this.enabled || request !== this.speechRequest) return;
+          Speech.speak(text, VOICE_OPTIONS);
+        })
+        .catch((e) => console.warn('VoiceCuesEngine: speak failed', e));
     } catch (e) {
       console.warn('VoiceCuesEngine: speak failed', e);
     }
