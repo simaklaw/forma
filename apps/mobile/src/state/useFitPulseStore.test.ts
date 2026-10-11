@@ -3,6 +3,7 @@ import {
   selectTodayMeals,
   selectYesterdayMealItems,
   useFitPulseStore,
+  type BodyMeasurementEntry,
   type SetLogEntry
 } from './useFitPulseStore';
 
@@ -198,4 +199,125 @@ describe('focusAreas in profile', () => {
       expect(merged.profile.focusAreas).toEqual([]);
     }
   );
+});
+
+describe('logBodyMeasurement / deleteBodyMeasurement', () => {
+  const originalState = useFitPulseStore.getState();
+
+  afterEach(() => {
+    useFitPulseStore.setState(originalState, true);
+  });
+
+  beforeEach(() => {
+    useFitPulseStore.setState({ bodyMeasurements: [], weightHistory: [] });
+  });
+
+  it('adds a measurement entry with today dateKey', () => {
+    const { logBodyMeasurement } = useFitPulseStore.getState();
+    const before = useFitPulseStore.getState().bodyMeasurements.length;
+    logBodyMeasurement('waist', 82);
+    const after = useFitPulseStore.getState().bodyMeasurements;
+    expect(after.length).toBe(before + 1);
+    expect(after[after.length - 1]).toMatchObject({ type: 'waist', valueCm: 82 });
+    expect(after[after.length - 1].id).toEqual(expect.any(String));
+    expect(after[after.length - 1].dateKey).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it('ignores non-positive or invalid values', () => {
+    const { logBodyMeasurement } = useFitPulseStore.getState();
+    const before = useFitPulseStore.getState().bodyMeasurements.length;
+    logBodyMeasurement('waist', -5);
+    logBodyMeasurement('waist', NaN);
+    logBodyMeasurement('waist', 0);
+    logBodyMeasurement('waist', Infinity);
+    expect(useFitPulseStore.getState().bodyMeasurements.length).toBe(before);
+  });
+
+  it('deletes a measurement by id', () => {
+    const { logBodyMeasurement, deleteBodyMeasurement } = useFitPulseStore.getState();
+    logBodyMeasurement('chest', 100);
+    const entries = useFitPulseStore.getState().bodyMeasurements;
+    const id = entries[entries.length - 1].id;
+    deleteBodyMeasurement(id);
+    expect(useFitPulseStore.getState().bodyMeasurements.some((e) => e.id === id)).toBe(false);
+  });
+
+  it('does not touch weightHistory or logWeight behavior', () => {
+    const { logWeight, logBodyMeasurement } = useFitPulseStore.getState();
+    const beforeWeight = useFitPulseStore.getState().weightHistory.length;
+    logBodyMeasurement('waist', 80);
+    expect(useFitPulseStore.getState().weightHistory.length).toBe(beforeWeight);
+    logWeight(75);
+    expect(useFitPulseStore.getState().weightHistory.length).toBe(beforeWeight + 1);
+  });
+});
+
+describe('body measurement persistence and import', () => {
+  const originalState = useFitPulseStore.getState();
+  const entry: BodyMeasurementEntry = {
+    id: 'measurement-1',
+    type: 'waist',
+    valueCm: 82.5,
+    dateKey: '2026-10-11'
+  };
+
+  beforeEach(() => {
+    useFitPulseStore.setState({ bodyMeasurements: [entry], weightHistory: [75, 74] });
+  });
+
+  afterEach(() => {
+    useFitPulseStore.setState(originalState, true);
+  });
+
+  it('restores valid entries, accepts an empty history and preserves legacy backups', () => {
+    const state = baseline();
+    expect(mergePersistedAppState({ bodyMeasurements: [entry] }, state).bodyMeasurements).toEqual([
+      entry
+    ]);
+    expect(mergePersistedAppState({}, state).bodyMeasurements).toEqual([entry]);
+    expect(mergePersistedAppState({}, useFitPulseStore.getInitialState()).bodyMeasurements).toEqual(
+      []
+    );
+    state.hydrate({ bodyMeasurements: [] });
+    expect(baseline().bodyMeasurements).toEqual([]);
+    state.hydrate({ bodyMeasurements: [entry] });
+    expect(baseline().bodyMeasurements).toEqual([entry]);
+    expect(baseline().weightHistory).toEqual([75, 74]);
+  });
+
+  it('retains the latest 200 entries on logging, persistence and import', () => {
+    const entries = Array.from({ length: 205 }, (_, i) => ({ ...entry, id: `m-${i}` }));
+    expect(
+      mergePersistedAppState({ bodyMeasurements: entries }, baseline()).bodyMeasurements
+    ).toEqual(entries.slice(-200));
+    baseline().hydrate({ bodyMeasurements: entries });
+    expect(baseline().bodyMeasurements).toEqual(entries.slice(-200));
+    baseline().logBodyMeasurement('neck', 35);
+    expect(baseline().bodyMeasurements).toHaveLength(200);
+    expect(baseline().bodyMeasurements[0].id).toBe('m-6');
+    expect(baseline().weightHistory).toEqual([75, 74]);
+  });
+
+  it.each([
+    null,
+    'invalid',
+    [null],
+    [{}],
+    [{ ...entry, id: '' }],
+    [{ ...entry, type: 'unknown' }],
+    [{ ...entry, type: 'toString' }],
+    [{ ...entry, valueCm: -1 }],
+    [{ ...entry, valueCm: Infinity }],
+    [{ ...entry, dateKey: '2026-02-30' }],
+    [{ ...entry, dateKey: 'bad' }],
+    [entry, entry]
+  ])('rejects malformed history without replacing current measurements: %p', (value) => {
+    expect(
+      mergePersistedAppState({ bodyMeasurements: value }, baseline()).bodyMeasurements
+    ).toEqual([entry]);
+    const data = { bodyMeasurements: value } as Parameters<typeof originalState.hydrate>[0];
+    expect(() => baseline().hydrate(data)).toThrow('Backup file has none of the expected fields');
+    expect(baseline().bodyMeasurements).toEqual([entry]);
+    expect(baseline().weightHistory).toEqual([75, 74]);
+  });
 });
