@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import GorhomBottomSheet from '@gorhom/bottom-sheet';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import GorhomBottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import AppBottomSheet from '@/components/BottomSheet';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
@@ -38,7 +38,7 @@ const WorkoutPreviewSheet = forwardRef<GorhomBottomSheet, Props>(
           {exercises.length} упражнения · {totalSets} подходов · ~{estMinutes} мин · {dayMeta}
         </Text>
 
-        <ScrollView contentContainerStyle={styles.list}>
+        <BottomSheetScrollView contentContainerStyle={styles.list}>
           {exercises.map((ex, i) => {
             const thumb = ex.mediaKey ? EXERCISE_THUMBNAILS[ex.mediaKey] : undefined;
             return (
@@ -60,7 +60,7 @@ const WorkoutPreviewSheet = forwardRef<GorhomBottomSheet, Props>(
               </View>
             );
           })}
-        </ScrollView>
+        </BottomSheetScrollView>
 
         <View style={styles.footer}>
           <TouchableOpacity
