@@ -525,6 +525,7 @@ export default function WorkoutScreen() {
           void refreshResumable();
         }}
         onDayComplete={(ctx) => {
+          sheetRef.current?.close();
           setFeedbackContext(ctx);
           // brief delay so ExerciseSheet can close/settle before feedback opens
           setTimeout(() => feedbackSheetRef.current?.expand(), 300);

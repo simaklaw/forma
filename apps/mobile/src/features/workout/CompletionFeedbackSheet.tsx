@@ -30,141 +30,173 @@ const DIFFICULTY_OPTIONS: { value: PerceivedDifficulty; label: string }[] = [
   { value: 'too_hard', label: 'Тяжело' }
 ];
 
-const CompletionFeedbackSheet = forwardRef<GorhomBottomSheet, Props>(({ onSubmit, onSkip }, ref) => {
-  const colors = useThemeColors();
-  const styles = createStyles(colors);
+const CompletionFeedbackSheet = forwardRef<GorhomBottomSheet, Props>(
+  ({ onSubmit, onSkip }, ref) => {
+    const colors = useThemeColors();
+    const styles = createStyles(colors);
 
-  const [feel, setFeel] = useState<FeelRating | null>(null);
-  const [difficulty, setDifficulty] = useState<PerceivedDifficulty | null>(null);
-  const [hadPain, setHadPain] = useState<boolean | null>(null);
-  const [wouldRepeat, setWouldRepeat] = useState<boolean | null>(null);
+    const [feel, setFeel] = useState<FeelRating | null>(null);
+    const [difficulty, setDifficulty] = useState<PerceivedDifficulty | null>(null);
+    const [hadPain, setHadPain] = useState<boolean | null>(null);
+    const [wouldRepeat, setWouldRepeat] = useState<boolean | null>(null);
 
-  const canSubmit = feel != null && difficulty != null && hadPain != null && wouldRepeat != null;
+    const canSubmit = feel != null && difficulty != null && hadPain != null && wouldRepeat != null;
 
-  return (
-    <AppBottomSheet ref={ref} title="Тренировка завершена 🎉" snapPoints={['70%']} onClose={onSkip}>
-      <View style={styles.body}>
-        <Text style={[styles.question, { color: colors.paperDim }]}>Как самочувствие?</Text>
-        <View style={styles.row}>
-          {FEEL_OPTIONS.map((opt) => (
-            <TouchableOpacity
-              key={opt.value}
-              style={[
-                styles.feelBtn,
-                { borderColor: colors.lineStrong },
-                feel === opt.value && { borderColor: colors.lime, backgroundColor: colors.limeDim }
-              ]}
-              onPress={() => setFeel(opt.value)}
-              accessibilityRole="button"
-              accessibilityLabel={`Оценка ${opt.value} из 5`}
-            >
-              <Text style={styles.feelEmoji}>{opt.emoji}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <Text style={[styles.question, { color: colors.paperDim }]}>Сложность тренировки?</Text>
-        <View style={styles.row}>
-          {DIFFICULTY_OPTIONS.map((opt) => (
-            <TouchableOpacity
-              key={opt.value}
-              style={[
-                styles.chip,
-                { borderColor: colors.lineStrong },
-                difficulty === opt.value && { borderColor: colors.lime, backgroundColor: colors.limeDim }
-              ]}
-              onPress={() => setDifficulty(opt.value)}
-              accessibilityRole="button"
-              accessibilityLabel={opt.label}
-            >
-              <Text
+    return (
+      <AppBottomSheet
+        ref={ref}
+        title="Тренировка завершена 🎉"
+        snapPoints={['70%']}
+        onClose={onSkip}
+      >
+        <View style={styles.body}>
+          <Text style={[styles.question, { color: colors.paperDim }]}>Как самочувствие?</Text>
+          <View style={styles.row}>
+            {FEEL_OPTIONS.map((opt) => (
+              <TouchableOpacity
+                key={opt.value}
                 style={[
-                  styles.chipText,
-                  { color: colors.paperDim },
-                  difficulty === opt.value && { color: colors.lime }
+                  styles.feelBtn,
+                  { borderColor: colors.lineStrong },
+                  feel === opt.value && {
+                    borderColor: colors.lime,
+                    backgroundColor: colors.limeDim
+                  }
                 ]}
+                onPress={() => setFeel(opt.value)}
+                accessibilityRole="button"
+                accessibilityLabel={`Оценка ${opt.value} из 5`}
               >
-                {opt.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+                <Text style={styles.feelEmoji}>{opt.emoji}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
-        <Text style={[styles.question, { color: colors.paperDim }]}>Была боль или дискомфорт?</Text>
-        <View style={styles.row}>
-          {(
-            [
-              { v: true, l: 'Да' },
-              { v: false, l: 'Нет' }
-            ] as const
-          ).map((opt) => (
-            <TouchableOpacity
-              key={String(opt.v)}
-              style={[
-                styles.chip,
-                { borderColor: colors.lineStrong },
-                hadPain === opt.v && { borderColor: colors.ember, backgroundColor: 'rgba(255,107,107,0.1)' }
-              ]}
-              onPress={() => setHadPain(opt.v)}
-              accessibilityRole="button"
-              accessibilityLabel={opt.l}
-            >
-              <Text style={[styles.chipText, { color: colors.paperDim }]}>{opt.l}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+          <Text style={[styles.question, { color: colors.paperDim }]}>Сложность тренировки?</Text>
+          <View style={styles.row}>
+            {DIFFICULTY_OPTIONS.map((opt) => (
+              <TouchableOpacity
+                key={opt.value}
+                style={[
+                  styles.chip,
+                  { borderColor: colors.lineStrong },
+                  difficulty === opt.value && {
+                    borderColor: colors.lime,
+                    backgroundColor: colors.limeDim
+                  }
+                ]}
+                onPress={() => setDifficulty(opt.value)}
+                accessibilityRole="button"
+                accessibilityLabel={opt.label}
+              >
+                <Text
+                  style={[
+                    styles.chipText,
+                    { color: colors.paperDim },
+                    difficulty === opt.value && { color: colors.lime }
+                  ]}
+                >
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
-        <Text style={[styles.question, { color: colors.paperDim }]}>Повторили бы этот день снова?</Text>
-        <View style={styles.row}>
-          {(
-            [
-              { v: true, l: 'Да' },
-              { v: false, l: 'Нет' }
-            ] as const
-          ).map((opt) => (
-            <TouchableOpacity
-              key={String(opt.v)}
-              style={[
-                styles.chip,
-                { borderColor: colors.lineStrong },
-                wouldRepeat === opt.v && { borderColor: colors.lime, backgroundColor: colors.limeDim }
-              ]}
-              onPress={() => setWouldRepeat(opt.v)}
-              accessibilityRole="button"
-              accessibilityLabel={opt.l}
-            >
-              <Text style={[styles.chipText, { color: colors.paperDim }]}>{opt.l}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <TouchableOpacity
-          style={[styles.submitBtn, { backgroundColor: canSubmit ? colors.lime : colors.panelRaised }]}
-          disabled={!canSubmit}
-          onPress={() =>
-            canSubmit &&
-            onSubmit({
-              feel: feel!,
-              difficulty: difficulty!,
-              hadPain: hadPain!,
-              wouldRepeat: wouldRepeat!
-            })
-          }
-          accessibilityRole="button"
-          accessibilityLabel="Отправить"
-        >
-          <Text style={[styles.submitBtnText, { color: canSubmit ? colors.ink : colors.paperFaint }]}>
-            Готово
+          <Text style={[styles.question, { color: colors.paperDim }]}>
+            Была боль или дискомфорт?
           </Text>
-        </TouchableOpacity>
+          <View style={styles.row}>
+            {(
+              [
+                { v: true, l: 'Да' },
+                { v: false, l: 'Нет' }
+              ] as const
+            ).map((opt) => (
+              <TouchableOpacity
+                key={String(opt.v)}
+                style={[
+                  styles.chip,
+                  { borderColor: colors.lineStrong },
+                  hadPain === opt.v && {
+                    borderColor: colors.ember,
+                    backgroundColor: 'rgba(255,107,107,0.1)'
+                  }
+                ]}
+                onPress={() => setHadPain(opt.v)}
+                accessibilityRole="button"
+                accessibilityLabel={opt.l}
+              >
+                <Text style={[styles.chipText, { color: colors.paperDim }]}>{opt.l}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
-        <TouchableOpacity onPress={onSkip} accessibilityRole="button" accessibilityLabel="Пропустить">
-          <Text style={[styles.skipText, { color: colors.paperFaint }]}>Пропустить</Text>
-        </TouchableOpacity>
-      </View>
-    </AppBottomSheet>
-  );
-});
+          <Text style={[styles.question, { color: colors.paperDim }]}>
+            Повторили бы этот день снова?
+          </Text>
+          <View style={styles.row}>
+            {(
+              [
+                { v: true, l: 'Да' },
+                { v: false, l: 'Нет' }
+              ] as const
+            ).map((opt) => (
+              <TouchableOpacity
+                key={String(opt.v)}
+                style={[
+                  styles.chip,
+                  { borderColor: colors.lineStrong },
+                  wouldRepeat === opt.v && {
+                    borderColor: colors.lime,
+                    backgroundColor: colors.limeDim
+                  }
+                ]}
+                onPress={() => setWouldRepeat(opt.v)}
+                accessibilityRole="button"
+                accessibilityLabel={opt.l}
+              >
+                <Text style={[styles.chipText, { color: colors.paperDim }]}>{opt.l}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <TouchableOpacity
+            style={[
+              styles.submitBtn,
+              { backgroundColor: canSubmit ? colors.lime : colors.panelRaised }
+            ]}
+            disabled={!canSubmit}
+            onPress={() =>
+              canSubmit &&
+              onSubmit({
+                feel: feel!,
+                difficulty: difficulty!,
+                hadPain: hadPain!,
+                wouldRepeat: wouldRepeat!
+              })
+            }
+            accessibilityRole="button"
+            accessibilityLabel="Отправить"
+          >
+            <Text
+              style={[styles.submitBtnText, { color: canSubmit ? colors.ink : colors.paperFaint }]}
+            >
+              Готово
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={onSkip}
+            accessibilityRole="button"
+            accessibilityLabel="Пропустить"
+          >
+            <Text style={[styles.skipText, { color: colors.paperFaint }]}>Пропустить</Text>
+          </TouchableOpacity>
+        </View>
+      </AppBottomSheet>
+    );
+  }
+);
 
 CompletionFeedbackSheet.displayName = 'CompletionFeedbackSheet';
 export default CompletionFeedbackSheet;

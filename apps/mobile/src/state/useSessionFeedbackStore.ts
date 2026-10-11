@@ -9,12 +9,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type EarlyLeaveReason =
-  | 'no_time'
-  | 'too_tired'
-  | 'pain'
-  | 'equipment'
-  | 'not_motivated'
-  | 'other';
+  'no_time' | 'too_tired' | 'pain' | 'equipment' | 'not_motivated' | 'other';
 
 export type FeelRating = 1 | 2 | 3 | 4 | 5; // 1 = ужасно, 5 = отлично
 export type PerceivedDifficulty = 'too_easy' | 'just_right' | 'too_hard';
@@ -61,7 +56,7 @@ export const useSessionFeedbackStore = create<SessionFeedbackStore>()(
               sessionId,
               dayId,
               recordedAtMs: Date.now(),
-              kind: 'early_leave',
+              kind: 'early_leave' as const,
               earlyLeaveReason: reason
             }
           ].slice(-MAX_ENTRIES)
@@ -75,7 +70,7 @@ export const useSessionFeedbackStore = create<SessionFeedbackStore>()(
               sessionId,
               dayId,
               recordedAtMs: Date.now(),
-              kind: 'completed',
+              kind: 'completed' as const,
               ...feedback
             }
           ].slice(-MAX_ENTRIES)
