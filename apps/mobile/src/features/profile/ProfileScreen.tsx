@@ -7,7 +7,11 @@ import * as DocumentPicker from 'expo-document-picker';
 import { isProfileComplete } from '@forma/core';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
-import { useFitPulseStore } from '@/state/useFitPulseStore';
+import {
+  useFitPulseStore,
+  BODY_MEASUREMENT_LABELS,
+  type BodyMeasurementType
+} from '@/state/useFitPulseStore';
 import { useThemeStore } from '@/state/useThemeStore';
 import { useVoiceCuesStore } from '@/state/useVoiceCuesStore';
 import { Goal, Sex } from '@/engines/MetabolicEngine';
@@ -29,6 +33,9 @@ export default function ProfileScreen() {
   const profile = useFitPulseStore((s) => s.profile);
   const updateProfile = useFitPulseStore((s) => s.updateProfile);
   const logWeight = useFitPulseStore((s) => s.logWeight);
+  const bodyMeasurements = useFitPulseStore((s) => s.bodyMeasurements);
+  const logBodyMeasurement = useFitPulseStore((s) => s.logBodyMeasurement);
+  const deleteBodyMeasurement = useFitPulseStore((s) => s.deleteBodyMeasurement);
   const hydrate = useFitPulseStore((s) => s.hydrate);
   const fullState = useFitPulseStore((s) => s);
 
@@ -43,6 +50,10 @@ export default function ProfileScreen() {
   const [ageInput, setAgeInput] = useState(numStr(profile.age));
   const [heightInput, setHeightInput] = useState(numStr(profile.height));
   const [weightInput, setWeightInput] = useState(numStr(profile.weight));
+  const [measureType, setMeasureType] = useState<BodyMeasurementType>('waist');
+  const [measureInput, setMeasureInput] = useState('');
+  const measurementValue = Number(measureInput.trim().replace(',', '.'));
+  const canAddMeasurement = Number.isFinite(measurementValue) && measurementValue > 0;
 
   function commitNumber(field: 'age' | 'height' | 'weight', value: string) {
     const num = parseFloat(value);
@@ -430,6 +441,97 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.sectionHead}>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>Замеры тела</Text>
+          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>обхваты</Text>
+        </View>
+        <View style={[styles.themeCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <View style={styles.measureTypeRow}>
+            {(Object.keys(BODY_MEASUREMENT_LABELS) as BodyMeasurementType[]).map((t) => {
+              const on = measureType === t;
+              return (
+                <TouchableOpacity
+                  key={t}
+                  style={[
+                    styles.measureTypeChip,
+                    { borderColor: colors.lineStrong, backgroundColor: colors.ink },
+                    on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                  ]}
+                  onPress={() => setMeasureType(t)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: on }}
+                  accessibilityLabel={BODY_MEASUREMENT_LABELS[t]}
+                >
+                  <Text
+                    style={[
+                      styles.measureTypeChipText,
+                      { color: colors.paperDim },
+                      on && { color: colors.lime }
+                    ]}
+                  >
+                    {BODY_MEASUREMENT_LABELS[t]}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          <View style={styles.measureInputRow}>
+            <TextInput
+              style={[
+                styles.measureInput,
+                {
+                  backgroundColor: colors.ink,
+                  borderColor: colors.lineStrong,
+                  color: colors.paper
+                }
+              ]}
+              value={measureInput}
+              onChangeText={setMeasureInput}
+              placeholder="см"
+              placeholderTextColor={colors.paperFaint}
+              keyboardType="numeric"
+              accessibilityLabel={`${BODY_MEASUREMENT_LABELS[measureType]}, см`}
+            />
+            <TouchableOpacity
+              style={[styles.measureAddBtn, { backgroundColor: colors.lime, opacity: canAddMeasurement ? 1 : 0.4 }]}
+              disabled={!canAddMeasurement}
+              accessibilityState={{ disabled: !canAddMeasurement }}
+              onPress={() => {
+                if (canAddMeasurement) {
+                  logBodyMeasurement(measureType, measurementValue);
+                  setMeasureInput('');
+                }
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Добавить замер"
+            >
+              <Text style={[styles.measureAddBtnText, { color: colors.ink }]}>Добавить</Text>
+            </TouchableOpacity>
+          </View>
+
+          {bodyMeasurements
+            .filter((e) => e.type === measureType)
+            .slice(-5)
+            .reverse()
+            .map((e) => (
+              <View key={e.id} style={styles.measureHistoryRow}>
+                <Text style={[styles.measureHistoryDate, { color: colors.paperFaint }]}>
+                  {e.dateKey}
+                </Text>
+                <Text style={[styles.measureHistoryVal, { color: colors.paper }]}>
+                  {e.valueCm} см
+                </Text>
+                <TouchableOpacity
+                  onPress={() => deleteBodyMeasurement(e.id)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Удалить замер"
+                >
+                  <Text style={[styles.measureHistoryDel, { color: colors.paperFaint }]}>×</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+        </View>
+
+        <View style={styles.sectionHead}>
           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>Метаболическое плато</Text>
           <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>Refeed / Diet Break</Text>
         </View>
@@ -584,5 +686,43 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm
   },
   settingName: { fontSize: 15, fontFamily: fonts.bodySemi },
-  settingDesc: { fontSize: 12, marginTop: 4 }
+  settingDesc: { fontSize: 12, marginTop: 4 },
+  measureTypeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 },
+  measureTypeChip: {
+    paddingHorizontal: 10,
+    height: 30,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  measureTypeChipText: { fontSize: 12, fontFamily: fonts.body },
+  measureInputRow: { flexDirection: 'row', gap: 8 },
+  measureInput: {
+    flex: 1,
+    height: 44,
+    borderWidth: 1,
+    borderRadius: radius.control,
+    paddingHorizontal: 12,
+    fontFamily: fonts.mono,
+    fontSize: 16
+  },
+  measureAddBtn: {
+    paddingHorizontal: 16,
+    height: 44,
+    borderRadius: radius.control,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  measureAddBtnText: { fontFamily: fonts.bodySemi, fontSize: 13 },
+  measureHistoryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 6,
+    marginTop: 8
+  },
+  measureHistoryDate: { flex: 1, fontFamily: fonts.mono, fontSize: 12 },
+  measureHistoryVal: { fontFamily: fonts.mono, fontSize: 13 },
+  measureHistoryDel: { width: 20, textAlign: 'center', fontSize: 15 }
 });

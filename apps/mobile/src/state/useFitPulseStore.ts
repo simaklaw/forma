@@ -62,6 +62,58 @@ export interface DayMeals {
   dinner: FoodItem[];
 }
 
+export type BodyMeasurementType = 'waist' | 'chest' | 'hips' | 'bicep' | 'thigh' | 'neck';
+
+export const BODY_MEASUREMENT_LABELS: Record<BodyMeasurementType, string> = {
+  waist: 'Талия',
+  chest: 'Грудь',
+  hips: 'Бёдра',
+  bicep: 'Бицепс',
+  thigh: 'Бедро (окружность)',
+  neck: 'Шея'
+};
+
+export interface BodyMeasurementEntry {
+  id: string;
+  type: BodyMeasurementType;
+  valueCm: number;
+  dateKey: string; // toDateKey() format, same as setLogs/dayProgress
+}
+
+const BODY_MEASUREMENT_LIMIT = 200;
+
+function isBodyMeasurementType(value: unknown): value is BodyMeasurementType {
+  return (
+    typeof value === 'string' &&
+    Object.prototype.hasOwnProperty.call(BODY_MEASUREMENT_LABELS, value)
+  );
+}
+
+function asBodyMeasurements(value: unknown): BodyMeasurementEntry[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const ids = new Set<string>();
+  const valid = value.every((entry: unknown) => {
+    if (!entry || typeof entry !== 'object') return false;
+    const e = entry as Partial<BodyMeasurementEntry>;
+    if (
+      typeof e.id !== 'string' ||
+      !e.id.trim() ||
+      ids.has(e.id) ||
+      !isBodyMeasurementType(e.type) ||
+      asPositiveNumber(e.valueCm) == null ||
+      typeof e.dateKey !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(e.dateKey)
+    )
+      return false;
+    const date = new Date(`${e.dateKey}T00:00:00.000Z`);
+    if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== e.dateKey)
+      return false;
+    ids.add(e.id);
+    return true;
+  });
+  return valid ? value.slice(-BODY_MEASUREMENT_LIMIT) : undefined;
+}
+
 export type StoredProfile = {
   sex: Sex | null;
   age: number | null;
@@ -149,6 +201,7 @@ interface AppStore {
   savedMeals: SavedMeal[];
   waterGlasses: number;
   weightHistory: number[];
+  bodyMeasurements: BodyMeasurementEntry[];
   setLogs: SetLogEntry[];
   dayProgress: DayProgress;
   personalRecords: Record<number, number>;
@@ -164,6 +217,8 @@ interface AppStore {
   deleteSavedMeal: (id: string) => void;
   setWater: (count: number) => void;
   logWeight: (weight: number) => void;
+  logBodyMeasurement: (type: BodyMeasurementType, valueCm: number) => void;
+  deleteBodyMeasurement: (id: string) => void;
 
   recordSet: (exerciseId: number, weight: number, reps: number, rir: number) => number;
   completedSetsToday: (exerciseId: number) => number;
@@ -181,6 +236,7 @@ interface AppStore {
         | 'savedMeals'
         | 'waterGlasses'
         | 'weightHistory'
+        | 'bodyMeasurements'
         | 'setLogs'
         | 'dayProgress'
         | 'personalRecords'
@@ -212,6 +268,7 @@ export function mergePersistedAppState(persisted: unknown, current: AppStore): A
     savedMeals: Array.isArray(p.savedMeals) ? p.savedMeals : current.savedMeals,
     setLogs: Array.isArray(p.setLogs) ? p.setLogs : current.setLogs,
     weightHistory: Array.isArray(p.weightHistory) ? p.weightHistory : current.weightHistory,
+    bodyMeasurements: asBodyMeasurements(p.bodyMeasurements) ?? current.bodyMeasurements,
     dayProgress:
       p.dayProgress != null && typeof p.dayProgress === 'object' && !Array.isArray(p.dayProgress)
         ? p.dayProgress
@@ -241,6 +298,7 @@ export const useFitPulseStore = create<AppStore>()(
       savedMeals: [],
       waterGlasses: 0,
       weightHistory: [],
+      bodyMeasurements: [],
       setLogs: [],
       dayProgress: {},
       personalRecords: {},
@@ -347,6 +405,25 @@ export const useFitPulseStore = create<AppStore>()(
         scheduleWeightExport(w);
       },
 
+      logBodyMeasurement: (type, valueCm) => {
+        const v = asPositiveNumber(valueCm);
+        if (v == null || !isBodyMeasurementType(type)) return;
+        const entry: BodyMeasurementEntry = {
+          id: generateId(),
+          type,
+          valueCm: v,
+          dateKey: toDateKey(new Date())
+        };
+        set((state) => ({
+          bodyMeasurements: [...state.bodyMeasurements, entry].slice(-BODY_MEASUREMENT_LIMIT)
+        }));
+      },
+
+      deleteBodyMeasurement: (id) =>
+        set((state) => ({
+          bodyMeasurements: state.bodyMeasurements.filter((e) => e.id !== id)
+        })),
+
       recordSet: (exerciseId, weight, reps, rir) => {
         const todayKey = toDateKey(new Date());
         const entry: SetLogEntry = {
@@ -433,6 +510,8 @@ export const useFitPulseStore = create<AppStore>()(
         ) {
           next.weightHistory = data.weightHistory;
         }
+        const measurements = asBodyMeasurements(data.bodyMeasurements);
+        if (measurements !== undefined) next.bodyMeasurements = measurements;
         if (
           Array.isArray(data.setLogs) &&
           data.setLogs.every(
@@ -457,7 +536,7 @@ export const useFitPulseStore = create<AppStore>()(
 
         if (Object.keys(next).length === 0) {
           throw new Error(
-            'Backup file has none of the expected fields (profile/metabolic/todayMeals/waterGlasses/weightHistory/setLogs/dayProgress/personalRecords)'
+            'Backup file has none of the expected fields (profile/metabolic/todayMeals/waterGlasses/weightHistory/bodyMeasurements/setLogs/dayProgress/personalRecords)'
           );
         }
         set(next);
