@@ -22,6 +22,8 @@ import {
 import { startOutboxDrainLifecycle } from '@/features/workout/data/bootstrapOutboxDrain';
 import { hydrateSessionReadModel } from '@/features/workout/session/hydrateSessionReadModel';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
+import { useVoiceCuesStore } from '@/state/useVoiceCuesStore';
+import { VoiceCuesEngine } from '@/engines/VoiceCuesEngine';
 
 function enableSqliteSessions(): void {
   const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
@@ -55,6 +57,11 @@ export default function App() {
   const profile = useFitPulseStore((s) => s.profile);
   const themeMode = useThemeStore((s) => s.mode);
   const shell = resolveColors(themeMode);
+  const voiceCuesEnabled = useVoiceCuesStore((s) => s.enabled);
+
+  useEffect(() => {
+    VoiceCuesEngine.setEnabled(voiceCuesEnabled);
+  }, [voiceCuesEnabled]);
 
   useEffect(() => {
     void Font.loadAsync({

@@ -10,6 +10,7 @@ import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { estimateOneRepMax, rpeFromRir } from '@/engines/MetabolicEngine';
 import { RestTimerEngine } from '@/engines/RestTimerEngine';
+import { VoiceCuesEngine } from '@/engines/VoiceCuesEngine';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { toDateKey, roundToStep } from '@/engines/WorkoutStats';
 import { formatRestClock, techniqueCuesFromNote } from '@/lib/techniqueCues';
@@ -77,8 +78,14 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       }
       RestTimerEngine.startTimer(
         sec,
-        (remaining) => setRestRemaining(remaining),
-        () => setRestRemaining(null),
+        (remaining) => {
+          setRestRemaining(remaining);
+          VoiceCuesEngine.announceRestCountdown(remaining);
+        },
+        () => {
+          setRestRemaining(null);
+          VoiceCuesEngine.announceRestOver();
+        },
         beepSource
       );
     }, []);
@@ -95,6 +102,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
     useEffect(() => {
       if (!exercise) return;
+      VoiceCuesEngine.announceExercise(exercise.name);
       setCompletedSets(completedSetsToday(exercise.id));
       const seed = resolveWorkingLoadKg(exercise, bodyKg);
       setWeight(seed > 0 ? seed : exercise.workingWeight > 0 ? exercise.workingWeight : bodyKg);
@@ -174,11 +182,19 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           setCompletedSets(next);
           await ActiveSessionController.completeDayIfDone();
           if (next >= exercise.totalSets) {
-            RestTimerEngine.hapticDayComplete();
+            const dayComplete = ActiveSessionController.getSessionId() == null;
+            if (dayComplete) {
+              RestTimerEngine.hapticDayComplete();
+              VoiceCuesEngine.announceDayComplete();
+            } else {
+              RestTimerEngine.hapticSetComplete();
+              VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
+            }
             onFinished?.(exercise.id);
             return;
           }
           RestTimerEngine.hapticSetComplete();
+          VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
           if (session.restEndsAtMs != null) startRestFromDeadline(session.restEndsAtMs);
         });
         return;
@@ -189,16 +205,24 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       setCompletedSets(next);
 
       if (next >= exercise.totalSets) {
-        RestTimerEngine.hapticDayComplete();
+        RestTimerEngine.hapticSetComplete();
+        VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
         onFinished?.(exercise.id);
         return;
       }
 
       RestTimerEngine.hapticSetComplete();
+      VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
       RestTimerEngine.startTimer(
         exercise.restSeconds,
-        (remaining) => setRestRemaining(remaining),
-        () => setRestRemaining(null),
+        (remaining) => {
+          setRestRemaining(remaining);
+          VoiceCuesEngine.announceRestCountdown(remaining);
+        },
+        () => {
+          setRestRemaining(null);
+          VoiceCuesEngine.announceRestOver();
+        },
         beepSource
       );
     }
