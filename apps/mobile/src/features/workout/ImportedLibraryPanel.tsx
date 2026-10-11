@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
   Image,
@@ -17,6 +17,8 @@ import {
   type ImportedExercise
 } from './importedExerciseLibrary.generated';
 import { IMPORTED_EXERCISE_IMAGES } from './importedExerciseImages.generated';
+import { ExerciseMediaService } from './ExerciseMediaService';
+import ExerciseVideo from '@/components/ExerciseVideo';
 import { filterImportedLibrary } from './importedLibraryFilter';
 
 const CATEGORY_LABELS: Record<ImportedExercise['category'], string> = {
@@ -37,6 +39,22 @@ export default function ImportedLibraryPanel() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<ImportedExercise['category'] | null>(null);
   const [selected, setSelected] = useState<ImportedExercise | null>(null);
+  const [resolvedVideo, setResolvedVideo] = useState<{ id: string; source: { uri: string } | number } | null>(null);
+  const videoSource = resolvedVideo?.id === selected?.id ? resolvedVideo?.source : null;
+
+  useEffect(() => {
+    setResolvedVideo(null);
+    if (!selected) return;
+    let cancelled = false;
+    void ExerciseMediaService.getPlaybackSource(selected.id).then((src) => {
+      if (!cancelled && src != null) setResolvedVideo({ id: selected.id, source: src });
+    }).catch(() => {
+      if (!cancelled) setResolvedVideo(null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [selected]);
 
   const filtered = useMemo(
     () => filterImportedLibrary(IMPORTED_EXERCISE_LIBRARY, query, category),
@@ -149,6 +167,9 @@ export default function ImportedLibraryPanel() {
               </TouchableOpacity>
             </View>
             <ScrollView contentContainerStyle={styles.modalBody}>
+              {videoSource ? (
+                <ExerciseVideo source={videoSource} label={displayName(selected)} />
+              ) : null}
               {selected.imageKeys.map((imageKey) => {
                 const source = IMPORTED_EXERCISE_IMAGES[imageKey];
                 return source ? (
