@@ -7,6 +7,7 @@ import {
   selectCurrentStreak,
   selectStreakDays,
   unifiedStreakDays,
+  selectMonthActivity,
   ruDayWord,
   roundToStep,
   toDateKey,
@@ -323,8 +324,6 @@ describe('unifiedStreakDays', () => {
   });
 });
 
-import { selectMonthActivity } from './WorkoutStats';
-
 describe('selectMonthActivity', () => {
   const emptyMeals = { breakfast: [], lunch: [], snack: [], dinner: [] };
 
@@ -344,6 +343,26 @@ describe('selectMonthActivity', () => {
     const setLogs = [{ dateKey: '2026-10-05' }];
     const result = selectMonthActivity(setLogs, emptyMeals, 2026, 9);
     expect(result.find((d) => d.dayOfMonth === 5)?.level).toBe('light');
+  });
+
+  it('marks a day "light" when only food was logged', () => {
+    const loggedAt = new Date(2026, 9, 5, 12, 0).getTime();
+    const meals = {
+      ...emptyMeals,
+      breakfast: [{ id: '1', name: 'x', kcal: 1, protein: 0, fat: 0, carbs: 0, loggedAt }]
+    };
+    const result = selectMonthActivity([], meals, 2026, 9);
+    expect(result.find((d) => d.dayOfMonth === 5)?.level).toBe('light');
+  });
+
+  it('counts a legacy meal without loggedAt as activity today', () => {
+    const now = new Date(2026, 9, 10);
+    const meals = {
+      ...emptyMeals,
+      dinner: [{ id: 'legacy', name: 'x', kcal: 1, protein: 0, fat: 0, carbs: 0 }]
+    };
+    const result = selectMonthActivity([], meals, 2026, 9, now);
+    expect(result.find((d) => d.dayOfMonth === 10)?.level).toBe('light');
   });
 
   it('marks a day "none" when nothing was logged', () => {

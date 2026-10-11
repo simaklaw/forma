@@ -124,7 +124,9 @@ export default function ActivityCalendar({ setLogs, allMeals }: Props) {
       <View style={styles.legend}>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: colors.lime }]} />
-          <Text style={[styles.legendText, { color: colors.paperFaint }]}>Тренировка + питание</Text>
+          <Text style={[styles.legendText, { color: colors.paperFaint }]}>
+            Тренировка + питание
+          </Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: colors.cyan }]} />

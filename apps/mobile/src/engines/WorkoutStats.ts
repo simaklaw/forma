@@ -100,14 +100,15 @@ export function selectMonthActivity(
   now: Date = new Date()
 ): DayActivity[] {
   const workoutDates = new Set(setLogs.map((e) => e.dateKey));
+  const todayKey = toDateKey(now);
   const foodDates = new Set(
     [...allMeals.breakfast, ...allMeals.lunch, ...allMeals.snack, ...allMeals.dinner]
-      .filter((i) => i.loggedAt)
-      .map((i) => toDateKey(new Date(i.loggedAt!)))
+      .map((i) =>
+        i.loggedAt != null ? toDateKey(new Date(i.loggedAt)) : todayKey
+      )
   );
 
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const todayKey = toDateKey(now);
 
   const out: DayActivity[] = [];
   for (let day = 1; day <= daysInMonth; day += 1) {
