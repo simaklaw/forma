@@ -286,7 +286,6 @@ export const useFitPulseStore = create<AppStore>()(
         return created;
       },
 
-
       saveMealAsTemplate: (name, items) => {
         const template: SavedMeal = {
           id: uuidv7(),

@@ -126,12 +126,16 @@ describe('copyFoodItems action', () => {
   it('appends copied items with fresh ids and current timestamp', () => {
     const { copyFoodItems } = useFitPulseStore.getState();
     const before = useFitPulseStore.getState().todayMeals.breakfast.length;
+    const beforeTime = Date.now();
     copyFoodItems('breakfast', [
       { id: 'old-id', name: 'oats', kcal: 300, protein: 10, fat: 5, carbs: 50, loggedAt: 1 }
     ]);
+    const afterTime = Date.now();
     const after = useFitPulseStore.getState().todayMeals.breakfast;
     expect(after.length).toBe(before + 1);
     expect(after[after.length - 1].id).not.toBe('old-id');
+    expect(after[after.length - 1].loggedAt).toBeGreaterThanOrEqual(beforeTime);
+    expect(after[after.length - 1].loggedAt).toBeLessThanOrEqual(afterTime);
   });
 });
 
