@@ -44,7 +44,8 @@ export default function OnboardingScreen() {
                 weight: profile.weight,
                 height: profile.height,
                 age: profile.age,
-                sex: profile.sex
+                sex: profile.sex,
+                focusAreas: profile.focusAreas ?? []
               }}
               submitLabel="Сохранить и войти"
               onSubmit={(v) =>
@@ -52,7 +53,8 @@ export default function OnboardingScreen() {
                   weight: v.weight as number,
                   height: v.height as number,
                   age: v.age as number,
-                  sex: v.sex as 'male' | 'female'
+                  sex: v.sex as 'male' | 'female',
+                  focusAreas: v.focusAreas
                 })
               }
             />

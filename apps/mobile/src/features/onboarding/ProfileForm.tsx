@@ -4,12 +4,14 @@ import { isProfileComplete } from '@forma/core';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import type { Sex } from '@/engines/MetabolicEngine';
+import { MUSCLE_LABELS, type MuscleKey } from '@/components/MuscleMap';
 
 export type ProfileFormValues = {
   weight: number | null;
   height: number | null;
   age: number | null;
   sex: Sex | null;
+  focusAreas: MuscleKey[];
 };
 
 type Props = {
@@ -25,6 +27,7 @@ export function ProfileForm({ initial, submitLabel, onSubmit }: Props) {
   const [height, setHeight] = useState(initial.height != null ? String(initial.height) : '');
   const [age, setAge] = useState(initial.age != null ? String(initial.age) : '');
   const [sex, setSex] = useState<Sex | null>(initial.sex);
+  const [focusAreas, setFocusAreas] = useState<MuscleKey[]>(initial.focusAreas ?? []);
 
   const draft = useMemo(() => {
     const w = Number(weight.replace(',', '.'));
@@ -35,9 +38,16 @@ export function ProfileForm({ initial, submitLabel, onSubmit }: Props) {
       height: Number.isFinite(h) && h > 0 ? h : null,
       // Must match MetabolicEngine validateProfile (13–120) and isProfileComplete.
       age: Number.isInteger(a) && a >= 13 && a <= 120 ? a : null,
-      sex
+      sex,
+      focusAreas
     };
-  }, [weight, height, age, sex]);
+  }, [weight, height, age, sex, focusAreas]);
+
+  function toggleFocusArea(key: MuscleKey) {
+    setFocusAreas((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  }
 
   const ready = isProfileComplete({
     weightKg: draft.weight,
@@ -85,6 +95,31 @@ export function ProfileForm({ initial, submitLabel, onSubmit }: Props) {
         placeholder="например 28"
         a11yLabel="Возраст от 13 до 120"
       />
+      <View style={styles.field}>
+        <Text style={styles.label}>Фокус-зона (необязательно)</Text>
+        <Text style={styles.focusHint}>
+          Отметьте, на что хотите упор — такие упражнения будем выделять в тренировке
+        </Text>
+        <View style={styles.focusGrid}>
+          {(Object.keys(MUSCLE_LABELS) as MuscleKey[]).map((key) => {
+            const on = focusAreas.includes(key);
+            return (
+              <TouchableOpacity
+                key={key}
+                style={[styles.focusChip, on && styles.focusChipOn]}
+                onPress={() => toggleFocusArea(key)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: on }}
+                accessibilityLabel={MUSCLE_LABELS[key]}
+              >
+                <Text style={[styles.focusChipText, on && styles.focusChipTextOn]}>
+                  {MUSCLE_LABELS[key]}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
       <TouchableOpacity
         style={[styles.cta, !ready && styles.ctaDisabled]}
         disabled={!ready}
@@ -173,6 +208,20 @@ function createStyles(colors: ColorTokens) {
       justifyContent: 'center'
     },
     ctaDisabled: { opacity: 0.4 },
-    ctaText: { color: colors.ink, fontFamily: fonts.mono, fontSize: 18 }
+    ctaText: { color: colors.ink, fontFamily: fonts.mono, fontSize: 18 },
+    focusHint: { color: colors.paperFaint, fontSize: 12, fontFamily: fonts.body, marginTop: -2 },
+    focusGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 },
+    focusChip: {
+      paddingHorizontal: 12,
+      height: 34,
+      borderRadius: radius.control,
+      borderWidth: 1,
+      borderColor: colors.lineStrong,
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    focusChipOn: { borderColor: colors.lime, backgroundColor: colors.limeDim },
+    focusChipText: { color: colors.paperDim, fontFamily: fonts.body, fontSize: 12 },
+    focusChipTextOn: { color: colors.lime, fontFamily: fonts.bodySemi }
   });
 }

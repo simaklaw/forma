@@ -155,3 +155,47 @@ describe('saveMealAsTemplate / logSavedMeal', () => {
     expect(after[after.length - 1].name).toBe('oats');
   });
 });
+
+describe('focusAreas in profile', () => {
+  const initialProfile = useFitPulseStore.getInitialState().profile;
+
+  beforeEach(() => {
+    useFitPulseStore.setState({ profile: initialProfile });
+  });
+
+  afterEach(() => {
+    useFitPulseStore.setState({ profile: initialProfile });
+  });
+
+  it('defaults to no focus areas for new and legacy profiles', () => {
+    expect(useFitPulseStore.getState().profile.focusAreas).toEqual([]);
+    const merged = mergePersistedAppState({ profile: { weight: 75 } }, baseline());
+    expect(merged.profile.focusAreas).toEqual([]);
+    expect(merged.profile.weight).toBe(75);
+  });
+
+  it('saves focus areas and preserves them when another profile field changes', () => {
+    const { updateProfile } = useFitPulseStore.getState();
+    updateProfile({ focusAreas: ['chest', 'glutes'] });
+    updateProfile({ weight: 80 });
+    expect(useFitPulseStore.getState().profile.focusAreas).toEqual(['chest', 'glutes']);
+    updateProfile({ focusAreas: [] });
+    expect(useFitPulseStore.getState().profile.focusAreas).toEqual([]);
+  });
+
+  it('restores valid focus areas and drops unknown values from storage', () => {
+    const merged = mergePersistedAppState(
+      { profile: { focusAreas: ['chest', 'invalid-key', null, 42, 'glutes'] } },
+      baseline()
+    );
+    expect(merged.profile.focusAreas).toEqual(['chest', 'glutes']);
+  });
+
+  it.each([null, 'chest', { chest: true }])(
+    'handles malformed stored focus areas: %p',
+    (focusAreas) => {
+      const merged = mergePersistedAppState({ profile: { focusAreas } }, baseline());
+      expect(merged.profile.focusAreas).toEqual([]);
+    }
+  );
+});

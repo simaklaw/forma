@@ -56,6 +56,7 @@ export default function WorkoutScreen() {
   const dayProgress = useFitPulseStore((s) => s.dayProgress);
   const completedSetsToday = useFitPulseStore((s) => s.completedSetsToday);
   const personalRecords = useFitPulseStore((s) => s.personalRecords);
+  const profileFocusAreas = useFitPulseStore((s) => s.profile.focusAreas) ?? [];
   const setLogs = useFitPulseStore((s) => s.setLogs);
   const profileWeight = useFitPulseStore((s) => s.profile.weight);
   const profileSex = useFitPulseStore((s) => s.profile.sex);
@@ -440,13 +441,17 @@ export default function WorkoutScreen() {
           const exPr = personalRecords[ex.id];
           const thumbKey = ex.mediaKey;
           const thumb = thumbKey ? EXERCISE_THUMBNAILS[thumbKey] : undefined;
+          const matchesFocus =
+            profileFocusAreas.length > 0 &&
+            ex.targetMuscles.some((m) => profileFocusAreas.includes(m));
           return (
             <TouchableOpacity
               key={ex.id}
               style={[
                 styles.logRow,
                 { backgroundColor: colors.panel, borderColor: colors.line },
-                isCurrent && { borderColor: colors.lime }
+                isCurrent && { borderColor: colors.lime },
+                matchesFocus && !isCurrent && { borderColor: colors.cyan }
               ]}
               onPress={() => openExercise(ex.id)}
               onLongPress={() => {
@@ -475,6 +480,7 @@ export default function WorkoutScreen() {
                 <View style={styles.logNameRow}>
                   <Text style={[styles.logName, { color: colors.paper }]} numberOfLines={1}>
                     {ex.name}
+                    {matchesFocus ? ' 🎯' : ''}
                   </Text>
                   {isCurrent ? (
                     <View style={[styles.nowBadge, { backgroundColor: colors.lime }]}>
