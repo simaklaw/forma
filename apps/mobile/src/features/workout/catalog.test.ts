@@ -1,4 +1,9 @@
-import { formatLoadLabel, isBodyweightExercise, resolveWorkingLoadKg } from './catalog';
+import {
+  allExerciseMetKeys,
+  formatLoadLabel,
+  isBodyweightExercise,
+  resolveWorkingLoadKg
+} from './catalog';
 
 describe('workout catalog load', () => {
   const bw = { workingWeight: 0 };
@@ -18,5 +23,9 @@ describe('workout catalog load', () => {
   it('formats home load as bodyweight, gym as kg', () => {
     expect(formatLoadLabel(bw, 73)).toBe('свой вес · 73 кг');
     expect(formatLoadLabel(squat)).toBe('80 кг');
+  });
+
+  it('prefers an exercise mediaKey for MET lookup', () => {
+    expect(allExerciseMetKeys()[10]).toBe('pushup');
   });
 });
