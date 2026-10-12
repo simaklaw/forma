@@ -212,13 +212,29 @@ export function calculateTDEE(bio: Biometrics): number {
   return Math.round(calculateBMR(bio) * bio.activityFactor);
 }
 
-/** MET-based energy expenditure (kcal). */
-export function calculateBurnedCalories(met: number, weightKg: number, durationMinutes: number): number {
+/**
+ * MET-based energy expenditure (kcal), with an optional RPE correction:
+ *   E = (MET · 3.5 · W / 200) · t · (0.7 + 0.06 · RPE)
+ * Omitting rpe keeps the original uncorrected formula.
+ */
+export function calculateBurnedCalories(
+  met: number,
+  weightKg: number,
+  durationMinutes: number,
+  rpe?: number
+): number {
   assertFinitePositive(met, "met");
   assertFinitePositive(weightKg, "weightKg");
-  if (!Number.isFinite(durationMinutes) || durationMinutes < 0) throw new RangeError("durationMinutes must be finite and >= 0");
-  return Math.round(((met * 3.5 * weightKg) / 200) * durationMinutes);
+  if (!Number.isFinite(durationMinutes) || durationMinutes < 0) {
+    throw new RangeError("durationMinutes must be finite and >= 0");
+  }
+  if (rpe !== undefined && (!Number.isFinite(rpe) || rpe < 0 || rpe > 10)) {
+    throw new RangeError("rpe must be between 0 and 10");
+  }
+  const rpeMultiplier = rpe !== undefined ? 0.7 + 0.06 * rpe : 1;
+  return Math.round(((met * 3.5 * weightKg) / 200) * durationMinutes * rpeMultiplier);
 }
+
 
 export function detectWeightPlateau(
   weightHistory: number[],
@@ -254,8 +270,13 @@ export class MetabolicEngine {
   static calculateTDEE(bio: Biometrics): number {
     return calculateTDEE(bio);
   }
-  static calculateBurnedCalories(met: number, weightKg: number, durationMinutes: number): number {
-    return calculateBurnedCalories(met, weightKg, durationMinutes);
+  static calculateBurnedCalories(
+    met: number,
+    weightKg: number,
+    durationMinutes: number,
+    rpe?: number
+  ): number {
+    return calculateBurnedCalories(met, weightKg, durationMinutes, rpe);
   }
   static calculateTargets(profile: ProfileState, metabolic: MetabolicStatus, now?: number, policy?: TargetPolicy): Targets {
     return calculateTargets(profile, metabolic, now, policy);

@@ -20,7 +20,7 @@ import { ruDayWord, toDateKey } from '@/engines/WorkoutStats';
 import type { WorkoutSession } from '@forma/workout-domain';
 import { ActiveSessionController, dayIdFromTemplate } from './session/ActiveSessionController';
 import { applySessionProjection } from './data/applySessionProjection';
-import { catalogFor, formatLoadLabel, type TrainingMode } from './catalog';
+import { catalogFor, formatLoadLabel, allExerciseMetKeys, type TrainingMode } from './catalog';
 import { clearDayOverride, loadDayOverrideIds, resolveDayExercises } from './dayPlanOverrides';
 import { setReplaceTarget } from './replaceTarget';
 import type { TabParamList } from '@/navigation/types';
@@ -115,6 +115,7 @@ export default function WorkoutScreen() {
     }
   }, [plan, selectedDayId]);
 
+  const exerciseMetKeys = useMemo(() => allExerciseMetKeys(), []);
   const exerciseNames = useMemo(
     () => Object.fromEntries(plan.flatMap((day) => day.exercises.map((ex) => [ex.id, ex.name]))),
     [plan]
@@ -166,9 +167,9 @@ export default function WorkoutScreen() {
         weightKg: safeWeightKg,
         setLogs,
         dateKey: coreToDateKey(new Date()),
-        exerciseNames
+        exerciseNames: exerciseMetKeys
       }),
-    [safeWeightKg, setLogs, exerciseNames]
+    [safeWeightKg, setLogs, exerciseMetKeys]
   );
   const currentStepExerciseId =
     resumable && activeDay && dayIdFromTemplate(resumable.templateRevisionId) === activeDay.id
@@ -415,7 +416,7 @@ export default function WorkoutScreen() {
           </View>
         </View>
 
-        <WorkoutCoachCard dayName={activeDay.name} anyDoneToday={anyDoneToday} exerciseNames={exerciseNames} />
+        <WorkoutCoachCard dayName={activeDay.name} anyDoneToday={anyDoneToday} exerciseNames={exerciseMetKeys} />
 
         <View style={styles.sectionHead}>
           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>УПРАЖНЕНИЯ</Text>

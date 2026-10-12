@@ -104,3 +104,16 @@ test("plateau detection validates and evaluates the recent sample", () => {
   assert.throws(() => detectWeightPlateau([80, 80], "recomp", 1), RangeError);
   assert.throws(() => detectWeightPlateau([], "recomp", 4, -0.1), RangeError);
 });
+
+
+test("calculateBurnedCalories RPE correction", () => {
+  assert.equal(
+    calculateBurnedCalories(5, 70, 10),
+    Math.round(((5 * 3.5 * 70) / 200) * 10),
+  );
+  const base = (5 * 3.5 * 70) / 200;
+  assert.equal(calculateBurnedCalories(5, 70, 10, 10), Math.round(base * 10 * (0.7 + 0.6)));
+  assert.equal(calculateBurnedCalories(5, 70, 10, 0), Math.round(base * 10 * 0.7));
+  assert.throws(() => calculateBurnedCalories(5, 70, 10, 11), RangeError);
+  assert.throws(() => calculateBurnedCalories(5, 70, 10, -1), RangeError);
+});

@@ -47,3 +47,15 @@ export function allExerciseNames(): Record<number, string> {
     [...GYM_PLAN, ...HOME_PLAN].flatMap((day) => day.exercises.map((ex) => [ex.id, ex.name]))
   );
 }
+
+/**
+ * Prefer mediaKey (EXERCISE_MET id) for calorie estimation; fall back to display name.
+ * Display names stay in allExerciseNames() for UI labels.
+ */
+export function allExerciseMetKeys(): Record<number, string> {
+  return Object.fromEntries(
+    [...GYM_PLAN, ...HOME_PLAN].flatMap((day) =>
+      day.exercises.map((ex) => [ex.id, ex.mediaKey ?? ex.name])
+    )
+  );
+}
