@@ -26,6 +26,28 @@ export const EXERCISE_MET = {
 
 export type ExerciseMetId = keyof typeof EXERCISE_MET;
 
+/**
+ * Category-level MET fallback for exercises without an explicit entry in
+ * EXERCISE_MET (imported Stage-2 library when callers pass exerciseMeta).
+ */
+const CATEGORY_MET: Record<string, number> = {
+  chest: 5.0,
+  back: 5.5,
+  legs: 5.5,
+  abs: 3.0,
+  arms: 3.5,
+  glutes: 4.5,
+};
+
+export function metForImportedExercise(
+  category: string,
+  equipment: string,
+  fallback = 3.5
+): number {
+  const base = CATEGORY_MET[category] ?? fallback;
+  return equipment === "bands" ? base + 0.3 : base;
+}
+
 export function metForExercise(id: string, fallback = 3.5): number {
   if (id in EXERCISE_MET) return EXERCISE_MET[id as ExerciseMetId];
   const k = id.toLowerCase();

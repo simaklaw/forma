@@ -13,7 +13,7 @@ import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { selectDailyTotals, selectTodayMeals, useFitPulseStore } from '@/state/useFitPulseStore';
 import { unifiedStreakDays, lastNDays } from '@/engines/WorkoutStats';
-import { allExerciseNames } from '@/features/workout/catalog';
+import { allExerciseNames, allExerciseMetKeys } from '@/features/workout/catalog';
 import ActivityCalendar from '@/components/ActivityCalendar';
 
 const GLASS_ML = 250;
@@ -49,6 +49,7 @@ export default function ProgressScreen() {
   const metabolic = useFitPulseStore((s) => s.metabolic);
 
   const exerciseNames = useMemo(() => allExerciseNames(), []);
+  const exerciseMetKeys = useMemo(() => allExerciseMetKeys(), []);
   const todayKey = useMemo(() => toDateKey(new Date()), []);
 
   const weekKeys = useMemo(() => lastNDays(7).map((d) => toDateKey(d)), []);
@@ -139,9 +140,9 @@ export default function ProgressScreen() {
       weightKg: safeWeight,
       setLogs,
       dateKeys: days.map((d) => toDateKey(d)),
-      exerciseNames
+      exerciseNames: exerciseMetKeys
     });
-  }, [setLogs, profile.weight, exerciseNames]);
+  }, [setLogs, profile.weight, exerciseMetKeys]);
 
   const todayBurn = useMemo(() => {
     const safeWeight =
@@ -152,9 +153,9 @@ export default function ProgressScreen() {
       weightKg: safeWeight,
       setLogs,
       dateKey: todayKey,
-      exerciseNames
+      exerciseNames: exerciseMetKeys
     });
-  }, [setLogs, profile.weight, todayKey, exerciseNames]);
+  }, [setLogs, profile.weight, todayKey, exerciseMetKeys]);
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]} edges={['top']}>

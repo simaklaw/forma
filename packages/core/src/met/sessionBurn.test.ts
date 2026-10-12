@@ -53,3 +53,38 @@ test("estimateDailyBurns returns one entry per dateKey", () => {
   assert.ok(days[1].kcal > 0);
   assert.ok(days[2].kcal > 0);
 });
+
+
+test("estimateBurnFromSetLogs applies higher burn for lower RIR (higher RPE)", () => {
+  const dateKey = "2026-09-16";
+  const easy = estimateBurnFromSetLogs({
+    weightKg: 70,
+    setLogs: [{ id: "1", exerciseId: 1, dateKey, weight: 50, reps: 10, rir: 5 }],
+    dateKey,
+    exerciseNames: { 1: "plank" },
+  });
+  const hard = estimateBurnFromSetLogs({
+    weightKg: 70,
+    setLogs: [{ id: "1", exerciseId: 1, dateKey, weight: 50, reps: 10, rir: 0 }],
+    dateKey,
+    exerciseNames: { 1: "plank" },
+  });
+  assert.ok(hard > easy);
+});
+
+test("estimateBurnFromSetLogs uses exerciseMeta category MET when provided", () => {
+  const dateKey = "2026-09-16";
+  const withMeta = estimateBurnFromSetLogs({
+    weightKg: 70,
+    setLogs: [{ id: "1", exerciseId: 9001, dateKey, weight: 0, reps: 10, rir: 2 }],
+    dateKey,
+    exerciseMeta: { 9001: { category: "legs", equipment: "bodyweight" } },
+  });
+  const flat = estimateBurnFromSetLogs({
+    weightKg: 70,
+    setLogs: [{ id: "1", exerciseId: 9001, dateKey, weight: 0, reps: 10, rir: 2 }],
+    dateKey,
+    exerciseNames: { 9001: "unknown-imported-move" },
+  });
+  assert.ok(withMeta > flat);
+});
