@@ -18,6 +18,7 @@ import {
 } from './importedExerciseLibrary.generated';
 import { IMPORTED_EXERCISE_IMAGES } from './importedExerciseImages.generated';
 import { ExerciseMediaService } from './ExerciseMediaService';
+import { gifEntryForLibraryId } from './exerciseGifManifest.generated';
 import ExerciseVideo from '@/components/ExerciseVideo';
 import { filterImportedLibrary } from './importedLibraryFilter';
 import { catalogFor } from './catalog';
@@ -53,6 +54,7 @@ export default function ImportedLibraryPanel() {
   const [category, setCategory] = useState<ImportedExercise['category'] | null>(null);
   const [selected, setSelected] = useState<ImportedExercise | null>(null);
   const [resolvedVideo, setResolvedVideo] = useState<{ id: string; source: { uri: string } | number } | null>(null);
+  const [gifUri, setGifUri] = useState<string | null>(null);
   const [replaceTarget, setReplaceTargetState] = useState<ReplaceTarget | null>(getReplaceTarget());
   const [replacing, setReplacing] = useState(false);
   const videoSource = resolvedVideo?.id === selected?.id ? resolvedVideo?.source : null;
@@ -85,13 +87,18 @@ export default function ImportedLibraryPanel() {
 
   useEffect(() => {
     setResolvedVideo(null);
+    setGifUri(null);
     if (!selected) return;
     let cancelled = false;
-    void ExerciseMediaService.getPlaybackSource(selected.id).then((src) => {
-      if (!cancelled && src != null) setResolvedVideo({ id: selected.id, source: src });
-    }).catch(() => {
-      if (!cancelled) setResolvedVideo(null);
-    });
+    const gif = gifEntryForLibraryId(selected.id);
+    if (gif?.gifUrl) setGifUri(gif.gifUrl);
+    void ExerciseMediaService.getPlaybackSource(selected.id)
+      .then((src) => {
+        if (!cancelled && src != null) setResolvedVideo({ id: selected.id, source: src });
+      })
+      .catch(() => {
+        if (!cancelled) setResolvedVideo(null);
+      });
     return () => {
       cancelled = true;
     };
@@ -210,13 +217,27 @@ export default function ImportedLibraryPanel() {
             <ScrollView contentContainerStyle={styles.modalBody}>
               {videoSource ? (
                 <ExerciseVideo source={videoSource} label={displayName(selected)} />
+              ) : gifUri ? (
+                <Image
+                  source={{ uri: gifUri }}
+                  style={styles.hero}
+                  resizeMode="contain"
+                  accessibilityLabel={`Анимация: ${displayName(selected)}`}
+                />
               ) : null}
-              {selected.imageKeys.map((imageKey) => {
-                const source = IMPORTED_EXERCISE_IMAGES[imageKey];
-                return source ? (
-                  <Image key={imageKey} source={source} style={styles.hero} resizeMode="contain" />
-                ) : null;
-              })}
+              {!videoSource && !gifUri
+                ? selected.imageKeys.map((imageKey) => {
+                    const source = IMPORTED_EXERCISE_IMAGES[imageKey];
+                    return source ? (
+                      <Image key={imageKey} source={source} style={styles.hero} resizeMode="contain" />
+                    ) : null;
+                  })
+                : null}
+              {gifUri && !videoSource ? (
+                <Text style={[styles.meta, { color: colors.paperFaint, marginBottom: 8 }]}>
+                  Анимация © Gym visual — gymvisual.com
+                </Text>
+              ) : null}
               <View style={styles.titleRow}>
                 <Text style={[styles.modalTitle, { color: colors.paper }]}>
                   {displayName(selected)}
