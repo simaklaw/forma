@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
   },
   thumb: { width: 64, height: 64, borderRadius: radius.control },
   rowBody: { flex: 1, justifyContent: 'center', gap: 4 },
-  titleRow: { flex: 1, fontSize: 15, fontFamily: fonts.bodySemi },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   name: { flex: 1, fontSize: 15, fontFamily: fonts.bodySemi },
   meta: { fontSize: 12, fontFamily: fonts.body },
   enBadge: {
