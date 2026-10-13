@@ -13,7 +13,7 @@ function tagText(xml: string, tag: string): string | undefined {
 }
 
 function allBlocks(xml: string, tag: string): string[] {
-  const re = new RegExp(`<${tag}\b[^>]*>[\s\S]*?</${tag}>`, 'gi');
+  const re = new RegExp('<' + tag + '\\b[^>]*>[\\s\\S]*?</' + tag + '>', 'gi');
   return xml.match(re) ?? [];
 }
 
@@ -36,9 +36,10 @@ export function parseTcx(
 
   for (const block of blocks) {
     const sportAttr = attr(block, 'Sport');
+    const lapOpen = block.match(/<Lap\\b[^>]*>/i)?.[0] ?? '';
     const startText =
       tagText(block, 'Id') ??
-      attr(block.match(/<Lap\b[^>]*>/i)?.[0] ?? '', 'StartTime') ??
+      attr(lapOpen, 'StartTime') ??
       tagText(block, 'StartTime');
     if (!startText) {
       warnings.push('TCX: пропущен блок без времени старта');
@@ -54,9 +55,9 @@ export function parseTcx(
     const distanceM = Number(tagText(block, 'DistanceMeters') ?? '');
     const calories = Number(tagText(block, 'Calories') ?? '');
     const avgHrBlock = block.match(
-      /<AverageHeartRateBpm[^>]*>[\s\S]*?<Value>(\d+)/i,
+      /<AverageHeartRateBpm[^>]*>[\\s\\S]*?<Value>(\\d+)/i,
     );
-    const maxHrBlock = block.match(/<MaximumHeartRateBpm[^>]*>[\s\S]*?<Value>(\d+)/i);
+    const maxHrBlock = block.match(/<MaximumHeartRateBpm[^>]*>[\\s\\S]*?<Value>(\\d+)/i);
 
     result.push({
       id: opts.idFactory(),
