@@ -1,6 +1,11 @@
 import * as FileSystem from 'expo-file-system';
 import { EXERCISE_VIDEOS, type ExerciseMediaKey } from './exerciseMedia';
 import { EXERCISE_VIDEO_MANIFEST } from './exerciseVideoManifest.generated';
+import {
+  EXERCISE_GIF_MANIFEST,
+  gifEntryForLibraryId,
+  type ExerciseGifManifestEntry,
+} from './exerciseGifManifest.generated';
 
 const CACHE_DIR = `${FileSystem.cacheDirectory ?? ''}exercise_media/`;
 const MAX_CACHE_BYTES = 1024 * 1024 * 1024;
@@ -67,7 +72,6 @@ export class ExerciseMediaService {
         const info = await FileSystem.getInfoAsync(temporary);
         if (!info.exists || info.isDirectory || info.size <= 0 || info.size > MAX_CACHE_BYTES)
           return;
-        // Only expose the file after a successful, complete download.
         await FileSystem.moveAsync({ from: temporary, to: targetPath });
         await this.touch(targetPath).catch(() => {});
         await this.evictIfOverBudget();
@@ -131,5 +135,33 @@ export class ExerciseMediaService {
       await FileSystem.deleteAsync(CACHE_DIR, { idempotent: true });
       await this.ensureCacheDir();
     });
+  }
+
+  /** Remote GIF (animation) for an imported library exercise, if matched. */
+  static getGifEntry(libraryId: string): ExerciseGifManifestEntry | undefined {
+    return gifEntryForLibraryId(libraryId);
+  }
+
+  /** Prefer bundled/remote MP4; otherwise GIF URL for Image-based preview. */
+  static getPreviewUri(
+    libraryId: string,
+    mediaKey?: ExerciseMediaKey
+  ): { kind: 'video' | 'gif' | 'thumb'; uri: string } | { kind: 'bundled'; asset: number } | null {
+    if (mediaKey && EXERCISE_VIDEOS[mediaKey] != null) {
+      return { kind: 'bundled', asset: EXERCISE_VIDEOS[mediaKey]! };
+    }
+    const video = EXERCISE_VIDEO_MANIFEST.find((e) => e.id === libraryId);
+    if (video?.videoUrl) return { kind: 'video', uri: video.videoUrl };
+    const gif = gifEntryForLibraryId(libraryId);
+    if (gif?.gifUrl) return { kind: 'gif', uri: gif.gifUrl };
+    if (gif?.thumbUrl) return { kind: 'thumb', uri: gif.thumbUrl };
+    return null;
+  }
+
+  static listGifCoverage(): { totalLibraryEstimate: number; withGif: number } {
+    return {
+      totalLibraryEstimate: EXERCISE_GIF_MANIFEST.length,
+      withGif: EXERCISE_GIF_MANIFEST.length,
+    };
   }
 }
