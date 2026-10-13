@@ -3,12 +3,12 @@ import { normalizeSport } from './sportMap.ts';
 import type { ImportParseResult, ImportedActivity } from './types.ts';
 
 function attr(xml: string, name: string): string | undefined {
-  const re = new RegExp(`${name}="([^"]+)"`, 'i');
+  const re = new RegExp(name + '="([^"]+)"', 'i');
   return xml.match(re)?.[1];
 }
 
 function tagText(xml: string, tag: string): string | undefined {
-  const re = new RegExp(`<${tag}[^>]*>([^<]*)</${tag}>`, 'i');
+  const re = new RegExp('<' + tag + '[^>]*>([^<]*)</' + tag + '>', 'i');
   return xml.match(re)?.[1]?.trim();
 }
 
@@ -36,7 +36,8 @@ export function parseTcx(
 
   for (const block of blocks) {
     const sportAttr = attr(block, 'Sport');
-    const lapOpen = block.match(/<Lap\\b[^>]*>/i)?.[0] ?? '';
+    const lapOpenMatch = block.match(new RegExp('<Lap\\b[^>]*>', 'i'));
+    const lapOpen = lapOpenMatch?.[0] ?? '';
     const startText =
       tagText(block, 'Id') ??
       attr(lapOpen, 'StartTime') ??
@@ -47,7 +48,7 @@ export function parseTcx(
     }
     const startMs = Date.parse(startText);
     if (!Number.isFinite(startMs)) {
-      warnings.push(`TCX: плохое время «${startText}»`);
+      warnings.push('TCX: плохое время «' + startText + '»');
       continue;
     }
 
@@ -55,9 +56,11 @@ export function parseTcx(
     const distanceM = Number(tagText(block, 'DistanceMeters') ?? '');
     const calories = Number(tagText(block, 'Calories') ?? '');
     const avgHrBlock = block.match(
-      /<AverageHeartRateBpm[^>]*>[\\s\\S]*?<Value>(\\d+)/i,
+      new RegExp('<AverageHeartRateBpm[^>]*>[\\s\\S]*?<Value>(\\d+)', 'i'),
     );
-    const maxHrBlock = block.match(/<MaximumHeartRateBpm[^>]*>[\\s\\S]*?<Value>(\\d+)/i);
+    const maxHrBlock = block.match(
+      new RegExp('<MaximumHeartRateBpm[^>]*>[\\s\\S]*?<Value>(\\d+)', 'i'),
+    );
 
     result.push({
       id: opts.idFactory(),
