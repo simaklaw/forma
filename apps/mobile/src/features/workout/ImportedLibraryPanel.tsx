@@ -20,6 +20,18 @@ import { IMPORTED_EXERCISE_IMAGES } from './importedExerciseImages.generated';
 import { ExerciseMediaService } from './ExerciseMediaService';
 import ExerciseVideo from '@/components/ExerciseVideo';
 import { filterImportedLibrary } from './importedLibraryFilter';
+import { catalogFor } from './catalog';
+import { replaceDaySlot } from './dayPlanOverrides';
+import {
+  clearReplaceTarget,
+  getReplaceTarget,
+  subscribeReplaceTarget,
+  type ReplaceTarget
+} from './replaceTarget';
+import { importedToExerciseDef } from './importedExerciseBridge';
+import { useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { TabParamList } from '@/navigation/types';
 
 const CATEGORY_LABELS: Record<ImportedExercise['category'], string> = {
   chest: 'Грудь',
@@ -36,11 +48,40 @@ function displayName(ex: ImportedExercise): string {
 
 export default function ImportedLibraryPanel() {
   const colors = useThemeColors();
+  const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<ImportedExercise['category'] | null>(null);
   const [selected, setSelected] = useState<ImportedExercise | null>(null);
   const [resolvedVideo, setResolvedVideo] = useState<{ id: string; source: { uri: string } | number } | null>(null);
+  const [replaceTarget, setReplaceTargetState] = useState<ReplaceTarget | null>(getReplaceTarget());
+  const [replacing, setReplacing] = useState(false);
   const videoSource = resolvedVideo?.id === selected?.id ? resolvedVideo?.source : null;
+
+  useEffect(() => subscribeReplaceTarget(() => setReplaceTargetState(getReplaceTarget())), []);
+
+  const canReplace = replaceTarget != null;
+
+  async function handleReplaceIntoPlan() {
+    if (!selected || !replaceTarget) return;
+    const day = catalogFor(replaceTarget.mode).find((d) => d.id === replaceTarget.dayId);
+    if (!day) return;
+    setReplacing(true);
+    try {
+      const def = importedToExerciseDef(selected);
+      await replaceDaySlot(
+        replaceTarget.mode,
+        replaceTarget.dayId,
+        replaceTarget.slotIndex,
+        def.id,
+        day.exercises
+      );
+      clearReplaceTarget();
+      setSelected(null);
+      navigation.navigate('Тренировки');
+    } finally {
+      setReplacing(false);
+    }
+  }
 
   useEffect(() => {
     setResolvedVideo(null);
@@ -206,6 +247,26 @@ export default function ImportedLibraryPanel() {
                   ))}
                 </View>
               ) : null}
+
+              {canReplace ? (
+                <TouchableOpacity
+                  style={[styles.replaceCta, { backgroundColor: colors.lime }]}
+                  disabled={replacing}
+                  onPress={() => void handleReplaceIntoPlan()}
+                  accessibilityRole="button"
+                >
+                  <Text style={[styles.replaceCtaText, { color: colors.ink }]}>
+                    {replacing
+                      ? 'Подставляю…'
+                      : `Подставить вместо «${replaceTarget!.currentName}»`}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <Text style={[styles.hint, { color: colors.paperFaint }]}>
+                  Чтобы добавить в план: на экране тренировки нажмите «Заменить» у упражнения, затем
+                  выберите движение здесь.
+                </Text>
+              )}
             </ScrollView>
           </View>
         ) : null}
@@ -274,5 +335,13 @@ const styles = StyleSheet.create({
   modalTitle: { flex: 1, fontSize: 22, fontFamily: fonts.mono },
   section: { marginTop: spacing.lg, gap: 8 },
   sectionLabel: { fontSize: 12, fontFamily: fonts.bodySemi, letterSpacing: 0.3 },
-  instruction: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body }
+  instruction: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
+  replaceCta: {
+    marginTop: spacing.lg,
+    paddingVertical: 14,
+    borderRadius: radius.control,
+    alignItems: 'center'
+  },
+  replaceCtaText: { fontFamily: fonts.bodySemi, fontSize: 14, textAlign: 'center' },
+  hint: { marginTop: spacing.lg, fontSize: 12, lineHeight: 18, fontFamily: fonts.body }
 });

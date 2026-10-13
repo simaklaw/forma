@@ -20,7 +20,7 @@ import { ruDayWord, toDateKey } from '@/engines/WorkoutStats';
 import type { WorkoutSession } from '@forma/workout-domain';
 import { ActiveSessionController, dayIdFromTemplate } from './session/ActiveSessionController';
 import { applySessionProjection } from './data/applySessionProjection';
-import { catalogFor, formatLoadLabel, allExerciseMetKeys, type TrainingMode } from './catalog';
+import { catalogFor, formatLoadLabel, allExerciseMetKeys, allExerciseBurnMeta, type TrainingMode } from './catalog';
 import { clearDayOverride, loadDayOverrideIds, resolveDayExercises } from './dayPlanOverrides';
 import { setReplaceTarget } from './replaceTarget';
 import type { TabParamList } from '@/navigation/types';
@@ -116,6 +116,7 @@ export default function WorkoutScreen() {
   }, [plan, selectedDayId]);
 
   const exerciseMetKeys = useMemo(() => allExerciseMetKeys(), []);
+  const exerciseBurnMeta = useMemo(() => allExerciseBurnMeta(), []);
   const exerciseNames = useMemo(
     () => Object.fromEntries(plan.flatMap((day) => day.exercises.map((ex) => [ex.id, ex.name]))),
     [plan]
@@ -167,9 +168,10 @@ export default function WorkoutScreen() {
         weightKg: safeWeightKg,
         setLogs,
         dateKey: coreToDateKey(new Date()),
-        exerciseNames: exerciseMetKeys
+        exerciseNames: exerciseMetKeys,
+        exerciseMeta: exerciseBurnMeta
       }),
-    [safeWeightKg, setLogs, exerciseMetKeys]
+    [safeWeightKg, setLogs, exerciseMetKeys, exerciseBurnMeta]
   );
   const currentStepExerciseId =
     resumable && activeDay && dayIdFromTemplate(resumable.templateRevisionId) === activeDay.id
@@ -416,7 +418,7 @@ export default function WorkoutScreen() {
           </View>
         </View>
 
-        <WorkoutCoachCard dayName={activeDay.name} anyDoneToday={anyDoneToday} exerciseNames={exerciseMetKeys} />
+        <WorkoutCoachCard dayName={activeDay.name} anyDoneToday={anyDoneToday} exerciseNames={exerciseMetKeys} exerciseMeta={exerciseBurnMeta} />
 
         <View style={styles.sectionHead}>
           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>УПРАЖНЕНИЯ</Text>
@@ -544,7 +546,6 @@ export default function WorkoutScreen() {
               selectPlanCurrentStreak(plan, useFitPulseStore.getState().dayProgress)
             )
           });
-          // brief delay so ExerciseSheet can close/settle before feedback opens
           setTimeout(() => feedbackSheetRef.current?.expand(), 300);
         }}
         onGoToExpected={(id) => openExercise(id)}
