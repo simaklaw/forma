@@ -139,7 +139,17 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
     setLoading(true);
     debounceRef.current = setTimeout(async () => {
       try {
-        const remote = await OpenFoodFactsService.searchProducts(query.trim());
+        const q = query.trim();
+        if (/^\d{8,14}$/.test(q)) {
+          const byCode = await OpenFoodFactsService.getNormalizedByBarcode(q);
+          if (byCode) {
+            setResults([byCode]);
+            setSourceLabel('Штрихкод · Open Food Facts');
+            setLoading(false);
+            return;
+          }
+        }
+        const remote = await OpenFoodFactsService.searchProducts(q);
         if (remote.length > 0) {
           const local = catalogPresets().filter((f) => matchesQuery(f.name, query));
           const localNames = new Set(local.map((f) => f.name.trim().toLowerCase()));
@@ -222,7 +232,7 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
         <ScrollView keyboardShouldPersistTaps="handled">
           <TextInput
             style={styles.searchInput}
-            placeholder="Поиск: рис, творог, курица…"
+            placeholder="Поиск или штрихкод: рис, 4601234567890…"
             placeholderTextColor={colors.paperFaint}
             value={query}
             onChangeText={setQuery}
@@ -373,95 +383,95 @@ export default AddFoodSheet;
 
 function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
-  tabs: {
-    flexDirection: 'row',
-    backgroundColor: colors.panel,
-    borderRadius: radius.control,
-    padding: 4,
-    marginBottom: 12,
-    gap: 4
-  },
-  tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 8 },
-  tabOn: { backgroundColor: colors.lime },
-  tabText: { color: colors.paperDim, fontFamily: fonts.bodySemi, fontSize: 13 },
-  tabTextOn: { color: colors.ink },
-  searchInput: {
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.lineStrong,
-    color: colors.paper,
-    padding: 10,
-    fontSize: 13.5,
-    marginBottom: 4
-  },
-  sourceLabel: {
-    color: colors.paperFaint,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 4,
-    marginTop: 6
-  },
-  empty: { color: colors.paperFaint, fontSize: 13, paddingVertical: 16, fontFamily: fonts.body },
-  presetList: { marginBottom: 8 },
-  presetRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 9,
-    borderBottomWidth: 1,
-    borderColor: colors.line
-  },
-  presetName: { flex: 1, color: colors.paper, fontSize: 13, marginRight: 8 },
-  presetKcal: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 12 },
-  formRow: { marginBottom: 10 },
-  formGrid: { flexDirection: 'row', gap: 8, marginBottom: 4 },
-  formCol: { flex: 1 },
-  label: { fontSize: 11, color: colors.paperFaint, marginBottom: 4 },
-  input: {
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.lineStrong,
-    color: colors.paper,
-    padding: 8,
-    fontFamily: fonts.mono,
-    fontSize: 14
-  },
-  cta: { marginTop: 10, marginBottom: 30, padding: 14, backgroundColor: colors.lime, alignItems: 'center' },
-  ctaText: { color: colors.ink, fontSize: 16, fontFamily: fonts.mono },
-  saveTemplateBox: {
-    marginTop: 8,
-    marginBottom: 24,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: colors.line
-  },
-  saveTemplateBtn: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: radius.control,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: colors.lineStrong,
-    alignItems: 'center'
-  },
-  saveTemplateBtnText: { color: colors.paperDim, fontSize: 12, fontFamily: fonts.bodySemi },
-  saveTemplateActions: { flexDirection: 'row', gap: 8, marginTop: 8 },
-  saveTemplateCancel: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: radius.control,
-    borderWidth: 1,
-    borderColor: colors.lineStrong
-  },
-  saveTemplateCancelText: { color: colors.paperDim, fontFamily: fonts.bodySemi, fontSize: 13 },
-  saveTemplateConfirm: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: radius.control,
-    backgroundColor: colors.lime
-  },
-  saveTemplateConfirmText: { color: colors.ink, fontFamily: fonts.bodySemi, fontSize: 13 }
-});
+    tabs: {
+      flexDirection: 'row',
+      backgroundColor: colors.panel,
+      borderRadius: radius.control,
+      padding: 4,
+      marginBottom: 12,
+      gap: 4
+    },
+    tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 8 },
+    tabOn: { backgroundColor: colors.lime },
+    tabText: { color: colors.paperDim, fontFamily: fonts.bodySemi, fontSize: 13 },
+    tabTextOn: { color: colors.ink },
+    searchInput: {
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.lineStrong,
+      color: colors.paper,
+      padding: 10,
+      fontSize: 13.5,
+      marginBottom: 4
+    },
+    sourceLabel: {
+      color: colors.paperFaint,
+      fontSize: 10,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      marginBottom: 4,
+      marginTop: 6
+    },
+    empty: { color: colors.paperFaint, fontSize: 13, paddingVertical: 16, fontFamily: fonts.body },
+    presetList: { marginBottom: 8 },
+    presetRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 9,
+      borderBottomWidth: 1,
+      borderColor: colors.line
+    },
+    presetName: { flex: 1, color: colors.paper, fontSize: 13, marginRight: 8 },
+    presetKcal: { color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 12 },
+    formRow: { marginBottom: 10 },
+    formGrid: { flexDirection: 'row', gap: 8, marginBottom: 4 },
+    formCol: { flex: 1 },
+    label: { fontSize: 11, color: colors.paperFaint, marginBottom: 4 },
+    input: {
+      backgroundColor: colors.panel,
+      borderWidth: 1,
+      borderColor: colors.lineStrong,
+      color: colors.paper,
+      padding: 8,
+      fontFamily: fonts.mono,
+      fontSize: 14
+    },
+    cta: { marginTop: 10, marginBottom: 30, padding: 14, backgroundColor: colors.lime, alignItems: 'center' },
+    ctaText: { color: colors.ink, fontSize: 16, fontFamily: fonts.mono },
+    saveTemplateBox: {
+      marginTop: 8,
+      marginBottom: 24,
+      paddingTop: 10,
+      borderTopWidth: 1,
+      borderTopColor: colors.line
+    },
+    saveTemplateBtn: {
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      borderRadius: radius.control,
+      borderWidth: 1,
+      borderStyle: 'dashed',
+      borderColor: colors.lineStrong,
+      alignItems: 'center'
+    },
+    saveTemplateBtnText: { color: colors.paperDim, fontSize: 12, fontFamily: fonts.bodySemi },
+    saveTemplateActions: { flexDirection: 'row', gap: 8, marginTop: 8 },
+    saveTemplateCancel: {
+      flex: 1,
+      paddingVertical: 10,
+      alignItems: 'center',
+      borderRadius: radius.control,
+      borderWidth: 1,
+      borderColor: colors.lineStrong
+    },
+    saveTemplateCancelText: { color: colors.paperDim, fontFamily: fonts.bodySemi, fontSize: 13 },
+    saveTemplateConfirm: {
+      flex: 1,
+      paddingVertical: 10,
+      alignItems: 'center',
+      borderRadius: radius.control,
+      backgroundColor: colors.lime
+    },
+    saveTemplateConfirmText: { color: colors.ink, fontFamily: fonts.bodySemi, fontSize: 13 }
+  });
 }
