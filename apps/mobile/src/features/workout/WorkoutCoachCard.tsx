@@ -13,10 +13,11 @@ type Props = {
   dayName: string;
   anyDoneToday: boolean;
   exerciseNames?: Record<number, string>;
+  exerciseMeta?: Record<number, { category: string; equipment: string }>;
 };
 
 /** On-device coach strip — shows gate / loading / advice (never silent null when mounted). */
-export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames }: Props) {
+export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames, exerciseMeta }: Props) {
   const colors = useThemeColors();
   const styles = createStyles(colors);
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
@@ -41,9 +42,10 @@ export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames }: Props
       weightKg: profile.weight as number,
       setLogs,
       dateKey: toDateKey(new Date()),
-      exerciseNames
+      exerciseNames,
+      exerciseMeta
     });
-  }, [complete, profile.weight, setLogs, exerciseNames]);
+  }, [complete, profile.weight, setLogs, exerciseNames, exerciseMeta]);
 
   const proteinTarget = useMemo(() => {
     if (!complete) return 0;
