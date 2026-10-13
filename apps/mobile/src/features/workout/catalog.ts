@@ -3,6 +3,7 @@ import type { Sex } from '@/engines/MetabolicEngine';
 import { WORKOUT_PLAN as HOME_PLAN, type WorkoutDay } from './bodyweightPlan';
 import { GYM_PLAN } from './gymPlan';
 import { planForSex } from './sexPlan';
+import { allImportedExerciseMeta } from './importedExerciseBridge';
 
 export type TrainingMode = 'gym' | 'home';
 export type { WorkoutDay };
@@ -58,4 +59,9 @@ export function allExerciseMetKeys(): Record<number, string> {
       day.exercises.map((ex) => [ex.id, ex.mediaKey ?? ex.name])
     )
   );
+}
+
+/** Category/equipment meta for imported-library numeric ids (burn estimates). */
+export function allExerciseBurnMeta(): Record<number, { category: string; equipment: string }> {
+  return allImportedExerciseMeta();
 }
