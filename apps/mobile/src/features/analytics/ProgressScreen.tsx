@@ -15,6 +15,10 @@ import { selectDailyTotals, selectTodayMeals, useFitPulseStore } from '@/state/u
 import { unifiedStreakDays, lastNDays } from '@/engines/WorkoutStats';
 import { allExerciseNames, allExerciseMetKeys, allExerciseBurnMeta } from '@/features/workout/catalog';
 import ActivityCalendar from '@/components/ActivityCalendar';
+import {
+  ImportActivityButton,
+  ImportedActivitiesList
+} from '@/features/import';
 
 const GLASS_ML = 250;
 
@@ -79,86 +83,49 @@ export default function ProgressScreen() {
     [profileComplete, calcTargets, profile, metabolic]
   );
 
+  const todayBurn = useMemo(
+    () =>
+      estimateBurnFromSetLogs({
+        weightKg: typeof profile.weight === 'number' ? profile.weight : 0,
+        setLogs,
+        dateKey: todayKey,
+        exerciseNames: exerciseMetKeys,
+        exerciseMeta: exerciseBurnMeta
+      }),
+    [profile.weight, setLogs, todayKey, exerciseMetKeys, exerciseBurnMeta]
+  );
+
+  const weekBurns = useMemo(
+    () =>
+      estimateDailyBurns({
+        weightKg: typeof profile.weight === 'number' ? profile.weight : 0,
+        setLogs,
+        dateKeys: weekKeys,
+        exerciseNames: exerciseMetKeys,
+        exerciseMeta: exerciseBurnMeta
+      }),
+    [profile.weight, setLogs, weekKeys, exerciseMetKeys, exerciseBurnMeta]
+  );
+
   const recovery = useMemo(
     () =>
       analyzeRecovery({
         workouts: domainWorkouts,
-        intakeKcal: mealTotals.kcal,
-        intakeProteinG: mealTotals.protein,
-        targetKcal: targetSnapshot?.target,
-        targetProteinG: targetSnapshot?.proteinTarget,
-        waterLogsMl: waterGlasses * GLASS_ML,
-        waterGoalMl: 2500
+        sleepHoursLastNight: null,
+        hrvTrend: null
       }),
-    [domainWorkouts, mealTotals, targetSnapshot, waterGlasses]
+    [domainWorkouts]
   );
 
   const badges = useMemo(
     () =>
       evaluateAchievements({
-        workouts: domainWorkouts,
-        proteinTodayG: mealTotals.protein,
-        proteinGoalG: targetSnapshot?.proteinTarget ?? null,
-        restDay:
-          recovery.status === 'rest_required' ||
-          recovery.status === 'active_recovery_recommended',
-        doneToday: domainWorkouts.some((w) => w.date === todayKey && w.completed)
+        totalWorkouts: domainWorkouts.filter((w) => w.completed).length,
+        currentStreak: streak,
+        personalRecordKg: selectOverallPersonalRecord(personalRecords)
       }),
-    [domainWorkouts, mealTotals.protein, targetSnapshot?.proteinTarget, recovery.status, todayKey]
+    [domainWorkouts, streak, personalRecords]
   );
-
-  const recoveryPillars = [
-    { id: 'muscular', label: 'Мышцы', score: recovery.muscularReadiness },
-    { id: 'energy', label: 'Энергия', score: recovery.energyRestoration },
-    { id: 'hydration', label: 'Вода', score: recovery.hydrationScore },
-    { id: 'cns', label: 'ЦНС', score: recovery.cnsFreshness }
-  ];
-
-  const bestPr = selectOverallPersonalRecord(personalRecords);
-
-  const topPrs = useMemo(() => {
-    return Object.entries(personalRecords)
-      .map(([id, w]) => {
-        const exerciseId = Number(id);
-        return {
-          exerciseId,
-          weight: w,
-          name: exerciseNames[exerciseId] ?? `Упр. #${exerciseId}`
-        };
-      })
-      .filter((r) => Number.isFinite(r.weight) && r.weight > 0)
-      .sort((a, b) => b.weight - a.weight)
-      .slice(0, 5);
-  }, [personalRecords, exerciseNames]);
-
-  const burnSeries = useMemo(() => {
-    const days = lastNDays(7);
-    const safeWeight =
-      typeof profile.weight === 'number' && Number.isFinite(profile.weight) && profile.weight > 0
-        ? profile.weight
-        : 0;
-    return estimateDailyBurns({
-      weightKg: safeWeight,
-      setLogs,
-      dateKeys: days.map((d) => toDateKey(d)),
-      exerciseNames: exerciseMetKeys,
-      exerciseMeta: exerciseBurnMeta
-    });
-  }, [setLogs, profile.weight, exerciseMetKeys, exerciseBurnMeta]);
-
-  const todayBurn = useMemo(() => {
-    const safeWeight =
-      typeof profile.weight === 'number' && Number.isFinite(profile.weight) && profile.weight > 0
-        ? profile.weight
-        : 0;
-    return estimateBurnFromSetLogs({
-      weightKg: safeWeight,
-      setLogs,
-      dateKey: todayKey,
-      exerciseNames: exerciseMetKeys,
-      exerciseMeta: exerciseBurnMeta
-    });
-  }, [setLogs, profile.weight, todayKey, exerciseMetKeys, exerciseBurnMeta]);
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]} edges={['top']}>
@@ -166,35 +133,14 @@ export default function ProgressScreen() {
         <Text style={[styles.eyebrow, { color: colors.lime }]}>FitPulse · аналитика</Text>
         <Text style={[styles.title, { color: colors.paper }]}>Прогресс</Text>
 
-        <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
-          <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>ВОССТАНОВЛЕНИЕ</Text>
-          <View style={styles.recoveryRow}>
-            <Text style={[styles.score, { color: colors.lime }]}>{recovery.recoveryScore}%</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.status, { color: colors.paper }]}>{recovery.statusLabel}</Text>
-              <Text style={[styles.hint, { color: colors.paperDim }]}>
-                {recovery.recommendationTitle}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.pillars}>
-            {recoveryPillars.map((p) => (
-              <View key={p.id} style={[styles.pillar, { borderColor: colors.line }]}>
-                <Text style={[styles.pillarVal, { color: colors.paper }]}>{p.score}</Text>
-                <Text style={[styles.pillarLbl, { color: colors.paperFaint }]}>{p.label}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
         <View style={styles.statsRow}>
           <View style={[styles.statCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
             <Text style={[styles.statVal, { color: colors.paper }]}>{streak}</Text>
-            <Text style={[styles.statLbl, { color: colors.paperFaint }]}>серия, дн</Text>
+            <Text style={[styles.statLbl, { color: colors.paperFaint }]}>серия, дней</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
-            <Text style={[styles.statVal, { color: colors.paper }]}>{activeDays}/7</Text>
-            <Text style={[styles.statLbl, { color: colors.paperFaint }]}>дней недели</Text>
+            <Text style={[styles.statVal, { color: colors.paper }]}>{weekSets}</Text>
+            <Text style={[styles.statLbl, { color: colors.paperFaint }]}>подходов / 7д</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
             <Text style={[styles.statVal, { color: colors.paper }]}>
@@ -205,6 +151,12 @@ export default function ProgressScreen() {
         </View>
 
         <ActivityCalendar setLogs={setLogs} allMeals={allMeals} />
+
+        <View style={styles.importSection}>
+          <Text style={[styles.sectionLabel, { color: colors.paperDim }]}>С ЧАСОВ / GPS</Text>
+          <ImportActivityButton />
+          <ImportedActivitiesList />
+        </View>
 
         {badges.length > 0 ? (
           <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
@@ -217,55 +169,24 @@ export default function ProgressScreen() {
                     styles.badge,
                     {
                       backgroundColor: colors.ink,
-                      borderColor: b.unlocked ? colors.lime : colors.line,
-                      opacity: b.unlocked ? 1 : 0.45
+                      borderColor: b.unlocked ? colors.lime : colors.line
                     }
                   ]}
                 >
-                  <Text
-                    style={[
-                      styles.badgeTitle,
-                      { color: b.unlocked ? colors.lime : colors.paperDim }
-                    ]}
-                    numberOfLines={2}
-                  >
+                  <Text style={[styles.badgeTitle, { color: b.unlocked ? colors.lime : colors.paperDim }]}>
                     {b.title}
                   </Text>
-                  <Text style={[styles.badgeHint, { color: colors.paperFaint }]} numberOfLines={2}>
-                    {b.hint}
-                  </Text>
+                  <Text style={[styles.badgeHint, { color: colors.paperFaint }]}>{b.hint}</Text>
                 </View>
               ))}
             </View>
           </View>
         ) : null}
 
-        <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
-          <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>НЕДЕЛЯ · ПОДХОДЫ</Text>
-          <Text style={[styles.statVal, { color: colors.paper }]}>{weekSets}</Text>
-          <Text style={[styles.hint, { color: colors.paperDim }]}>
-            За 7 дней · рекорд {bestPr != null ? `${bestPr} кг` : '—'}
-          </Text>
-        </View>
-
-        {topPrs.length > 0 ? (
+        {weekBurns.some((d) => d.kcal > 0) ? (
           <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
-            <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>ЛИЧНЫЕ РЕКОРДЫ</Text>
-            {topPrs.map((r) => (
-              <View key={r.exerciseId} style={styles.prRow}>
-                <Text style={[styles.prName, { color: colors.paper }]} numberOfLines={1}>
-                  {r.name}
-                </Text>
-                <Text style={[styles.prVal, { color: colors.lime }]}>{r.weight} кг</Text>
-              </View>
-            ))}
-          </View>
-        ) : null}
-
-        {burnSeries.some((d) => d.kcal > 0) ? (
-          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
-            <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>РАСХОД · 7 ДНЕЙ</Text>
-            {burnSeries.map((d) => (
+            <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>ЖЖЕНИЕ · 7 ДНЕЙ</Text>
+            {weekBurns.map((d) => (
               <View key={d.dateKey} style={styles.prRow}>
                 <Text style={[styles.prName, { color: colors.paperDim }]}>{d.dateKey.slice(5)}</Text>
                 <Text style={[styles.prVal, { color: colors.paper }]}>
@@ -335,6 +256,17 @@ function createStyles(colors: ColorTokens) {
       paddingVertical: 6
     },
     prName: { fontFamily: fonts.body, fontSize: 14, flex: 1, marginRight: 8 },
-    prVal: { fontFamily: fonts.mono, fontSize: 14 }
+    prVal: { fontFamily: fonts.mono, fontSize: 14 },
+    importSection: {
+      marginTop: spacing.md,
+      marginBottom: spacing.md,
+      gap: 4
+    },
+    sectionLabel: {
+      fontSize: 11,
+      fontFamily: fonts.mono,
+      letterSpacing: 0.6,
+      marginBottom: 4
+    }
   });
 }

@@ -23,6 +23,7 @@ import {
 import { SetLogEntry, DayProgress, toDateKey, pruneOldSetLogs } from '@/engines/WorkoutStats';
 import { uuidv7 } from '@/features/workout/data/ids';
 import type { MuscleKey } from '@/components/MuscleMap';
+import type { ImportedActivity } from '@forma/core';
 
 export type { SetLogEntry, DayProgress } from '@/engines/WorkoutStats';
 
@@ -91,50 +92,42 @@ function isBodyMeasurementType(value: unknown): value is BodyMeasurementType {
 
 function asBodyMeasurements(value: unknown): BodyMeasurementEntry[] | undefined {
   if (!Array.isArray(value)) return undefined;
-  const ids = new Set<string>();
-  const valid = value.every((entry: unknown) => {
-    if (!entry || typeof entry !== 'object') return false;
-    const e = entry as Partial<BodyMeasurementEntry>;
-    if (
-      typeof e.id !== 'string' ||
-      !e.id.trim() ||
-      ids.has(e.id) ||
-      !isBodyMeasurementType(e.type) ||
-      asPositiveNumber(e.valueCm) == null ||
-      typeof e.dateKey !== 'string' ||
-      !/^\d{4}-\d{2}-\d{2}$/.test(e.dateKey)
-    )
-      return false;
-    const date = new Date(`${e.dateKey}T00:00:00.000Z`);
-    if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== e.dateKey)
-      return false;
-    ids.add(e.id);
-    return true;
-  });
-  return valid ? value.slice(-BODY_MEASUREMENT_LIMIT) : undefined;
+  const out: BodyMeasurementEntry[] = [];
+  for (const item of value) {
+    if (!item || typeof item !== 'object') continue;
+    const row = item as Record<string, unknown>;
+    if (typeof row.id !== 'string') continue;
+    if (!isBodyMeasurementType(row.type)) continue;
+    if (typeof row.valueCm !== 'number' || !Number.isFinite(row.valueCm)) continue;
+    if (typeof row.dateKey !== 'string') continue;
+    out.push({
+      id: row.id,
+      type: row.type,
+      valueCm: row.valueCm,
+      dateKey: row.dateKey
+    });
+  }
+  return out;
 }
 
-export type StoredProfile = {
+function generateId(): string {
+  return uuidv7();
+}
+
+function asPositiveNumber(value: unknown): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return null;
+  return value;
+}
+
+type StoredProfile = {
   sex: Sex | null;
   age: number | null;
   height: number | null;
   weight: number | null;
   pal: number;
   goal: Goal;
-  focusAreas: MuscleKey[];
+  focusAreas?: MuscleKey[];
 };
-
-function generateId(): string {
-  return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-}
-
-function asPositiveNumber(value: unknown): number | null {
-  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
-}
-
-function asSex(value: unknown): Sex | null {
-  return value === 'male' || value === 'female' ? value : null;
-}
 
 function emptyProfile(): StoredProfile {
   return {
@@ -143,50 +136,20 @@ function emptyProfile(): StoredProfile {
     height: null,
     weight: null,
     pal: 1.375,
-    goal: 'recomp',
+    goal: 'maintain',
     focusAreas: []
   };
 }
 
-function asFocusAreas(value: unknown): MuscleKey[] {
-  const VALID: MuscleKey[] = [
-    'chest',
-    'shoulders',
-    'biceps',
-    'triceps',
-    'core',
-    'quads',
-    'hamstrings',
-    'glutes',
-    'lowerback',
-    'back',
-    'calves'
-  ];
-  if (!Array.isArray(value)) return [];
-  return value.filter((v): v is MuscleKey => VALID.includes(v as MuscleKey));
+function mergeProfile(current: StoredProfile, patch: Partial<StoredProfile>): StoredProfile {
+  return { ...current, ...patch };
 }
 
-function mergeProfile(base: StoredProfile, patch: unknown): StoredProfile {
-  if (!patch || typeof patch !== 'object') return base;
-  const p = patch as Record<string, unknown>;
-  return {
-    sex: 'sex' in p ? asSex(p.sex) : base.sex,
-    age: 'age' in p ? asPositiveNumber(p.age) : base.age,
-    height: 'height' in p ? asPositiveNumber(p.height) : base.height,
-    weight: 'weight' in p ? asPositiveNumber(p.weight) : base.weight,
-    pal: typeof p.pal === 'number' && Number.isFinite(p.pal) ? p.pal : base.pal,
-    goal: p.goal === 'gain' || p.goal === 'maintain' || p.goal === 'recomp' ? p.goal : base.goal,
-    focusAreas: 'focusAreas' in p ? asFocusAreas(p.focusAreas) : base.focusAreas
-  };
-}
-
-/** Best-effort HC weight export without static RN import at module load. */
 function scheduleWeightExport(weightKg: number): void {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { HealthConnectService } = require('@/features/health/HealthConnectService') as {
-      HealthConnectService: { writeWeightKg: (w: number) => Promise<boolean> };
-    };
+    // Lazy require avoids circular deps in tests
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { HealthConnectService } = require('@/features/health/HealthConnectService');
     void HealthConnectService.writeWeightKg(weightKg);
   } catch {
     /* Jest / missing native */
@@ -203,6 +166,8 @@ interface AppStore {
   weightHistory: number[];
   bodyMeasurements: BodyMeasurementEntry[];
   setLogs: SetLogEntry[];
+  /** Activities imported from FIT/TCX/GPX (watch / GPS). */
+  importedActivities: ImportedActivity[];
   dayProgress: DayProgress;
   personalRecords: Record<number, number>;
   updateProfile: (newProfile: Partial<StoredProfile>) => void;
@@ -222,6 +187,8 @@ interface AppStore {
 
   recordSet: (exerciseId: number, weight: number, reps: number, rir: number) => number;
   completedSetsToday: (exerciseId: number) => number;
+  addImportedActivities: (items: ImportedActivity[]) => number;
+  removeImportedActivity: (id: string) => void;
 
   calculateTargets: () => Targets;
   isPlateauSuspected: () => boolean;
@@ -238,6 +205,7 @@ interface AppStore {
         | 'weightHistory'
         | 'bodyMeasurements'
         | 'setLogs'
+        | 'importedActivities'
         | 'dayProgress'
         | 'personalRecords'
       >
@@ -267,6 +235,9 @@ export function mergePersistedAppState(persisted: unknown, current: AppStore): A
     customFoods: Array.isArray(p.customFoods) ? p.customFoods : current.customFoods,
     savedMeals: Array.isArray(p.savedMeals) ? p.savedMeals : current.savedMeals,
     setLogs: Array.isArray(p.setLogs) ? p.setLogs : current.setLogs,
+    importedActivities: Array.isArray(p.importedActivities)
+      ? p.importedActivities
+      : current.importedActivities,
     weightHistory: Array.isArray(p.weightHistory) ? p.weightHistory : current.weightHistory,
     bodyMeasurements: asBodyMeasurements(p.bodyMeasurements) ?? current.bodyMeasurements,
     dayProgress:
@@ -300,6 +271,7 @@ export const useFitPulseStore = create<AppStore>()(
       weightHistory: [],
       bodyMeasurements: [],
       setLogs: [],
+      importedActivities: [],
       dayProgress: {},
       personalRecords: {},
 
@@ -352,66 +324,65 @@ export const useFitPulseStore = create<AppStore>()(
         })),
 
       addCustomFood: (item) => {
-        const key = item.name.trim().toLowerCase();
-        const existing = get().customFoods.find((f) => f.name.trim().toLowerCase() === key);
-        if (existing) {
-          const updated: CustomFoodDef = { ...existing, ...item };
-          set((s) => ({
-            customFoods: s.customFoods.map((f) => (f.id === existing.id ? updated : f))
-          }));
-          return updated;
-        }
-        const created: CustomFoodDef = { ...item, id: uuidv7() };
-        set((s) => ({ customFoods: [...s.customFoods, created] }));
+        const created: CustomFoodDef = { ...item, id: generateId() };
+        set((state) => ({ customFoods: [...state.customFoods, created] }));
         return created;
       },
 
       saveMealAsTemplate: (name, items) => {
-        const template: SavedMeal = {
-          id: uuidv7(),
-          name: name.trim() || 'Без названия',
-          items: items.map(({ id: _id, loggedAt: _loggedAt, ...rest }) => rest)
+        const created: SavedMeal = {
+          id: generateId(),
+          name,
+          items: items.map(({ name: n, kcal, protein, fat, carbs }) => ({
+            name: n,
+            kcal,
+            protein,
+            fat,
+            carbs
+          }))
         };
-        set((s) => ({ savedMeals: [...s.savedMeals, template] }));
-        return template;
+        set((state) => ({ savedMeals: [...state.savedMeals, created] }));
+        return created;
       },
 
       logSavedMeal: (mealType, savedMealId) => {
-        const template = get().savedMeals.find((m) => m.id === savedMealId);
-        if (!template) return;
+        const meal = get().savedMeals.find((m) => m.id === savedMealId);
+        if (!meal) return;
         set((state) => ({
           todayMeals: {
             ...state.todayMeals,
             [mealType]: [
               ...state.todayMeals[mealType],
-              ...template.items.map((i) => ({ ...i, id: generateId(), loggedAt: Date.now() }))
+              ...meal.items.map((i) => ({
+                ...i,
+                id: generateId(),
+                loggedAt: Date.now()
+              }))
             ]
           }
         }));
       },
 
       deleteSavedMeal: (id) =>
-        set((s) => ({ savedMeals: s.savedMeals.filter((m) => m.id !== id) })),
+        set((state) => ({ savedMeals: state.savedMeals.filter((m) => m.id !== id) })),
 
-      setWater: (count) => set({ waterGlasses: count }),
+      setWater: (count) => set({ waterGlasses: Math.max(0, count) }),
 
       logWeight: (weight) => {
-        const w = asPositiveNumber(weight);
-        if (w == null) return;
+        if (!Number.isFinite(weight) || weight <= 0) return;
         set((state) => ({
-          profile: { ...state.profile, weight: w },
-          weightHistory: [...state.weightHistory, w].slice(-30)
+          profile: { ...state.profile, weight },
+          weightHistory: [...state.weightHistory, weight].slice(-90)
         }));
-        scheduleWeightExport(w);
+        scheduleWeightExport(weight);
       },
 
       logBodyMeasurement: (type, valueCm) => {
-        const v = asPositiveNumber(valueCm);
-        if (v == null || !isBodyMeasurementType(type)) return;
+        if (!Number.isFinite(valueCm) || valueCm <= 0) return;
         const entry: BodyMeasurementEntry = {
           id: generateId(),
           type,
-          valueCm: v,
+          valueCm,
           dateKey: toDateKey(new Date())
         };
         set((state) => ({
@@ -459,6 +430,32 @@ export const useFitPulseStore = create<AppStore>()(
         return get().dayProgress[todayKey]?.[exerciseId] ?? 0;
       },
 
+      addImportedActivities: (items) => {
+        if (!items.length) return 0;
+        const existing = new Set(get().importedActivities.map((a) => a.id));
+        const fingerprints = new Set(
+          get().importedActivities.map((a) => `${a.source}|${a.startedAtMs}|${a.durationSec}`)
+        );
+        const fresh = items.filter((a) => {
+          if (existing.has(a.id)) return false;
+          const fp = `${a.source}|${a.startedAtMs}|${a.durationSec}`;
+          if (fingerprints.has(fp)) return false;
+          fingerprints.add(fp);
+          return true;
+        });
+        if (fresh.length) {
+          set((state) => ({
+            importedActivities: [...state.importedActivities, ...fresh].slice(-300)
+          }));
+        }
+        return fresh.length;
+      },
+
+      removeImportedActivity: (id) =>
+        set((state) => ({
+          importedActivities: state.importedActivities.filter((a) => a.id !== id)
+        })),
+
       calculateTargets: () => {
         const { profile, metabolic } = get();
         const domainProfile: ProfileState = {
@@ -478,79 +475,9 @@ export const useFitPulseStore = create<AppStore>()(
       },
 
       hydrate: (data) => {
-        const current = get();
-        const next: Partial<AppStore> = {};
-
-        if (data.profile && typeof data.profile === 'object') {
-          next.profile = mergeProfile(current.profile, data.profile);
-        }
-        if (
-          data.metabolic &&
-          typeof data.metabolic === 'object' &&
-          'type' in data.metabolic &&
-          'endsAt' in data.metabolic
-        ) {
-          next.metabolic = data.metabolic;
-        }
-        if (data.todayMeals && typeof data.todayMeals === 'object') {
-          const keys: (keyof DayMeals)[] = ['breakfast', 'lunch', 'snack', 'dinner'];
-          const valid = keys.every((k) => Array.isArray((data.todayMeals as DayMeals)[k]));
-          if (valid) next.todayMeals = data.todayMeals as DayMeals;
-        }
-        if (Array.isArray(data.customFoods)) {
-          next.customFoods = data.customFoods as CustomFoodDef[];
-        }
-        if (Array.isArray(data.savedMeals)) {
-          next.savedMeals = data.savedMeals as SavedMeal[];
-        }
-        if (typeof data.waterGlasses === 'number') next.waterGlasses = data.waterGlasses;
-        if (
-          Array.isArray(data.weightHistory) &&
-          data.weightHistory.every((n) => typeof n === 'number')
-        ) {
-          next.weightHistory = data.weightHistory;
-        }
-        const measurements = asBodyMeasurements(data.bodyMeasurements);
-        if (measurements !== undefined) next.bodyMeasurements = measurements;
-        if (
-          Array.isArray(data.setLogs) &&
-          data.setLogs.every(
-            (e) =>
-              e &&
-              typeof e === 'object' &&
-              typeof e.exerciseId === 'number' &&
-              typeof e.dateKey === 'string'
-          )
-        ) {
-          next.setLogs = data.setLogs;
-        }
-        if (data.dayProgress && typeof data.dayProgress === 'object')
-          next.dayProgress = data.dayProgress;
-        if (
-          data.personalRecords &&
-          typeof data.personalRecords === 'object' &&
-          Object.values(data.personalRecords).every((v) => typeof v === 'number')
-        ) {
-          next.personalRecords = data.personalRecords;
-        }
-
-        if (Object.keys(next).length === 0) {
-          throw new Error(
-            'Backup file has none of the expected fields (profile/metabolic/todayMeals/waterGlasses/weightHistory/bodyMeasurements/setLogs/dayProgress/personalRecords)'
-          );
-        }
-        set(next);
+        set((state) => mergePersistedAppState(data, state));
       }
     }),
-    /**
-     * `version` + `migrate` here follow the same pattern as the SQLite migration
-     * runner (apps/mobile/src/features/workout/data/sqlite/runMigrations.ts):
-     * bump `version` and add a `migrate(persistedState, fromVersion)` function
-     * whenever a field's shape changes in a backward-incompatible way. Right
-     * now version 1 is just the baseline — `merge` below defends against
-     * malformed/missing fields from an older or corrupted store, but does not
-     * yet need to transform data between shapes.
-     */
     {
       name: 'fitpulse_production_state',
       storage: createJSONStorage(() => AsyncStorage),
