@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { TrainingMode } from './catalog';
 import { CATALOGS } from './catalog';
 import type { ExerciseDef } from './ExerciseSheet';
+import { importedExerciseDefByNumericId } from './importedExerciseBridge';
 
 const STORAGE_KEY = 'fitpulse_day_plan_overrides_v1';
 
@@ -72,7 +73,7 @@ export function catalogExerciseById(
     const found = day.exercises.find((ex) => ex.id === id);
     if (found) return found;
   }
-  return null;
+  return importedExerciseDefByNumericId(id);
 }
 
 /**
