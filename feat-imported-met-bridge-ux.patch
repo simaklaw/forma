@@ -1,0 +1,486 @@
+From 552922d298920d25eb5c9147900b71a2ab343e27 Mon Sep 17 00:00:00 2001
+From: Grok <grok@x.ai>
+Date: Tue, 13 Oct 2026 08:51:27 +0000
+Subject: [PATCH] feat(mobile): bridge imported library to plan slots and MET
+ burn
+
+- Stable numeric ids (100001+) for lib-* exercises
+- Day overrides resolve imported defs; replace CTA in library panel
+- exerciseMeta wired into Workout/Progress/Coach burn estimates
+- Hint when replace target is not active
+---
+ .../src/features/analytics/ProgressScreen.tsx |  13 ++-
+ .../features/workout/ImportedLibraryPanel.tsx |  71 +++++++++++-
+ .../src/features/workout/WorkoutCoachCard.tsx |   8 +-
+ .../src/features/workout/WorkoutScreen.tsx    |  10 +-
+ apps/mobile/src/features/workout/catalog.ts   |   6 +
+ .../features/workout/dayPlanOverrides.test.ts |  23 ++++
+ .../src/features/workout/dayPlanOverrides.ts  |   3 +-
+ .../workout/importedExerciseBridge.test.ts    |  38 ++++++
+ .../workout/importedExerciseBridge.ts         | 109 ++++++++++++++++++
+ 9 files changed, 267 insertions(+), 14 deletions(-)
+ create mode 100644 apps/mobile/src/features/workout/importedExerciseBridge.test.ts
+ create mode 100644 apps/mobile/src/features/workout/importedExerciseBridge.ts
+
+diff --git a/apps/mobile/src/features/analytics/ProgressScreen.tsx b/apps/mobile/src/features/analytics/ProgressScreen.tsx
+index d7cebe4..e60fcdd 100644
+--- a/apps/mobile/src/features/analytics/ProgressScreen.tsx
++++ b/apps/mobile/src/features/analytics/ProgressScreen.tsx
+@@ -13,7 +13,7 @@ import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+ import { useThemeColors } from '@/core/theme/useThemeColors';
+ import { selectDailyTotals, selectTodayMeals, useFitPulseStore } from '@/state/useFitPulseStore';
+ import { unifiedStreakDays, lastNDays } from '@/engines/WorkoutStats';
+-import { allExerciseNames, allExerciseMetKeys } from '@/features/workout/catalog';
++import { allExerciseNames, allExerciseMetKeys, allExerciseBurnMeta } from '@/features/workout/catalog';
+ import ActivityCalendar from '@/components/ActivityCalendar';
+ 
+ const GLASS_ML = 250;
+@@ -50,6 +50,7 @@ export default function ProgressScreen() {
+ 
+   const exerciseNames = useMemo(() => allExerciseNames(), []);
+   const exerciseMetKeys = useMemo(() => allExerciseMetKeys(), []);
++  const exerciseBurnMeta = useMemo(() => allExerciseBurnMeta(), []);
+   const todayKey = useMemo(() => toDateKey(new Date()), []);
+ 
+   const weekKeys = useMemo(() => lastNDays(7).map((d) => toDateKey(d)), []);
+@@ -140,9 +141,10 @@ export default function ProgressScreen() {
+       weightKg: safeWeight,
+       setLogs,
+       dateKeys: days.map((d) => toDateKey(d)),
+-      exerciseNames: exerciseMetKeys
++      exerciseNames: exerciseMetKeys,
++      exerciseMeta: exerciseBurnMeta
+     });
+-  }, [setLogs, profile.weight, exerciseMetKeys]);
++  }, [setLogs, profile.weight, exerciseMetKeys, exerciseBurnMeta]);
+ 
+   const todayBurn = useMemo(() => {
+     const safeWeight =
+@@ -153,9 +155,10 @@ export default function ProgressScreen() {
+       weightKg: safeWeight,
+       setLogs,
+       dateKey: todayKey,
+-      exerciseNames: exerciseMetKeys
++      exerciseNames: exerciseMetKeys,
++      exerciseMeta: exerciseBurnMeta
+     });
+-  }, [setLogs, profile.weight, todayKey, exerciseMetKeys]);
++  }, [setLogs, profile.weight, todayKey, exerciseMetKeys, exerciseBurnMeta]);
+ 
+   return (
+     <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]} edges={['top']}>
+diff --git a/apps/mobile/src/features/workout/ImportedLibraryPanel.tsx b/apps/mobile/src/features/workout/ImportedLibraryPanel.tsx
+index c0910d7..bc24254 100644
+--- a/apps/mobile/src/features/workout/ImportedLibraryPanel.tsx
++++ b/apps/mobile/src/features/workout/ImportedLibraryPanel.tsx
+@@ -20,6 +20,18 @@ import { IMPORTED_EXERCISE_IMAGES } from './importedExerciseImages.generated';
+ import { ExerciseMediaService } from './ExerciseMediaService';
+ import ExerciseVideo from '@/components/ExerciseVideo';
+ import { filterImportedLibrary } from './importedLibraryFilter';
++import { catalogFor } from './catalog';
++import { replaceDaySlot } from './dayPlanOverrides';
++import {
++  clearReplaceTarget,
++  getReplaceTarget,
++  subscribeReplaceTarget,
++  type ReplaceTarget
++} from './replaceTarget';
++import { importedToExerciseDef } from './importedExerciseBridge';
++import { useNavigation } from '@react-navigation/native';
++import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
++import type { TabParamList } from '@/navigation/types';
+ 
+ const CATEGORY_LABELS: Record<ImportedExercise['category'], string> = {
+   chest: 'Грудь',
+@@ -36,12 +48,41 @@ function displayName(ex: ImportedExercise): string {
+ 
+ export default function ImportedLibraryPanel() {
+   const colors = useThemeColors();
++  const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
+   const [query, setQuery] = useState('');
+   const [category, setCategory] = useState<ImportedExercise['category'] | null>(null);
+   const [selected, setSelected] = useState<ImportedExercise | null>(null);
+   const [resolvedVideo, setResolvedVideo] = useState<{ id: string; source: { uri: string } | number } | null>(null);
++  const [replaceTarget, setReplaceTargetState] = useState<ReplaceTarget | null>(getReplaceTarget());
++  const [replacing, setReplacing] = useState(false);
+   const videoSource = resolvedVideo?.id === selected?.id ? resolvedVideo?.source : null;
+ 
++  useEffect(() => subscribeReplaceTarget(() => setReplaceTargetState(getReplaceTarget())), []);
++
++  const canReplace = replaceTarget != null;
++
++  async function handleReplaceIntoPlan() {
++    if (!selected || !replaceTarget) return;
++    const day = catalogFor(replaceTarget.mode).find((d) => d.id === replaceTarget.dayId);
++    if (!day) return;
++    setReplacing(true);
++    try {
++      const def = importedToExerciseDef(selected);
++      await replaceDaySlot(
++        replaceTarget.mode,
++        replaceTarget.dayId,
++        replaceTarget.slotIndex,
++        def.id,
++        day.exercises
++      );
++      clearReplaceTarget();
++      setSelected(null);
++      navigation.navigate('Тренировки');
++    } finally {
++      setReplacing(false);
++    }
++  }
++
+   useEffect(() => {
+     setResolvedVideo(null);
+     if (!selected) return;
+@@ -206,6 +247,26 @@ export default function ImportedLibraryPanel() {
+                   ))}
+                 </View>
+               ) : null}
++
++              {canReplace ? (
++                <TouchableOpacity
++                  style={[styles.replaceCta, { backgroundColor: colors.lime }]}
++                  disabled={replacing}
++                  onPress={() => void handleReplaceIntoPlan()}
++                  accessibilityRole="button"
++                >
++                  <Text style={[styles.replaceCtaText, { color: colors.ink }]}>
++                    {replacing
++                      ? 'Подставляю…'
++                      : `Подставить вместо «${replaceTarget!.currentName}»`}
++                  </Text>
++                </TouchableOpacity>
++              ) : (
++                <Text style={[styles.hint, { color: colors.paperFaint }]}>
++                  Чтобы добавить в план: на экране тренировки нажмите «Заменить» у упражнения, затем
++                  выберите движение здесь.
++                </Text>
++              )}
+             </ScrollView>
+           </View>
+         ) : null}
+@@ -274,5 +335,13 @@ const styles = StyleSheet.create({
+   modalTitle: { flex: 1, fontSize: 22, fontFamily: fonts.mono },
+   section: { marginTop: spacing.lg, gap: 8 },
+   sectionLabel: { fontSize: 12, fontFamily: fonts.bodySemi, letterSpacing: 0.3 },
+-  instruction: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body }
++  instruction: { fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
++  replaceCta: {
++    marginTop: spacing.lg,
++    paddingVertical: 14,
++    borderRadius: radius.control,
++    alignItems: 'center'
++  },
++  replaceCtaText: { fontFamily: fonts.bodySemi, fontSize: 14, textAlign: 'center' },
++  hint: { marginTop: spacing.lg, fontSize: 12, lineHeight: 18, fontFamily: fonts.body }
+ });
+diff --git a/apps/mobile/src/features/workout/WorkoutCoachCard.tsx b/apps/mobile/src/features/workout/WorkoutCoachCard.tsx
+index 6b7c67c..da01dc5 100644
+--- a/apps/mobile/src/features/workout/WorkoutCoachCard.tsx
++++ b/apps/mobile/src/features/workout/WorkoutCoachCard.tsx
+@@ -13,10 +13,11 @@ type Props = {
+   dayName: string;
+   anyDoneToday: boolean;
+   exerciseNames?: Record<number, string>;
++  exerciseMeta?: Record<number, { category: string; equipment: string }>;
+ };
+ 
+ /** On-device coach strip — shows gate / loading / advice (never silent null when mounted). */
+-export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames }: Props) {
++export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames, exerciseMeta }: Props) {
+   const colors = useThemeColors();
+   const styles = createStyles(colors);
+   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
+@@ -41,9 +42,10 @@ export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames }: Props
+       weightKg: profile.weight as number,
+       setLogs,
+       dateKey: toDateKey(new Date()),
+-      exerciseNames
++      exerciseNames,
++      exerciseMeta
+     });
+-  }, [complete, profile.weight, setLogs, exerciseNames]);
++  }, [complete, profile.weight, setLogs, exerciseNames, exerciseMeta]);
+ 
+   const proteinTarget = useMemo(() => {
+     if (!complete) return 0;
+diff --git a/apps/mobile/src/features/workout/WorkoutScreen.tsx b/apps/mobile/src/features/workout/WorkoutScreen.tsx
+index 4da50cc..d9553b0 100644
+--- a/apps/mobile/src/features/workout/WorkoutScreen.tsx
++++ b/apps/mobile/src/features/workout/WorkoutScreen.tsx
+@@ -20,7 +20,7 @@ import { ruDayWord, toDateKey } from '@/engines/WorkoutStats';
+ import type { WorkoutSession } from '@forma/workout-domain';
+ import { ActiveSessionController, dayIdFromTemplate } from './session/ActiveSessionController';
+ import { applySessionProjection } from './data/applySessionProjection';
+-import { catalogFor, formatLoadLabel, allExerciseMetKeys, type TrainingMode } from './catalog';
++import { catalogFor, formatLoadLabel, allExerciseMetKeys, allExerciseBurnMeta, type TrainingMode } from './catalog';
+ import { clearDayOverride, loadDayOverrideIds, resolveDayExercises } from './dayPlanOverrides';
+ import { setReplaceTarget } from './replaceTarget';
+ import type { TabParamList } from '@/navigation/types';
+@@ -116,6 +116,7 @@ export default function WorkoutScreen() {
+   }, [plan, selectedDayId]);
+ 
+   const exerciseMetKeys = useMemo(() => allExerciseMetKeys(), []);
++  const exerciseBurnMeta = useMemo(() => allExerciseBurnMeta(), []);
+   const exerciseNames = useMemo(
+     () => Object.fromEntries(plan.flatMap((day) => day.exercises.map((ex) => [ex.id, ex.name]))),
+     [plan]
+@@ -167,9 +168,10 @@ export default function WorkoutScreen() {
+         weightKg: safeWeightKg,
+         setLogs,
+         dateKey: coreToDateKey(new Date()),
+-        exerciseNames: exerciseMetKeys
++        exerciseNames: exerciseMetKeys,
++        exerciseMeta: exerciseBurnMeta
+       }),
+-    [safeWeightKg, setLogs, exerciseMetKeys]
++    [safeWeightKg, setLogs, exerciseMetKeys, exerciseBurnMeta]
+   );
+   const currentStepExerciseId =
+     resumable && activeDay && dayIdFromTemplate(resumable.templateRevisionId) === activeDay.id
+@@ -416,7 +418,7 @@ export default function WorkoutScreen() {
+           </View>
+         </View>
+ 
+-        <WorkoutCoachCard dayName={activeDay.name} anyDoneToday={anyDoneToday} exerciseNames={exerciseMetKeys} />
++        <WorkoutCoachCard dayName={activeDay.name} anyDoneToday={anyDoneToday} exerciseNames={exerciseMetKeys} exerciseMeta={exerciseBurnMeta} />
+ 
+         <View style={styles.sectionHead}>
+           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>УПРАЖНЕНИЯ</Text>
+diff --git a/apps/mobile/src/features/workout/catalog.ts b/apps/mobile/src/features/workout/catalog.ts
+index 082c3e7..e58ce3b 100644
+--- a/apps/mobile/src/features/workout/catalog.ts
++++ b/apps/mobile/src/features/workout/catalog.ts
+@@ -3,6 +3,7 @@ import type { Sex } from '@/engines/MetabolicEngine';
+ import { WORKOUT_PLAN as HOME_PLAN, type WorkoutDay } from './bodyweightPlan';
+ import { GYM_PLAN } from './gymPlan';
+ import { planForSex } from './sexPlan';
++import { allImportedExerciseMeta } from './importedExerciseBridge';
+ 
+ export type TrainingMode = 'gym' | 'home';
+ export type { WorkoutDay };
+@@ -59,3 +60,8 @@ export function allExerciseMetKeys(): Record<number, string> {
+     )
+   );
+ }
++
++/** Category/equipment meta for imported-library numeric ids (burn estimates). */
++export function allExerciseBurnMeta(): Record<number, { category: string; equipment: string }> {
++  return allImportedExerciseMeta();
++}
+diff --git a/apps/mobile/src/features/workout/dayPlanOverrides.test.ts b/apps/mobile/src/features/workout/dayPlanOverrides.test.ts
+index 3cccab9..c164276 100644
+--- a/apps/mobile/src/features/workout/dayPlanOverrides.test.ts
++++ b/apps/mobile/src/features/workout/dayPlanOverrides.test.ts
+@@ -68,3 +68,26 @@ describe('catalogExerciseById', () => {
+     expect(pushup?.name).toMatch(/Отжимания/i);
+   });
+ });
++
++
++import { numericIdForImportedLibId } from './importedExerciseBridge';
++import { IMPORTED_EXERCISE_LIBRARY } from './importedExerciseLibrary.generated';
++
++describe('imported library overrides', () => {
++  it('resolves imported numeric ids via catalogExerciseById', () => {
++    const libId = IMPORTED_EXERCISE_LIBRARY[0]!.id;
++    const numericId = numericIdForImportedLibId(libId)!;
++    const found = catalogExerciseById('home', numericId);
++    expect(found).not.toBeNull();
++    expect(found!.id).toBe(numericId);
++    expect(found!.workingWeight).toBe(0);
++  });
++
++  it('resolveDayExercises keeps imported slot when override points at library id', () => {
++    const libId = IMPORTED_EXERCISE_LIBRARY[0]!.id;
++    const numericId = numericIdForImportedLibId(libId)!;
++    const resolved = resolveDayExercises('home', base, [numericId, base[1]!.id]);
++    expect(resolved[0]!.id).toBe(numericId);
++    expect(resolved[1]!.id).toBe(base[1]!.id);
++  });
++});
+diff --git a/apps/mobile/src/features/workout/dayPlanOverrides.ts b/apps/mobile/src/features/workout/dayPlanOverrides.ts
+index 68892ed..f898ecd 100644
+--- a/apps/mobile/src/features/workout/dayPlanOverrides.ts
++++ b/apps/mobile/src/features/workout/dayPlanOverrides.ts
+@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
+ import type { TrainingMode } from './catalog';
+ import { CATALOGS } from './catalog';
+ import type { ExerciseDef } from './ExerciseSheet';
++import { importedExerciseDefByNumericId } from './importedExerciseBridge';
+ 
+ const STORAGE_KEY = 'fitpulse_day_plan_overrides_v1';
+ 
+@@ -72,7 +73,7 @@ export function catalogExerciseById(
+     const found = day.exercises.find((ex) => ex.id === id);
+     if (found) return found;
+   }
+-  return null;
++  return importedExerciseDefByNumericId(id);
+ }
+ 
+ /**
+diff --git a/apps/mobile/src/features/workout/importedExerciseBridge.test.ts b/apps/mobile/src/features/workout/importedExerciseBridge.test.ts
+new file mode 100644
+index 0000000..7853a5a
+--- /dev/null
++++ b/apps/mobile/src/features/workout/importedExerciseBridge.test.ts
+@@ -0,0 +1,38 @@
++import assert from 'node:assert/strict';
++import { test } from 'node:test';
++import {
++  IMPORTED_NUMERIC_ID_BASE,
++  allImportedExerciseMeta,
++  importedExerciseDefByNumericId,
++  importedToExerciseDef,
++  isImportedNumericId,
++  numericIdForImportedLibId
++} from './importedExerciseBridge';
++import { IMPORTED_EXERCISE_LIBRARY } from './importedExerciseLibrary.generated';
++
++test('numeric ids are stable and above plan id range', () => {
++  const first = IMPORTED_EXERCISE_LIBRARY[0]!;
++  const id = numericIdForImportedLibId(first.id);
++  assert.ok(id != null);
++  assert.ok(id! > IMPORTED_NUMERIC_ID_BASE);
++  assert.equal(numericIdForImportedLibId(first.id), id);
++  assert.ok(isImportedNumericId(id!));
++  assert.equal(isImportedNumericId(10), false);
++});
++
++test('importedToExerciseDef maps category muscles and bodyweight load', () => {
++  const first = IMPORTED_EXERCISE_LIBRARY[0]!;
++  const def = importedToExerciseDef(first);
++  assert.equal(def.workingWeight, 0);
++  assert.ok(def.name.length > 0);
++  assert.ok(def.targetMuscles.length > 0);
++  assert.equal(importedExerciseDefByNumericId(def.id)?.id, def.id);
++});
++
++test('allImportedExerciseMeta covers every library entry', () => {
++  const meta = allImportedExerciseMeta();
++  assert.equal(Object.keys(meta).length, IMPORTED_EXERCISE_LIBRARY.length);
++  const sampleId = numericIdForImportedLibId(IMPORTED_EXERCISE_LIBRARY[0]!.id)!;
++  assert.ok(meta[sampleId]?.category);
++  assert.ok(meta[sampleId]?.equipment);
++});
+diff --git a/apps/mobile/src/features/workout/importedExerciseBridge.ts b/apps/mobile/src/features/workout/importedExerciseBridge.ts
+new file mode 100644
+index 0000000..1e54809
+--- /dev/null
++++ b/apps/mobile/src/features/workout/importedExerciseBridge.ts
+@@ -0,0 +1,109 @@
++/**
++ * Bridge imported library (string lib-* ids) → numeric exercise ids used by
++ * set logs, day overrides, and MET burn estimates.
++ *
++ * Numeric range starts at 100_000 so it never collides with frozen plan ids 1–30
++ * (see HANDOFF.md). Mapping is order-stable for the generated library file.
++ */
++
++import type { MuscleKey } from '@/components/MuscleMap';
++import type { ExerciseDef } from './ExerciseSheet';
++import {
++  IMPORTED_EXERCISE_LIBRARY,
++  type ImportedExercise
++} from './importedExerciseLibrary.generated';
++
++export const IMPORTED_NUMERIC_ID_BASE = 100_000;
++
++const libIdByNumeric = new Map<number, string>();
++const numericByLibId = new Map<string, number>();
++const exerciseByNumeric = new Map<number, ImportedExercise>();
++
++function muscleKeyFromPrimary(primary: string[]): MuscleKey[] {
++  const map: Record<string, MuscleKey> = {
++    abdominals: 'core',
++    abs: 'core',
++    chest: 'chest',
++    lats: 'back',
++    middleback: 'back',
++    lowerback: 'lowerback',
++    traps: 'shoulders',
++    back: 'back',
++    quadriceps: 'quads',
++    hamstrings: 'hamstrings',
++    glutes: 'glutes',
++    calves: 'calves',
++    shoulders: 'shoulders',
++    delts: 'shoulders',
++    biceps: 'biceps',
++    triceps: 'triceps',
++    forearms: 'biceps'
++  };
++  const out: MuscleKey[] = [];
++  for (const p of primary) {
++    const key = map[p.toLowerCase().replace(/[\s_-]/g, '')] ?? map[p.toLowerCase()];
++    if (key && !out.includes(key)) out.push(key);
++  }
++  if (out.length === 0) out.push('core');
++  return out;
++}
++
++for (let i = 0; i < IMPORTED_EXERCISE_LIBRARY.length; i++) {
++  const ex = IMPORTED_EXERCISE_LIBRARY[i]!;
++  const numericId = IMPORTED_NUMERIC_ID_BASE + i + 1;
++  libIdByNumeric.set(numericId, ex.id);
++  numericByLibId.set(ex.id, numericId);
++  exerciseByNumeric.set(numericId, ex);
++}
++
++export function isImportedNumericId(id: number): boolean {
++  return id > IMPORTED_NUMERIC_ID_BASE && exerciseByNumeric.has(id);
++}
++
++export function numericIdForImportedLibId(libId: string): number | null {
++  return numericByLibId.get(libId) ?? null;
++}
++
++export function libIdForNumericId(id: number): string | null {
++  return libIdByNumeric.get(id) ?? null;
++}
++
++export function importedByNumericId(id: number): ImportedExercise | null {
++  return exerciseByNumeric.get(id) ?? null;
++}
++
++export function importedToExerciseDef(ex: ImportedExercise, index = 1): ExerciseDef {
++  const id = numericByLibId.get(ex.id);
++  if (id == null) {
++    throw new Error(`Unknown imported exercise: ${ex.id}`);
++  }
++  return {
++    id,
++    index,
++    name: ex.nameRu ?? ex.nameEn,
++    workingWeight: 0,
++    workingReps: 12,
++    totalSets: 3,
++    restSeconds: 60,
++    targetMuscles: muscleKeyFromPrimary(ex.primaryMuscles),
++    note: ex.instructionsEn[0] ?? '',
++    wgerSearchTerm: ex.nameEn
++  };
++}
++
++export function importedExerciseDefByNumericId(id: number): ExerciseDef | null {
++  const ex = exerciseByNumeric.get(id);
++  return ex ? importedToExerciseDef(ex) : null;
++}
++
++/** category/equipment for estimateBurnFromSetLogs.exerciseMeta */
++export function allImportedExerciseMeta(): Record<
++  number,
++  { category: string; equipment: string }
++> {
++  const out: Record<number, { category: string; equipment: string }> = {};
++  for (const [id, ex] of exerciseByNumeric) {
++    out[id] = { category: ex.category, equipment: ex.equipment };
++  }
++  return out;
++}
+-- 
+2.43.0
+
