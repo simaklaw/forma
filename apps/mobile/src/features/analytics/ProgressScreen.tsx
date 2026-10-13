@@ -13,7 +13,7 @@ import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { selectDailyTotals, selectTodayMeals, useFitPulseStore } from '@/state/useFitPulseStore';
 import { unifiedStreakDays, lastNDays } from '@/engines/WorkoutStats';
-import { allExerciseNames, allExerciseMetKeys } from '@/features/workout/catalog';
+import { allExerciseNames, allExerciseMetKeys, allExerciseBurnMeta } from '@/features/workout/catalog';
 import ActivityCalendar from '@/components/ActivityCalendar';
 
 const GLASS_ML = 250;
@@ -50,6 +50,7 @@ export default function ProgressScreen() {
 
   const exerciseNames = useMemo(() => allExerciseNames(), []);
   const exerciseMetKeys = useMemo(() => allExerciseMetKeys(), []);
+  const exerciseBurnMeta = useMemo(() => allExerciseBurnMeta(), []);
   const todayKey = useMemo(() => toDateKey(new Date()), []);
 
   const weekKeys = useMemo(() => lastNDays(7).map((d) => toDateKey(d)), []);
@@ -140,9 +141,10 @@ export default function ProgressScreen() {
       weightKg: safeWeight,
       setLogs,
       dateKeys: days.map((d) => toDateKey(d)),
-      exerciseNames: exerciseMetKeys
+      exerciseNames: exerciseMetKeys,
+      exerciseMeta: exerciseBurnMeta
     });
-  }, [setLogs, profile.weight, exerciseMetKeys]);
+  }, [setLogs, profile.weight, exerciseMetKeys, exerciseBurnMeta]);
 
   const todayBurn = useMemo(() => {
     const safeWeight =
@@ -153,9 +155,10 @@ export default function ProgressScreen() {
       weightKg: safeWeight,
       setLogs,
       dateKey: todayKey,
-      exerciseNames: exerciseMetKeys
+      exerciseNames: exerciseMetKeys,
+      exerciseMeta: exerciseBurnMeta
     });
-  }, [setLogs, profile.weight, todayKey, exerciseMetKeys]);
+  }, [setLogs, profile.weight, todayKey, exerciseMetKeys, exerciseBurnMeta]);
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]} edges={['top']}>
