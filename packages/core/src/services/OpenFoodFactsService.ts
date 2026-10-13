@@ -72,6 +72,13 @@ export class OpenFoodFactsService {
     }
   }
 
+  /** Barcode → normalized per-100g food, or null if missing macros. */
+  public static async getNormalizedByBarcode(barcode: string): Promise<NormalizedFood | null> {
+    const res = await this.getProductByBarcode(barcode);
+    if (!res?.product) return null;
+    return this.normalize(res.product);
+  }
+
   public static async searchProducts(query: string, pageSize = 8): Promise<NormalizedFood[]> {
     const trimmed = query.trim();
     if (!trimmed) return [];
