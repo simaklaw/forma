@@ -162,14 +162,19 @@ for (const { id, nameEn } of lib) {
 
 results.sort((a, b) => a.id.localeCompare(b.id));
 
-const lines = results.map(
-  (e) =>
-    `  { id: "${e.id}", gifUrl: "${e.gifUrl}", sourceName: ${JSON.stringify(e.sourceName)}, matchScore: ${e.matchScore} },`
+const payload = JSON.stringify(
+  results.map((e) => ({
+    id: e.id,
+    path: e.gifUrl.replace(BASE, ''),
+    name: e.sourceName,
+    score: e.matchScore,
+  }))
 );
 
 const body = `/**
- * AUTO-GENERATED — uniform Gym-visual GIF technique (hasaneyldrm).
- * Re-run: node scripts/import-exercise-gifs.mjs
+ * AUTO-GENERATED — Gym visual GIF via hasaneyldrm (180×180).
+ * Policy: MP4 → GIF → none. Attribution required.
+ * NOTICE: media © Gym visual — clone ≠ product license. Re-run: node scripts/import-exercise-gifs.mjs
  */
 
 export interface ExerciseGifManifestEntry {
@@ -183,15 +188,17 @@ export interface ExerciseGifManifestEntry {
   sourceUrl: string;
 }
 
+const BASE = 'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/';
 const ATTR = '© Gym visual — https://gymvisual.com/';
 const SRC = 'https://github.com/hasaneyldrm/exercises-dataset';
 
-const RAW: { id: string; gifUrl: string; sourceName: string; matchScore: number }[] = [
-${lines.join('\n')}
-];
+const RAW: { id: string; path: string; name: string; score: number }[] = ${payload};
 
 export const EXERCISE_GIF_MANIFEST: ExerciseGifManifestEntry[] = RAW.map((e) => ({
-  ...e,
+  id: e.id,
+  gifUrl: BASE + e.path,
+  sourceName: e.name,
+  matchScore: e.score,
   instructionsRu: null,
   attribution: ATTR,
   sourceUrl: SRC,
