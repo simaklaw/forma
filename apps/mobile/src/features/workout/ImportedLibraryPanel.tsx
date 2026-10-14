@@ -17,9 +17,7 @@ import {
   type ImportedExercise
 } from './importedExerciseLibrary.generated';
 import { IMPORTED_EXERCISE_IMAGES } from './importedExerciseImages.generated';
-import { ExerciseMediaService } from './ExerciseMediaService';
 import { gifEntryForLibraryId } from './exerciseGifManifest.generated';
-import ExerciseVideo from '@/components/ExerciseVideo';
 import { filterImportedLibrary } from './importedLibraryFilter';
 import { catalogFor } from './catalog';
 import { replaceDaySlot } from './dayPlanOverrides';
@@ -53,11 +51,9 @@ export default function ImportedLibraryPanel() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<ImportedExercise['category'] | null>(null);
   const [selected, setSelected] = useState<ImportedExercise | null>(null);
-  const [resolvedVideo, setResolvedVideo] = useState<{ id: string; source: { uri: string } | number } | null>(null);
   const [gifUri, setGifUri] = useState<string | null>(null);
   const [replaceTarget, setReplaceTargetState] = useState<ReplaceTarget | null>(getReplaceTarget());
   const [replacing, setReplacing] = useState(false);
-  const videoSource = resolvedVideo?.id === selected?.id ? resolvedVideo?.source : null;
 
   useEffect(() => subscribeReplaceTarget(() => setReplaceTargetState(getReplaceTarget())), []);
 
@@ -85,23 +81,12 @@ export default function ImportedLibraryPanel() {
     }
   }
 
+  // Uniform style: Gym-visual GIF for technique; static photo only if no GIF.
   useEffect(() => {
-    setResolvedVideo(null);
     setGifUri(null);
     if (!selected) return;
-    let cancelled = false;
     const gif = gifEntryForLibraryId(selected.id);
     if (gif?.gifUrl) setGifUri(gif.gifUrl);
-    void ExerciseMediaService.getPlaybackSource(selected.id)
-      .then((src) => {
-        if (!cancelled && src != null) setResolvedVideo({ id: selected.id, source: src });
-      })
-      .catch(() => {
-        if (!cancelled) setResolvedVideo(null);
-      });
-    return () => {
-      cancelled = true;
-    };
   }, [selected]);
 
   const filtered = useMemo(
@@ -215,29 +200,30 @@ export default function ImportedLibraryPanel() {
               </TouchableOpacity>
             </View>
             <ScrollView contentContainerStyle={styles.modalBody}>
-              {videoSource ? (
-                <ExerciseVideo source={videoSource} label={displayName(selected)} />
-              ) : gifUri ? (
+              {gifUri ? (
                 <Image
                   source={{ uri: gifUri }}
                   style={styles.hero}
                   resizeMode="contain"
-                  accessibilityLabel={`Анимация: ${displayName(selected)}`}
+                  accessibilityLabel={`Техника: ${displayName(selected)}`}
                 />
-              ) : null}
-              {!videoSource && !gifUri
-                ? selected.imageKeys.map((imageKey) => {
-                    const source = IMPORTED_EXERCISE_IMAGES[imageKey];
-                    return source ? (
-                      <Image key={imageKey} source={source} style={styles.hero} resizeMode="contain" />
-                    ) : null;
-                  })
-                : null}
-              {gifUri && !videoSource ? (
+              ) : (
+                selected.imageKeys.map((imageKey) => {
+                  const source = IMPORTED_EXERCISE_IMAGES[imageKey];
+                  return source ? (
+                    <Image key={imageKey} source={source} style={styles.hero} resizeMode="contain" />
+                  ) : null;
+                })
+              )}
+              {gifUri ? (
                 <Text style={[styles.meta, { color: colors.paperFaint, marginBottom: 8 }]}>
-                  Анимация © Gym visual — gymvisual.com
+                  Техника © Gym visual — единый стиль анимации
                 </Text>
-              ) : null}
+              ) : (
+                <Text style={[styles.meta, { color: colors.paperFaint, marginBottom: 8 }]}>
+                  Фото техники · GIF скоро
+                </Text>
+              )}
               <View style={styles.titleRow}>
                 <Text style={[styles.modalTitle, { color: colors.paper }]}>
                   {displayName(selected)}
