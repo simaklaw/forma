@@ -17,7 +17,9 @@ import {
   type ImportedExercise
 } from './importedExerciseLibrary.generated';
 import { IMPORTED_EXERCISE_IMAGES } from './importedExerciseImages.generated';
+import { ExerciseMediaService } from './ExerciseMediaService';
 import { gifEntryForLibraryId } from './exerciseGifManifest.generated';
+import ExerciseVideo from '@/components/ExerciseVideo';
 import { filterImportedLibrary } from './importedLibraryFilter';
 import { catalogFor } from './catalog';
 import { replaceDaySlot } from './dayPlanOverrides';
@@ -51,9 +53,11 @@ export default function ImportedLibraryPanel() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<ImportedExercise['category'] | null>(null);
   const [selected, setSelected] = useState<ImportedExercise | null>(null);
+  const [resolvedVideo, setResolvedVideo] = useState<{ id: string; source: { uri: string } | number } | null>(null);
   const [gifUri, setGifUri] = useState<string | null>(null);
   const [replaceTarget, setReplaceTargetState] = useState<ReplaceTarget | null>(getReplaceTarget());
   const [replacing, setReplacing] = useState(false);
+  const videoSource = resolvedVideo?.id === selected?.id ? resolvedVideo?.source : null;
 
   useEffect(() => subscribeReplaceTarget(() => setReplaceTargetState(getReplaceTarget())), []);
 
@@ -81,12 +85,24 @@ export default function ImportedLibraryPanel() {
     }
   }
 
-  // Uniform style: Gym-visual GIF for technique; static photo only if no GIF.
+  // Policy: MP4 → GIF → no technique (photos are list thumbs only, not technique).
   useEffect(() => {
+    setResolvedVideo(null);
     setGifUri(null);
     if (!selected) return;
+    let cancelled = false;
     const gif = gifEntryForLibraryId(selected.id);
     if (gif?.gifUrl) setGifUri(gif.gifUrl);
+    void ExerciseMediaService.getPlaybackSource(selected.id)
+      .then((src) => {
+        if (!cancelled && src != null) setResolvedVideo({ id: selected.id, source: src });
+      })
+      .catch(() => {
+        if (!cancelled) setResolvedVideo(null);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [selected]);
 
   const filtered = useMemo(
@@ -200,7 +216,9 @@ export default function ImportedLibraryPanel() {
               </TouchableOpacity>
             </View>
             <ScrollView contentContainerStyle={styles.modalBody}>
-              {gifUri ? (
+              {videoSource ? (
+                <ExerciseVideo source={videoSource} label={displayName(selected)} />
+              ) : gifUri ? (
                 <Image
                   source={{ uri: gifUri }}
                   style={styles.hero}
@@ -208,20 +226,29 @@ export default function ImportedLibraryPanel() {
                   accessibilityLabel={`Техника: ${displayName(selected)}`}
                 />
               ) : (
-                selected.imageKeys.map((imageKey) => {
-                  const source = IMPORTED_EXERCISE_IMAGES[imageKey];
-                  return source ? (
-                    <Image key={imageKey} source={source} style={styles.hero} resizeMode="contain" />
-                  ) : null;
-                })
+                <View
+                  style={[
+                    styles.hero,
+                    styles.noMedia,
+                    { backgroundColor: colors.panel, borderColor: colors.line }
+                  ]}
+                >
+                  <Text style={[styles.noMediaText, { color: colors.paperFaint }]}>
+                    Анимация техники скоро
+                  </Text>
+                </View>
               )}
-              {gifUri ? (
+              {videoSource ? (
+                <Text style={[styles.meta, { color: colors.paperFaint, marginBottom: 8 }]}>
+                  Видео техники
+                </Text>
+              ) : gifUri ? (
                 <Text style={[styles.meta, { color: colors.paperFaint, marginBottom: 8 }]}>
                   Техника © Gym visual — единый стиль анимации
                 </Text>
               ) : (
                 <Text style={[styles.meta, { color: colors.paperFaint, marginBottom: 8 }]}>
-                  Фото техники · GIF скоро
+                  Без анимации · не используем фото как технику
                 </Text>
               )}
               <View style={styles.titleRow}>
@@ -339,6 +366,13 @@ const styles = StyleSheet.create({
   close: { fontFamily: fonts.bodySemi, fontSize: 15 },
   modalBody: { paddingHorizontal: spacing.xl, paddingBottom: 40 },
   hero: { width: '100%', height: 220, marginBottom: 12 },
+  noMedia: {
+    borderWidth: 1,
+    borderRadius: radius.card,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  noMediaText: { fontSize: 14, fontFamily: fonts.body },
   modalTitle: { flex: 1, fontSize: 22, fontFamily: fonts.mono },
   section: { marginTop: spacing.lg, gap: 8 },
   sectionLabel: { fontSize: 12, fontFamily: fonts.bodySemi, letterSpacing: 0.3 },
