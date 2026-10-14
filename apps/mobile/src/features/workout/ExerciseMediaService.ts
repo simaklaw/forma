@@ -143,21 +143,20 @@ export class ExerciseMediaService {
   }
 
   /**
-   * Uniform media for imported library: prefer Gym-visual GIF (same style),
-   * then bundled/remote video, then thumb. Avoid mixed chaotic media.
+   * Technique media policy (single slot, no chaos):
+   * 1) own / remote MP4  2) uniform GIF  3) nothing (never photo-as-technique).
    */
   static getPreviewUri(
     libraryId: string,
     mediaKey?: ExerciseMediaKey
-  ): { kind: 'video' | 'gif' | 'thumb'; uri: string } | { kind: 'bundled'; asset: number } | null {
-    const gif = gifEntryForLibraryId(libraryId);
-    if (gif?.gifUrl) return { kind: 'gif', uri: gif.gifUrl };
+  ): { kind: 'video' | 'gif'; uri: string } | { kind: 'bundled'; asset: number } | null {
     if (mediaKey && EXERCISE_VIDEOS[mediaKey] != null) {
       return { kind: 'bundled', asset: EXERCISE_VIDEOS[mediaKey]! };
     }
     const video = EXERCISE_VIDEO_MANIFEST.find((e) => e.id === libraryId);
     if (video?.videoUrl) return { kind: 'video', uri: video.videoUrl };
-    if (gif?.thumbUrl) return { kind: 'thumb', uri: gif.thumbUrl };
+    const gif = gifEntryForLibraryId(libraryId);
+    if (gif?.gifUrl) return { kind: 'gif', uri: gif.gifUrl };
     return null;
   }
 
