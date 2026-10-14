@@ -23,6 +23,7 @@ import {
 } from './catalogBrowser';
 import ExerciseDetailModal from './ExerciseDetailModal';
 import ImportedLibraryPanel from './ImportedLibraryPanel';
+import TabataPanel from './tabata/TabataPanel';
 import { favoriteKey, loadFavorites, loadRecent, parseFavoriteKey } from './exerciseFavorites';
 import {
   clearReplaceTarget,
@@ -54,7 +55,7 @@ export default function CatalogScreen() {
   const [recentKeys, setRecentKeys] = useState<string[]>([]);
   const [selected, setSelected] = useState<CatalogItem | null>(null);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [catalogScope, setCatalogScope] = useState<'plans' | 'library'>('plans');
+  const [catalogScope, setCatalogScope] = useState<'plans' | 'library' | 'tabata'>('plans');
   const [replaceTarget, setReplaceTargetState] = useState<ReplaceTarget | null>(getReplaceTarget());
 
   useEffect(() => subscribeReplaceTarget(() => setReplaceTargetState(getReplaceTarget())), []);
@@ -136,7 +137,9 @@ export default function CatalogScreen() {
         subtitle={
           catalogScope === 'library'
             ? 'Справочник · bodyweight / резинки'
-            : `Офлайн · дом · ${filtered.length} из ${items.length}`
+            : catalogScope === 'tabata'
+              ? 'Табата · интервалы HIIT'
+              : `Офлайн · дом · ${filtered.length} из ${items.length}`
         }
       />
 
@@ -168,11 +171,12 @@ export default function CatalogScreen() {
         {(
           [
             { id: 'plans' as const, label: 'Планы' },
-            { id: 'library' as const, label: 'Справочник' }
+            { id: 'library' as const, label: 'Справочник' },
+            { id: 'tabata' as const, label: 'Табата' }
           ] as const
         ).map((item) => {
           const active = catalogScope === item.id;
-          const disabled = Boolean(replaceTarget && item.id === 'library');
+          const disabled = Boolean(replaceTarget && item.id !== 'plans');
           return (
             <TouchableOpacity
               key={item.id}
@@ -188,9 +192,6 @@ export default function CatalogScreen() {
               ]}
               accessibilityRole="tab"
               accessibilityState={{ selected: active, disabled }}
-              accessibilityHint={
-                disabled ? 'Завершите или отмените замену, чтобы открыть справочник.' : undefined
-              }
             >
               <Text style={[styles.modeText, { color: active ? colors.lime : colors.paperDim }]}>
                 {item.label}
@@ -202,6 +203,8 @@ export default function CatalogScreen() {
 
       {catalogScope === 'library' ? (
         <ImportedLibraryPanel />
+      ) : catalogScope === 'tabata' ? (
+        <TabataPanel />
       ) : (
         <>
           {SHOW_GYM_MODE_TOGGLE && (
@@ -516,19 +519,25 @@ const styles = StyleSheet.create({
     paddingVertical: 8
   },
   chipText: { fontFamily: fonts.bodySemi, fontSize: 12 },
-  list: { paddingHorizontal: spacing.lg, paddingBottom: 110, gap: 8 },
-  card: { borderWidth: 1, borderRadius: radius.card, padding: spacing.md },
+  list: { paddingHorizontal: spacing.lg, paddingBottom: 40, gap: 10 },
+  card: {
+    borderWidth: 1,
+    borderRadius: radius.card,
+    padding: spacing.md,
+    marginBottom: 8
+  },
   cardTop: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  index: { fontFamily: fonts.mono, fontSize: 14, width: 24 },
-  cardCopy: { flex: 1 },
+  index: { fontFamily: fonts.mono, fontSize: 14, width: 28 },
+  cardCopy: { flex: 1, gap: 2 },
   name: { fontFamily: fonts.bodySemi, fontSize: 15 },
-  meta: { fontFamily: fonts.body, fontSize: 11, marginTop: 3 },
+  meta: { fontFamily: fonts.body, fontSize: 12 },
   load: { fontFamily: fonts.mono, fontSize: 12 },
-  muscles: { fontFamily: fonts.body, fontSize: 12, marginTop: 9 },
+  muscles: { fontFamily: fonts.body, fontSize: 12, marginTop: 8 },
   empty: {
+    textAlign: 'center',
     fontFamily: fonts.body,
     fontSize: 13,
-    textAlign: 'center',
-    paddingVertical: 24
+    paddingVertical: 40,
+    paddingHorizontal: spacing.lg
   }
 });
