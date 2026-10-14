@@ -1,56 +1,100 @@
+#!/usr/bin/env node
 /**
- * Match Forma imported library (free-exercise-db) to hasaneyldrm/exercises-dataset GIFs.
- * Writes apps/mobile/src/features/workout/exerciseGifManifest.generated.ts
+ * Match free-exercise-db library ids → hasaneyldrm GIF URLs (Gym visual style).
+ * Prefer high coverage + consistent single media style.
  *
- * Usage:
- *   node scripts/import-exercise-gifs.mjs [/path/to/exercises.json]
- * Default URL fetch if path omitted (needs network).
+ * Usage: node scripts/import-exercise-gifs.mjs [path/to/exercises.json]
  */
-import fs from 'node:fs';
-import path from 'node:path';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const LIBRARY_FILE = path.join(
-  ROOT,
-  'apps/mobile/src/features/workout/importedExerciseLibrary.generated.ts'
-);
-const OUT_FILE = path.join(
-  ROOT,
-  'apps/mobile/src/features/workout/exerciseGifManifest.generated.ts'
-);
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const root = resolve(__dirname, '..');
+const libPath = resolve(root, 'apps/mobile/src/features/workout/importedExerciseLibrary.generated.ts');
+const outPath = resolve(root, 'apps/mobile/src/features/workout/exerciseGifManifest.generated.ts');
 
-const RAW_BASE =
-  'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/';
+const THRESHOLD = 0.55;
+const BASE = 'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/';
 
-/** Exact or near-exact aliases when fuzzy score is low. */
+/** Manual aliases: normalized lib name → preferred hasan search phrase */
 const ALIASES = {
-  pushups: 'push-up',
-  'push-ups': 'push-up',
-  crunches: 'crunch',
-  plank: 'plank',
-  'bodyweight squat': 'squat',
-  'butt lift bridge': 'bridge',
-  'glute kickback': 'glute kickback',
-  'side bridge': 'side bridge',
-  superman: 'superman',
-  'scissor kick': 'scissors',
-  'frog sit ups': 'frog crunch',
-  'stomach vacuum': 'vacuum',
+  'band good morning pull through': 'band good morning',
+  'band hip adductions': 'hip adduction',
+  'butt lift bridge': 'glute bridge',
   'calf raises with bands': 'calf raise',
+  'cross over with bands': 'cable crossover',
+  'crunches': 'crunch',
+  'dips triceps version': 'triceps dip',
+  'double leg butt kick': 'walking high knees lunge',
+  'external rotation with band': 'external rotation',
+  'fast skipping': 'jump rope',
+  'freehand jump squat': 'jump squat',
+  'frog sit ups': 'frog sit-up',
+  'glute kickback': 'cable kickback',
+  'handstand push ups': 'handstand push-up',
+  'hip circles prone': 'ankle circles',
+  'hip extension with bands': 'hip extension',
+  'hip flexion with band': 'hip flexion',
+  'internal rotation with band': 'internal rotation',
+  'isometric chest squeezes': 'chest squeeze',
+  'knee tuck jump': 'tuck jump',
+  'lateral raise with bands': 'lateral raise',
+  'leg pull in': 'leg pull-in',
+  'lying glute': 'lying glute stretch',
+  'oblique crunches': 'oblique crunch',
+  'overhead triceps': 'overhead triceps extension',
+  'push ups close triceps position': 'close-grip push-up',
+  'pushups': 'push-up',
+  'pushups close and wide hand positions': 'push-up',
+  'push up wide': 'wide hand push up',
+  'rear leg raises': 'rear leg raise',
+  'scissor kick': 'flutter kicks',
+  'scissors jump': 'scissor jumps',
+  'seated biceps': 'biceps curl',
+  'shoulder press with bands': 'shoulder press',
+  'side bridge': 'side plank',
+  'side jackknife': 'jackknife sit-up',
+  'side leg raises': 'side leg raise',
+  'single leg butt kick': 'walking high knees lunge',
+  'sit up': 'sit-up',
+  'speed band overhead triceps': 'overhead triceps extension',
+  'split jump': 'scissor jumps',
   'squats with bands': 'squat',
-  'cross over with bands': 'cross over',
-  'push ups close triceps position': 'close grip push up',
+  'star jump': 'star jump',
+  'superman': 'superman',
+  'toe touchers': 'toe touch',
+  'upright row with bands': 'upright row',
+  '90 90 hamstring': 'hamstring stretch',
+  'lying crossover': 'lying crossover stretch',
+  'lying prone quadriceps': 'quad stretch',
+  'seated front deltoid': 'front raise',
+  'seated glute': 'seated glute stretch',
+  'standing hip circles': 'hip circles',
+  'bodyweight squat': 'bodyweight squat',
+  'band pull apart': 'band pull through',
+  'rocket jump': 'forward jump',
+  'standing long jump': 'forward jump',
+  'lateral bound': 'forward jump',
 };
 
-function tokens(s) {
-  s = String(s)
+const STOP = new Set([
+  'with', 'the', 'a', 'an', 'and', 'or', 'to', 'on', 'of', 'for', 'version',
+  'bands', 'band', 'using', 'machine', 'cable', 'dumbbell', 'barbell', 'bodyweight',
+]);
+
+function normalize(s) {
+  return s
     .toLowerCase()
-    .replace(/3\/4/g, '3 4')
-    .replace(/45°/g, '45')
-    .replace(/[^a-z0-9]+/g, ' ');
-  const stop = new Set(['with', 'the', 'a', 'an', 'and', 'or', 'to', 'on', 'of', 'for', 'version']);
-  return s.split(/\s+/).filter((t) => t && !stop.has(t));
+    .replace('3/4', '3 4')
+    .replace('90/90', '90 90')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+function tokens(s) {
+  return normalize(s).split(' ').filter((t) => t && !STOP.has(t));
 }
 
 function score(a, b) {
@@ -59,7 +103,10 @@ function score(a, b) {
   if (!ta.size || !tb.size) return 0;
   let inter = 0;
   for (const t of ta) if (tb.has(t)) inter++;
-  return inter / Math.max(ta.size, tb.size);
+  const union = new Set([...ta, ...tb]).size;
+  const jaccard = inter / union;
+  const contain = inter / ta.size;
+  return Math.max(jaccard, contain * 0.95);
 }
 
 function parseLibrary(ts) {
@@ -70,68 +117,59 @@ function parseLibrary(ts) {
   return entries;
 }
 
-async function loadHasan(argPath) {
-  if (argPath && fs.existsSync(argPath)) {
-    return JSON.parse(fs.readFileSync(argPath, 'utf8'));
-  }
-  const url =
-    'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/data/exercises.json';
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`fetch ${url} → ${res.status}`);
-  return res.json();
-}
+const jsonPath = process.argv[2] || resolve('/tmp/hasan-ex.json');
+const hasan = JSON.parse(readFileSync(jsonPath, 'utf8'));
+const lib = parseLibrary(readFileSync(libPath, 'utf8'));
 
-function pickBest(nameEn, hasan) {
-  const aliasKey = tokens(nameEn).join(' ');
-  const aliasTarget = ALIASES[aliasKey];
+const results = [];
+const unmatched = [];
+
+for (const { id, nameEn } of lib) {
+  const n = normalize(nameEn);
+  const query = ALIASES[n] || n;
   let best = null;
   let bestScore = 0;
+
   for (const e of hasan) {
-    let s = score(nameEn, e.name);
-    if (aliasTarget) {
-      const aliasScore = score(aliasTarget, e.name);
-      if (aliasScore > s) s = aliasScore;
-    }
-    if (s > bestScore) {
-      bestScore = s;
+    const hn = normalize(e.name);
+    if (hn === normalize(query) || hn === n) {
       best = e;
+      bestScore = 1;
+      break;
     }
   }
-  const threshold = aliasTarget ? 0.6 : 0.67;
-  if (!best || bestScore < threshold) return null;
-  return { entry: best, score: bestScore };
+  if (!best) {
+    for (const e of hasan) {
+      const s = Math.max(score(query, e.name), score(nameEn, e.name));
+      if (s > bestScore) {
+        best = e;
+        bestScore = s;
+      }
+    }
+  }
+
+  if (best && bestScore >= THRESHOLD) {
+    results.push({
+      id,
+      gifUrl: BASE + best.gif_url,
+      sourceName: best.name,
+      matchScore: Math.round(bestScore * 100) / 100,
+    });
+  } else {
+    unmatched.push({ id, nameEn, best: best?.name, score: bestScore });
+  }
 }
 
-function main() {
-  const argPath = process.argv[2];
-  return loadHasan(argPath).then((hasan) => {
-    const library = parseLibrary(fs.readFileSync(LIBRARY_FILE, 'utf8'));
-    const manifest = [];
-    for (const lib of library) {
-      const hit = pickBest(lib.nameEn, hasan);
-      if (!hit) continue;
-      const rel = hit.entry.gif_url?.replace(/^\//, '') ?? '';
-      if (!rel) continue;
-      const imageRel = (hit.entry.image ?? '').replace(/^\//, '');
-      manifest.push({
-        id: lib.id,
-        gifUrl: `${RAW_BASE}${rel}`,
-        thumbUrl: imageRel ? `${RAW_BASE}${imageRel}` : undefined,
-        sourceName: hit.entry.name,
-        matchScore: Math.round(hit.score * 100) / 100,
-        instructionsRu: hit.entry.instructions?.ru ?? null,
-        attribution: hit.entry.attribution ?? '© Gym visual — https://gymvisual.com/',
-        sourceUrl: 'https://github.com/hasaneyldrm/exercises-dataset',
-      });
-    }
-    manifest.sort((a, b) => a.id.localeCompare(b.id));
+results.sort((a, b) => a.id.localeCompare(b.id));
 
-    const body = `/**
- * AUTO-GENERATED by scripts/import-exercise-gifs.mjs — do not edit by hand.
- * GIF/thumb remote URLs matched from hasaneyldrm/exercises-dataset (media © Gym visual).
- * Metadata matched to free-exercise-db library ids (lib-*).
- *
- * Re-run: node scripts/import-exercise-gifs.mjs [/path/to/exercises.json]
+const lines = results.map(
+  (e) =>
+    `  { id: "${e.id}", gifUrl: "${e.gifUrl}", sourceName: ${JSON.stringify(e.sourceName)}, matchScore: ${e.matchScore} },`
+);
+
+const body = `/**
+ * AUTO-GENERATED — uniform Gym-visual GIF technique (hasaneyldrm).
+ * Re-run: node scripts/import-exercise-gifs.mjs
  */
 
 export interface ExerciseGifManifestEntry {
@@ -145,22 +183,28 @@ export interface ExerciseGifManifestEntry {
   sourceUrl: string;
 }
 
-export const EXERCISE_GIF_MANIFEST: ExerciseGifManifestEntry[] = ${JSON.stringify(
-      manifest,
-      null,
-      2
-    )};
+const ATTR = '© Gym visual — https://gymvisual.com/';
+const SRC = 'https://github.com/hasaneyldrm/exercises-dataset';
+
+const RAW: { id: string; gifUrl: string; sourceName: string; matchScore: number }[] = [
+${lines.join('\n')}
+];
+
+export const EXERCISE_GIF_MANIFEST: ExerciseGifManifestEntry[] = RAW.map((e) => ({
+  ...e,
+  instructionsRu: null,
+  attribution: ATTR,
+  sourceUrl: SRC,
+}));
 
 export function gifEntryForLibraryId(id: string): ExerciseGifManifestEntry | undefined {
   return EXERCISE_GIF_MANIFEST.find((e) => e.id === id);
 }
 `;
-    fs.writeFileSync(OUT_FILE, body, 'utf8');
-    console.log(`Wrote ${manifest.length} GIF mappings → ${path.relative(ROOT, OUT_FILE)}`);
-  });
-}
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+writeFileSync(outPath, body);
+console.log(`Wrote ${results.length}/${lib.length} GIF mappings → ${outPath}`);
+if (unmatched.length) {
+  console.log('Unmatched:');
+  for (const u of unmatched) console.log(`  ${u.id} (${u.nameEn}) best=${u.best} @${u.score?.toFixed?.(2)}`);
+}
