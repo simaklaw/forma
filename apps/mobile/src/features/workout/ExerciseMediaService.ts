@@ -142,26 +142,26 @@ export class ExerciseMediaService {
     return gifEntryForLibraryId(libraryId);
   }
 
-  /** Prefer bundled/remote MP4; otherwise GIF URL for Image-based preview. */
+  /**
+   * Uniform media for imported library: prefer Gym-visual GIF (same style),
+   * then bundled/remote video, then thumb. Avoid mixed chaotic media.
+   */
   static getPreviewUri(
     libraryId: string,
     mediaKey?: ExerciseMediaKey
   ): { kind: 'video' | 'gif' | 'thumb'; uri: string } | { kind: 'bundled'; asset: number } | null {
+    const gif = gifEntryForLibraryId(libraryId);
+    if (gif?.gifUrl) return { kind: 'gif', uri: gif.gifUrl };
     if (mediaKey && EXERCISE_VIDEOS[mediaKey] != null) {
       return { kind: 'bundled', asset: EXERCISE_VIDEOS[mediaKey]! };
     }
     const video = EXERCISE_VIDEO_MANIFEST.find((e) => e.id === libraryId);
     if (video?.videoUrl) return { kind: 'video', uri: video.videoUrl };
-    const gif = gifEntryForLibraryId(libraryId);
-    if (gif?.gifUrl) return { kind: 'gif', uri: gif.gifUrl };
     if (gif?.thumbUrl) return { kind: 'thumb', uri: gif.thumbUrl };
     return null;
   }
 
-  static listGifCoverage(): { totalLibraryEstimate: number; withGif: number } {
-    return {
-      totalLibraryEstimate: EXERCISE_GIF_MANIFEST.length,
-      withGif: EXERCISE_GIF_MANIFEST.length,
-    };
+  static listGifCoverage(): { withGif: number } {
+    return { withGif: EXERCISE_GIF_MANIFEST.length };
   }
 }
