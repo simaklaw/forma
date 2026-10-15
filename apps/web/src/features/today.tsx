@@ -1,11 +1,8 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  CoachEngine,
   analyzeRecovery,
-  calculateBurnedCalories,
-  metForExercise,
-  type UserContextSnapshot,
+  buildCoachBrief,
 } from "@forma/core";
 import { Button } from "@/components/ui/button";
 import { ExerciseCard } from "@/components/exercise-card";
@@ -137,48 +134,10 @@ export function TodayScreen() {
     });
   }, [meals, workouts, today, profile.calorieGoal, profile.proteinGoal, waterMl]);
 
-  const snapshot = useMemo((): UserContextSnapshot => {
-    const todayMeals = meals.filter((m) => m.date === today);
-    const macros = dayMacros(todayMeals, FOODS);
-    const last = [...workouts].reverse().find((w) => w.completed);
-    const lastPlan = last ? planById(last.planId) : undefined;
-    let burned = 0;
-    if (doneToday && plan) {
-      burned = planExercises(plan).reduce((sum, ex) => {
-        const workSec = ex.unit === "sec" ? ex.reps * ex.sets : ex.reps * ex.sets * 3;
-        return sum + calculateBurnedCalories(metForExercise(ex.id), profile.weightKg, workSec / 60);
-      }, 0);
-    }
-    return {
-      userProfile: {
-        weightKg: profile.weightKg,
-        heightCm: profile.heightCm,
-        age: profile.age,
-        gender: profile.presentation === "woman" ? "female" : "male",
-      },
-      dailyMetrics: {
-        consumedCalories: macros.kcal,
-        targetCalories: profile.calorieGoal,
-        burnedCalories: burned,
-      },
-      lastWorkout: lastPlan
-        ? { name: lastPlan.title, completedAt: last!.date, rpeScore: 7 }
-        : undefined,
-    };
-  }, [meals, workouts, today, doneToday, plan, profile]);
-
-  const [advice, setAdvice] = useState("");
-  useEffect(() => {
-    let cancelled = false;
-    CoachEngine.getTrainer()
-      .generateAdvice(snapshot, doneToday ? "тренировка" : "совет на день")
-      .then((text) => {
-        if (!cancelled) setAdvice(text);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [snapshot, doneToday]);
+  const coachBrief = useMemo(
+    () => buildCoachBrief(recovery, plan?.title ?? "план дня"),
+    [recovery, plan?.title],
+  );
 
   function continueLive() {
     if (!livePlan) return;
@@ -200,7 +159,16 @@ export function TodayScreen() {
       </header>
 
       <div className="animate-rise mb-4 rounded-2xl bg-surface p-4 shadow-card">
-        <div className="flex items-center gap-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-accent">
+              FitPulse · {coachBrief.readinessLabel} · offline
+            </p>
+            <p className="mt-1 text-sm leading-snug text-fg line-clamp-2">{coachBrief.summary}</p>
+            <p className="mt-1 text-sm font-medium text-fg line-clamp-2">
+              {doneToday ? coachBrief.restAdvice : coachBrief.workoutAdvice}
+            </p>
+          </div>
           <div
             className="recovery-score-ring shrink-0"
             style={
@@ -213,69 +181,31 @@ export function TodayScreen() {
           >
             <span>{recovery.recoveryScore}%</span>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">
-              Восстановление
-            </p>
-            <p className="mt-0.5 font-display text-xl tracking-tight text-fg">
-              {recovery.statusLabel}
-            </p>
-            <p className="mt-1 text-sm leading-snug text-muted">
-              {recovery.recommendationTitle}
-            </p>
-          </div>
         </div>
-
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          {(
-            [
-              ["Мышцы", recovery.muscularReadiness],
-              ["Энергия", recovery.energyRestoration],
-              ["ЦНС", recovery.cnsFreshness],
-              ["Вода", recovery.hydrationScore],
-            ] as const
-          ).map(([label, value]) => (
-            <div key={label}>
-              <div className="mb-1 flex items-center justify-between text-[11px] text-muted">
-                <span>{label}</span>
-                <span className="tabular-nums text-fg">{value}</span>
-              </div>
-              <div className="pillar-bar">
-                <i style={{ width: `${Math.max(0, Math.min(100, value))}%` }} />
-              </div>
-            </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {coachBrief.actionItems.map((item) => (
+            <span
+              key={item}
+              className="rounded-full border border-border bg-surface-2 px-2.5 py-1 text-[11px] text-muted"
+            >
+              {item}
+            </span>
           ))}
         </div>
-
-        <p className="mt-3 text-sm leading-relaxed text-muted">
-          {recovery.recommendationDescription}
-        </p>
-        {recovery.nutritionAdvice ? (
-          <p className="mt-1 text-xs text-muted">{recovery.nutritionAdvice}</p>
-        ) : null}
-
-        <div className="mt-3 border-t border-border pt-3">
-          <div className="mb-2 flex items-center justify-between text-xs text-muted">
-            <span>Вода</span>
-            <span className="tabular-nums text-fg">
-              {(waterMl / 1000).toFixed(1)} / 2.5 л
-            </span>
-          </div>
-          <div className="water-track mb-2">
-            <i style={{ width: `${Math.min(100, (waterMl / 2500) * 100)}%` }} />
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {[250, 500].map((ml) => (
-              <button
-                key={ml}
-                type="button"
-                className="rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-fg"
-                onClick={() => addWater(ml)}
-              >
-                +{ml} мл
-              </button>
-            ))}
-          </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
+          <span className="text-xs text-muted tabular-nums">
+            Вода {(waterMl / 1000).toFixed(1)} / 2.5 л
+          </span>
+          {[250, 500].map((ml) => (
+            <button
+              key={ml}
+              type="button"
+              className="rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-fg"
+              onClick={() => addWater(ml)}
+            >
+              +{ml} мл
+            </button>
+          ))}
         </div>
       </div>
 
@@ -284,11 +214,6 @@ export function TodayScreen() {
         <div className="mt-4">
           <WeekDots doneDates={doneDates} />
         </div>
-        {advice && (
-          <p className="mt-4 border-t border-surface-2 pt-3 text-sm leading-relaxed text-muted">
-            {advice}
-          </p>
-        )}
       </div>
 
       {livePlan && liveCounts && (

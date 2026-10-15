@@ -9,7 +9,9 @@ import {
   YAxis,
 } from "recharts";
 import {
+  analyzeRecovery,
   analyzeWorkoutPerformance,
+  buildCoachBrief,
   calculateBurnedCalories,
   evaluateAchievements,
   metForExercise,
@@ -43,6 +45,7 @@ export function ProgressScreen() {
   const addMeasurement = useAppStore((s) => s.addMeasurement);
   const setPhoto = useAppStore((s) => s.setPhoto);
   const profile = useAppStore((s) => s.profile);
+  const waterByDate = useAppStore((s) => s.waterByDate);
 
   const [kg, setKg] = useState(profile.weightKg);
   const [waist, setWaist] = useState(80);
@@ -100,7 +103,27 @@ export function ProgressScreen() {
     return analyzeWorkoutPerformance({ workouts, exercises: exerciseCompletions });
   }, [workouts]);
 
+  const recoveryCard = useMemo(() => {
+    const today = todayKey();
+    const macros = dayMacros(
+      meals.filter((m) => m.date === today),
+      FOODS,
+    );
+    const waterMl = waterByDate[today] ?? 0;
+    const recovery = analyzeRecovery({
+      workouts,
+      intakeKcal: macros.kcal,
+      intakeProteinG: macros.protein,
+      targetKcal: profile.calorieGoal,
+      targetProteinG: profile.proteinGoal,
+      waterLogsMl: waterMl,
+      waterGoalMl: 2500,
+    });
+    return { recovery, brief: buildCoachBrief(recovery) };
+  }, [meals, workouts, waterByDate, profile.calorieGoal, profile.proteinGoal]);
+
   function onPick(slot: "before" | "after", file: File) {
+
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === "string") setPhoto(slot, reader.result);
@@ -122,6 +145,51 @@ export function ProgressScreen() {
           <p className="text-xs text-muted">За 7 дней</p>
           <p className="mt-1 text-2xl tabular-nums">{Math.round(burnStats.weekKcal)}</p>
           <p className="text-xs text-muted">ккал</p>
+        </div>
+      </section>
+
+      <section
+        className="mt-4 rounded-2xl bg-surface p-4 shadow-card"
+        aria-label={`Восстановление ${recoveryCard.recovery.recoveryScore} процентов`}
+      >
+        <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">
+          Восстановление · offline
+        </p>
+        <div className="mt-2 flex items-start gap-4">
+          <p className="font-display text-4xl tabular-nums text-accent">
+            {recoveryCard.recovery.recoveryScore}
+          </p>
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-fg">{recoveryCard.recovery.statusLabel}</p>
+            <p className="mt-1 text-sm leading-snug text-muted line-clamp-3">
+              {recoveryCard.brief.summary}
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 grid grid-cols-4 gap-2">
+          {(
+            [
+              ["Мышцы", recoveryCard.recovery.muscularReadiness],
+              ["Энергия", recoveryCard.recovery.energyRestoration],
+              ["Вода", recoveryCard.recovery.hydrationScore],
+              ["ЦНС", recoveryCard.recovery.cnsFreshness],
+            ] as const
+          ).map(([lbl, val]) => (
+            <div key={lbl} className="rounded-xl border border-border px-2 py-2 text-center">
+              <p className="font-display text-lg tabular-nums text-fg">{val}</p>
+              <p className="text-[10px] text-muted">{lbl}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {recoveryCard.brief.actionItems.map((item) => (
+            <span
+              key={item}
+              className="rounded-full border border-border bg-surface-2 px-2.5 py-1 text-[11px] text-muted"
+            >
+              {item}
+            </span>
+          ))}
         </div>
       </section>
 
