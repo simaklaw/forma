@@ -421,13 +421,22 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         </View>
 
         {restRemaining !== null && (
-          <View style={styles.restTimer} accessibilityLiveRegion="polite">
-            <Text style={styles.restLabel}>Отдых между подходами</Text>
+          <View
+            style={[styles.restTimer, { borderColor: colors.lime }]}
+            accessibilityLiveRegion="polite"
+            accessibilityLabel={`Отдых ${formatRestClock(restRemaining)}`}
+          >
+            <Text style={styles.restLabel}>ОТДЫХ · ОСТАЛОСЬ</Text>
             <Text style={styles.restVal}>{formatRestClock(restRemaining)}</Text>
             <View style={styles.restBarTrack}>
               <View style={[styles.restBarFill, { width: `${restPct}%` }]} />
             </View>
-            <TouchableOpacity onPress={skipRest} accessibilityRole="button">
+            <TouchableOpacity
+              onPress={skipRest}
+              accessibilityRole="button"
+              accessibilityLabel="Пропустить отдых"
+              hitSlop={{ top: 8, bottom: 8, left: 12, right: 12 }}
+            >
               <Text style={styles.restSkip}>пропустить</Text>
             </TouchableOpacity>
           </View>
@@ -603,24 +612,42 @@ function createStyles(colors: ColorTokens) {
     rirBtnTextActive: { color: colors.lime },
     restTimer: {
       marginTop: spacing.lg,
-      padding: 14,
-      borderRadius: radius.control,
-      borderWidth: 1,
-      borderColor: colors.line,
-      backgroundColor: colors.panel,
+      paddingVertical: 16,
+      paddingHorizontal: 16,
+      borderRadius: radius.card,
+      borderWidth: 1.5,
+      borderColor: colors.lime,
+      backgroundColor: colors.limeDim,
       alignItems: 'center'
     },
-    restLabel: { color: colors.paperFaint, fontSize: 11, fontFamily: fonts.body },
-    restVal: { color: colors.lime, fontSize: 28, fontFamily: fonts.mono, marginVertical: 6 },
+    restLabel: {
+      color: colors.lime,
+      fontSize: 11,
+      fontFamily: fonts.mono,
+      letterSpacing: 1
+    },
+    restVal: {
+      color: colors.paper,
+      fontSize: 40,
+      fontFamily: fonts.mono,
+      marginVertical: 8,
+      letterSpacing: 1
+    },
     restBarTrack: {
       width: '100%',
-      height: 4,
-      borderRadius: 2,
+      height: 6,
+      borderRadius: 3,
       backgroundColor: colors.line,
-      marginBottom: 8
+      marginBottom: 10,
+      overflow: 'hidden'
     },
-    restBarFill: { height: 4, borderRadius: 2, backgroundColor: colors.lime },
-    restSkip: { color: colors.paperDim, fontSize: 12, textDecorationLine: 'underline' },
+    restBarFill: { height: 6, borderRadius: 3, backgroundColor: colors.lime },
+    restSkip: {
+      color: colors.paperDim,
+      fontSize: 13,
+      fontFamily: fonts.bodySemi,
+      textDecorationLine: 'underline'
+    },
     sets: { marginTop: spacing.lg, gap: 6 },
     setRow: {
       flexDirection: 'row',

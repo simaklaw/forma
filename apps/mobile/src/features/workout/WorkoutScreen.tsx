@@ -382,36 +382,40 @@ export default function WorkoutScreen() {
       </ScrollView>
 
       <ScrollView contentContainerStyle={styles.body}>
-        <View style={[styles.streakRow, { backgroundColor: colors.panel, borderColor: colors.line }]}>
-          <Text style={{ fontSize: 20 }}>🔥</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.streakText, { color: colors.paperDim }]}>
-              {currentStreak > 0 ? (
-                <>
-                  <Text style={{ color: colors.ember, fontFamily: fonts.bodySemi }}>
-                    {currentStreak} {ruDayWord(currentStreak)}
-                  </Text>{' '}
-                  подряд без пропуска
-                </>
-              ) : (
-                'Пока нет серии — выполните любой день плана полностью, чтобы начать'
-              )}
-            </Text>
-            <View style={styles.ticks}>
-              {streakDays.map((status, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.tick,
-                    status === 'done'
-                      ? { backgroundColor: colors.lime }
-                      : status === 'today-in-progress'
-                        ? { backgroundColor: colors.ember }
-                        : { backgroundColor: colors.line }
-                  ]}
-                />
-              ))}
-            </View>
+        <View
+          style={[styles.streakRow, { backgroundColor: colors.panel, borderColor: colors.line }]}
+          accessibilityLabel={
+            currentStreak > 0
+              ? `Серия ${currentStreak} ${ruDayWord(currentStreak)} подряд`
+              : 'Серии пока нет'
+          }
+        >
+          <Text style={[styles.streakText, { color: colors.paperDim, flex: 1 }]} numberOfLines={1}>
+            {currentStreak > 0 ? (
+              <>
+                <Text style={{ color: colors.ember, fontFamily: fonts.bodySemi }}>
+                  {currentStreak} {ruDayWord(currentStreak)}
+                </Text>
+                {' · серия'}
+              </>
+            ) : (
+              'Серия: начните с полного дня'
+            )}
+          </Text>
+          <View style={styles.ticks}>
+            {streakDays.map((status, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.tick,
+                  status === 'done'
+                    ? { backgroundColor: colors.lime }
+                    : status === 'today-in-progress'
+                      ? { backgroundColor: colors.ember }
+                      : { backgroundColor: colors.line }
+                ]}
+              />
+            ))}
           </View>
         </View>
 
