@@ -14,17 +14,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Inspect archive without extracting into repository
+        with:
+          fetch-depth: 0
+      - name: Inspect archive and git artifacts
         shell: bash
         run: |
           set -euo pipefail
           archive="For forma1.zip"
-          test -f "$archive" || { echo "::error::Archive not found: $archive"; exit 1; }
-          echo "=== Archive metadata ==="
-          ls -lh "$archive"
-          echo "=== Archive entries (first 500) ==="
-          unzip -Z1 "$archive" | sed -n '1,500p'
-          echo "=== Entry count ==="
-          unzip -Z1 "$archive" | wc -l
-          echo "=== Top-level path summary ==="
-          unzip -Z1 "$archive" | awk -F/ '{print $1}' | sort | uniq -c | sort -nr | head -80
+          test -f "$archive"
+          tmp="$(mktemp -d)"
+          unzip -q "$archive" -d "$tmp"
+          echo "=== ZIP entries ==="
+          unzip -Z1 "$archive"
+          echo "=== Bundle verification ==="
+          git bundle verify "$tmp/feat-dataset-instructions-local-media.bundle"
+          echo "=== Bundle refs ==="
+          git bundle list-heads "$tmp/feat-dataset-instructions-local-media.bundle"
+          echo "=== Bundle branch commit ==="
+          git fetch "$tmp/feat-dataset-instructions-local-media.bundle" feat/dataset-instructions-local-media:refs/remotes/import/feat-dataset-instructions-local-media
+          git log -1 --format='%H%n%P%n%s%n%ci' refs/remotes/import/feat-dataset-instructions-local-media
+          echo "=== Patch summary ==="
+          git apply --stat "$tmp/feat-dataset-instructions-code-only.patch"
+          echo "=== Patch paths ==="
+          git apply --numstat "$tmp/feat-dataset-instructions-code-only.patch"
