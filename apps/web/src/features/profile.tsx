@@ -1,5 +1,7 @@
 import { Lock } from "lucide-react";
+import { Box } from "@/components/ui/box";
 import { Button } from "@/components/ui/button";
+import { Tag, Tags } from "@/components/ui/tag";
 import { EQUIP_LABEL, GOAL_LABEL, PRESENT_LABEL } from "@/lib/forma";
 import { useAppStore } from "@/lib/store";
 import type { ThemeMode } from "@/lib/types";
@@ -20,7 +22,7 @@ export function ProfileScreen() {
     <div className="px-5 pb-8 pt-10">
       <h1 className="font-display text-2xl tracking-tight">Профиль</h1>
 
-      <section className="mt-6 rounded-2xl bg-surface p-4 shadow-card">
+      <Box className="mt-6">
         <p className="text-sm text-muted">Имя</p>
         <p className="font-display text-xl">{profile.name || "Друг"}</p>
         <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
@@ -56,9 +58,9 @@ export function ProfileScreen() {
             {profile.carbsGoal}
           </p>
         </div>
-      </section>
+      </Box>
 
-      <section className="mt-4 rounded-2xl bg-surface p-4 shadow-card">
+      <Box className="mt-4">
         <p className="mb-3 text-sm font-medium">Тема</p>
         <div className="flex gap-2">
           {themes.map((t) => (
@@ -75,9 +77,9 @@ export function ProfileScreen() {
             </button>
           ))}
         </div>
-      </section>
+      </Box>
 
-      <section className="mt-4 rounded-2xl border border-dashed border-border bg-surface/50 p-4">
+      <Box className="mt-4" variant="dashed">
         <div className="flex items-start gap-3">
           <Lock className="mt-0.5 size-4 text-muted" />
           <div>
@@ -87,7 +89,7 @@ export function ProfileScreen() {
             </p>
           </div>
         </div>
-      </section>
+      </Box>
 
       <Button
         variant="danger"
