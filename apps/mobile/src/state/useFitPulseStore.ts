@@ -231,7 +231,7 @@ export function mergePersistedAppState(persisted: unknown, current: AppStore): A
   return {
     ...current,
     ...p,
-    profile: mergeProfile(current.profile, p.profile),
+    profile: mergeProfile(current.profile, p.profile ?? {}),
     customFoods: Array.isArray(p.customFoods) ? p.customFoods : current.customFoods,
     savedMeals: Array.isArray(p.savedMeals) ? p.savedMeals : current.savedMeals,
     setLogs: Array.isArray(p.setLogs) ? p.setLogs : current.setLogs,
