@@ -486,7 +486,6 @@ export default function WorkoutScreen() {
                 <View style={styles.logNameRow}>
                   <Text style={[styles.logName, { color: colors.paper }]} numberOfLines={1}>
                     {ex.name}
-                    
                   </Text>
                   {isCurrent ? (
                     <View style={[styles.nowBadge, { backgroundColor: colors.lime }]}>
