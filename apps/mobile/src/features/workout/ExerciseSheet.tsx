@@ -14,6 +14,7 @@ import { VoiceCuesEngine } from '@/engines/VoiceCuesEngine';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { toDateKey, roundToStep } from '@/engines/WorkoutStats';
 import { formatRestClock, techniqueCuesFromNote } from '@/lib/techniqueCues';
+import { EXERCISE_GIF_MANIFEST } from './exerciseGifManifest.generated';
 import { useExerciseReference } from './useExerciseReference';
 import { ActiveSessionController, dayIdFromTemplate } from './session/ActiveSessionController';
 import { sequentialStepInfo } from './session/sequentialStep';
@@ -54,6 +55,19 @@ function remainingRestSeconds(restEndsAtMs: number | null | undefined, nowMs = D
   const sec = Math.ceil((restEndsAtMs - nowMs) / 1000);
   return sec > 0 ? sec : null;
 }
+
+function datasetMetaForExercise(name: string) {
+  const n = name.trim().toLowerCase();
+  const exact = EXERCISE_GIF_MANIFEST.find(
+    (e) => e.sourceName.toLowerCase() === n || e.id.replace(/^lib-/, '').replace(/-/g, ' ') === n
+  );
+  if (exact) return exact;
+  return (
+    EXERCISE_GIF_MANIFEST.find((e) => n.includes(e.sourceName.toLowerCase()) || e.sourceName.toLowerCase().includes(n)) ??
+    null
+  );
+}
+
 
 const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
   ({ exercise, dayId, dayExercises, onFinished, onGoToExpected, onDayComplete }, ref) => {
@@ -339,6 +353,35 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           <Text style={styles.noteText}>{exercise.note}</Text>
         </View>
 
+        {(() => {
+          const meta = datasetMetaForExercise(exercise.name);
+          if (!meta) return null;
+          const steps = meta.instructionsEn ?? [];
+          const secondary = meta.secondaryMuscles ?? [];
+          if (!steps.length && !secondary.length) return null;
+          return (
+            <View style={styles.datasetBlock}>
+              {secondary.length > 0 ? (
+                <Text style={styles.datasetMeta}>
+                  Secondary: {secondary.join(', ')}
+                  {meta.target ? ` · target ${meta.target}` : ''}
+                  {meta.bodyPart ? ` · ${meta.bodyPart}` : ''}
+                </Text>
+              ) : null}
+              {steps.length > 0 ? (
+                <View style={styles.steps}>
+                  <Text style={styles.stepsTitle}>Steps (EN)</Text>
+                  {steps.map((step, i) => (
+                    <Text key={i} style={styles.stepLine}>
+                      {i + 1}. {step}
+                    </Text>
+                  ))}
+                </View>
+              ) : null}
+            </View>
+          );
+        })()}
+
         <Text style={styles.rirLabel}>Вес и повторы для следующего подхода</Text>
         <View style={styles.stepperRow}>
           <View style={styles.stepperBlock}>
@@ -575,6 +618,35 @@ function createStyles(colors: ColorTokens) {
       borderColor: colors.line
     },
     noteText: { color: colors.paperDim, fontFamily: fonts.body, fontSize: 13, lineHeight: 18 },
+    datasetBlock: {
+      marginTop: spacing.md,
+      padding: 12,
+      borderRadius: radius.control,
+      borderWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: colors.panel
+    },
+    datasetMeta: {
+      color: colors.paperFaint,
+      fontFamily: fonts.mono,
+      fontSize: 11,
+      marginBottom: 8
+    },
+    steps: { gap: 4 },
+    stepsTitle: {
+      color: colors.lime,
+      fontFamily: fonts.bodySemi,
+      fontSize: 12,
+      marginBottom: 4,
+      letterSpacing: 0.4
+    },
+    stepLine: {
+      color: colors.paperDim,
+      fontFamily: fonts.body,
+      fontSize: 13,
+      lineHeight: 18,
+      marginBottom: 4
+    },
     rirLabel: {
       marginTop: spacing.lg,
       marginBottom: 8,

@@ -1,10 +1,14 @@
 /**
- * Match Forma imported library (free-exercise-db) to hasaneyldrm/exercises-dataset GIFs.
- * Writes apps/mobile/src/features/workout/exerciseGifManifest.generated.ts
+ * Match Forma imported library (free-exercise-db) to hasaneyldrm/exercises-dataset.
+ * Writes exerciseGifManifest.generated.ts and optionally copies GIF + JPEG thumbs
+ * into the monorepo for offline use.
  *
  * Usage:
- *   node scripts/import-exercise-gifs.mjs [/path/to/exercises.json]
- * Default URL fetch if path omitted (needs network).
+ *   node scripts/import-exercise-gifs.mjs [/path/to/exercises.json] [--download]
+ *
+ * --download  fetch matched GIF + thumb into:
+ *   apps/web/public/exercises/dataset/{id}.gif|.jpg
+ *   apps/mobile/assets/exercises/dataset/{id}.gif|.jpg
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -19,11 +23,14 @@ const OUT_FILE = path.join(
   ROOT,
   'apps/mobile/src/features/workout/exerciseGifManifest.generated.ts'
 );
+const WEB_MEDIA_DIR = path.join(ROOT, 'apps/web/public/exercises/dataset');
+const MOBILE_MEDIA_DIR = path.join(ROOT, 'apps/mobile/assets/exercises/dataset');
 
 const RAW_BASE =
   'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/';
+const ATTR = '© Gym visual — https://gymvisual.com/';
+const SRC = 'https://github.com/hasaneyldrm/exercises-dataset';
 
-/** Exact or near-exact aliases when fuzzy score is low. */
 const ALIASES = {
   pushups: 'push-up',
   'push-ups': 'push-up',
@@ -74,8 +81,7 @@ async function loadHasan(argPath) {
   if (argPath && fs.existsSync(argPath)) {
     return JSON.parse(fs.readFileSync(argPath, 'utf8'));
   }
-  const url =
-    'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/data/exercises.json';
+  const url = `${RAW_BASE}data/exercises.json`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`fetch ${url} → ${res.status}`);
   return res.json();
@@ -97,67 +103,193 @@ function pickBest(nameEn, hasan) {
       best = e;
     }
   }
-  const threshold = aliasTarget ? 0.6 : 0.67;
+  const threshold = aliasTarget ? 0.5 : 0.52;
   if (!best || bestScore < threshold) return null;
   return { entry: best, score: bestScore };
 }
 
-function main() {
-  const argPath = process.argv[2];
-  return loadHasan(argPath).then((hasan) => {
-    const library = parseLibrary(fs.readFileSync(LIBRARY_FILE, 'utf8'));
-    const manifest = [];
-    for (const lib of library) {
-      const hit = pickBest(lib.nameEn, hasan);
-      if (!hit) continue;
-      const rel = hit.entry.gif_url?.replace(/^\//, '') ?? '';
-      if (!rel) continue;
-      const imageRel = (hit.entry.image ?? '').replace(/^\//, '');
-      manifest.push({
-        id: lib.id,
-        gifUrl: `${RAW_BASE}${rel}`,
-        thumbUrl: imageRel ? `${RAW_BASE}${imageRel}` : undefined,
-        sourceName: hit.entry.name,
-        matchScore: Math.round(hit.score * 100) / 100,
-        instructionsRu: hit.entry.instructions?.ru ?? null,
-        attribution: hit.entry.attribution ?? '© Gym visual — https://gymvisual.com/',
-        sourceUrl: 'https://github.com/hasaneyldrm/exercises-dataset',
-      });
-    }
-    manifest.sort((a, b) => a.id.localeCompare(b.id));
+function stepsEn(entry) {
+  const steps = entry.instruction_steps?.en;
+  if (Array.isArray(steps) && steps.length) return steps.map(String);
+  const blob = entry.instructions?.en;
+  if (typeof blob === 'string' && blob.trim()) {
+    return blob
+      .split(/(?<=[.!?])\s+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
 
-    const body = `/**
+async function downloadFile(url, dest) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`download ${url} → ${res.status}`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
+  fs.writeFileSync(dest, buf);
+  return buf.length;
+}
+
+async function main() {
+  const args = process.argv.slice(2);
+  const doDownload = args.includes('--download');
+  const argPath = args.find((a) => !a.startsWith('--'));
+
+  const hasan = await loadHasan(argPath);
+  const library = parseLibrary(fs.readFileSync(LIBRARY_FILE, 'utf8'));
+  const manifest = [];
+  let downloaded = 0;
+  let downloadBytes = 0;
+
+  for (const lib of library) {
+    const hit = pickBest(lib.nameEn, hasan);
+    if (!hit) continue;
+    const relGif = (hit.entry.gif_url ?? '').replace(/^\//, '');
+    if (!relGif) continue;
+    const relImg = (hit.entry.image ?? '').replace(/^\//, '');
+    const remoteGif = `${RAW_BASE}${relGif}`;
+    const remoteThumb = relImg ? `${RAW_BASE}${relImg}` : undefined;
+
+    let localGifPath;
+    let localThumbPath;
+    if (doDownload) {
+      const safeId = lib.id.replace(/[^a-z0-9-]/gi, '_');
+      const webGif = path.join(WEB_MEDIA_DIR, `${safeId}.gif`);
+      const webJpg = path.join(WEB_MEDIA_DIR, `${safeId}.jpg`);
+      const mobGif = path.join(MOBILE_MEDIA_DIR, `${safeId}.gif`);
+      const mobJpg = path.join(MOBILE_MEDIA_DIR, `${safeId}.jpg`);
+      try {
+        const n = await downloadFile(remoteGif, webGif);
+        fs.mkdirSync(MOBILE_MEDIA_DIR, { recursive: true });
+        fs.copyFileSync(webGif, mobGif);
+        downloadBytes += n;
+        localGifPath = `/exercises/dataset/${safeId}.gif`;
+        downloaded += 1;
+        if (remoteThumb) {
+          const n2 = await downloadFile(remoteThumb, webJpg);
+          fs.copyFileSync(webJpg, mobJpg);
+          downloadBytes += n2;
+          localThumbPath = `/exercises/dataset/${safeId}.jpg`;
+        }
+        process.stdout.write('.');
+      } catch (err) {
+        console.warn(`\nskip media ${lib.id}: ${err.message}`);
+      }
+    }
+
+    manifest.push({
+      id: lib.id,
+      gifUrl: remoteGif,
+      thumbUrl: remoteThumb,
+      localGifPath: localGifPath ?? null,
+      localThumbPath: localThumbPath ?? null,
+      sourceName: hit.entry.name,
+      matchScore: Math.round(hit.score * 100) / 100,
+      instructionsEn: stepsEn(hit.entry),
+      bodyPart: hit.entry.body_part ?? null,
+      target: hit.entry.target ?? null,
+      muscleGroup: hit.entry.muscle_group ?? null,
+      equipment: hit.entry.equipment ?? null,
+      secondaryMuscles: Array.isArray(hit.entry.secondary_muscles)
+        ? hit.entry.secondary_muscles
+        : [],
+      category: hit.entry.category ?? null,
+      attribution: hit.entry.attribution ?? ATTR,
+      sourceUrl: SRC,
+    });
+  }
+
+  manifest.sort((a, b) => a.id.localeCompare(b.id));
+
+  const body = `/**
  * AUTO-GENERATED by scripts/import-exercise-gifs.mjs — do not edit by hand.
- * GIF/thumb remote URLs matched from hasaneyldrm/exercises-dataset (media © Gym visual).
- * Metadata matched to free-exercise-db library ids (lib-*).
+ * Matched from hasaneyldrm/exercises-dataset (media © Gym visual).
+ * Metadata linked to free-exercise-db library ids (lib-*).
  *
- * Re-run: node scripts/import-exercise-gifs.mjs [/path/to/exercises.json]
+ * Re-run:
+ *   node scripts/import-exercise-gifs.mjs [--download]
  */
 
 export interface ExerciseGifManifestEntry {
   id: string;
+  /** Remote CDN GIF (always set). Prefer localGifPath when present. */
   gifUrl: string;
   thumbUrl?: string;
+  /** App-relative path under web public, e.g. /exercises/dataset/lib-plank.gif */
+  localGifPath: string | null;
+  localThumbPath: string | null;
   sourceName: string;
   matchScore: number;
-  instructionsRu: string | null;
+  /** Step-by-step English cues from the dataset. */
+  instructionsEn: string[];
+  bodyPart: string | null;
+  target: string | null;
+  muscleGroup: string | null;
+  equipment: string | null;
+  secondaryMuscles: string[];
+  category: string | null;
   attribution: string;
   sourceUrl: string;
 }
 
 export const EXERCISE_GIF_MANIFEST: ExerciseGifManifestEntry[] = ${JSON.stringify(
-      manifest,
-      null,
-      2
-    )};
+    manifest,
+    null,
+    2
+  )};
 
 export function gifEntryForLibraryId(id: string): ExerciseGifManifestEntry | undefined {
   return EXERCISE_GIF_MANIFEST.find((e) => e.id === id);
 }
+
+/** Prefer offline local path, else remote URL. */
+export function resolveGifUri(entry: ExerciseGifManifestEntry): string {
+  return entry.localGifPath ?? entry.gifUrl;
+}
+
+export function resolveThumbUri(entry: ExerciseGifManifestEntry): string | undefined {
+  return entry.localThumbPath ?? entry.thumbUrl;
+}
 `;
-    fs.writeFileSync(OUT_FILE, body, 'utf8');
-    console.log(`Wrote ${manifest.length} GIF mappings → ${path.relative(ROOT, OUT_FILE)}`);
-  });
+
+  fs.writeFileSync(OUT_FILE, body, 'utf8');
+
+  // Mobile Metro require map for offline GIF/thumb modules
+  const assetOut = path.join(
+    ROOT,
+    'apps/mobile/src/features/workout/exerciseDatasetAssets.generated.ts'
+  );
+  const gifFiles = fs.existsSync(MOBILE_MEDIA_DIR)
+    ? fs.readdirSync(MOBILE_MEDIA_DIR).filter((f) => f.endsWith('.gif'))
+    : [];
+  const assetLines = [
+    '/** AUTO-GENERATED companion to import-exercise-gifs.mjs — local dataset media. */',
+    '/* eslint-disable @typescript-eslint/no-require-imports */',
+    '',
+    'export const DATASET_GIF_MODULES: Record<string, number> = {',
+  ];
+  for (const f of gifFiles.sort()) {
+    const id = f.replace(/\.gif$/, '');
+    assetLines.push(`  '${id}': require('../../../assets/exercises/dataset/${f}'),`);
+  }
+  assetLines.push('};', '', 'export const DATASET_THUMB_MODULES: Record<string, number> = {');
+  for (const f of gifFiles.sort()) {
+    const id = f.replace(/\.gif$/, '');
+    const jpg = `${id}.jpg`;
+    if (fs.existsSync(path.join(MOBILE_MEDIA_DIR, jpg))) {
+      assetLines.push(`  '${id}': require('../../../assets/exercises/dataset/${jpg}'),`);
+    }
+  }
+  assetLines.push('};', '');
+  fs.writeFileSync(assetOut, assetLines.join('\n'), 'utf8');
+  console.log(`Wrote require map ${path.relative(ROOT, assetOut)} (${gifFiles.length} gifs)`);
+
+  console.log(
+    `\nWrote ${manifest.length} mappings → ${path.relative(ROOT, OUT_FILE)}` +
+      (doDownload
+        ? ` | downloaded ${downloaded} gifs (~${(downloadBytes / 1024 / 1024).toFixed(1)} MB)`
+        : ' | no media download (pass --download)')
+  );
 }
 
 main().catch((err) => {

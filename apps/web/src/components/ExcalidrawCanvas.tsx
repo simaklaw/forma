@@ -15,6 +15,7 @@
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import type { ExcalidrawImperativeAPI, ExcalidrawElement } from "@excalidraw/excalidraw";
+import { ExerciseReferencePanel, type ExerciseReferenceMeta } from "@/components/ExerciseReferencePanel";
 
 // Lazy load Excalidraw to reduce initial bundle size
 let ExcalidrawComponent: any = null;
@@ -61,6 +62,9 @@ export interface ExcalidrawCanvasProps {
   
   /** Whether to show loading state */
   showLoading?: boolean;
+
+  /** Optional offline exercise GIF + steps beside the canvas */
+  referenceMeta?: ExerciseReferenceMeta | null;
 }
 
 /**
@@ -68,7 +72,7 @@ export interface ExcalidrawCanvasProps {
  */
 export const ExcalidrawCanvas = forwardRef<ExcalidrawImperativeAPI, ExcalidrawCanvasProps>(
   (props, ref) => {
-    const { initialData, onChange, onElementClick, UIOptions, className, showLoading = true } = props;
+    const { initialData, onChange, onElementClick, UIOptions, className, showLoading = true, referenceMeta } = props;
     const apiRef = useRef<ExcalidrawImperativeAPI | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -135,21 +139,24 @@ export const ExcalidrawCanvas = forwardRef<ExcalidrawImperativeAPI, ExcalidrawCa
     }
 
     return (
-      <ExcalidrawComponent
-        ref={apiRef}
-        initialData={initialData}
-        onChange={onChange}
-        UIOptions={{
-          canvasActions: {
-            save: false,
-            load: false,
-            export: true,
-            clear: true,
-            ...UIOptions?.canvasActions,
-          },
-        }}
-        className={className}
-      />
+      <div className={referenceMeta ? "grid gap-3 lg:grid-cols-[1fr_280px]" : undefined}>
+        <ExcalidrawComponent
+          ref={apiRef}
+          initialData={initialData}
+          onChange={onChange}
+          UIOptions={{
+            canvasActions: {
+              save: false,
+              load: false,
+              export: true,
+              clear: true,
+              ...UIOptions?.canvasActions,
+            },
+          }}
+          className={className}
+        />
+        {referenceMeta ? <ExerciseReferencePanel meta={referenceMeta} /> : null}
+      </div>
     );
   }
 );
