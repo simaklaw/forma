@@ -44,15 +44,3 @@ jest.mock('expo-av', () => ({
     },
   },
 }));
-
-jest.mock('expo-file-system', () => ({
-  cacheDirectory: '/tmp/cache/',
-  makeDirectoryAsync: jest.fn(async () => {}),
-  getInfoAsync: jest.fn(async () => ({ exists: false, isDirectory: false })),
-  downloadAsync: jest.fn(async () => ({ status: 404 })),
-  moveAsync: jest.fn(async () => {}),
-  deleteAsync: jest.fn(async () => {}),
-  readDirectoryAsync: jest.fn(async () => []),
-  writeAsStringAsync: jest.fn(async () => {}),
-  readAsStringAsync: jest.fn(async () => ''),
-}));
