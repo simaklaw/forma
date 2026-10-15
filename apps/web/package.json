@@ -13,6 +13,7 @@
     "generate:routes": "node ../../scripts/generate-web-route-tree.mjs"
   },
   "dependencies": {
+    "@excalidraw/excalidraw": "^0.18.1",
     "@forma/core": "workspace:*",
     "@forma/workout-domain": "workspace:*",
     "@mlc-ai/web-llm": "^0.2.85",
