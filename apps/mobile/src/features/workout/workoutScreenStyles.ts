@@ -87,15 +87,16 @@ export const workoutScreenStyles = StyleSheet.create({
   streakRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
     borderWidth: 1,
-    borderRadius: radius.card,
-    padding: spacing.md,
-    marginBottom: spacing.md
+    borderRadius: radius.control,
+    paddingVertical: 10,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.sm
   },
   streakText: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18 },
-  ticks: { flexDirection: 'row', gap: 4, marginTop: 8 },
-  tick: { width: 18, height: 6, borderRadius: 3 },
+  ticks: { flexDirection: 'row', gap: 4 },
+  tick: { width: 14, height: 6, borderRadius: 3 },
   sectionHead: {
     flexDirection: 'row',
     justifyContent: 'space-between',
