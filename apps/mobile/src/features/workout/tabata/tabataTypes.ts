@@ -28,3 +28,11 @@ export const FAT_BURN_TABATA: TabataConfig = {
 export function totalSessionSeconds(c: TabataConfig): number {
   return c.prepareSec + c.rounds * (c.workSec + c.restSec) - c.restSec;
 }
+
+export interface TabataSnapshot {
+  phase: TabataPhase;
+  /** 1-based round index during work/rest */
+  round: number;
+  remainingSec: number;
+  running: boolean;
+}

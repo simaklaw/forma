@@ -34,17 +34,11 @@ function workoutsFromSetLogs(
     .map((date) => ({ date, completed: true }));
 }
 
-function selectOverallPersonalRecord(records: Record<number, number>): number | null {
-  const values = Object.values(records).filter((w) => Number.isFinite(w) && w > 0);
-  return values.length ? Math.max(...values) : null;
-}
-
 export default function ProgressScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const setLogs = useFitPulseStore((s) => s.setLogs);
-  const personalRecords = useFitPulseStore((s) => s.personalRecords);
   const profile = useFitPulseStore((s) => s.profile);
   const waterGlasses = useFitPulseStore((s) => s.waterGlasses);
   const allMeals = useFitPulseStore((s) => s.todayMeals);
@@ -110,9 +104,7 @@ export default function ProgressScreen() {
   const recovery = useMemo(
     () =>
       analyzeRecovery({
-        workouts: domainWorkouts,
-        sleepHoursLastNight: null,
-        hrvTrend: null
+        workouts: domainWorkouts
       }),
     [domainWorkouts]
   );
@@ -120,11 +112,9 @@ export default function ProgressScreen() {
   const badges = useMemo(
     () =>
       evaluateAchievements({
-        totalWorkouts: domainWorkouts.filter((w) => w.completed).length,
-        currentStreak: streak,
-        personalRecordKg: selectOverallPersonalRecord(personalRecords)
+        workouts: domainWorkouts.map((w) => ({ date: w.date, completed: w.completed }))
       }),
-    [domainWorkouts, streak, personalRecords]
+    [domainWorkouts]
   );
 
   return (

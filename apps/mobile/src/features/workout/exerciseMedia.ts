@@ -20,7 +20,8 @@ export type ExerciseMediaKey =
   | 'row-band'
   | 'hip-thrust'
   | 'shoulder-press'
-  | 'side-plank';
+  | 'side-plank'
+  | 'stomach-vacuum';
 
 /** Static previews — all 12 keys have jpg next to the mp4 in web public. */
 export const EXERCISE_THUMBNAILS: Partial<Record<ExerciseMediaKey, number>> = {
@@ -38,7 +39,7 @@ export const EXERCISE_THUMBNAILS: Partial<Record<ExerciseMediaKey, number>> = {
   'side-plank': require('../../../assets/exercises/side-plank.jpg')
 };
 
-/** Technique demo clips — all 12 home media keys. */
+/** Technique demo clips. Add stomach-vacuum.mp4 under assets/exercises when ready. */
 export const EXERCISE_VIDEOS: Partial<Record<ExerciseMediaKey, number>> = {
   pushup: require('../../../assets/exercises/pushup.mp4'),
   squat: require('../../../assets/exercises/squat.mp4'),

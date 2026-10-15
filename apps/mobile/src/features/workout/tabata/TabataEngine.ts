@@ -4,15 +4,9 @@
  */
 import { AppState, type NativeEventSubscription } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import type { TabataConfig, TabataPhase } from './tabataTypes';
+import type { TabataConfig, TabataPhase, TabataSnapshot } from './tabataTypes';
 
-export type TabataSnapshot = {
-  phase: TabataPhase;
-  /** 1-based round index during work/rest */
-  round: number;
-  remainingSec: number;
-  running: boolean;
-};
+export type { TabataSnapshot };
 
 type Listener = (snap: TabataSnapshot) => void;
 
