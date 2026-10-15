@@ -90,16 +90,32 @@ function isBodyMeasurementType(value: unknown): value is BodyMeasurementType {
   );
 }
 
+function isDateKey(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [y, m, d] = value.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return (
+    dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d
+  );
+}
+
+/** Valid list, empty list, or undefined when the payload is malformed. */
 function asBodyMeasurements(value: unknown): BodyMeasurementEntry[] | undefined {
   if (!Array.isArray(value)) return undefined;
+  if (value.length === 0) return [];
   const out: BodyMeasurementEntry[] = [];
+  const seen = new Set<string>();
   for (const item of value) {
-    if (!item || typeof item !== 'object') continue;
+    if (!item || typeof item !== 'object') return undefined;
     const row = item as Record<string, unknown>;
-    if (typeof row.id !== 'string') continue;
-    if (!isBodyMeasurementType(row.type)) continue;
-    if (typeof row.valueCm !== 'number' || !Number.isFinite(row.valueCm)) continue;
-    if (typeof row.dateKey !== 'string') continue;
+    if (typeof row.id !== 'string' || row.id.length === 0) return undefined;
+    if (!isBodyMeasurementType(row.type)) return undefined;
+    if (typeof row.valueCm !== 'number' || !Number.isFinite(row.valueCm) || row.valueCm <= 0) {
+      return undefined;
+    }
+    if (typeof row.dateKey !== 'string' || !isDateKey(row.dateKey)) return undefined;
+    if (seen.has(row.id)) return undefined;
+    seen.add(row.id);
     out.push({
       id: row.id,
       type: row.type,
@@ -107,7 +123,7 @@ function asBodyMeasurements(value: unknown): BodyMeasurementEntry[] | undefined 
       dateKey: row.dateKey
     });
   }
-  return out;
+  return out.slice(-BODY_MEASUREMENT_LIMIT);
 }
 
 function generateId(): string {
@@ -475,6 +491,12 @@ export const useFitPulseStore = create<AppStore>()(
       },
 
       hydrate: (data) => {
+        if (data && typeof data === 'object' && 'bodyMeasurements' in data) {
+          const raw = (data as { bodyMeasurements?: unknown }).bodyMeasurements;
+          if (raw !== undefined && asBodyMeasurements(raw) === undefined) {
+            throw new Error('Backup file has none of the expected fields');
+          }
+        }
         set((state) => mergePersistedAppState(data, state));
       }
     }),
