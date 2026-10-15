@@ -11,7 +11,6 @@ import ExerciseSheet from './ExerciseSheet';
 import WorkoutPreviewSheet from './WorkoutPreviewSheet';
 import CompletionFeedbackSheet from './CompletionFeedbackSheet';
 import { summarizeWorkoutResult, type WorkoutResult } from './workoutResult';
-import { RecoveryBanner } from './RecoveryBanner';
 import { WorkoutCoachCard } from './WorkoutCoachCard';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { useSessionFeedbackStore } from '@/state/useSessionFeedbackStore';
@@ -337,8 +336,6 @@ export default function WorkoutScreen() {
           </TouchableOpacity>
         </View>
       </View>
-
-      <RecoveryBanner />
 
       {SHOW_GYM_MODE_TOGGLE && (
         <View style={styles.modeTabs} accessibilityRole="tablist">

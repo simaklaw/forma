@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   analyzeRecovery,
+  buildCoachBrief,
   estimateDailyBurns,
   estimateBurnFromSetLogs,
   evaluateAchievements,
@@ -101,13 +102,20 @@ export default function ProgressScreen() {
     [profile.weight, setLogs, weekKeys, exerciseMetKeys, exerciseBurnMeta]
   );
 
-  const recovery = useMemo(
-    () =>
-      analyzeRecovery({
-        workouts: domainWorkouts
-      }),
-    [domainWorkouts]
-  );
+  const recovery = useMemo(() => {
+    const meals = selectDailyTotals(todayMeals);
+    return analyzeRecovery({
+      workouts: domainWorkouts,
+      intakeKcal: meals.kcal,
+      intakeProteinG: meals.protein,
+      targetKcal: targetSnapshot?.target,
+      targetProteinG: targetSnapshot?.proteinTarget,
+      waterLogsMl: waterGlasses * GLASS_ML,
+      waterGoalMl: 2500
+    });
+  }, [domainWorkouts, todayMeals, targetSnapshot, waterGlasses]);
+
+  const coachBrief = useMemo(() => buildCoachBrief(recovery), [recovery]);
 
   const badges = useMemo(
     () =>
@@ -138,6 +146,69 @@ export default function ProgressScreen() {
             </Text>
             <Text style={[styles.statLbl, { color: colors.paperFaint }]}>ккал сегодня</Text>
           </View>
+        </View>
+
+        <View
+          style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}
+          accessibilityRole="summary"
+          accessibilityLabel={`Восстановление ${recovery.recoveryScore} процентов, ${recovery.statusLabel}`}
+        >
+          <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>ВОССТАНОВЛЕНИЕ · OFFLINE</Text>
+          <View style={styles.recoveryRow}>
+            <Text
+              style={[
+                styles.score,
+                {
+                  color:
+                    coachBrief.readinessStatus === 'rest_required' || coachBrief.readinessStatus === 'fatigued'
+                      ? colors.ember
+                      : colors.lime
+                }
+              ]}
+            >
+              {recovery.recoveryScore}
+            </Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.status, { color: colors.paper }]}>{recovery.statusLabel}</Text>
+              <Text style={[styles.hint, { color: colors.paperDim }]} numberOfLines={3}>
+                {coachBrief.summary}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.pillars}>
+            {(
+              [
+                ['Мышцы', recovery.muscularReadiness],
+                ['Энергия', recovery.energyRestoration],
+                ['Вода', recovery.hydrationScore],
+                ['ЦНС', recovery.cnsFreshness]
+              ] as const
+            ).map(([lbl, val]) => (
+              <View key={lbl} style={[styles.pillar, { borderColor: colors.line }]}>
+                <Text style={[styles.pillarVal, { color: colors.paper }]}>{val}</Text>
+                <Text style={[styles.pillarLbl, { color: colors.paperFaint }]}>{lbl}</Text>
+              </View>
+            ))}
+          </View>
+          {coachBrief.actionItems.length > 0 ? (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: spacing.md }}>
+              {coachBrief.actionItems.map((item) => (
+                <View
+                  key={item}
+                  style={{
+                    borderRadius: radius.pill,
+                    borderWidth: 1,
+                    borderColor: colors.lineStrong,
+                    paddingHorizontal: 10,
+                    paddingVertical: 5,
+                    backgroundColor: colors.panelRaised
+                  }}
+                >
+                  <Text style={{ color: colors.paperDim, fontSize: 11, fontFamily: fonts.mono }}>{item}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
         </View>
 
         <ActivityCalendar setLogs={setLogs} allMeals={allMeals} />
