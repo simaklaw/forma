@@ -22,7 +22,7 @@ import {
 } from '@/engines/MetabolicEngine';
 import { SetLogEntry, DayProgress, toDateKey, pruneOldSetLogs } from '@/engines/WorkoutStats';
 import { uuidv7 } from '@/features/workout/data/ids';
-import type { MuscleKey } from '@/components/MuscleMap';
+import { MUSCLE_LABELS, type MuscleKey } from '@/components/MuscleMap';
 import type { ImportedActivity } from '@forma/core';
 
 export type { SetLogEntry, DayProgress } from '@/engines/WorkoutStats';
@@ -157,8 +157,26 @@ function emptyProfile(): StoredProfile {
   };
 }
 
+function asFocusAreas(value: unknown): MuscleKey[] {
+  if (!Array.isArray(value)) return [];
+  const allowed = MUSCLE_LABELS as Record<string, string>;
+  const out: MuscleKey[] = [];
+  for (const item of value) {
+    if (typeof item === 'string' && item in allowed && !out.includes(item as MuscleKey)) {
+      out.push(item as MuscleKey);
+    }
+  }
+  return out;
+}
+
 function mergeProfile(current: StoredProfile, patch: Partial<StoredProfile>): StoredProfile {
-  return { ...current, ...patch };
+  const next = { ...current, ...patch };
+  if ('focusAreas' in patch) {
+    next.focusAreas = asFocusAreas(patch.focusAreas);
+  } else if (!Array.isArray(next.focusAreas)) {
+    next.focusAreas = [];
+  }
+  return next;
 }
 
 function scheduleWeightExport(weightKg: number): void {
