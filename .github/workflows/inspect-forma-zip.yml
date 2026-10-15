@@ -17,8 +17,6 @@ jobs:
         with:
           fetch-depth: 0
       - name: Import feature branch from ZIP bundle
-        env:
-          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
@@ -28,6 +26,8 @@ jobs:
           unzip -q "$archive" -d "$tmp"
           bundle="$tmp/feat-dataset-instructions-local-media.bundle"
           git bundle verify "$bundle"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           # The bundle exposes the feature commit as HEAD (not as a named branch).
           git fetch "$bundle" HEAD:refs/heads/"$branch"
           git checkout "$branch"
