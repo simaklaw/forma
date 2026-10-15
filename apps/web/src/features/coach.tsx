@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { CoachEngine } from "@forma/core";
+import { Box } from "@/components/ui/box";
 import { Button } from "@/components/ui/button";
+import { Tag, Tags } from "@/components/ui/tag";
 import { getWebTrainerProgress } from "@/lib/ai/boot";
 import { webUserContextSnapshot } from "@/lib/snapshot";
 import { COACH_WELCOME, useAppStore } from "@/lib/store";
@@ -77,21 +79,26 @@ export function CoachScreen() {
         )}
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-2">
+      <Tags className="mt-3">
         {CHIPS.map((c) => (
-          <button
+          <Tag
             key={c}
-            type="button"
-            disabled={busy}
-            onClick={() => void send(c)}
-            className="rounded-full bg-surface-2 px-3 py-1.5 text-xs font-medium text-muted disabled:opacity-50"
+            tone="default"
+            asChild
           >
-            {c}
-          </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void send(c)}
+              className="text-xs font-medium disabled:opacity-50"
+            >
+              {c}
+            </button>
+          </Tag>
         ))}
-      </div>
+      </Tags>
 
-      <div className="mt-4 flex-1 space-y-3 overflow-y-auto">
+      <Box className="mt-4 flex-1 space-y-3 overflow-y-auto p-0">
         {(visible.length ? visible : [{ role: "coach" as const, text: COACH_WELCOME }]).map((m, i) =>
           m.text ? (
             <div
@@ -108,7 +115,7 @@ export function CoachScreen() {
         )}
         {busy && <p className="text-xs text-muted">Думаю…</p>}
         <div ref={bottom} />
-      </div>
+      </Box>
 
       <form
         className="mt-3 flex gap-2"

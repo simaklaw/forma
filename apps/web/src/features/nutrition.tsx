@@ -1,7 +1,9 @@
 import { Minus, Plus, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { OpenFoodFactsService, type NormalizedFood } from "@forma/core";
+import { Box } from "@/components/ui/box";
 import { Button } from "@/components/ui/button";
+import { Tag, Tags } from "@/components/ui/tag";
 import { MacroRing } from "@/components/macro-ring";
 import { FOODS, foodById } from "@/lib/catalog";
 import { dayMacros, MEAL_LABEL, todayKey } from "@/lib/forma";
@@ -101,7 +103,7 @@ export function NutritionScreen() {
         })}
       </div>
 
-      <div className="mt-6 rounded-2xl bg-surface p-4 shadow-card">
+      <Box className="mt-6">
         <p className="mb-3 text-sm font-medium">Поиск · Open Food Facts</p>
         <div className="relative mb-3">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
@@ -135,21 +137,23 @@ export function NutritionScreen() {
         )}
 
         <p className="mb-3 text-sm font-medium">Из каталога · {MEAL_LABEL[meal]}</p>
-        <div className="mb-3 flex flex-wrap gap-2">
+        <Tags className="mb-3">
           {MEALS.map((t) => (
-            <button
+            <Tag
               key={t}
-              type="button"
-              onClick={() => setMeal(t)}
-              className={cn(
-                "rounded-full px-3 py-1 text-xs font-medium",
-                meal === t ? "bg-accent text-accent-fg" : "bg-surface-2 text-muted",
-              )}
+              tone={meal === t ? "accent" : "default"}
+              asChild
             >
-              {MEAL_LABEL[t]}
-            </button>
+              <button
+                type="button"
+                onClick={() => setMeal(t)}
+                className="text-xs font-medium"
+              >
+                {MEAL_LABEL[t]}
+              </button>
+            </Tag>
           ))}
-        </div>
+        </Tags>
         <select
           className="mb-3 h-11 w-full rounded-lg bg-surface-2 px-3 text-sm outline-none"
           value={foodId}
@@ -161,7 +165,7 @@ export function NutritionScreen() {
             </option>
           ))}
         </select>
-        <div className="mb-3 flex items-center justify-center gap-4">
+        <div className="mb-3 fp-level">
           <button
             type="button"
             className="flex size-10 items-center justify-center rounded-full bg-surface-2"
@@ -186,7 +190,7 @@ export function NutritionScreen() {
         >
           Добавить из каталога
         </Button>
-      </div>
+      </Box>
     </div>
   );
 }
