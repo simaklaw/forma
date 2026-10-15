@@ -1,0 +1,30 @@
+name: Inspect uploaded forma ZIP
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/inspect-forma-zip.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect archive without extracting into repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="For forma1.zip"
+          test -f "$archive" || { echo "::error::Archive not found: $archive"; exit 1; }
+          echo "=== Archive metadata ==="
+          ls -lh "$archive"
+          echo "=== Archive entries (first 500) ==="
+          unzip -Z1 "$archive" | sed -n '1,500p'
+          echo "=== Entry count ==="
+          unzip -Z1 "$archive" | wc -l
+          echo "=== Top-level path summary ==="
+          unzip -Z1 "$archive" | awk -F/ '{print $1}' | sort | uniq -c | sort -nr | head -80
