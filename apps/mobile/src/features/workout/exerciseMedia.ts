@@ -39,7 +39,7 @@ export const EXERCISE_THUMBNAILS: Partial<Record<ExerciseMediaKey, number>> = {
   'side-plank': require('../../../assets/exercises/side-plank.jpg')
 };
 
-/** Technique demo clips. Add stomach-vacuum.mp4 under assets/exercises when ready. */
+/** Technique demo clips — home plan keys + library bundled clips. */
 export const EXERCISE_VIDEOS: Partial<Record<ExerciseMediaKey, number>> = {
   pushup: require('../../../assets/exercises/pushup.mp4'),
   squat: require('../../../assets/exercises/squat.mp4'),
@@ -52,5 +52,6 @@ export const EXERCISE_VIDEOS: Partial<Record<ExerciseMediaKey, number>> = {
   'row-band': require('../../../assets/exercises/row-band.mp4'),
   'hip-thrust': require('../../../assets/exercises/hip-thrust.mp4'),
   'shoulder-press': require('../../../assets/exercises/shoulder-press.mp4'),
-  'side-plank': require('../../../assets/exercises/side-plank.mp4')
+  'side-plank': require('../../../assets/exercises/side-plank.mp4'),
+  'stomach-vacuum': require('../../../assets/exercises/stomach-vacuum.mp4')
 };
