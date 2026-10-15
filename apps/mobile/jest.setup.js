@@ -44,3 +44,18 @@ jest.mock('expo-av', () => ({
     },
   },
 }));
+
+jest.mock('react-native-reanimated', () => ({
+  __esModule: true,
+  default: {
+    createAnimatedComponent: (component) => component,
+  },
+  Easing: {
+    ease: jest.fn(),
+    inOut: jest.fn((easing) => easing),
+  },
+  useAnimatedProps: jest.fn((callback) => callback()),
+  useSharedValue: jest.fn((value) => ({ value })),
+  withRepeat: jest.fn((animation) => animation),
+  withTiming: jest.fn((value) => value),
+}));

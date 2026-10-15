@@ -6,7 +6,7 @@
  * (see HANDOFF.md). Mapping is order-stable for the generated library file.
  */
 
-import type { MuscleKey } from '@/components/MuscleMap';
+import type { MuscleKey } from '@/domain/muscleKeys';
 import type { ExerciseDef } from './ExerciseSheet';
 import {
   IMPORTED_EXERCISE_LIBRARY,

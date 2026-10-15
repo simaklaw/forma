@@ -1,4 +1,4 @@
-import type { MuscleKey } from '@/components/MuscleMap';
+import type { MuscleKey } from '@/domain/muscleKeys';
 import { CATALOGS } from './catalog';
 
 const MUSCLE_KEYS = new Set<MuscleKey>([

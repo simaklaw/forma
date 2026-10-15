@@ -5,7 +5,7 @@ import type { WorkoutSession } from '@forma/workout-domain';
 import { SetFeedbackCard } from './SetFeedbackCard';
 import AppBottomSheet from '@/components/BottomSheet';
 import ExerciseVideo from '@/components/ExerciseVideo';
-import MuscleMap, { MuscleKey } from '@/components/MuscleMap';
+import MuscleMap, { type MuscleKey } from '@/components/MuscleMap';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { estimateOneRepMax, rpeFromRir } from '@/engines/MetabolicEngine';

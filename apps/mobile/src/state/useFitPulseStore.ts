@@ -22,7 +22,7 @@ import {
 } from '@/engines/MetabolicEngine';
 import { SetLogEntry, DayProgress, toDateKey, pruneOldSetLogs } from '@/engines/WorkoutStats';
 import { uuidv7 } from '@/features/workout/data/ids';
-import { MUSCLE_LABELS, type MuscleKey } from '@/components/MuscleMap';
+import { MUSCLE_LABELS, type MuscleKey } from '@/domain/muscleKeys';
 import type { ImportedActivity } from '@forma/core';
 
 export type { SetLogEntry, DayProgress } from '@/engines/WorkoutStats';

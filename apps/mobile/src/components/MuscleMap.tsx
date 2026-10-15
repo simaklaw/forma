@@ -21,39 +21,16 @@ import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, { Easing, useAnimatedProps, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import Svg, { Circle, Line, Rect } from 'react-native-svg';
+import { MUSCLE_LABELS, type MuscleKey } from '@/domain/muscleKeys';
 import { fonts, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
+
+export { MUSCLE_LABELS } from '@/domain/muscleKeys';
+export type { MuscleKey } from '@/domain/muscleKeys';
 
 const WIDTH = 140;
 const HEIGHT = 220;
 const MARKER_SIZE = 22;
-
-export type MuscleKey =
-  | 'chest'
-  | 'shoulders'
-  | 'biceps'
-  | 'triceps'
-  | 'core'
-  | 'quads'
-  | 'hamstrings'
-  | 'glutes'
-  | 'lowerback'
-  | 'back'
-  | 'calves';
-
-export const MUSCLE_LABELS: Record<MuscleKey, string> = {
-  chest: 'грудь',
-  shoulders: 'плечи',
-  biceps: 'бицепс',
-  triceps: 'трицепс',
-  core: 'кор',
-  quads: 'квадрицепс',
-  hamstrings: 'бицепс бедра',
-  glutes: 'ягодицы',
-  lowerback: 'поясница',
-  back: 'спина',
-  calves: 'икры'
-};
 
 // Pixel centers within the WIDTH×HEIGHT viewBox, ported from the Flutter
 // reference's normalized -1..1 alignment coordinates onto this silhouette.
