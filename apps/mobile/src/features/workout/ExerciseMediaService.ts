@@ -4,8 +4,14 @@ import { EXERCISE_VIDEO_MANIFEST } from './exerciseVideoManifest.generated';
 import {
   EXERCISE_GIF_MANIFEST,
   gifEntryForLibraryId,
+  resolveGifUri,
+  resolveThumbUri,
   type ExerciseGifManifestEntry,
 } from './exerciseGifManifest.generated';
+import {
+  DATASET_GIF_MODULES,
+  DATASET_THUMB_MODULES,
+} from './exerciseDatasetAssets.generated';
 
 /** Imported library ids that ship a bundled MP4 (see exerciseMedia). */
 const LIBRARY_BUNDLED_VIDEO: Partial<Record<string, ExerciseMediaKey>> = {
@@ -148,7 +154,7 @@ export class ExerciseMediaService {
     return gifEntryForLibraryId(libraryId);
   }
 
-  /** Prefer bundled/remote MP4; otherwise GIF URL for Image-based preview. */
+  /** Prefer bundled MP4, then offline dataset module, then remote GIF/thumb. */
   static getPreviewUri(
     libraryId: string,
     mediaKey?: ExerciseMediaKey
@@ -159,9 +165,17 @@ export class ExerciseMediaService {
     }
     const video = EXERCISE_VIDEO_MANIFEST.find((e) => e.id === libraryId);
     if (video?.videoUrl) return { kind: 'video', uri: video.videoUrl };
+    const localGif = DATASET_GIF_MODULES[libraryId];
+    if (localGif != null) return { kind: 'bundled', asset: localGif };
+    const localThumb = DATASET_THUMB_MODULES[libraryId];
+    if (localThumb != null) return { kind: 'bundled', asset: localThumb };
     const gif = gifEntryForLibraryId(libraryId);
-    if (gif?.gifUrl) return { kind: 'gif', uri: gif.gifUrl };
-    if (gif?.thumbUrl) return { kind: 'thumb', uri: gif.thumbUrl };
+    if (gif) {
+      const gifUri = resolveGifUri(gif);
+      if (gifUri) return { kind: 'gif', uri: gifUri };
+      const thumbUri = resolveThumbUri(gif);
+      if (thumbUri) return { kind: 'thumb', uri: thumbUri };
+    }
     return null;
   }
 

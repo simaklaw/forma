@@ -1,0 +1,1238 @@
+[
+  {
+    "id": "lib-3-4-sit-up",
+    "name": "3/4 sit-up",
+    "gifUrl": "/exercises/dataset/lib-3-4-sit-up.gif",
+    "thumbUrl": "/exercises/dataset/lib-3-4-sit-up.jpg",
+    "instructionsEn": [
+      "Lie flat on your back with your knees bent and feet flat on the ground.",
+      "Place your hands behind your head with your elbows pointing outwards.",
+      "Engaging your abs, slowly lift your upper body off the ground, curling forward until your torso is at a 45-degree angle.",
+      "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-air-bike",
+    "name": "air bike",
+    "gifUrl": "/exercises/dataset/lib-air-bike.gif",
+    "thumbUrl": "/exercises/dataset/lib-air-bike.jpg",
+    "instructionsEn": [
+      "Lie flat on your back with your hands placed behind your head.",
+      "Lift your legs off the ground and bend your knees at a 90-degree angle.",
+      "Bring your right elbow towards your left knee while simultaneously straightening your right leg.",
+      "Return to the starting position and repeat the movement on the opposite side, bringing your left elbow towards your right knee while straightening your left leg.",
+      "Continue alternating sides in a pedaling motion for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hip flexors"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-all-fours-quad-stretch",
+    "name": "all fours squad stretch",
+    "gifUrl": "/exercises/dataset/lib-all-fours-quad-stretch.gif",
+    "thumbUrl": "/exercises/dataset/lib-all-fours-quad-stretch.jpg",
+    "instructionsEn": [
+      "Start on all fours with your hands directly under your shoulders and your knees directly under your hips.",
+      "Extend one leg straight back, keeping your knee bent and your foot flexed.",
+      "Slowly lower your hips towards the ground, feeling a stretch in your quads.",
+      "Hold this position for 20-30 seconds.",
+      "Switch legs and repeat the stretch on the other side."
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "target": "quads",
+    "bodyPart": "upper legs",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-alternate-heel-touchers",
+    "name": "alternate heel touchers",
+    "gifUrl": "/exercises/dataset/lib-alternate-heel-touchers.gif",
+    "thumbUrl": "/exercises/dataset/lib-alternate-heel-touchers.jpg",
+    "instructionsEn": [
+      "Lie flat on your back with your knees bent and feet flat on the ground.",
+      "Extend your arms straight out to the sides, parallel to the ground.",
+      "Engaging your abs, lift your shoulders off the ground and reach your right hand towards your right heel.",
+      "Return to the starting position and repeat on the left side, reaching your left hand towards your left heel.",
+      "Continue alternating sides for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "obliques"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-band-good-morning",
+    "name": "barbell good morning",
+    "gifUrl": "/exercises/dataset/lib-band-good-morning.gif",
+    "thumbUrl": "/exercises/dataset/lib-band-good-morning.jpg",
+    "instructionsEn": [
+      "Start by standing with your feet shoulder-width apart and the barbell resting on your upper back.",
+      "Keeping your back straight and your core engaged, hinge forward at the hips, pushing your buttocks back as if you were trying to touch the wall behind you with your glutes.",
+      "Lower your torso until it is parallel to the ground, feeling a stretch in your hamstrings.",
+      "Pause for a moment, then return to the starting position by squeezing your glutes and pushing your hips forward.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "lower back"
+    ],
+    "target": "hamstrings",
+    "bodyPart": "upper legs",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-band-good-morning-pull-through",
+    "name": "band pull through",
+    "gifUrl": "/exercises/dataset/lib-band-good-morning-pull-through.gif",
+    "thumbUrl": "/exercises/dataset/lib-band-good-morning-pull-through.jpg",
+    "instructionsEn": [
+      "Attach a resistance band to a sturdy anchor point at ground level.",
+      "Stand facing away from the anchor point with your feet shoulder-width apart.",
+      "Step forward to create tension in the band, keeping your knees slightly bent.",
+      "Hinge at the hips and push your glutes back, maintaining a slight bend in your knees.",
+      "Lower your torso until it is parallel to the ground, feeling a stretch in your hamstrings.",
+      "Drive your hips forward and squeeze your glutes to return to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "target": "glutes",
+    "bodyPart": "upper legs",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-band-hip-adductions",
+    "name": "band hip lift",
+    "gifUrl": "/exercises/dataset/lib-band-hip-adductions.gif",
+    "thumbUrl": "/exercises/dataset/lib-band-hip-adductions.jpg",
+    "instructionsEn": [
+      "Lie on your back with your knees bent and feet flat on the ground.",
+      "Place a resistance band just above your knees.",
+      "Engage your glutes and core muscles.",
+      "Press your heels into the ground and lift your hips off the floor, squeezing your glutes at the top.",
+      "Pause for a moment at the top, then slowly lower your hips back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "target": "glutes",
+    "bodyPart": "upper legs",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-band-pull-apart",
+    "name": "band pull through",
+    "gifUrl": "/exercises/dataset/lib-band-pull-apart.gif",
+    "thumbUrl": "/exercises/dataset/lib-band-pull-apart.jpg",
+    "instructionsEn": [
+      "Attach a resistance band to a sturdy anchor point at ground level.",
+      "Stand facing away from the anchor point with your feet shoulder-width apart.",
+      "Step forward to create tension in the band, keeping your knees slightly bent.",
+      "Hinge at the hips and push your glutes back, maintaining a slight bend in your knees.",
+      "Lower your torso until it is parallel to the ground, feeling a stretch in your hamstrings.",
+      "Drive your hips forward and squeeze your glutes to return to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "target": "glutes",
+    "bodyPart": "upper legs",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-bent-knee-hip-raise",
+    "name": "hip raise (bent knee)",
+    "gifUrl": "/exercises/dataset/lib-bent-knee-hip-raise.gif",
+    "thumbUrl": "/exercises/dataset/lib-bent-knee-hip-raise.jpg",
+    "instructionsEn": [
+      "Lie flat on your back with your knees bent and feet flat on the ground.",
+      "Place your hands by your sides, palms facing down.",
+      "Engage your core and glutes, then lift your hips off the ground until your body forms a straight line from your knees to your shoulders.",
+      "Pause for a moment at the top, then slowly lower your hips back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-body-up",
+    "name": "body-up",
+    "gifUrl": "/exercises/dataset/lib-body-up.gif",
+    "thumbUrl": "/exercises/dataset/lib-body-up.jpg",
+    "instructionsEn": [
+      "Start by placing your hands on a raised surface, such as a bench or parallel bars, with your palms facing down and fingers pointing forward.",
+      "Extend your legs out in front of you, keeping your heels on the ground and your body straight.",
+      "Lower your body by bending your elbows, keeping them close to your sides, until your upper arms are parallel to the ground.",
+      "Pause for a moment, then push through your palms to straighten your arms and lift your body back up to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "chest",
+      "shoulders"
+    ],
+    "target": "triceps",
+    "bodyPart": "upper arms",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-bodyweight-squat",
+    "name": "band squat",
+    "gifUrl": "/exercises/dataset/lib-bodyweight-squat.gif",
+    "thumbUrl": "/exercises/dataset/lib-bodyweight-squat.jpg",
+    "instructionsEn": [
+      "Stand with your feet shoulder-width apart, with the band placed just above your knees.",
+      "Keeping your chest up and core engaged, push your hips back and bend your knees to lower into a squat position.",
+      "Make sure your knees are tracking over your toes and your weight is in your heels.",
+      "Pause for a moment at the bottom, then push through your heels to return to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "target": "glutes",
+    "bodyPart": "upper legs",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-bottoms-up",
+    "name": "bottoms-up",
+    "gifUrl": "/exercises/dataset/lib-bottoms-up.gif",
+    "thumbUrl": "/exercises/dataset/lib-bottoms-up.jpg",
+    "instructionsEn": [
+      "Lie flat on your back with your legs extended and your arms by your sides.",
+      "Bend your knees and bring them towards your chest, keeping your feet off the ground.",
+      "Engaging your abs, lift your hips off the ground, bringing your knees towards your head.",
+      "Pause for a moment at the top, then slowly lower your hips back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "obliques",
+      "hip flexors"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-butt-lift-bridge",
+    "name": "london bridge",
+    "gifUrl": "/exercises/dataset/lib-butt-lift-bridge.gif",
+    "thumbUrl": "/exercises/dataset/lib-butt-lift-bridge.jpg",
+    "instructionsEn": [
+      "Attach the rope to a high anchor point.",
+      "Stand facing away from the anchor point with your feet shoulder-width apart.",
+      "Grasp the rope with an overhand grip, palms facing down.",
+      "Lean forward slightly, keeping your back straight and core engaged.",
+      "Pull the rope towards your body, squeezing your shoulder blades together.",
+      "Pause for a moment at the peak of the movement, then slowly release the tension and return to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "shoulders",
+      "biceps",
+      "forearms"
+    ],
+    "target": "upper back",
+    "bodyPart": "back",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-butt-ups",
+    "name": "butt-ups",
+    "gifUrl": "/exercises/dataset/lib-butt-ups.gif",
+    "thumbUrl": "/exercises/dataset/lib-butt-ups.jpg",
+    "instructionsEn": [
+      "Lie flat on your back with your knees bent and feet flat on the ground.",
+      "Place your hands by your sides, palms facing down.",
+      "Engaging your abs, lift your legs off the ground, bringing your knees towards your chest.",
+      "At the top of the movement, squeeze your abs and pause for a moment.",
+      "Slowly lower your legs back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-clock-push-up",
+    "name": "clock push-up",
+    "gifUrl": "/exercises/dataset/lib-clock-push-up.gif",
+    "thumbUrl": "/exercises/dataset/lib-clock-push-up.jpg",
+    "instructionsEn": [
+      "Start in a high plank position with your hands directly under your shoulders and your body in a straight line.",
+      "Lower your body towards the ground by bending your elbows, keeping them close to your sides.",
+      "As you lower, rotate your body to the left, extending your left arm straight out to the side.",
+      "Push back up to the starting position, while rotating your body to the center.",
+      "Repeat the push-up, this time rotating your body to the right and extending your right arm out to the side.",
+      "Continue alternating sides with each repetition."
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders",
+      "core"
+    ],
+    "target": "pectorals",
+    "bodyPart": "chest",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-cocoons",
+    "name": "cocoons",
+    "gifUrl": "/exercises/dataset/lib-cocoons.gif",
+    "thumbUrl": "/exercises/dataset/lib-cocoons.jpg",
+    "instructionsEn": [
+      "Lie flat on your back with your knees bent and feet flat on the ground.",
+      "Place your hands behind your head with your elbows pointing outwards.",
+      "Engaging your abs, slowly lift your upper body off the ground, curling forward until your torso is at a 45-degree angle.",
+      "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-cross-body-crunch",
+    "name": "cross body crunch",
+    "gifUrl": "/exercises/dataset/lib-cross-body-crunch.gif",
+    "thumbUrl": "/exercises/dataset/lib-cross-body-crunch.jpg",
+    "instructionsEn": [
+      "Lie flat on your back with your knees bent and feet flat on the ground.",
+      "Place your hands behind your head with your elbows pointing outwards.",
+      "Engaging your abs, lift your upper body off the ground and twist to bring your right elbow towards your left knee.",
+      "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+      "Repeat on the other side, bringing your left elbow towards your right knee.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "obliques"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-crunch-hands-overhead",
+    "name": "crunch (hands overhead)",
+    "gifUrl": "/exercises/dataset/lib-crunch-hands-overhead.gif",
+    "thumbUrl": "/exercises/dataset/lib-crunch-hands-overhead.jpg",
+    "instructionsEn": [
+      "Lie flat on your back with your knees bent and feet flat on the ground.",
+      "Extend your arms straight above your head.",
+      "Engaging your abs, lift your upper body off the ground, curling forward towards your knees.",
+      "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hip flexors"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-crunches",
+    "name": "crunch floor",
+    "gifUrl": "/exercises/dataset/lib-crunches.gif",
+    "thumbUrl": "/exercises/dataset/lib-crunches.jpg",
+    "instructionsEn": [
+      "Lie flat on your back with your knees bent and feet flat on the ground.",
+      "Place your hands behind your head with your elbows pointing outwards.",
+      "Engage your abs and lift your shoulders off the ground, curling forward towards your knees.",
+      "Pause for a moment at the top, then slowly lower your shoulders back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hip flexors"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-dead-bug",
+    "name": "dead bug",
+    "gifUrl": "/exercises/dataset/lib-dead-bug.gif",
+    "thumbUrl": "/exercises/dataset/lib-dead-bug.jpg",
+    "instructionsEn": [
+      "Lie flat on your back with your arms extended towards the ceiling.",
+      "Bend your knees and lift your legs off the ground, creating a 90-degree angle at your hips and knees.",
+      "Engage your core and lower back to press your lower back into the ground.",
+      "Slowly lower your right arm and left leg towards the ground, keeping them straight and hovering just above the floor.",
+      "Pause for a moment, then return to the starting position.",
+      "Repeat the movement with your left arm and right leg.",
+      "Continue alternating sides for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-dips-triceps-version",
+    "name": "triceps dips floor",
+    "gifUrl": "/exercises/dataset/lib-dips-triceps-version.gif",
+    "thumbUrl": "/exercises/dataset/lib-dips-triceps-version.jpg",
+    "instructionsEn": [
+      "Sit on the edge of a chair or bench with your hands next to your hips, fingers pointing forward.",
+      "Slide your butt off the front of the chair with your legs extended in front of you.",
+      "Straighten your arms, keeping a little bend in your elbows to keep tension on your triceps and off your elbow joints.",
+      "Slowly bend your elbows to lower your body toward the floor until your elbows are at about a 90-degree angle.",
+      "Once you reach the bottom of the movement, press down into the chair to straighten your elbows, returning to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "chest",
+      "shoulders"
+    ],
+    "target": "triceps",
+    "bodyPart": "upper arms",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-elbow-to-knee",
+    "name": "elbow-to-knee",
+    "gifUrl": "/exercises/dataset/lib-elbow-to-knee.gif",
+    "thumbUrl": "/exercises/dataset/lib-elbow-to-knee.jpg",
+    "instructionsEn": [
+      "Start by lying flat on your back with your knees bent and feet flat on the ground.",
+      "Place your hands behind your head with your elbows pointing outwards.",
+      "Engage your abs and lift your upper body off the ground, bringing your right elbow towards your left knee.",
+      "At the same time, bring your left knee towards your right elbow, creating a twisting motion.",
+      "Pause for a moment at the top, then slowly lower your upper body and extend your legs back to the starting position.",
+      "Repeat the movement, this time bringing your left elbow towards your right knee and your right knee towards your left elbow.",
+      "Continue alternating sides for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "obliques"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-flat-bench-leg-pull-in",
+    "name": "leg pull in flat bench",
+    "gifUrl": "/exercises/dataset/lib-flat-bench-leg-pull-in.gif",
+    "thumbUrl": "/exercises/dataset/lib-flat-bench-leg-pull-in.jpg",
+    "instructionsEn": [
+      "Sit on a flat bench with your legs extended straight out in front of you.",
+      "Place your hands on the bench beside your hips for support.",
+      "Engage your abs and lift your legs off the ground, bringing your knees towards your chest.",
+      "Pause for a moment at the top, then slowly lower your legs back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-freehand-jump-squat",
+    "name": "barbell jump squat",
+    "gifUrl": "/exercises/dataset/lib-freehand-jump-squat.gif",
+    "thumbUrl": "/exercises/dataset/lib-freehand-jump-squat.jpg",
+    "instructionsEn": [
+      "Start by standing with your feet shoulder-width apart, holding a barbell across your upper back.",
+      "Lower your body into a squat position by bending your knees and pushing your hips back.",
+      "Once you reach the bottom of the squat, explode upwards by jumping off the ground.",
+      "As you jump, extend your hips, knees, and ankles, pushing through your toes.",
+      "Land softly back into the squat position and immediately repeat the movement for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "target": "glutes",
+    "bodyPart": "upper legs",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-frog-sit-ups",
+    "name": "frog crunch",
+    "gifUrl": "/exercises/dataset/lib-frog-sit-ups.gif",
+    "thumbUrl": "/exercises/dataset/lib-frog-sit-ups.jpg",
+    "instructionsEn": [
+      "Lie flat on your back with your knees bent and feet flat on the ground.",
+      "Place your hands behind your head with your elbows pointing outwards.",
+      "Engaging your abs, lift your upper body off the ground, curling forward until your torso is at a 45-degree angle.",
+      "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hip flexors"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-glute-kickback",
+    "name": "cable kickback",
+    "gifUrl": "/exercises/dataset/lib-glute-kickback.gif",
+    "thumbUrl": "/exercises/dataset/lib-glute-kickback.jpg",
+    "instructionsEn": [
+      "Stand facing a cable machine with your feet shoulder-width apart.",
+      "Hold the cable handle with your right hand and step back to create tension in the cable.",
+      "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+      "Keep your upper arm close to your body and your elbow bent at a 90-degree angle.",
+      "Extend your forearm backward, straightening your arm fully.",
+      "Pause for a moment, then slowly return to the starting position.",
+      "Repeat for the desired number of repetitions, then switch sides."
+    ],
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "target": "triceps",
+    "bodyPart": "upper arms",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-handstand-push-ups",
+    "name": "handstand push-up",
+    "gifUrl": "/exercises/dataset/lib-handstand-push-ups.gif",
+    "thumbUrl": "/exercises/dataset/lib-handstand-push-ups.jpg",
+    "instructionsEn": [
+      "Find a wall and face away from it, standing a few feet away.",
+      "Place your hands on the ground shoulder-width apart and kick your feet up against the wall, coming into a handstand position.",
+      "Bend your elbows and lower your head towards the ground, keeping your body in a straight line.",
+      "Push through your hands and extend your arms to return to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "shoulders",
+      "chest",
+      "core"
+    ],
+    "target": "triceps",
+    "bodyPart": "upper arms",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-hip-extension-with-bands",
+    "name": "bench hip extension",
+    "gifUrl": "/exercises/dataset/lib-hip-extension-with-bands.gif",
+    "thumbUrl": "/exercises/dataset/lib-hip-extension-with-bands.jpg",
+    "instructionsEn": [
+      "Sit on a bench with your back against the bench and your feet flat on the ground.",
+      "Place your hands on the bench for support.",
+      "Engage your glutes and hamstrings, then lift your hips off the bench until your body forms a straight line from your knees to your shoulders.",
+      "Pause for a moment at the top, then slowly lower your hips back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "target": "glutes",
+    "bodyPart": "upper legs",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-hip-flexion-with-band",
+    "name": "band hip lift",
+    "gifUrl": "/exercises/dataset/lib-hip-flexion-with-band.gif",
+    "thumbUrl": "/exercises/dataset/lib-hip-flexion-with-band.jpg",
+    "instructionsEn": [
+      "Lie on your back with your knees bent and feet flat on the ground.",
+      "Place a resistance band just above your knees.",
+      "Engage your glutes and core muscles.",
+      "Press your heels into the ground and lift your hips off the floor, squeezing your glutes at the top.",
+      "Pause for a moment at the top, then slowly lower your hips back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "target": "glutes",
+    "bodyPart": "upper legs",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-inchworm",
+    "name": "inchworm",
+    "gifUrl": "/exercises/dataset/lib-inchworm.gif",
+    "thumbUrl": "/exercises/dataset/lib-inchworm.jpg",
+    "instructionsEn": [
+      "Start in a standing position with your feet hip-width apart.",
+      "Bend forward at the waist and place your hands on the ground in front of you.",
+      "Walk your hands forward until you are in a high plank position, with your body in a straight line from head to toe.",
+      "Pause for a moment, then walk your hands back towards your feet, keeping your legs as straight as possible.",
+      "Once your hands reach your feet, stand back up to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "shoulders",
+      "hamstrings"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-internal-rotation-with-band",
+    "name": "band lying hip internal rotation",
+    "gifUrl": "/exercises/dataset/lib-internal-rotation-with-band.gif",
+    "thumbUrl": "/exercises/dataset/lib-internal-rotation-with-band.jpg",
+    "instructionsEn": [
+      "Lie on your back with your legs straight and a resistance band looped around your feet.",
+      "Bend your knees and bring them towards your chest, keeping your feet together.",
+      "Slowly rotate your knees outwards, away from each other, while keeping your feet together.",
+      "Pause for a moment at the end of the rotation, then slowly return to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "target": "glutes",
+    "bodyPart": "upper legs",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-isometric-chest-squeezes",
+    "name": "isometric chest squeeze",
+    "gifUrl": "/exercises/dataset/lib-isometric-chest-squeezes.gif",
+    "thumbUrl": "/exercises/dataset/lib-isometric-chest-squeezes.jpg",
+    "instructionsEn": [
+      "Stand with your feet shoulder-width apart and your knees slightly bent.",
+      "Extend your arms straight out in front of you, parallel to the ground, with your palms facing each other.",
+      "Squeeze your chest muscles together as hard as you can, while keeping your arms straight.",
+      "Hold this position for a few seconds, focusing on contracting your chest muscles.",
+      "Release the squeeze and relax your chest muscles.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "target": "pectorals",
+    "bodyPart": "chest",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-isometric-wipers",
+    "name": "isometric wipers",
+    "gifUrl": "/exercises/dataset/lib-isometric-wipers.gif",
+    "thumbUrl": "/exercises/dataset/lib-isometric-wipers.jpg",
+    "instructionsEn": [
+      "Start by lying flat on your back on a mat or bench.",
+      "Extend your arms straight out to the sides, perpendicular to your body.",
+      "Engage your core and lift both legs off the ground, keeping them together and straight.",
+      "Slowly lower your legs to one side, aiming to touch the ground with your feet while maintaining control.",
+      "Pause for a moment, then use your core to lift your legs back to the starting position.",
+      "Repeat the movement, this time lowering your legs to the opposite side.",
+      "Continue alternating sides for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "shoulders",
+      "triceps",
+      "core"
+    ],
+    "target": "pectorals",
+    "bodyPart": "chest",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-jackknife-sit-up",
+    "name": "jackknife sit-up",
+    "gifUrl": "/exercises/dataset/lib-jackknife-sit-up.gif",
+    "thumbUrl": "/exercises/dataset/lib-jackknife-sit-up.jpg",
+    "instructionsEn": [
+      "Lie flat on your back with your legs extended and your arms overhead.",
+      "Engage your core and lift your legs and upper body simultaneously, reaching your hands towards your toes.",
+      "Pause for a moment at the top, then slowly lower your legs and upper body back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hip flexors"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-janda-sit-up",
+    "name": "janda sit-up",
+    "gifUrl": "/exercises/dataset/lib-janda-sit-up.gif",
+    "thumbUrl": "/exercises/dataset/lib-janda-sit-up.jpg",
+    "instructionsEn": [
+      "Lie flat on your back with your knees bent and feet flat on the ground.",
+      "Place your hands behind your head with your elbows pointing outwards.",
+      "Engaging your abs, slowly lift your upper body off the ground, curling forward until your torso is at a 45-degree angle.",
+      "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-knee-circles",
+    "name": "circles knee stretch",
+    "gifUrl": "/exercises/dataset/lib-knee-circles.gif",
+    "thumbUrl": "/exercises/dataset/lib-knee-circles.jpg",
+    "instructionsEn": [
+      "Stand with your feet shoulder-width apart and your hands on your hips.",
+      "Bend your knees slightly and lift your heels off the ground, balancing on the balls of your feet.",
+      "Keeping your knees bent, rotate your knees in a circular motion, first clockwise and then counterclockwise.",
+      "Perform the movement for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "target": "calves",
+    "bodyPart": "lower legs",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-lateral-raise-with-bands",
+    "name": "cable lateral raise",
+    "gifUrl": "/exercises/dataset/lib-lateral-raise-with-bands.gif",
+    "thumbUrl": "/exercises/dataset/lib-lateral-raise-with-bands.jpg",
+    "instructionsEn": [
+      "Stand with your feet shoulder-width apart and grasp the cable handles with an overhand grip.",
+      "Keep your arms straight and your core engaged.",
+      "Raise your arms out to the sides until they are parallel to the floor.",
+      "Pause for a moment at the top, then slowly lower your arms back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "traps",
+      "triceps"
+    ],
+    "target": "delts",
+    "bodyPart": "shoulders",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-leg-pull-in",
+    "name": "leg pull in flat bench",
+    "gifUrl": "/exercises/dataset/lib-leg-pull-in.gif",
+    "thumbUrl": "/exercises/dataset/lib-leg-pull-in.jpg",
+    "instructionsEn": [
+      "Sit on a flat bench with your legs extended straight out in front of you.",
+      "Place your hands on the bench beside your hips for support.",
+      "Engage your abs and lift your legs off the ground, bringing your knees towards your chest.",
+      "Pause for a moment at the top, then slowly lower your legs back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hip flexors",
+      "lower back"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-lower-back-curl",
+    "name": "lower back curl",
+    "gifUrl": "/exercises/dataset/lib-lower-back-curl.gif",
+    "thumbUrl": "/exercises/dataset/lib-lower-back-curl.jpg",
+    "instructionsEn": [
+      "Lie flat on your stomach with your legs extended and your arms by your sides.",
+      "Engage your glutes and hamstrings, and slowly lift your upper body off the ground, curling your back upwards.",
+      "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "target": "spine",
+    "bodyPart": "back",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-monster-walk",
+    "name": "monster walk",
+    "gifUrl": "/exercises/dataset/lib-monster-walk.gif",
+    "thumbUrl": "/exercises/dataset/lib-monster-walk.jpg",
+    "instructionsEn": [
+      "Place a resistance band around your ankles.",
+      "Stand with your feet shoulder-width apart and slightly bend your knees.",
+      "Take a step to the side with your right foot, maintaining tension on the resistance band.",
+      "Follow with your left foot, stepping to the side to return to the starting position.",
+      "Repeat for the desired number of repetitions, then switch sides."
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "target": "glutes",
+    "bodyPart": "upper legs",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-oblique-crunches",
+    "name": "oblique crunches floor",
+    "gifUrl": "/exercises/dataset/lib-oblique-crunches.gif",
+    "thumbUrl": "/exercises/dataset/lib-oblique-crunches.jpg",
+    "instructionsEn": [
+      "Lie on your back with your knees bent and feet flat on the floor.",
+      "Place your hands behind your head or cross them over your chest.",
+      "Engage your abs and lift your shoulder blades off the floor, rotating your torso to one side.",
+      "Pause for a moment, then lower your shoulder blades back down to the floor.",
+      "Repeat on the other side, alternating sides with each repetition."
+    ],
+    "secondaryMuscles": [
+      "obliques"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-oblique-crunches-on-the-floor",
+    "name": "oblique crunches floor",
+    "gifUrl": "/exercises/dataset/lib-oblique-crunches-on-the-floor.gif",
+    "thumbUrl": "/exercises/dataset/lib-oblique-crunches-on-the-floor.jpg",
+    "instructionsEn": [
+      "Lie on your back with your knees bent and feet flat on the floor.",
+      "Place your hands behind your head or cross them over your chest.",
+      "Engage your abs and lift your shoulder blades off the floor, rotating your torso to one side.",
+      "Pause for a moment, then lower your shoulder blades back down to the floor.",
+      "Repeat on the other side, alternating sides with each repetition."
+    ],
+    "secondaryMuscles": [
+      "obliques"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-overhead-triceps",
+    "name": "overhead triceps stretch",
+    "gifUrl": "/exercises/dataset/lib-overhead-triceps.gif",
+    "thumbUrl": "/exercises/dataset/lib-overhead-triceps.jpg",
+    "instructionsEn": [
+      "Stand or sit upright with your feet shoulder-width apart.",
+      "Extend one arm overhead, bending at the elbow so that your hand reaches towards the opposite shoulder blade.",
+      "With your other hand, gently pull the elbow of the extended arm towards the opposite side of your head, feeling a stretch in your triceps.",
+      "Hold the stretch for 15-30 seconds, then release.",
+      "Repeat on the other side."
+    ],
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "target": "triceps",
+    "bodyPart": "upper arms",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-plyo-push-up",
+    "name": "plyo push up",
+    "gifUrl": "/exercises/dataset/lib-plyo-push-up.gif",
+    "thumbUrl": "/exercises/dataset/lib-plyo-push-up.jpg",
+    "instructionsEn": [
+      "Start in a high plank position with your hands slightly wider than shoulder-width apart.",
+      "Lower your chest towards the ground by bending your elbows, keeping your body in a straight line.",
+      "Push explosively off the ground, using your chest muscles to propel your upper body off the ground.",
+      "Land softly with your hands back in the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders",
+      "core"
+    ],
+    "target": "pectorals",
+    "bodyPart": "chest",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-push-up-to-side-plank",
+    "name": "push-up to side plank",
+    "gifUrl": "/exercises/dataset/lib-push-up-to-side-plank.gif",
+    "thumbUrl": "/exercises/dataset/lib-push-up-to-side-plank.jpg",
+    "instructionsEn": [
+      "Start in a push-up position with your hands shoulder-width apart and your body in a straight line.",
+      "Lower your body towards the ground by bending your elbows, keeping your core engaged.",
+      "Push back up to the starting position.",
+      "Shift your weight onto your left hand and rotate your body to the right, lifting your right arm towards the ceiling.",
+      "Hold the side plank position for a few seconds, then return to the starting position.",
+      "Repeat the push-up and side plank on the opposite side.",
+      "Continue alternating sides for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "shoulders",
+      "chest",
+      "triceps"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-push-up-wide",
+    "name": "wide hand push up",
+    "gifUrl": "/exercises/dataset/lib-push-up-wide.gif",
+    "thumbUrl": "/exercises/dataset/lib-push-up-wide.jpg",
+    "instructionsEn": [
+      "Start in a high plank position with your hands wider than shoulder-width apart.",
+      "Keep your body in a straight line from head to toe.",
+      "Lower your chest towards the ground by bending your elbows, keeping them close to your sides.",
+      "Push through your palms to extend your arms and return to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "target": "pectorals",
+    "bodyPart": "chest",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-push-ups-close-triceps-position",
+    "name": "close-grip push-up",
+    "gifUrl": "/exercises/dataset/lib-push-ups-close-triceps-position.gif",
+    "thumbUrl": "/exercises/dataset/lib-push-ups-close-triceps-position.jpg",
+    "instructionsEn": [
+      "Start in a high plank position with your hands placed close together, directly under your shoulders.",
+      "Engage your core and lower your body towards the ground, keeping your elbows close to your sides.",
+      "Push through your palms to extend your arms and return to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "chest",
+      "shoulders"
+    ],
+    "target": "triceps",
+    "bodyPart": "upper arms",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-pushups",
+    "name": "push-up",
+    "gifUrl": "/exercises/dataset/lib-pushups.gif",
+    "thumbUrl": "/exercises/dataset/lib-pushups.jpg",
+    "instructionsEn": [
+      "Start in a high plank position with your hands slightly wider than shoulder-width apart and your feet together.",
+      "Engage your core and lower your body towards the ground by bending your elbows, keeping your body in a straight line.",
+      "Pause for a moment when your chest is just above the ground, then push yourself back up to the starting position by straightening your arms.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "deltoids",
+      "core"
+    ],
+    "target": "pectorals",
+    "bodyPart": "chest",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-reverse-crunch",
+    "name": "reverse crunch",
+    "gifUrl": "/exercises/dataset/lib-reverse-crunch.gif",
+    "thumbUrl": "/exercises/dataset/lib-reverse-crunch.jpg",
+    "instructionsEn": [
+      "Lie flat on your back with your arms extended along your sides.",
+      "Bend your knees and lift your feet off the ground, bringing your thighs perpendicular to the floor.",
+      "Contract your abs and curl your hips off the floor, bringing your knees towards your chest.",
+      "Pause for a moment at the top, then slowly lower your hips back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hip flexors"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-russian-twist",
+    "name": "russian twist",
+    "gifUrl": "/exercises/dataset/lib-russian-twist.gif",
+    "thumbUrl": "/exercises/dataset/lib-russian-twist.jpg",
+    "instructionsEn": [
+      "Sit on the ground with your knees bent and feet flat on the floor.",
+      "Lean back slightly while keeping your back straight and your core engaged.",
+      "Hold your hands together in front of your chest or hold a weight if desired.",
+      "Lift your feet off the ground, balancing on your sit bones.",
+      "Twist your torso to the right, bringing your hands or weight towards the right side of your body.",
+      "Pause for a moment, then twist your torso to the left, bringing your hands or weight towards the left side of your body.",
+      "Continue alternating sides for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "obliques"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-seated-glute",
+    "name": "seated glute stretch",
+    "gifUrl": "/exercises/dataset/lib-seated-glute.gif",
+    "thumbUrl": "/exercises/dataset/lib-seated-glute.jpg",
+    "instructionsEn": [
+      "Sit on the ground with your legs extended in front of you.",
+      "Bend your right knee and cross your right ankle over your left thigh.",
+      "Place your right hand on the ground behind you for support.",
+      "With your left hand, gently press down on your right knee to deepen the stretch.",
+      "Hold the stretch for 30 seconds to 1 minute.",
+      "Switch sides and repeat."
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "target": "glutes",
+    "bodyPart": "upper legs",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-shoulder-press-with-bands",
+    "name": "band shoulder press",
+    "gifUrl": "/exercises/dataset/lib-shoulder-press-with-bands.gif",
+    "thumbUrl": "/exercises/dataset/lib-shoulder-press-with-bands.jpg",
+    "instructionsEn": [
+      "Stand with your feet shoulder-width apart and place the band under your feet.",
+      "Hold the band with your palms facing forward and raise your hands to shoulder height, elbows bent.",
+      "Press the band overhead, fully extending your arms.",
+      "Pause for a moment at the top, then slowly lower the band back to shoulder height.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "upper back"
+    ],
+    "target": "delts",
+    "bodyPart": "shoulders",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-side-bridge",
+    "name": "london bridge",
+    "gifUrl": "/exercises/dataset/lib-side-bridge.gif",
+    "thumbUrl": "/exercises/dataset/lib-side-bridge.jpg",
+    "instructionsEn": [
+      "Attach the rope to a high anchor point.",
+      "Stand facing away from the anchor point with your feet shoulder-width apart.",
+      "Grasp the rope with an overhand grip, palms facing down.",
+      "Lean forward slightly, keeping your back straight and core engaged.",
+      "Pull the rope towards your body, squeezing your shoulder blades together.",
+      "Pause for a moment at the peak of the movement, then slowly release the tension and return to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "shoulders",
+      "biceps",
+      "forearms"
+    ],
+    "target": "upper back",
+    "bodyPart": "back",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-single-arm-push-up",
+    "name": "single arm push-up",
+    "gifUrl": "/exercises/dataset/lib-single-arm-push-up.gif",
+    "thumbUrl": "/exercises/dataset/lib-single-arm-push-up.jpg",
+    "instructionsEn": [
+      "Start in a push-up position with your hands shoulder-width apart and one hand placed slightly wider than the other.",
+      "Engage your core and lower your body towards the ground by bending your elbows, keeping your back straight.",
+      "As you lower yourself, shift your weight to one side and lift the opposite arm off the ground, extending it straight out to the side.",
+      "Push through your chest and triceps to raise your body back up to the starting position, while simultaneously lowering your extended arm back to the ground.",
+      "Repeat the movement, alternating the arm you extend with each repetition."
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders",
+      "core"
+    ],
+    "target": "pectorals",
+    "bodyPart": "chest",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-single-leg-glute-bridge",
+    "name": "single leg bridge with outstretched leg",
+    "gifUrl": "/exercises/dataset/lib-single-leg-glute-bridge.gif",
+    "thumbUrl": "/exercises/dataset/lib-single-leg-glute-bridge.jpg",
+    "instructionsEn": [
+      "Lie on your back with your knees bent and feet flat on the ground.",
+      "Extend one leg straight out in front of you.",
+      "Engage your glutes and lift your hips off the ground, forming a straight line from your knees to your shoulders.",
+      "Hold for a moment at the top, then slowly lower your hips back down to the starting position.",
+      "Repeat for the desired number of repetitions, then switch legs."
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "target": "glutes",
+    "bodyPart": "upper legs",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-sit-up",
+    "name": "assisted sit-up",
+    "gifUrl": "/exercises/dataset/lib-sit-up.gif",
+    "thumbUrl": "/exercises/dataset/lib-sit-up.jpg",
+    "instructionsEn": [
+      "Sit on the edge of a bench or have someone hold your feet down.",
+      "Lie flat on your back with your knees bent and feet flat on the ground.",
+      "Place your hands behind your head with your elbows pointing outwards.",
+      "Engaging your abs, slowly lift your upper body off the ground, curling forward until your torso is at a 45-degree angle.",
+      "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hip flexors"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-standing-towel-triceps-extension",
+    "name": "assisted standing triceps extension (with towel)",
+    "gifUrl": "/exercises/dataset/lib-standing-towel-triceps-extension.gif",
+    "thumbUrl": "/exercises/dataset/lib-standing-towel-triceps-extension.jpg",
+    "instructionsEn": [
+      "Stand with your feet shoulder-width apart and hold a towel with both hands behind your head.",
+      "Keep your elbows close to your ears and your upper arms stationary.",
+      "Slowly extend your forearms upward, squeezing your triceps at the top.",
+      "Pause for a moment, then slowly lower the towel back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "target": "triceps",
+    "bodyPart": "upper arms",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-star-jump",
+    "name": "star jump (male)",
+    "gifUrl": "/exercises/dataset/lib-star-jump.gif",
+    "thumbUrl": "/exercises/dataset/lib-star-jump.jpg",
+    "instructionsEn": [
+      "Stand with your feet shoulder-width apart and your arms by your sides.",
+      "Bend your knees slightly and jump up explosively.",
+      "As you jump, spread your legs and extend your arms out to the sides, forming a star shape with your body.",
+      "Land softly on the balls of your feet with your knees slightly bent.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "target": "cardiovascular system",
+    "bodyPart": "cardio",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-tuck-crunch",
+    "name": "tuck crunch",
+    "gifUrl": "/exercises/dataset/lib-tuck-crunch.gif",
+    "thumbUrl": "/exercises/dataset/lib-tuck-crunch.jpg",
+    "instructionsEn": [
+      "Lie flat on your back with your knees bent and feet flat on the ground.",
+      "Place your hands behind your head with your elbows pointing outwards.",
+      "Engaging your abs, lift your shoulder blades off the ground and bring your knees towards your chest, simultaneously curling your upper body towards your knees.",
+      "Pause for a moment at the top, then slowly lower your shoulder blades and extend your legs back to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hip flexors"
+    ],
+    "target": "abs",
+    "bodyPart": "waist",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-upright-row-with-bands",
+    "name": "barbell upright row",
+    "gifUrl": "/exercises/dataset/lib-upright-row-with-bands.gif",
+    "thumbUrl": "/exercises/dataset/lib-upright-row-with-bands.jpg",
+    "instructionsEn": [
+      "Stand with your feet shoulder-width apart and hold a barbell with an overhand grip, hands slightly wider than shoulder-width apart.",
+      "Let the barbell hang in front of your thighs, arms fully extended.",
+      "Keeping your back straight and core engaged, exhale and lift the barbell straight up towards your chin, leading with your elbows.",
+      "Pause for a moment at the top, then inhale and slowly lower the barbell back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "traps",
+      "biceps"
+    ],
+    "target": "delts",
+    "bodyPart": "shoulders",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  {
+    "id": "lib-wrist-circles",
+    "name": "wrist circles",
+    "gifUrl": "/exercises/dataset/lib-wrist-circles.gif",
+    "thumbUrl": "/exercises/dataset/lib-wrist-circles.jpg",
+    "instructionsEn": [
+      "Extend your arms straight out in front of you.",
+      "Make a fist with both hands.",
+      "Rotate your wrists in a circular motion, keeping your arms still.",
+      "Continue the wrist circles for the desired number of repetitions."
+    ],
+    "secondaryMuscles": [
+      "hands",
+      "wrists"
+    ],
+    "target": "forearms",
+    "bodyPart": "lower arms",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  }
+]
