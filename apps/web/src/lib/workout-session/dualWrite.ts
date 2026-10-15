@@ -18,7 +18,7 @@ export type DomainStartResult = {
 /** Map domain step logs → UI boolean setsDone (length = targetSets). */
 export function uiSetsFromDomain(session: WorkoutSession): Record<string, boolean[]> {
   const setsDone: Record<string, boolean[]> = {};
-  for (const step of session.steps) {
+  for (const step of session.steps ?? []) {
     const n = step.snapshot.targetSets;
     const done = step.completedSets.length;
     setsDone[step.snapshot.exerciseId] = Array.from({ length: n }, (_, i) => i < done);
@@ -142,7 +142,8 @@ export async function domainCompleteSet(input: {
     const session = await svc.getSession(sessionId);
     if (!session || session.status === "completed" || session.status === "abandoned") return null;
 
-    const step = session.steps[session.currentStepIndex];
+    const steps = session.steps ?? [];
+    const step = steps[session.currentStepIndex];
     if (!step || step.snapshot.exerciseId !== input.exerciseId) {
       return null;
     }

@@ -174,7 +174,7 @@ export default function WorkoutScreen() {
   );
   const currentStepExerciseId =
     resumable && activeDay && dayIdFromTemplate(resumable.templateRevisionId) === activeDay.id
-      ? Number(resumable.steps[resumable.currentStepIndex]?.snapshot.exerciseId)
+      ? Number((resumable.steps ?? [])[resumable.currentStepIndex]?.snapshot.exerciseId)
       : null;
 
   function openExercise(id: number) {
@@ -201,10 +201,10 @@ export default function WorkoutScreen() {
   }
 
   const sessionDoneSets = resumable
-    ? resumable.steps.reduce((n, s) => n + s.completedSets.length, 0)
+    ? (resumable.steps ?? []).reduce((n, s) => n + s.completedSets.length, 0)
     : 0;
   const sessionTargetSets = resumable
-    ? resumable.steps.reduce((n, s) => n + s.snapshot.targetSets, 0)
+    ? (resumable.steps ?? []).reduce((n, s) => n + s.snapshot.targetSets, 0)
     : 0;
   const sessionPct =
     sessionTargetSets > 0 ? Math.min(100, Math.round((sessionDoneSets / sessionTargetSets) * 100)) : 0;
@@ -224,7 +224,7 @@ export default function WorkoutScreen() {
           {resumable && dayIdFromTemplate(resumable.templateRevisionId) === activeDay.id ? (
             <View style={styles.resumeBlock}>
               <Text style={[styles.resumeHint, { color: colors.lime }]}>
-                Есть незавершённая сессия · шаг {resumable.currentStepIndex + 1}/{resumable.steps.length}
+                Есть незавершённая сессия · шаг {resumable.currentStepIndex + 1}/{(resumable.steps ?? []).length}
               </Text>
               <View
                 style={styles.sessionProgress}
@@ -249,7 +249,8 @@ export default function WorkoutScreen() {
                       .then((session) => {
                         if (!session) return;
                         void refreshResumable();
-                        const step = session.steps[session.currentStepIndex];
+                        const steps = session.steps ?? [];
+                        const step = steps[session.currentStepIndex];
                         const exId = step ? Number(step.snapshot.exerciseId) : effectiveExercises[0]?.id;
                         if (exId) openExercise(exId);
                       })
@@ -267,7 +268,8 @@ export default function WorkoutScreen() {
                       .then((session) => {
                         if (!session) return;
                         void refreshResumable();
-                        const first = session.steps[0];
+                        const steps = session.steps ?? [];
+                        const first = steps[0];
                         const exId = first ? Number(first.snapshot.exerciseId) : effectiveExercises[0]?.id;
                         if (exId) openExercise(exId);
                       })

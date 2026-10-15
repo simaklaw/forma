@@ -30,14 +30,15 @@ export function sequentialStepInfo(
     };
   }
 
-  const step = session.steps[session.currentStepIndex];
+  const steps = session.steps ?? [];
+  const step = steps[session.currentStepIndex];
   if (!step) {
     return {
       isCurrent: false,
       expectedName: null,
       expectedExerciseId: null,
       currentStepIndex: session.currentStepIndex,
-      totalSteps: session.steps.length
+      totalSteps: steps.length
     };
   }
 
@@ -49,6 +50,6 @@ export function sequentialStepInfo(
     expectedName: isCurrent ? null : nameById(expectedId) ?? step.snapshot.name ?? `упражнение ${expectedId}`,
     expectedExerciseId: Number.isFinite(expectedId) ? expectedId : null,
     currentStepIndex: session.currentStepIndex,
-    totalSteps: session.steps.length
+    totalSteps: steps.length
   };
 }
