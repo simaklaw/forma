@@ -1,13 +1,20 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { CoachEngine, estimateBurnFromSetLogs, isProfileComplete, toDateKey } from '@forma/core';
+import {
+  analyzeRecovery,
+  buildCoachBrief,
+  isProfileComplete,
+  type CoachBrief
+} from '@forma/core';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
-import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
 import type { TabParamList } from '@/navigation/types';
-import { selectTodayMeals, useFitPulseStore } from '@/state/useFitPulseStore';
+import { selectDailyTotals, selectTodayMeals, useFitPulseStore } from '@/state/useFitPulseStore';
+
+const GLASS_ML = 250;
+const WATER_GOAL_ML = 2500;
 
 type Props = {
   dayName: string;
@@ -16,18 +23,20 @@ type Props = {
   exerciseMeta?: Record<number, { category: string; equipment: string }>;
 };
 
-/** On-device coach strip — shows gate / loading / advice (never silent null when mounted). */
-export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames, exerciseMeta }: Props) {
+/**
+ * Compact on-device coach strip — structured CoachBrief from RecoveryEngine.
+ * No network; no long chat wall on the Workout tab.
+ */
+export function WorkoutCoachCard({ dayName, anyDoneToday }: Props) {
   const colors = useThemeColors();
-  const styles = createStyles(colors);
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const profile = useFitPulseStore((s) => s.profile);
   const allMeals = useFitPulseStore((s) => s.todayMeals);
   const todayMeals = useMemo(() => selectTodayMeals(allMeals), [allMeals]);
   const setLogs = useFitPulseStore((s) => s.setLogs);
+  const waterGlasses = useFitPulseStore((s) => s.waterGlasses);
   const calculateTargets = useFitPulseStore((s) => s.calculateTargets);
-  const [advice, setAdvice] = useState('');
-  const [loading, setLoading] = useState(false);
 
   const complete = isProfileComplete({
     weightKg: profile.weight,
@@ -36,105 +45,32 @@ export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames, exercis
     gender: profile.sex
   });
 
-  const burned = useMemo(() => {
-    if (!complete || !Number.isFinite(profile.weight) || (profile.weight as number) <= 0) return 0;
-    return estimateBurnFromSetLogs({
-      weightKg: profile.weight as number,
-      setLogs,
-      dateKey: toDateKey(new Date()),
-      exerciseNames,
-      exerciseMeta
-    });
-  }, [complete, profile.weight, setLogs, exerciseNames, exerciseMeta]);
-
-  const proteinTarget = useMemo(() => {
-    if (!complete) return 0;
-    return calculateTargets().proteinTarget;
-  }, [
-    complete,
-    calculateTargets,
-    profile.weight,
-    profile.height,
-    profile.age,
-    profile.sex,
-    profile.pal,
-    profile.goal
-  ]);
-
-  const snapshot = useMemo(() => {
+  const brief: CoachBrief | null = useMemo(() => {
     if (!complete) return null;
+    const dates = [...new Set(setLogs.map((e) => e.dateKey))].sort();
+    const workouts = dates.map((date) => ({ date, completed: true as const }));
+    const meals = selectDailyTotals(todayMeals);
     const targets = calculateTargets();
-    return mobileCoachSnapshot({
-      profile: profile as {
-        sex: 'male' | 'female';
-        age: number;
-        height: number;
-        weight: number;
-        pal: number;
-        goal: 'recomp' | 'maintain' | 'gain';
-      },
-      todayMeals,
-      targetCalories: targets.target,
-      proteinTarget: targets.proteinTarget,
-      burnedCalories: burned,
-      lastWorkoutName: anyDoneToday ? dayName : undefined,
-      rpeScore: 7
+    const insight = analyzeRecovery({
+      workouts,
+      intakeKcal: meals.kcal,
+      intakeProteinG: meals.protein,
+      targetKcal: targets?.target,
+      targetProteinG: targets?.proteinTarget,
+      waterLogsMl: waterGlasses * GLASS_ML,
+      waterGoalMl: WATER_GOAL_ML
     });
-  }, [complete, profile, todayMeals, calculateTargets, burned, dayName, anyDoneToday]);
+    return buildCoachBrief(insight, dayName);
+  }, [complete, setLogs, todayMeals, calculateTargets, waterGlasses, dayName]);
 
-  useEffect(() => {
-    if (!snapshot) {
-      setAdvice('');
-      setLoading(false);
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    const prompt = anyDoneToday ? 'восстановление после тренировки' : 'совет на тренировку';
-    CoachEngine.getTrainer()
-      .generateAdvice(snapshot, prompt)
-      .then((text) => {
-        if (!cancelled) {
-          setAdvice(text);
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setAdvice('Локальный тренер недоступен. Проверьте профиль и попробуйте снова.');
-          setLoading(false);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [snapshot, anyDoneToday]);
-
-  const labelBits = ['FITPULSE · Тренер'];
-  if (burned > 0) labelBits.push(`~${burned} ккал`);
-
-  let body: string;
   if (!complete) {
-    body =
-      'Заполните профиль (пол, вес, рост, возраст) — тогда здесь появится совет под день «' +
-      dayName +
-      '». Вес по умолчанию не подставляется.';
-  } else if (loading && !advice) {
-    body = 'Думаю…';
-  } else if (advice) {
-    body = advice;
-  } else {
-    body = 'Думаю…';
-  }
-
-  return (
-    <View style={styles.card} accessibilityRole="text">
-      <Text style={styles.label}>{labelBits.join(' · ')}</Text>
-      {complete && proteinTarget > 0 ? (
-        <Text style={styles.meta}>Белок сегодня: цель {proteinTarget} г</Text>
-      ) : null}
-      <Text style={styles.body}>{body}</Text>
-      {!complete ? (
+    return (
+      <View style={styles.card} accessibilityRole="text">
+        <Text style={styles.label}>FITPULSE · Тренер</Text>
+        <Text style={styles.body}>
+          Заполните профиль (пол, вес, рост, возраст) — тогда здесь появится совет под день «
+          {dayName}».
+        </Text>
         <Pressable
           style={styles.cta}
           onPress={() => navigation.navigate('Профиль')}
@@ -143,53 +79,116 @@ export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames, exercis
         >
           <Text style={styles.ctaText}>Открыть профиль</Text>
         </Pressable>
-      ) : null}
+      </View>
+    );
+  }
+
+  if (!brief) return null;
+
+  const headline = anyDoneToday ? brief.restAdvice : brief.workoutAdvice;
+
+  return (
+    <View
+      style={styles.card}
+      accessibilityRole="text"
+      accessibilityLabel={`${brief.readinessLabel}, ${brief.readinessScore} процентов`}
+    >
+      <View style={styles.row}>
+        <Text style={styles.label}>
+          FITPULSE · {brief.readinessLabel} · offline
+        </Text>
+        <Text style={styles.score}>{brief.readinessScore}</Text>
+      </View>
+      <Text style={styles.body} numberOfLines={3}>
+        {brief.summary}
+      </Text>
+      <Text style={styles.advice} numberOfLines={2}>
+        {headline}
+      </Text>
+      <View style={styles.actions}>
+        {brief.actionItems.map((item) => (
+          <View key={item} style={styles.chip}>
+            <Text style={styles.chipText}>{item}</Text>
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
 
 function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
-  card: {
-    marginBottom: spacing.md,
-    marginTop: spacing.sm,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: radius.card,
-    backgroundColor: colors.panel
-  },
-  label: {
-    color: colors.lime,
-    fontSize: 11,
-    fontFamily: fonts.bodySemi,
-    marginBottom: 4,
-    letterSpacing: 0.4
-  },
-  meta: {
-    color: colors.paperFaint,
-    fontSize: 11,
-    fontFamily: fonts.mono,
-    marginBottom: 6
-  },
-  body: {
-    color: colors.paperDim,
-    fontSize: 13,
-    lineHeight: 19,
-    fontFamily: fonts.body
-  },
-  cta: {
-    marginTop: 12,
-    alignSelf: 'flex-start',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: radius.control,
-    backgroundColor: colors.lime
-  },
-  ctaText: {
-    color: colors.ink,
-    fontFamily: fonts.bodySemi,
-    fontSize: 13
-  }
-});
+    card: {
+      marginBottom: spacing.md,
+      marginTop: spacing.sm,
+      padding: 14,
+      borderWidth: 1,
+      borderColor: colors.line,
+      borderRadius: radius.card,
+      backgroundColor: colors.panel
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      justifyContent: 'space-between',
+      marginBottom: 6
+    },
+    label: {
+      color: colors.lime,
+      fontSize: 11,
+      fontFamily: fonts.bodySemi,
+      letterSpacing: 0.4,
+      flex: 1
+    },
+    score: {
+      color: colors.lime,
+      fontFamily: fonts.mono,
+      fontSize: 22
+    },
+    body: {
+      color: colors.paperDim,
+      fontSize: 13,
+      lineHeight: 19,
+      fontFamily: fonts.body
+    },
+    advice: {
+      color: colors.paper,
+      fontSize: 13,
+      lineHeight: 18,
+      fontFamily: fonts.bodySemi,
+      marginTop: 6
+    },
+    actions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+      marginTop: 10
+    },
+    chip: {
+      borderRadius: radius.pill,
+      borderWidth: 1,
+      borderColor: colors.lineStrong,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      backgroundColor: colors.panelRaised
+    },
+    chipText: {
+      color: colors.paperDim,
+      fontSize: 11,
+      fontFamily: fonts.mono
+    },
+    cta: {
+      marginTop: 12,
+      alignSelf: 'flex-start',
+      paddingVertical: 8,
+      paddingHorizontal: 14,
+      borderRadius: radius.control,
+      backgroundColor: colors.lime
+    },
+    ctaText: {
+      color: colors.ink,
+      fontFamily: fonts.bodySemi,
+      fontSize: 13
+    }
+  });
 }

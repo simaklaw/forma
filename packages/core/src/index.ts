@@ -16,6 +16,7 @@ export * from "./met/sessionBurn.ts";
 export * from "./services/OpenFoodFactsService.ts";
 export * from "./services/WgerExerciseService.ts";
 export * from "./ai/CoachEngine.ts";
+export * from "./ai/coachBrief.ts";
 export * from "./state/useFormaStore.ts";
 export * from "./profile/isProfileComplete.ts";
 export * from "./import/index.ts";
