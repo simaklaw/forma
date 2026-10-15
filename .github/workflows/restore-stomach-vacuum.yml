@@ -1,0 +1,49 @@
+name: Restore stomach-vacuum MP4
+
+on:
+  push:
+    branches: [feat/stomach-vacuum-mp4]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: restore-stomach-vacuum
+  cancel-in-progress: true
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore MP4 from history and commit if missing
+        run: |
+          set -euo pipefail
+          DEST_WEB="apps/web/public/exercises/stomach-vacuum.mp4"
+          DEST_MOBILE="apps/mobile/assets/exercises/stomach-vacuum.mp4"
+          SRC_COMMIT="f6cba20f27fc3559c173e9d40eaab7a08a12c556"
+          SRC_PATH="Stomach Vacuums Exercise [ Exercise Library ](720P_HD).mp4"
+
+          if [ -f "$DEST_WEB" ] && [ -s "$DEST_WEB" ]; then
+            echo "Already present: $DEST_WEB ($(wc -c < "$DEST_WEB") bytes)"
+            exit 0
+          fi
+
+          mkdir -p apps/web/public/exercises apps/mobile/assets/exercises
+          git show "${SRC_COMMIT}:${SRC_PATH}" > "$DEST_WEB"
+          test -s "$DEST_WEB"
+          echo "Restored $(wc -c < "$DEST_WEB") bytes"
+
+          rm -f "$DEST_MOBILE"
+          ln -sf ../../../web/public/exercises/stomach-vacuum.mp4 "$DEST_MOBILE"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$DEST_WEB" "$DEST_MOBILE"
+          git commit -m "feat(assets): add stomach-vacuum.mp4 technique video"
+          git push origin HEAD
