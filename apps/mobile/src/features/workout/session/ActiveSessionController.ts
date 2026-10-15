@@ -310,7 +310,8 @@ class ActiveSessionControllerImpl {
     }
     const session = await this.ensureDaySession(input.dayId, input.exercises);
     if (!session) return null;
-    const step = session.steps[session.currentStepIndex];
+    const steps = session.steps ?? [];
+    const step = steps[session.currentStepIndex];
     if (!step || step.snapshot.exerciseId !== String(input.exerciseId)) {
       log.debug('recordSet rejected: out of order or missing step', {
         expected: step?.snapshot.exerciseId,
@@ -347,7 +348,7 @@ class ActiveSessionControllerImpl {
     const session = await svc.getSession(this.sessionId);
     if (!session || session.status === 'completed' || session.status === 'abandoned') return;
 
-    const allDone = session.steps.every(
+    const allDone = (session.steps ?? []).every(
       (s) => s.skipped || s.completedSets.length >= s.snapshot.targetSets
     );
     if (!allDone) return;

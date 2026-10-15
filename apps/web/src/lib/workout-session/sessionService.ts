@@ -102,6 +102,7 @@ export async function getDomainExpectedExerciseId(): Promise<string | null> {
   if (!session || session.status === "completed" || session.status === "abandoned") {
     return null;
   }
-  const step = session.steps[session.currentStepIndex];
+  const steps = session.steps ?? [];
+  const step = steps[session.currentStepIndex];
   return step?.snapshot.exerciseId ?? null;
 }

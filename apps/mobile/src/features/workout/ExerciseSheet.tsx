@@ -118,7 +118,8 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         if (cancelled) return;
         setSessionSnap(session);
         if (!session) return;
-        const step = session.steps[session.currentStepIndex];
+        const steps = session.steps ?? [];
+        const step = steps[session.currentStepIndex];
         if (!step || step.snapshot.exerciseId !== String(exercise.id)) return;
         if (session.restEndsAtMs != null) {
           startRestFromDeadline(session.restEndsAtMs);

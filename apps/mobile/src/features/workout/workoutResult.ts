@@ -16,9 +16,9 @@ export function summarizeWorkoutResult(
 ): WorkoutResult {
   return {
     dayName,
-    totalSets: session.steps.reduce((total, step) => total + step.completedSets.length, 0),
+    totalSets: (session.steps ?? []).reduce((total, step) => total + step.completedSets.length, 0),
     burnedKcal: Math.round(
-      session.steps.reduce(
+      (session.steps ?? []).reduce(
         (total, step) =>
           total +
           estimateSessionBurnKcal({
