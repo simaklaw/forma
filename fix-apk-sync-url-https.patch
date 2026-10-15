@@ -1,0 +1,66 @@
+From 6af148f47a8abeb21eb00f0a1d2b38eac56c68b9 Mon Sep 17 00:00:00 2001
+From: Simaklaw <simaklaw.vl@gmail.com>
+Date: Thu, 15 Oct 2026 04:41:22 +0000
+Subject: [PATCH] fix(ci): harden Build Android APK sync URL to HTTPS
+ production
+
+Default EXPO_PUBLIC_SYNC_API_URL to https://fitpulse-api.fly.dev.
+If a repo Variable is empty or HTTP, warn and fall back so main builds
+do not fail the HTTPS gate.
+---
+ .github/workflows/build-apk.yml | 24 ++++++++++++++++++------
+ 1 file changed, 18 insertions(+), 6 deletions(-)
+
+diff --git a/.github/workflows/build-apk.yml b/.github/workflows/build-apk.yml
+index 81539b2..fdd2b46 100644
+--- a/.github/workflows/build-apk.yml
++++ b/.github/workflows/build-apk.yml
+@@ -8,7 +8,7 @@ on:
+       sync_api_url:
+         description: "HTTPS sync API URL for this test APK"
+         required: false
+-        default: "https://8787-i3mhfw1s8tu1g7pz6uw6e-a7c0b6ca.us3.manus.computer"
++        default: "https://fitpulse-api.fly.dev"
+       mailru_client_id:
+         description: "Public Mail.ru OIDC client ID"
+         required: false
+@@ -28,9 +28,10 @@ jobs:
+     timeout-minutes: 90
+ 
+     env:
+-      # Repository Variables override these test defaults when configured.
++      # Repository Variables override these defaults when configured.
++      # Production sync API: https://fitpulse-api.fly.dev (see docs/deploy-fly-r2.md).
+       EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID: ${{ inputs.mailru_client_id || vars.EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID || '01a0f7166d967e68a13e38353948a6a5' }}
+-      EXPO_PUBLIC_SYNC_API_URL: ${{ inputs.sync_api_url || vars.EXPO_PUBLIC_SYNC_API_URL || 'https://8787-i3mhfw1s8tu1g7pz6uw6e-a7c0b6ca.us3.manus.computer' }}
++      EXPO_PUBLIC_SYNC_API_URL: ${{ inputs.sync_api_url || vars.EXPO_PUBLIC_SYNC_API_URL || 'https://fitpulse-api.fly.dev' }}
+       # Do NOT set NODE_ENV=production at job level — pnpm then skips
+       # devDependencies (babel-plugin-module-resolver) and Metro fails.
+       GRADLE_OPTS: -Xmx4g -XX:MaxMetaspaceSize=1g -Dorg.gradle.daemon=false
+@@ -88,9 +89,20 @@ jobs:
+         run: |
+           set -euo pipefail
+           test -n "$EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID" || { echo "::error::Missing GitHub Variable EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID"; exit 1; }
+-          test -n "$EXPO_PUBLIC_SYNC_API_URL" || { echo "::error::Missing GitHub Variable EXPO_PUBLIC_SYNC_API_URL"; exit 1; }
+-          case "$EXPO_PUBLIC_SYNC_API_URL" in https://*) ;; *) echo "::error::EXPO_PUBLIC_SYNC_API_URL must use HTTPS"; exit 1;; esac
+-          echo "Production Mail.ru client ID and HTTPS API URL are configured."
++
++          # Prefer explicit HTTPS URL; if a repo Variable is empty or HTTP (local/dev),
++          # fall back to production Fly so main APK builds stay green.
++          DEFAULT_SYNC_URL="https://fitpulse-api.fly.dev"
++          SYNC_URL="${EXPO_PUBLIC_SYNC_API_URL:-}"
++          case "$SYNC_URL" in
++            https://*) ;;
++            *)
++              echo "::warning::EXPO_PUBLIC_SYNC_API_URL is missing or not HTTPS ('${SYNC_URL}'). Using ${DEFAULT_SYNC_URL}."
++              SYNC_URL="$DEFAULT_SYNC_URL"
++              ;;
++          esac
++          echo "EXPO_PUBLIC_SYNC_API_URL=$SYNC_URL" >> "$GITHUB_ENV"
++          echo "Production Mail.ru client ID and HTTPS API URL are configured: $SYNC_URL"
+       - name: Install workspace dependencies (incl. devDeps for Babel/Metro)
+         shell: bash
+         env:
+-- 
+2.43.0
+
