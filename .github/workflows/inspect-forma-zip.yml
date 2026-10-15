@@ -1,4 +1,4 @@
-name: Inspect uploaded forma ZIP
+name: Import uploaded forma feature bundle
 
 on:
   push:
@@ -7,33 +7,32 @@ on:
       - ".github/workflows/inspect-forma-zip.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  inspect:
+  import:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Inspect archive and git artifacts
+      - name: Import feature branch from ZIP bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
           archive="For forma1.zip"
-          test -f "$archive"
+          branch="feat/dataset-instructions-local-media"
           tmp="$(mktemp -d)"
           unzip -q "$archive" -d "$tmp"
-          echo "=== ZIP entries ==="
-          unzip -Z1 "$archive"
-          echo "=== Bundle verification ==="
-          git bundle verify "$tmp/feat-dataset-instructions-local-media.bundle"
-          echo "=== Bundle refs ==="
-          git bundle list-heads "$tmp/feat-dataset-instructions-local-media.bundle"
-          echo "=== Bundle branch commit ==="
-          git fetch "$tmp/feat-dataset-instructions-local-media.bundle" feat/dataset-instructions-local-media:refs/remotes/import/feat-dataset-instructions-local-media
-          git log -1 --format='%H%n%P%n%s%n%ci' refs/remotes/import/feat-dataset-instructions-local-media
-          echo "=== Patch summary ==="
-          git apply --stat "$tmp/feat-dataset-instructions-code-only.patch"
-          echo "=== Patch paths ==="
-          git apply --numstat "$tmp/feat-dataset-instructions-code-only.patch"
+          bundle="$tmp/feat-dataset-instructions-local-media.bundle"
+          git bundle verify "$bundle"
+          # The bundle exposes the feature commit as HEAD (not as a named branch).
+          git fetch "$bundle" HEAD:refs/heads/"$branch"
+          git checkout "$branch"
+          # Reconcile the artifact with the current main branch before publishing.
+          git merge --no-edit origin/main
+          git push origin "$branch"
+          echo "Published branch: $branch"
+          git log -1 --format='HEAD: %H%n%s'
