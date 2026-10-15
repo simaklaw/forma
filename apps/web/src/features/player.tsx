@@ -6,10 +6,12 @@ import {
   getRealtimeSetFeedback,
   metForExercise,
 } from "@forma/core";
+import { ExerciseReferencePanel } from "@/components/ExerciseReferencePanel";
 import { Button } from "@/components/ui/button";
 import { planById, planExercises } from "@/lib/catalog";
 import { canMarkSet, expectedExerciseId } from "@/lib/session-logic.ts";
 import { useAppStore } from "@/lib/store";
+import { datasetMetaForName } from "@/lib/exerciseDataset";
 import { cn } from "@/lib/utils";
 
 export function PlayerScreen({ planId }: { planId: string }) {
@@ -63,6 +65,8 @@ export function PlayerScreen({ planId }: { planId: string }) {
       </div>
     );
   }
+
+  const datasetMeta = datasetMetaForName(ex.name);
 
   const sets = session?.setsDone[ex.id] ?? Array(ex.sets).fill(false);
   const allDone = sets.every(Boolean);
@@ -130,6 +134,12 @@ export function PlayerScreen({ planId }: { planId: string }) {
           {ex.sets}×{ex.reps}
           {ex.unit === "sec" ? " с" : ""} · ~{Math.round(estKcal)} ккал
         </p>
+
+        {datasetMeta ? (
+          <div className="mt-4">
+            <ExerciseReferencePanel meta={datasetMeta} />
+          </div>
+        ) : null}
 
         {sequentialMismatch && (
           <div className="mt-3 rounded-lg border border-warn/40 bg-[color-mix(in_srgb,var(--color-warn)_12%,transparent)] px-3 py-2 text-sm">
