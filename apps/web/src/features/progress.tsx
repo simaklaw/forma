@@ -18,6 +18,9 @@ import {
   type ExerciseCompletion,
 } from "@forma/core";
 import { Button } from "@/components/ui/button";
+import { Tag, Tags } from "@/components/ui/tag";
+import { Level, LevelItem } from "@/components/ui/level";
+import { Box } from "@/components/ui/box";
 import { CompareSlider } from "@/components/compare-slider";
 import { MuscleWeek } from "@/components/muscle-map";
 import { EXERCISES, FOODS, planById, planExercises } from "@/lib/catalog";
@@ -149,7 +152,7 @@ export function ProgressScreen() {
       </section>
 
       <section
-        className="mt-4 rounded-2xl bg-surface p-4 shadow-card"
+        className="fp-box mt-4 fp-block"
         aria-label={`Восстановление ${recoveryCard.recovery.recoveryScore} процентов`}
       >
         <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">
@@ -166,7 +169,7 @@ export function ProgressScreen() {
             </p>
           </div>
         </div>
-        <div className="mt-4 grid grid-cols-4 gap-2">
+        <Level className="mt-4">
           {(
             [
               ["Мышцы", recoveryCard.recovery.muscularReadiness],
@@ -175,22 +178,16 @@ export function ProgressScreen() {
               ["ЦНС", recoveryCard.recovery.cnsFreshness],
             ] as const
           ).map(([lbl, val]) => (
-            <div key={lbl} className="rounded-xl border border-border px-2 py-2 text-center">
-              <p className="font-display text-lg tabular-nums text-fg">{val}</p>
-              <p className="text-[10px] text-muted">{lbl}</p>
-            </div>
+            <LevelItem key={lbl} heading={lbl} value={val} />
           ))}
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
+        </Level>
+        <Tags className="mt-3">
           {recoveryCard.brief.actionItems.map((item) => (
-            <span
-              key={item}
-              className="rounded-full border border-border bg-surface-2 px-2.5 py-1 text-[11px] text-muted"
-            >
+            <Tag key={item} tone="accent">
               {item}
-            </span>
+            </Tag>
           ))}
-        </div>
+        </Tags>
       </section>
 
       {badges.length > 0 && (

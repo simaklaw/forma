@@ -4,7 +4,9 @@ import {
   analyzeRecovery,
   buildCoachBrief,
 } from "@forma/core";
+import { Box } from "@/components/ui/box";
 import { Button } from "@/components/ui/button";
+import { Tag, Tags } from "@/components/ui/tag";
 import { ExerciseCard } from "@/components/exercise-card";
 import { WeekDots } from "@/components/week-dots";
 import { FOODS, PLANS, planById, planExercises, EXERCISES } from "@/lib/catalog";
@@ -158,7 +160,7 @@ export function TodayScreen() {
         <h1 className="mt-1 font-display text-2xl tracking-tight">FORMA</h1>
       </header>
 
-      <div className="animate-rise mb-4 rounded-2xl bg-surface p-4 shadow-card">
+      <Box className="animate-rise mb-4 fp-block">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-accent">
@@ -182,39 +184,37 @@ export function TodayScreen() {
             <span>{recovery.recoveryScore}%</span>
           </div>
         </div>
-        <div className="mt-3 flex flex-wrap gap-2">
+        <Tags className="mt-3">
           {coachBrief.actionItems.map((item) => (
-            <span
-              key={item}
-              className="rounded-full border border-border bg-surface-2 px-2.5 py-1 text-[11px] text-muted"
-            >
+            <Tag key={item} tone="accent">
               {item}
-            </span>
+            </Tag>
           ))}
-        </div>
+        </Tags>
         <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
           <span className="text-xs text-muted tabular-nums">
             Вода {(waterMl / 1000).toFixed(1)} / 2.5 л
           </span>
           {[250, 500].map((ml) => (
-            <button
+            <Button
               key={ml}
               type="button"
-              className="rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-fg"
+              variant="soft"
+              size="pill"
               onClick={() => addWater(ml)}
             >
               +{ml} мл
-            </button>
+            </Button>
           ))}
         </div>
-      </div>
+      </Box>
 
-      <div className="mb-6 rounded-2xl bg-surface p-4 shadow-card">
+      <Box className="mb-6 fp-block">
         <p className="text-sm leading-relaxed text-fg">{line}</p>
         <div className="mt-4">
           <WeekDots doneDates={doneDates} />
         </div>
-      </div>
+      </Box>
 
       {livePlan && liveCounts && (
         <div className="mb-4 rounded-2xl bg-surface p-4 shadow-card">
