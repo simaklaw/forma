@@ -7,6 +7,11 @@ import {
   type ExerciseGifManifestEntry,
 } from './exerciseGifManifest.generated';
 
+/** Imported library ids that ship a bundled MP4 (see exerciseMedia). */
+const LIBRARY_BUNDLED_VIDEO: Partial<Record<string, ExerciseMediaKey>> = {
+  'lib-stomach-vacuum': 'stomach-vacuum'
+};
+
 const CACHE_DIR = `${FileSystem.cacheDirectory ?? ''}exercise_media/`;
 const MAX_CACHE_BYTES = 1024 * 1024 * 1024;
 
@@ -39,7 +44,8 @@ export class ExerciseMediaService {
     libraryId: string,
     mediaKey?: ExerciseMediaKey
   ): Promise<{ uri: string } | number | null> {
-    const bundled = mediaKey ? EXERCISE_VIDEOS[mediaKey] : undefined;
+    const key = mediaKey ?? LIBRARY_BUNDLED_VIDEO[libraryId];
+    const bundled = key ? EXERCISE_VIDEOS[key] : undefined;
     if (bundled != null) return bundled;
     const remoteUrl = EXERCISE_VIDEO_MANIFEST.find((entry) => entry.id === libraryId)?.videoUrl;
     const remote = remoteUrl ? { uri: remoteUrl } : null;
@@ -147,8 +153,9 @@ export class ExerciseMediaService {
     libraryId: string,
     mediaKey?: ExerciseMediaKey
   ): { kind: 'video' | 'gif' | 'thumb'; uri: string } | { kind: 'bundled'; asset: number } | null {
-    if (mediaKey && EXERCISE_VIDEOS[mediaKey] != null) {
-      return { kind: 'bundled', asset: EXERCISE_VIDEOS[mediaKey]! };
+    const previewKey = mediaKey ?? LIBRARY_BUNDLED_VIDEO[libraryId];
+    if (previewKey && EXERCISE_VIDEOS[previewKey] != null) {
+      return { kind: 'bundled', asset: EXERCISE_VIDEOS[previewKey]! };
     }
     const video = EXERCISE_VIDEO_MANIFEST.find((e) => e.id === libraryId);
     if (video?.videoUrl) return { kind: 'video', uri: video.videoUrl };
