@@ -66,6 +66,8 @@ export function PlayerScreen({ planId }: { planId: string }) {
     );
   }
 
+  const datasetMeta = datasetMetaForName(ex.name);
+
   const sets = session?.setsDone[ex.id] ?? Array(ex.sets).fill(false);
   const allDone = sets.every(Boolean);
   const restEndsAt = session?.restEndsAt ?? null;
