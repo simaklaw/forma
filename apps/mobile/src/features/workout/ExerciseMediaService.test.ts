@@ -13,6 +13,16 @@ jest.mock('./exerciseMedia', () => ({ EXERCISE_VIDEOS: { pushup: 42 } }));
 jest.mock('./exerciseVideoManifest.generated', () => ({
   EXERCISE_VIDEO_MANIFEST: [{ id: 'lib-video', videoUrl: 'https://cdn.example/video.mp4' }]
 }));
+jest.mock('./exerciseGifManifest.generated', () => ({
+  EXERCISE_GIF_MANIFEST: [],
+  gifEntryForLibraryId: jest.fn(),
+  resolveGifUri: jest.fn(),
+  resolveThumbUri: jest.fn(),
+}));
+jest.mock('./exerciseDatasetAssets.generated', () => ({
+  DATASET_GIF_MODULES: {},
+  DATASET_THUMB_MODULES: {},
+}));
 
 import * as FileSystem from 'expo-file-system';
 import { ExerciseMediaService } from './ExerciseMediaService';
