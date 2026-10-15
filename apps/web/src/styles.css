@@ -187,3 +187,127 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
 }
+
+
+/* -------------------------------------------------------------------------
+ * FitPulse layout primitives — ideas from Bulma (box, level, tag, notification,
+ * block spacing). CSS-only, no Bulma dependency; works with existing tokens.
+ * https://github.com/jgthms/bulma
+ * ---------------------------------------------------------------------- */
+
+:root {
+  --block-spacing: 1.25rem;
+}
+
+/* Sibling vertical rhythm (Bulma .block) */
+.fp-block + .fp-block {
+  margin-top: var(--block-spacing);
+}
+
+/* Soft elevated surface (Bulma .box) */
+.fp-box {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 1rem 1.15rem;
+  color: var(--color-fg);
+}
+
+.fp-box.is-compact {
+  padding: 0.75rem 1rem;
+}
+
+/* Horizontal metric row (Bulma .level) */
+.fp-level {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.fp-level-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 auto;
+  text-align: center;
+  min-width: 4.5rem;
+}
+
+.fp-level-item .heading {
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  font-weight: 500;
+}
+
+.fp-level-item .title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--color-fg);
+  margin-top: 0.15rem;
+}
+
+/* Compact tags / chips (Bulma .tag) */
+.fp-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  color: var(--color-muted);
+  font-size: 0.6875rem;
+  line-height: 1;
+  padding: 0.35rem 0.65rem;
+  white-space: nowrap;
+}
+
+.fp-tag.is-accent {
+  border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.fp-tag.is-warn {
+  border-color: color-mix(in srgb, var(--color-warn) 35%, transparent);
+  background: color-mix(in srgb, var(--color-warn) 12%, transparent);
+  color: var(--color-warn);
+}
+
+.fp-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+/* Soft status banner (Bulma .notification) */
+.fp-notification {
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  color: var(--color-fg);
+}
+
+.fp-notification.is-accent {
+  border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  background: var(--color-accent-soft);
+  color: var(--color-fg);
+}
+
+.fp-notification.is-warn {
+  border-color: color-mix(in srgb, var(--color-warn) 30%, transparent);
+  background: color-mix(in srgb, var(--color-warn) 12%, transparent);
+}
+
+.fp-notification.is-danger {
+  border-color: color-mix(in srgb, var(--color-danger) 30%, transparent);
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+}

@@ -11,6 +11,7 @@ const buttonVariants = cva(
         secondary: "bg-surface-2 text-fg shadow-card",
         ghost: "bg-transparent text-fg",
         danger: "bg-danger/10 text-danger",
+        soft: "bg-accent-soft text-accent",
       },
       size: {
         sm: "h-10 rounded-md px-4 text-sm",
