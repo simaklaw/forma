@@ -9,14 +9,15 @@ export function Level({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
 export function LevelItem({
   className,
   heading,
-  title,
+  value,
+  children,
   ...props
-}: HTMLAttributes<HTMLDivElement> & { heading?: string; title?: ReactNode }) {
+}: HTMLAttributes<HTMLDivElement> & { heading?: string; value?: ReactNode }) {
   return (
     <div className={cn("fp-level-item", className)} {...props}>
       {heading ? <span className="heading">{heading}</span> : null}
-      {title != null ? <span className="title">{title}</span> : null}
-      {props.children}
+      {value != null ? <span className="title">{value}</span> : null}
+      {children}
     </div>
   );
 }

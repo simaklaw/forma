@@ -178,7 +178,7 @@ export function ProgressScreen() {
               ["ЦНС", recoveryCard.recovery.cnsFreshness],
             ] as const
           ).map(([lbl, val]) => (
-            <LevelItem key={lbl} heading={lbl} title={val} />
+            <LevelItem key={lbl} heading={lbl} value={val} />
           ))}
         </Level>
         <Tags className="mt-3">
