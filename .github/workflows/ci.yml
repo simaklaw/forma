@@ -69,7 +69,9 @@ jobs:
           pnpm --filter @forma/api test 2>&1 | tee api_test.log
 
       - name: Test mobile
-        run: pnpm --filter @forma/mobile test -- --ci --passWithNoTests
+        run: |
+          set -o pipefail
+          pnpm --filter @forma/mobile test -- --ci --passWithNoTests 2>&1 | tee mobile_test.log
 
       - name: Test web domain helpers
         run: pnpm --filter @forma/web test
@@ -80,14 +82,17 @@ jobs:
           set +e
           SAY() { echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
           SAY "## CI failure diagnostics (run ${{ github.run_id }})"
+          if [ -f mobile_test.log ]; then
+            SAY "### mobile_test.log"
+            SAY "```"
+            tail -c 16000 mobile_test.log >> "$GITHUB_STEP_SUMMARY"
+            SAY "```"
+          fi
           if [ -f api_test.log ]; then
             SAY "### api_test.log"
             SAY "```"
             tail -c 12000 api_test.log >> "$GITHUB_STEP_SUMMARY"
             SAY "```"
-          else
-            SAY "api_test.log NOT FOUND; cwd=$(pwd); files:"
-            ls -la >> "$GITHUB_STEP_SUMMARY"
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -97,7 +102,7 @@ jobs:
           SAY "branch=$(git branch --show-current)"
           DIR="ci-logs/${{ github.run_id }}"
           mkdir -p "$DIR"
-          for f in api_test.log typecheck_core.log; do [ -f "$f" ] && cp "$f" "$DIR/"; done
+          for f in api_test.log typecheck_core.log mobile_test.log; do [ -f "$f" ] && cp "$f" "$DIR/"; done
           echo "ci failed run: ${{ github.run_id }} commit ${{ github.sha }} date $(date -u +%FT%TZ)" >> "$DIR/README.txt"
           git add -f ci-logs && SAY "add ok" || SAY "add fail"
           git commit -m "ci: diagnostics from failed ci run ${{ github.run_id }}" && SAY "commit ok" || SAY "commit fail: $(git status --short | head -5)"
