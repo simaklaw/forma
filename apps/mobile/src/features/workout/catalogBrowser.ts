@@ -1,4 +1,4 @@
-import type { MuscleKey } from '@/components/MuscleMap';
+import type { MuscleKey } from '@/domain/muscleKeys';
 import type { Sex } from '@/engines/MetabolicEngine';
 import type { ExerciseDef } from './ExerciseSheet';
 import { catalogFor, type TrainingMode } from './catalog';
