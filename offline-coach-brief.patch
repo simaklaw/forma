@@ -1,0 +1,497 @@
+From 94e8fc3fd28f888b5bbfaaed40a77325611419f6 Mon Sep 17 00:00:00 2001
+From: Simaklaw <simaklaw.vl@gmail.com>
+Date: Thu, 15 Oct 2026 04:13:16 +0000
+Subject: [PATCH] feat(core): offline CoachBrief + compact Workout coach card
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Structured readiness brief from RecoveryEngine (local_rules only).
+Workout tab shows score, one summary line, and up to 3 action chips —
+no async LLM wall of text on Today/Workout.
+---
+ .../src/features/workout/WorkoutCoachCard.tsx | 291 +++++++++---------
+ packages/core/src/ai/coachBrief.test.ts       |  31 ++
+ packages/core/src/ai/coachBrief.ts            |  67 ++++
+ packages/core/src/ai/index.ts                 |   1 +
+ packages/core/src/index.ts                    |   1 +
+ 5 files changed, 245 insertions(+), 146 deletions(-)
+ create mode 100644 packages/core/src/ai/coachBrief.test.ts
+ create mode 100644 packages/core/src/ai/coachBrief.ts
+
+diff --git a/apps/mobile/src/features/workout/WorkoutCoachCard.tsx b/apps/mobile/src/features/workout/WorkoutCoachCard.tsx
+index da01dc5..f4649a7 100644
+--- a/apps/mobile/src/features/workout/WorkoutCoachCard.tsx
++++ b/apps/mobile/src/features/workout/WorkoutCoachCard.tsx
+@@ -1,13 +1,20 @@
+-import React, { useEffect, useMemo, useState } from 'react';
++import React, { useMemo } from 'react';
+ import { Pressable, StyleSheet, Text, View } from 'react-native';
+ import { useNavigation } from '@react-navigation/native';
+ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+-import { CoachEngine, estimateBurnFromSetLogs, isProfileComplete, toDateKey } from '@forma/core';
++import {
++  analyzeRecovery,
++  buildCoachBrief,
++  isProfileComplete,
++  type CoachBrief
++} from '@forma/core';
+ import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+ import { useThemeColors } from '@/core/theme/useThemeColors';
+-import { mobileCoachSnapshot } from '@/lib/coachSnapshot';
+ import type { TabParamList } from '@/navigation/types';
+-import { selectTodayMeals, useFitPulseStore } from '@/state/useFitPulseStore';
++import { selectDailyTotals, selectTodayMeals, useFitPulseStore } from '@/state/useFitPulseStore';
++
++const GLASS_ML = 250;
++const WATER_GOAL_ML = 2500;
+ 
+ type Props = {
+   dayName: string;
+@@ -16,18 +23,20 @@ type Props = {
+   exerciseMeta?: Record<number, { category: string; equipment: string }>;
+ };
+ 
+-/** On-device coach strip — shows gate / loading / advice (never silent null when mounted). */
+-export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames, exerciseMeta }: Props) {
++/**
++ * Compact on-device coach strip — structured CoachBrief from RecoveryEngine.
++ * No network; no long chat wall on the Workout tab.
++ */
++export function WorkoutCoachCard({ dayName, anyDoneToday }: Props) {
+   const colors = useThemeColors();
+-  const styles = createStyles(colors);
++  const styles = useMemo(() => createStyles(colors), [colors]);
+   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
+   const profile = useFitPulseStore((s) => s.profile);
+   const allMeals = useFitPulseStore((s) => s.todayMeals);
+   const todayMeals = useMemo(() => selectTodayMeals(allMeals), [allMeals]);
+   const setLogs = useFitPulseStore((s) => s.setLogs);
++  const waterGlasses = useFitPulseStore((s) => s.waterGlasses);
+   const calculateTargets = useFitPulseStore((s) => s.calculateTargets);
+-  const [advice, setAdvice] = useState('');
+-  const [loading, setLoading] = useState(false);
+ 
+   const complete = isProfileComplete({
+     weightKg: profile.weight,
+@@ -36,105 +45,32 @@ export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames, exercis
+     gender: profile.sex
+   });
+ 
+-  const burned = useMemo(() => {
+-    if (!complete || !Number.isFinite(profile.weight) || (profile.weight as number) <= 0) return 0;
+-    return estimateBurnFromSetLogs({
+-      weightKg: profile.weight as number,
+-      setLogs,
+-      dateKey: toDateKey(new Date()),
+-      exerciseNames,
+-      exerciseMeta
+-    });
+-  }, [complete, profile.weight, setLogs, exerciseNames, exerciseMeta]);
+-
+-  const proteinTarget = useMemo(() => {
+-    if (!complete) return 0;
+-    return calculateTargets().proteinTarget;
+-  }, [
+-    complete,
+-    calculateTargets,
+-    profile.weight,
+-    profile.height,
+-    profile.age,
+-    profile.sex,
+-    profile.pal,
+-    profile.goal
+-  ]);
+-
+-  const snapshot = useMemo(() => {
++  const brief: CoachBrief | null = useMemo(() => {
+     if (!complete) return null;
++    const dates = [...new Set(setLogs.map((e) => e.dateKey))].sort();
++    const workouts = dates.map((date) => ({ date, completed: true as const }));
++    const meals = selectDailyTotals(todayMeals);
+     const targets = calculateTargets();
+-    return mobileCoachSnapshot({
+-      profile: profile as {
+-        sex: 'male' | 'female';
+-        age: number;
+-        height: number;
+-        weight: number;
+-        pal: number;
+-        goal: 'recomp' | 'maintain' | 'gain';
+-      },
+-      todayMeals,
+-      targetCalories: targets.target,
+-      proteinTarget: targets.proteinTarget,
+-      burnedCalories: burned,
+-      lastWorkoutName: anyDoneToday ? dayName : undefined,
+-      rpeScore: 7
++    const insight = analyzeRecovery({
++      workouts,
++      intakeKcal: meals.kcal,
++      intakeProteinG: meals.protein,
++      targetKcal: targets?.target,
++      targetProteinG: targets?.proteinTarget,
++      waterLogsMl: waterGlasses * GLASS_ML,
++      waterGoalMl: WATER_GOAL_ML
+     });
+-  }, [complete, profile, todayMeals, calculateTargets, burned, dayName, anyDoneToday]);
++    return buildCoachBrief(insight, dayName);
++  }, [complete, setLogs, todayMeals, calculateTargets, waterGlasses, dayName]);
+ 
+-  useEffect(() => {
+-    if (!snapshot) {
+-      setAdvice('');
+-      setLoading(false);
+-      return;
+-    }
+-    let cancelled = false;
+-    setLoading(true);
+-    const prompt = anyDoneToday ? 'восстановление после тренировки' : 'совет на тренировку';
+-    CoachEngine.getTrainer()
+-      .generateAdvice(snapshot, prompt)
+-      .then((text) => {
+-        if (!cancelled) {
+-          setAdvice(text);
+-          setLoading(false);
+-        }
+-      })
+-      .catch(() => {
+-        if (!cancelled) {
+-          setAdvice('Локальный тренер недоступен. Проверьте профиль и попробуйте снова.');
+-          setLoading(false);
+-        }
+-      });
+-    return () => {
+-      cancelled = true;
+-    };
+-  }, [snapshot, anyDoneToday]);
+-
+-  const labelBits = ['FITPULSE · Тренер'];
+-  if (burned > 0) labelBits.push(`~${burned} ккал`);
+-
+-  let body: string;
+   if (!complete) {
+-    body =
+-      'Заполните профиль (пол, вес, рост, возраст) — тогда здесь появится совет под день «' +
+-      dayName +
+-      '». Вес по умолчанию не подставляется.';
+-  } else if (loading && !advice) {
+-    body = 'Думаю…';
+-  } else if (advice) {
+-    body = advice;
+-  } else {
+-    body = 'Думаю…';
+-  }
+-
+-  return (
+-    <View style={styles.card} accessibilityRole="text">
+-      <Text style={styles.label}>{labelBits.join(' · ')}</Text>
+-      {complete && proteinTarget > 0 ? (
+-        <Text style={styles.meta}>Белок сегодня: цель {proteinTarget} г</Text>
+-      ) : null}
+-      <Text style={styles.body}>{body}</Text>
+-      {!complete ? (
++    return (
++      <View style={styles.card} accessibilityRole="text">
++        <Text style={styles.label}>FITPULSE · Тренер</Text>
++        <Text style={styles.body}>
++          Заполните профиль (пол, вес, рост, возраст) — тогда здесь появится совет под день «
++          {dayName}».
++        </Text>
+         <Pressable
+           style={styles.cta}
+           onPress={() => navigation.navigate('Профиль')}
+@@ -143,53 +79,116 @@ export function WorkoutCoachCard({ dayName, anyDoneToday, exerciseNames, exercis
+         >
+           <Text style={styles.ctaText}>Открыть профиль</Text>
+         </Pressable>
+-      ) : null}
++      </View>
++    );
++  }
++
++  if (!brief) return null;
++
++  const headline = anyDoneToday ? brief.restAdvice : brief.workoutAdvice;
++
++  return (
++    <View
++      style={styles.card}
++      accessibilityRole="text"
++      accessibilityLabel={`${brief.readinessLabel}, ${brief.readinessScore} процентов`}
++    >
++      <View style={styles.row}>
++        <Text style={styles.label}>
++          FITPULSE · {brief.readinessLabel} · offline
++        </Text>
++        <Text style={styles.score}>{brief.readinessScore}</Text>
++      </View>
++      <Text style={styles.body} numberOfLines={3}>
++        {brief.summary}
++      </Text>
++      <Text style={styles.advice} numberOfLines={2}>
++        {headline}
++      </Text>
++      <View style={styles.actions}>
++        {brief.actionItems.map((item) => (
++          <View key={item} style={styles.chip}>
++            <Text style={styles.chipText}>{item}</Text>
++          </View>
++        ))}
++      </View>
+     </View>
+   );
+ }
+ 
+ function createStyles(colors: ColorTokens) {
+   return StyleSheet.create({
+-  card: {
+-    marginBottom: spacing.md,
+-    marginTop: spacing.sm,
+-    padding: 14,
+-    borderWidth: 1,
+-    borderColor: colors.line,
+-    borderRadius: radius.card,
+-    backgroundColor: colors.panel
+-  },
+-  label: {
+-    color: colors.lime,
+-    fontSize: 11,
+-    fontFamily: fonts.bodySemi,
+-    marginBottom: 4,
+-    letterSpacing: 0.4
+-  },
+-  meta: {
+-    color: colors.paperFaint,
+-    fontSize: 11,
+-    fontFamily: fonts.mono,
+-    marginBottom: 6
+-  },
+-  body: {
+-    color: colors.paperDim,
+-    fontSize: 13,
+-    lineHeight: 19,
+-    fontFamily: fonts.body
+-  },
+-  cta: {
+-    marginTop: 12,
+-    alignSelf: 'flex-start',
+-    paddingVertical: 8,
+-    paddingHorizontal: 14,
+-    borderRadius: radius.control,
+-    backgroundColor: colors.lime
+-  },
+-  ctaText: {
+-    color: colors.ink,
+-    fontFamily: fonts.bodySemi,
+-    fontSize: 13
+-  }
+-});
++    card: {
++      marginBottom: spacing.md,
++      marginTop: spacing.sm,
++      padding: 14,
++      borderWidth: 1,
++      borderColor: colors.line,
++      borderRadius: radius.card,
++      backgroundColor: colors.panel
++    },
++    row: {
++      flexDirection: 'row',
++      alignItems: 'baseline',
++      justifyContent: 'space-between',
++      marginBottom: 6
++    },
++    label: {
++      color: colors.lime,
++      fontSize: 11,
++      fontFamily: fonts.bodySemi,
++      letterSpacing: 0.4,
++      flex: 1
++    },
++    score: {
++      color: colors.lime,
++      fontFamily: fonts.mono,
++      fontSize: 22
++    },
++    body: {
++      color: colors.paperDim,
++      fontSize: 13,
++      lineHeight: 19,
++      fontFamily: fonts.body
++    },
++    advice: {
++      color: colors.paper,
++      fontSize: 13,
++      lineHeight: 18,
++      fontFamily: fonts.bodySemi,
++      marginTop: 6
++    },
++    actions: {
++      flexDirection: 'row',
++      flexWrap: 'wrap',
++      gap: 6,
++      marginTop: 10
++    },
++    chip: {
++      borderRadius: radius.pill,
++      borderWidth: 1,
++      borderColor: colors.lineStrong,
++      paddingHorizontal: 10,
++      paddingVertical: 5,
++      backgroundColor: colors.panelRaised
++    },
++    chipText: {
++      color: colors.paperDim,
++      fontSize: 11,
++      fontFamily: fonts.mono
++    },
++    cta: {
++      marginTop: 12,
++      alignSelf: 'flex-start',
++      paddingVertical: 8,
++      paddingHorizontal: 14,
++      borderRadius: radius.control,
++      backgroundColor: colors.lime
++    },
++    ctaText: {
++      color: colors.ink,
++      fontFamily: fonts.bodySemi,
++      fontSize: 13
++    }
++  });
+ }
+diff --git a/packages/core/src/ai/coachBrief.test.ts b/packages/core/src/ai/coachBrief.test.ts
+new file mode 100644
+index 0000000..34e2092
+--- /dev/null
++++ b/packages/core/src/ai/coachBrief.test.ts
+@@ -0,0 +1,31 @@
++import assert from "node:assert/strict";
++import { describe, it } from "node:test";
++import { analyzeRecovery } from "../engines/RecoveryEngine.ts";
++import { buildCoachBrief } from "./coachBrief.ts";
++
++describe("buildCoachBrief", () => {
++  it("stays on-device and maps peak to optimal", () => {
++    const insight = analyzeRecovery({
++      workouts: [],
++      waterLogsMl: 2500,
++      now: new Date("2026-10-01T12:00:00")
++    });
++    const brief = buildCoachBrief(insight, "Дом · ноги");
++    assert.equal(brief.source, "local_rules");
++    assert.equal(brief.readinessStatus, "optimal");
++    assert.ok(brief.actionItems.length <= 3);
++    assert.match(brief.workoutAdvice, /ноги/);
++  });
++
++  it("flags rest after consecutive load", () => {
++    const now = new Date("2026-10-04T12:00:00");
++    const workouts = ["2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04"].map((date) => ({
++      date,
++      completed: true as const
++    }));
++    const insight = analyzeRecovery({ workouts, waterLogsMl: 2500, now });
++    const brief = buildCoachBrief(insight, "Силовая");
++    assert.equal(brief.readinessStatus, "rest_required");
++    assert.ok(brief.actionItems.some((a) => /без силовой/i.test(a)));
++  });
++});
+diff --git a/packages/core/src/ai/coachBrief.ts b/packages/core/src/ai/coachBrief.ts
+new file mode 100644
+index 0000000..c33d298
+--- /dev/null
++++ b/packages/core/src/ai/coachBrief.ts
+@@ -0,0 +1,67 @@
++/**
++ * Structured offline coach brief — same shape a remote model would return.
++ * Filled only by on-device rules (RecoveryEngine + plan title). No network.
++ */
++
++import type { RecoveryInsight } from "../engines/RecoveryEngine.ts";
++
++export type CoachBriefStatus = "optimal" | "ready" | "fatigued" | "rest_required";
++
++export type CoachBrief = {
++  readinessScore: number;
++  readinessStatus: CoachBriefStatus;
++  readinessLabel: string;
++  summary: string;
++  workoutAdvice: string;
++  nutritionAdvice: string;
++  hydrationAdvice: string;
++  restAdvice: string;
++  actionItems: string[];
++  source: "local_rules";
++};
++
++function mapStatus(status: RecoveryInsight["status"]): CoachBriefStatus {
++  if (status === "peak") return "optimal";
++  if (status === "ready") return "ready";
++  if (status === "active_recovery_recommended") return "fatigued";
++  return "rest_required";
++}
++
++/** Build a compact structured brief from RecoveryInsight + optional plan title. */
++export function buildCoachBrief(insight: RecoveryInsight, planTitle = "план дня"): CoachBrief {
++  const readinessStatus = mapStatus(insight.status);
++
++  const workoutAdvice =
++    readinessStatus === "rest_required"
++      ? "Силовую сегодня пропусти. Если хочется движения — только лёгкая мобильность."
++      : readinessStatus === "fatigued"
++        ? "Снизь объём: разминка и рабочие подходы без добивания."
++        : `${insight.recommendationTitle}. План: ${planTitle}.`;
++
++  const hydrationAdvice =
++    insight.waterAdequacyPct < 70
++      ? `Вода на ${insight.waterAdequacyPct}% цели. Один стакан до тренировки.`
++      : "Вода в норме. Между подходами — глоток, не литр.";
++
++  const restAdvice = `Следующий лёгкий день: ${insight.optimalRestDay}.`;
++
++  const actionItems: string[] = [];
++  if (readinessStatus === "rest_required") actionItems.push("Без силовой сегодня");
++  else actionItems.push(`Старт: ${planTitle}`);
++  if (insight.proteinAdequacyPct < 80) actionItems.push("Добери белок до вечера");
++  if (insight.waterAdequacyPct < 70) actionItems.push("Стакан воды сейчас");
++  if (actionItems.length < 3) actionItems.push("Отдых между подходами полный");
++
++  return {
++    readinessScore: insight.recoveryScore,
++    readinessStatus,
++    readinessLabel: insight.statusLabel,
++    summary: insight.recommendationDescription,
++    workoutAdvice,
++    nutritionAdvice: insight.nutritionAdvice,
++    hydrationAdvice,
++    restAdvice,
++    actionItems: actionItems.slice(0, 3),
++    source: "local_rules"
++  };
++}
+diff --git a/packages/core/src/ai/index.ts b/packages/core/src/ai/index.ts
+index 58039c2..aa9a0f0 100644
+--- a/packages/core/src/ai/index.ts
++++ b/packages/core/src/ai/index.ts
+@@ -1,3 +1,4 @@
+ export * from "./CoachEngine.ts";
+ export * from "./ILocalAITrainer.ts";
+ export * from "./RulesLocalAITrainer.ts";
++export * from "./coachBrief.ts";
+diff --git a/packages/core/src/index.ts b/packages/core/src/index.ts
+index d922f57..e866c21 100644
+--- a/packages/core/src/index.ts
++++ b/packages/core/src/index.ts
+@@ -16,6 +16,7 @@ export * from "./met/sessionBurn.ts";
+ export * from "./services/OpenFoodFactsService.ts";
+ export * from "./services/WgerExerciseService.ts";
+ export * from "./ai/CoachEngine.ts";
++export * from "./ai/coachBrief.ts";
+ export * from "./state/useFormaStore.ts";
+ export * from "./profile/isProfileComplete.ts";
+ export * from "./import/index.ts";
+-- 
+2.43.0
+
