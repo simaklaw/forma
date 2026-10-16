@@ -30,18 +30,11 @@ import {
   type ReplaceTarget
 } from './replaceTarget';
 import { importedToExerciseDef } from './importedExerciseBridge';
+import { useLanguageStore } from '@/i18n/useLanguageStore';
+import { useT, categoryLabel, equipmentLabel, levelLabel } from '@/i18n/strings';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { TabParamList } from '@/navigation/types';
-
-const CATEGORY_LABELS: Record<ImportedExercise['category'], string> = {
-  chest: 'Грудь',
-  back: 'Спина',
-  legs: 'Ноги',
-  abs: 'Кор',
-  arms: 'Руки',
-  glutes: 'Ягодицы'
-};
 
 function displayName(ex: ImportedExercise): string {
   return ex.nameRu ?? ex.nameEn;
@@ -49,6 +42,8 @@ function displayName(ex: ImportedExercise): string {
 
 export default function ImportedLibraryPanel() {
   const colors = useThemeColors();
+  const t = useT();
+  const lang = useLanguageStore((s) => s.lang);
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<ImportedExercise['category'] | null>(null);
@@ -111,8 +106,8 @@ export default function ImportedLibraryPanel() {
 
   const categories = useMemo(
     () =>
-      (Object.keys(CATEGORY_LABELS) as ImportedExercise['category'][]).filter((key) =>
-        IMPORTED_EXERCISE_LIBRARY.some((ex) => ex.category === key)
+      (['chest', 'back', 'legs', 'abs', 'arms', 'glutes'] as ImportedExercise['category'][]).filter(
+        (key) => IMPORTED_EXERCISE_LIBRARY.some((ex) => ex.category === key)
       ),
     []
   );
@@ -122,13 +117,13 @@ export default function ImportedLibraryPanel() {
       <TextInput
         value={query}
         onChangeText={setQuery}
-        placeholder="Поиск в справочнике (EN / RU)"
+        placeholder={t('panelSearchPlaceholder')}
         placeholderTextColor={colors.paperFaint}
         style={[
           styles.search,
           { backgroundColor: colors.panel, borderColor: colors.lineStrong, color: colors.paper }
         ]}
-        accessibilityLabel="Поиск в справочнике упражнений"
+        accessibilityLabel={t('panelSearchA11y')}
         returnKeyType="search"
       />
       <FlatList
@@ -151,14 +146,14 @@ export default function ImportedLibraryPanel() {
               accessibilityState={{ selected: active }}
             >
               <Text style={[styles.chipText, { color: active ? colors.lime : colors.paperDim }]}>
-                {CATEGORY_LABELS[item]}
+                {categoryLabel(item, lang)}
               </Text>
             </TouchableOpacity>
           );
         }}
       />
       <Text style={[styles.count, { color: colors.paperFaint }]}>
-        {filtered.length} из {IMPORTED_EXERCISE_LIBRARY.length} · свой вес / резинки
+        {t('panelCount', { shown: filtered.length, total: IMPORTED_EXERCISE_LIBRARY.length })}
       </Text>
       <FlatList
         data={filtered}
@@ -192,9 +187,9 @@ export default function ImportedLibraryPanel() {
                   ) : null}
                 </View>
                 <Text style={[styles.meta, { color: colors.paperFaint }]}>
-                  {CATEGORY_LABELS[item.category]} ·{' '}
-                  {item.equipment === 'bands' ? 'резинки' : 'свой вес'}
-                  {item.level ? ` · ${item.level}` : ''}
+                  {categoryLabel(item.category, lang)} ·{' '}
+                  {equipmentLabel(item.equipment, lang)}
+                  {item.level ? ` · ${levelLabel(item.level, lang)}` : ''}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -211,7 +206,7 @@ export default function ImportedLibraryPanel() {
           <View style={[styles.modalRoot, { backgroundColor: colors.ink }]}>
             <View style={styles.modalHeader}>
               <TouchableOpacity onPress={() => setSelected(null)} accessibilityRole="button">
-                <Text style={[styles.close, { color: colors.lime }]}>Закрыть</Text>
+                <Text style={[styles.close, { color: colors.lime }]}>{t('close')}</Text>
               </TouchableOpacity>
             </View>
             <ScrollView contentContainerStyle={styles.modalBody}>
@@ -222,7 +217,7 @@ export default function ImportedLibraryPanel() {
                   source={{ uri: gifUri }}
                   style={styles.hero}
                   resizeMode="contain"
-                  accessibilityLabel={`Анимация: ${displayName(selected)}`}
+                  accessibilityLabel={t('panelAnimationOf', { name: displayName(selected) })}
                 />
               ) : null}
               {!videoSource && !gifUri
@@ -247,16 +242,19 @@ export default function ImportedLibraryPanel() {
                 <Text style={[styles.meta, { color: colors.paperFaint }]}>{selected.nameEn}</Text>
               ) : null}
               <Text style={[styles.meta, { color: colors.paperDim, marginTop: 6 }]}>
-                {CATEGORY_LABELS[selected.category]} ·{' '}
-                {selected.equipment === 'bands' ? 'резинки' : 'свой вес'}
+                {categoryLabel(selected.category, lang)} ·{' '}
+                {equipmentLabel(selected.equipment, lang)}
               </Text>
 
-              {selected.instructionsEn.length > 0 ? (
+              {(selected.instructionsRu.length > 0 || selected.instructionsEn.length > 0) ? (
                 <View style={styles.section}>
                   <Text style={[styles.sectionLabel, { color: colors.paperFaint }]}>
-                    Техника (EN)
+                    {t('technique')}
                   </Text>
-                  {selected.instructionsEn.map((line, i) => (
+                  {(selected.instructionsRu.length > 0
+                    ? selected.instructionsRu
+                    : selected.instructionsEn
+                  ).map((line, i) => (
                     <Text key={i} style={[styles.instruction, { color: colors.paperDim }]}>
                       {i + 1}. {line}
                     </Text>
@@ -273,14 +271,13 @@ export default function ImportedLibraryPanel() {
                 >
                   <Text style={[styles.replaceCtaText, { color: colors.ink }]}>
                     {replacing
-                      ? 'Подставляю…'
-                      : `Подставить вместо «${replaceTarget!.currentName}»`}
+                      ? t('panelSubstituting')
+                      : t('panelSubstituteFor', { name: replaceTarget!.currentName })}
                   </Text>
                 </TouchableOpacity>
               ) : (
                 <Text style={[styles.hint, { color: colors.paperFaint }]}>
-                  Чтобы добавить в план: на экране тренировки нажмите «Заменить» у упражнения, затем
-                  выберите движение здесь.
+                  {t('panelReplaceHint')}
                 </Text>
               )}
             </ScrollView>

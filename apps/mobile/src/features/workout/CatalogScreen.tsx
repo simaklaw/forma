@@ -10,17 +10,18 @@ import {
 } from 'react-native';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
-import { MUSCLE_LABELS, type MuscleKey } from '@/components/MuscleMap';
+import { type MuscleKey } from '@/components/MuscleMap';
 import ScreenHeader from '@/components/ScreenHeader';
 import { type TrainingMode } from './catalog';
 import {
   buildCatalogItems,
-  EQUIPMENT_LABELS,
   filterCatalogItems,
   inferEquipment,
   type CatalogItem,
   type Equipment
 } from './catalogBrowser';
+import { useLanguageStore } from '@/i18n/useLanguageStore';
+import { useT, equipmentLabel, muscleLabel } from '@/i18n/strings';
 import ExerciseDetailModal from './ExerciseDetailModal';
 import ImportedLibraryPanel from './ImportedLibraryPanel';
 import TabataPanel from './tabata/TabataPanel';
@@ -47,6 +48,8 @@ const SHOW_GYM_MODE_TOGGLE = false;
 
 export default function CatalogScreen() {
   const colors = useThemeColors();
+  const t = useT();
+  const lang = useLanguageStore((s) => s.lang);
   const [mode, setMode] = useState<TrainingMode>('home');
   const [query, setQuery] = useState('');
   const [muscle, setMuscle] = useState<MuscleKey | null>(null);
@@ -132,14 +135,14 @@ export default function CatalogScreen() {
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]}>
       <ScreenHeader
-        eyebrow="Библиотека"
-        title="Каталог"
+        eyebrow={t('catalogSegmentPlansFull')}
+        title={t('catalogHeaderLibrary')}
         subtitle={
           catalogScope === 'library'
-            ? 'Справочник · bodyweight / резинки'
+            ? t('catalogHintLibrary')
             : catalogScope === 'tabata'
-              ? 'Табата · интервалы HIIT'
-              : `Офлайн · дом · ${filtered.length} из ${items.length}`
+              ? t('catalogHintTabata')
+              : t('catalogHintOffline', { shown: filtered.length, total: items.length })
         }
       />
 
@@ -151,18 +154,20 @@ export default function CatalogScreen() {
           ]}
         >
           <Text style={[styles.replaceBannerTitle, { color: colors.lime }]}>
-            Замена в плане: {replaceTarget.dayName}
+            {t('catalogReplaceTitle', { day: replaceTarget.dayName })}
           </Text>
           <Text style={[styles.replaceBannerBody, { color: colors.paper }]}>
-            Выберите упражнение вместо «{replaceTarget.currentName}» (слот{' '}
-            {replaceTarget.slotIndex + 1})
+            {t('catalogReplaceBody', {
+              name: replaceTarget.currentName,
+              slot: replaceTarget.slotIndex + 1
+            })}
           </Text>
           <TouchableOpacity
             onPress={() => clearReplaceTarget()}
             accessibilityRole="button"
-            accessibilityLabel="Отменить замену"
+            accessibilityLabel={t('catalogReplaceBanner')}
           >
-            <Text style={[styles.replaceBannerCancel, { color: colors.paperDim }]}>Отменить</Text>
+            <Text style={[styles.replaceBannerCancel, { color: colors.paperDim }]}>{t('cancel')}</Text>
           </TouchableOpacity>
         </View>
       ) : null}
@@ -170,9 +175,9 @@ export default function CatalogScreen() {
       <View style={styles.modeTabs} accessibilityRole="tablist">
         {(
           [
-            { id: 'plans' as const, label: 'Планы' },
-            { id: 'library' as const, label: 'Справочник' },
-            { id: 'tabata' as const, label: 'Табата' }
+            { id: 'plans' as const, label: t('catalogSegmentPlans') },
+            { id: 'library' as const, label: t('catalogSegmentLibrary') },
+            { id: 'tabata' as const, label: t('catalogSegmentTabata') }
           ] as const
         ).map((item) => {
           const active = catalogScope === item.id;
@@ -211,8 +216,8 @@ export default function CatalogScreen() {
             <View style={styles.modeTabs} accessibilityRole="tablist">
               {(
                 [
-                  { id: 'gym' as const, label: 'Зал', count: gymCount },
-                  { id: 'home' as const, label: 'Дом', count: homeCount }
+                  { id: 'gym' as const, label: t('gym'), count: gymCount },
+                  { id: 'home' as const, label: t('home'), count: homeCount }
                 ] as const
               ).map((item) => {
                 const active = mode === item.id;
@@ -249,13 +254,13 @@ export default function CatalogScreen() {
           <TextInput
             value={query}
             onChangeText={setQuery}
-            placeholder="Найти упражнение или группу мышц"
+            placeholder={t('catalogSearchPlaceholder')}
             placeholderTextColor={colors.paperFaint}
             style={[
               styles.search,
               { backgroundColor: colors.panel, borderColor: colors.lineStrong, color: colors.paper }
             ]}
-            accessibilityLabel="Поиск упражнений"
+            accessibilityLabel={t('catalogSearchA11y')}
             returnKeyType="search"
           />
           <View style={styles.favRow}>
@@ -268,7 +273,7 @@ export default function CatalogScreen() {
               ]}
               accessibilityRole="button"
               accessibilityState={{ selected: showFavoritesOnly }}
-              accessibilityLabel="Показать только избранное"
+              accessibilityLabel={t('favoritesOnly')}
             >
               <Text
                 style={[
@@ -276,14 +281,14 @@ export default function CatalogScreen() {
                   { color: showFavoritesOnly ? colors.lime : colors.paperDim }
                 ]}
               >
-                ★ Избранное{favoriteItems.length ? ` (${favoriteItems.length})` : ''}
+                {t('favoritesChip')}{favoriteItems.length ? ` (${favoriteItems.length})` : ''}
               </Text>
             </TouchableOpacity>
           </View>
 
           {recentItems.length > 0 && !showFavoritesOnly && !query && !muscle && !equipment ? (
             <View style={styles.recentBlock}>
-              <Text style={[styles.recentLabel, { color: colors.paperFaint }]}>НЕДАВНИЕ</Text>
+              <Text style={[styles.recentLabel, { color: colors.paperFaint }]}>{t('recentLabel')}</Text>
               <FlatList
                 data={recentItems}
                 horizontal
@@ -298,7 +303,7 @@ export default function CatalogScreen() {
                       { borderColor: colors.lineStrong, backgroundColor: colors.panel }
                     ]}
                     accessibilityRole="button"
-                    accessibilityLabel={`${item.name}. Недавнее упражнение`}
+                    accessibilityLabel={t('catalogRecentA11y', { name: item.name })}
                   >
                     <Text style={[styles.chipText, { color: colors.paper }]} numberOfLines={1}>
                       {item.name}
@@ -328,7 +333,7 @@ export default function CatalogScreen() {
                 ]}
                 accessibilityRole="button"
                 accessibilityState={{ selected: equipment === null }}
-                accessibilityLabel="Все виды оборудования"
+                accessibilityLabel={t('catalogEquipmentAll')}
               >
                 <Text
                   style={[
@@ -336,7 +341,7 @@ export default function CatalogScreen() {
                     { color: equipment === null ? colors.lime : colors.paperDim }
                   ]}
                 >
-                  Всё оборудование
+                  {t('catalogEquipmentAllChip')}
                 </Text>
               </TouchableOpacity>
             }
@@ -352,12 +357,12 @@ export default function CatalogScreen() {
                   ]}
                   accessibilityRole="button"
                   accessibilityState={{ selected: active }}
-                  accessibilityLabel={EQUIPMENT_LABELS[item]}
+                  accessibilityLabel={equipmentLabel(item, lang)}
                 >
                   <Text
                     style={[styles.chipText, { color: active ? colors.lime : colors.paperDim }]}
                   >
-                    {EQUIPMENT_LABELS[item]}
+                    {equipmentLabel(item, lang)}
                   </Text>
                 </TouchableOpacity>
               );
@@ -385,7 +390,7 @@ export default function CatalogScreen() {
                   <Text
                     style={[styles.chipText, { color: active ? colors.cyan : colors.paperDim }]}
                   >
-                    {MUSCLE_LABELS[item]}
+                    {muscleLabel(item, lang)}
                   </Text>
                 </TouchableOpacity>
               );
@@ -402,7 +407,7 @@ export default function CatalogScreen() {
                   onPress={() => setSelected(item)}
                   style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}
                   accessibilityRole="button"
-                  accessibilityLabel={`${item.name}. Открыть детали`}
+                  accessibilityLabel={t('catalogOpenDetailsA11y', { name: item.name })}
                 >
                   <View style={styles.cardTop}>
                     <Text style={[styles.index, { color: colors.lime }]}>
@@ -414,24 +419,24 @@ export default function CatalogScreen() {
                         {item.name}
                       </Text>
                       <Text style={[styles.meta, { color: colors.paperFaint }]}>
-                        {item.dayName} · {EQUIPMENT_LABELS[inferEquipment(item)]}
+                        {item.dayName} · {equipmentLabel(inferEquipment(item), lang)}
                       </Text>
                     </View>
                     <Text style={[styles.load, { color: colors.paperDim }]}>
-                      {item.workingWeight > 0 ? `${item.workingWeight} кг` : 'свой вес'}
+                      {item.workingWeight > 0
+                        ? `${item.workingWeight} ${t('kg')}`
+                        : t('bodyweightLabel')}
                     </Text>
                   </View>
                   <Text style={[styles.muscles, { color: colors.paperDim }]}>
-                    {item.targetMuscles.map((key) => MUSCLE_LABELS[key]).join(' · ')}
+                    {item.targetMuscles.map((key) => muscleLabel(key, lang)).join(' · ')}
                   </Text>
                 </TouchableOpacity>
               );
             }}
             ListEmptyComponent={
               <Text style={[styles.empty, { color: colors.paperFaint }]}>
-                {showFavoritesOnly
-                  ? 'В избранном пока пусто. Откройте упражнение и нажмите «В избранное».'
-                  : 'Ничего не найдено. Измените запрос или фильтр.'}
+                {showFavoritesOnly ? t('catalogFavoritesEmpty') : t('catalogNothingFound')}
               </Text>
             }
             keyboardShouldPersistTaps="handled"

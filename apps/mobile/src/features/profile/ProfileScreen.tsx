@@ -13,6 +13,8 @@ import {
   type BodyMeasurementType
 } from '@/state/useFitPulseStore';
 import { useThemeStore } from '@/state/useThemeStore';
+import { useLanguageStore } from '@/i18n/useLanguageStore';
+import { useT, measurementLabel } from '@/i18n/strings';
 import { useVoiceCuesStore } from '@/state/useVoiceCuesStore';
 import { Goal, Sex } from '@/engines/MetabolicEngine';
 import ProtocolBanner from '@/components/ProtocolBanner';
@@ -25,6 +27,9 @@ function numStr(v: number | null | undefined): string {
 
 export default function ProfileScreen() {
   const colors = useThemeColors();
+  const t = useT();
+  const lang = useLanguageStore((s) => s.lang);
+  const setLang = useLanguageStore((s) => s.setLang);
   const themeMode = useThemeStore((s) => s.mode);
   const setThemeMode = useThemeStore((s) => s.setMode);
   const voiceCuesEnabled = useVoiceCuesStore((s) => s.enabled);
@@ -72,10 +77,10 @@ export default function ProfileScreen() {
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(path, { mimeType: 'application/json' });
       } else {
-        Alert.alert('Экспорт', 'Файл сохранён: ' + path);
+        Alert.alert(t('profileExport'), t('profileExportDone', { path }));
       }
     } catch (e) {
-      Alert.alert('Ошибка экспорта', String(e));
+      Alert.alert(t('profileExportError'), String(e));
     }
   }
 
@@ -90,37 +95,39 @@ export default function ProfileScreen() {
       setAgeInput(numStr(next.age));
       setHeightInput(numStr(next.height));
       setWeightInput(numStr(next.weight));
-      Alert.alert('Импорт', 'Данные восстановлены из файла');
+      Alert.alert(t('profileImport'), t('profileImportDone'));
     } catch (e) {
-      Alert.alert('Ошибка импорта', e instanceof Error ? e.message : 'Файл повреждён или не в формате JSON');
+      Alert.alert(t('profileImportError'), e instanceof Error ? e.message : t('profileImportBadFile'));
     }
   }
 
-  const initials = profile.sex === 'female' ? 'Ж' : profile.sex === 'male' ? 'М' : '—';
-  const sexLabel = profile.sex === 'female' ? 'Женский' : profile.sex === 'male' ? 'Мужской' : '—';
+  const initials =
+    profile.sex === 'female' ? t('femaleShort') : profile.sex === 'male' ? t('maleShort') : '—';
+  const sexLabel =
+    profile.sex === 'female' ? t('female') : profile.sex === 'male' ? t('male') : '—';
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]} edges={['top']}>
       <View style={[styles.header, { borderColor: colors.line }]}>
-        <Text style={[styles.eyebrow, { color: colors.lime }]}>FITPULSE · Аккаунт</Text>
-        <Text style={[styles.title, { color: colors.paper }]}>Профиль</Text>
+        <Text style={[styles.eyebrow, { color: colors.lime }]}>{t('profileHeaderEyebrow')}</Text>
+        <Text style={[styles.title, { color: colors.paper }]}>{t('tabProfile')}</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.sectionHead}>
-          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>Оформление</Text>
-          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>тема</Text>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionTheme')}</Text>
+          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>{t('sectionThemeCount')}</Text>
         </View>
         <View style={[styles.themeCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
-          <Text style={[styles.settingName, { color: colors.paper }]}>Цветовая схема</Text>
+          <Text style={[styles.settingName, { color: colors.paper }]}>{t('themeSchemeName')}</Text>
           <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>
-            Тёмная ink или светлая спортивная — mint-акценты сохраняются
+            {t('themeSchemeDesc')}
           </Text>
           <View style={styles.themeRow}>
             {(
               [
-                { id: 'dark' as const, label: 'Тёмная' },
-                { id: 'light' as const, label: 'Светлая' }
+                { id: 'dark' as const, label: t('profileThemeDark') },
+                { id: 'light' as const, label: t('profileThemeLight') }
               ] as const
             ).map((opt) => {
               const on = themeMode === opt.id;
@@ -152,6 +159,46 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        <View style={styles.sectionHead}>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('languageTitle')}</Text>
+        </View>
+        <View style={[styles.themeCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <View style={styles.themeRow}>
+            {(
+              [
+                { id: 'ru' as const, label: t('languageRu') },
+                { id: 'en' as const, label: t('languageEn') }
+              ] as const
+            ).map((opt) => {
+              const on = lang === opt.id;
+              return (
+                <TouchableOpacity
+                  key={opt.id}
+                  style={[
+                    styles.themeBtn,
+                    { borderColor: colors.lineStrong, backgroundColor: colors.ink },
+                    on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                  ]}
+                  onPress={() => setLang(opt.id)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: on }}
+                  accessibilityLabel={opt.label}
+                >
+                  <Text
+                    style={[
+                      styles.themeBtnText,
+                      { color: colors.paperDim },
+                      on && { color: colors.lime }
+                    ]}
+                  >
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
         {!complete ? (
           <View
             style={[
@@ -159,11 +206,8 @@ export default function ProfileScreen() {
               { backgroundColor: colors.panelRaised, borderColor: colors.lineStrong }
             ]}
           >
-            <Text style={[styles.gateTitle, { color: colors.paper }]}>Заполните биометрию</Text>
-            <Text style={[styles.gateBody, { color: colors.paperDim }]}>
-              Пол, вес, рост и возраст нужны для BMR/TDEE и целей КБЖУ. Без них вес по
-              умолчанию не подставляется — кольцо питания и советы тренера ждут профиль.
-            </Text>
+            <Text style={[styles.gateTitle, { color: colors.paper }]}>{t('profileGateTitle')}</Text>
+            <Text style={[styles.gateBody, { color: colors.paperDim }]}>{t('profileGateBody')}</Text>
           </View>
         ) : null}
 
@@ -183,32 +227,36 @@ export default function ProfileScreen() {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.identityTitle, { color: colors.paper }]}>
-              {sexLabel} · {numStr(profile.age) || '—'} лет · {numStr(profile.height) || '—'} см ·{' '}
-              {numStr(profile.weight) || '—'} кг
+              {t('profileStatsLine', {
+                sex: sexLabel,
+                age: numStr(profile.age) || '—',
+                height: numStr(profile.height) || '—',
+                weight: numStr(profile.weight) || '—'
+              })}
             </Text>
             <Text style={[styles.identitySub, { color: colors.paperFaint }]}>
               {targets
-                ? `Цель ${targets.target.toLocaleString('ru-RU')} ккал · BMR ${targets.bmr}`
-                : 'Заполните профиль для расчёта КБЖУ'}
+                ? t('profileTargetLine', {
+                    target: targets.target.toLocaleString(lang === 'en' ? 'en-US' : 'ru-RU'),
+                    bmr: targets.bmr
+                  })
+                : t('profileFillForTargets')}
             </Text>
           </View>
         </View>
 
         <View style={styles.sectionHead}>
-          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>Тренировка</Text>
-          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>голос</Text>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionVoice')}</Text>
+          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>{t('sectionVoiceCount')}</Text>
         </View>
         <View style={[styles.themeCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
-          <Text style={[styles.settingName, { color: colors.paper }]}>Голосовые подсказки</Text>
-          <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>
-            Название упражнения, номер подхода и отсчёт отдыха вслух — удобно, когда не смотрите в
-            экран
-          </Text>
+          <Text style={[styles.settingName, { color: colors.paper }]}>{t('voiceCuesName')}</Text>
+          <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>{t('voiceCuesDesc')}</Text>
           <View style={styles.themeRow}>
             {(
               [
-                { id: false, label: 'Выкл' },
-                { id: true, label: 'Вкл' }
+                { id: false, label: t('off') },
+                { id: true, label: t('on') }
               ] as const
             ).map((opt) => {
               const on = voiceCuesEnabled === opt.id;
@@ -241,19 +289,19 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.sectionHead}>
-          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>Параметры и КБЖУ</Text>
-          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>Миффлин-Сан Жеор</Text>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionParams')}</Text>
+          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>{t('sectionParamsCount')}</Text>
         </View>
 
         <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
           <View style={styles.calcGrid}>
             <View style={[styles.calcField, { width: '100%' }]}>
-              <Text style={[styles.label, { color: colors.paperFaint }]}>Пол</Text>
+              <Text style={[styles.label, { color: colors.paperFaint }]}>{t('labelSex')}</Text>
               <View style={styles.segmentRow}>
                 {(
                   [
-                    { value: 'male' as Sex, label: 'Мужской' },
-                    { value: 'female' as Sex, label: 'Женский' }
+                    { value: 'male' as Sex, label: t('male') },
+                    { value: 'female' as Sex, label: t('female') }
                   ] as const
                 ).map((opt) => {
                   const on = profile.sex === opt.value;
@@ -285,7 +333,7 @@ export default function ProfileScreen() {
               </View>
             </View>
             <View style={styles.calcField}>
-              <Text style={[styles.label, { color: colors.paperFaint }]}>Возраст</Text>
+              <Text style={[styles.label, { color: colors.paperFaint }]}>{t('labelAge')}</Text>
               <TextInput
                 style={[
                   styles.input,
@@ -302,7 +350,7 @@ export default function ProfileScreen() {
               />
             </View>
             <View style={styles.calcField}>
-              <Text style={[styles.label, { color: colors.paperFaint }]}>Рост, см</Text>
+              <Text style={[styles.label, { color: colors.paperFaint }]}>{t('labelHeight')}</Text>
               <TextInput
                 style={[
                   styles.input,
@@ -319,7 +367,7 @@ export default function ProfileScreen() {
               />
             </View>
             <View style={styles.calcField}>
-              <Text style={[styles.label, { color: colors.paperFaint }]}>Вес, кг</Text>
+              <Text style={[styles.label, { color: colors.paperFaint }]}>{t('labelWeight')}</Text>
               <TextInput
                 style={[
                   styles.input,
@@ -336,13 +384,13 @@ export default function ProfileScreen() {
               />
             </View>
             <View style={[styles.calcField, { width: '100%' }]}>
-              <Text style={[styles.label, { color: colors.paperFaint }]}>Активность (PAL)</Text>
+              <Text style={[styles.label, { color: colors.paperFaint }]}>{t('labelActivity')}</Text>
               <View style={styles.segmentRow}>
                 {(
                   [
-                    { value: 1.2, label: '1.2 низкая' },
-                    { value: 1.375, label: '1.375 ср.' },
-                    { value: 1.55, label: '1.55 выс.' }
+                    { value: 1.2, label: t('profileActivityLow') },
+                    { value: 1.375, label: t('profileActivityMid') },
+                    { value: 1.55, label: t('profileActivityHigh') }
                   ] as const
                 ).map((opt) => {
                   const on = profile.pal === opt.value;
@@ -374,13 +422,13 @@ export default function ProfileScreen() {
               </View>
             </View>
             <View style={[styles.calcField, { width: '100%' }]}>
-              <Text style={[styles.label, { color: colors.paperFaint }]}>Бюджет калорий</Text>
+              <Text style={[styles.label, { color: colors.paperFaint }]}>{t('labelBudget')}</Text>
               <View style={styles.segmentRow}>
                 {(
                   [
-                    { value: 'recomp' as Goal, label: 'Дефицит −12%' },
-                    { value: 'maintain' as Goal, label: 'Поддержание' },
-                    { value: 'gain' as Goal, label: 'Профицит +10%' }
+                    { value: 'recomp' as Goal, label: t('profileGoalDeficit') },
+                    { value: 'maintain' as Goal, label: t('profileGoalMaintain') },
+                    { value: 'gain' as Goal, label: t('profileGoalSurplus') }
                   ] as const
                 ).map((opt) => {
                   const on = profile.goal === opt.value;
@@ -430,36 +478,40 @@ export default function ProfileScreen() {
               <Text style={[styles.resultVal, { color: colors.lime }]}>
                 {targets ? targets.target : '—'}
               </Text>
-              <Text style={[styles.resultLbl, { color: colors.paperFaint }]}>Цель</Text>
+              <Text style={[styles.resultLbl, { color: colors.paperFaint }]}>{t('resultTarget')}</Text>
             </View>
           </View>
           <Text style={[styles.macroNote, { color: colors.paperFaint }]}>
             {targets
-              ? `Белки ${targets.proteinTarget} г · жиры ${targets.fatTarget} г · углеводы ${targets.carbTarget} г (ISSN 2.0 / 1.0 г на кг).`
-              : 'Заполните вес, рост, возраст и пол — тогда появятся цели КБЖУ.'}
+              ? t('profileMacrosLine', {
+                  protein: targets.proteinTarget,
+                  fat: targets.fatTarget,
+                  carbs: targets.carbTarget
+                })
+              : t('profileFillBody')}
           </Text>
         </View>
 
         <View style={styles.sectionHead}>
-          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>Замеры тела</Text>
-          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>обхваты</Text>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionMeasurements')}</Text>
+          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>{t('sectionMeasurementsCount')}</Text>
         </View>
         <View style={[styles.themeCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
           <View style={styles.measureTypeRow}>
-            {(Object.keys(BODY_MEASUREMENT_LABELS) as BodyMeasurementType[]).map((t) => {
-              const on = measureType === t;
+            {(Object.keys(BODY_MEASUREMENT_LABELS) as BodyMeasurementType[]).map((type) => {
+              const on = measureType === type;
               return (
                 <TouchableOpacity
-                  key={t}
+                  key={type}
                   style={[
                     styles.measureTypeChip,
                     { borderColor: colors.lineStrong, backgroundColor: colors.ink },
                     on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
                   ]}
-                  onPress={() => setMeasureType(t)}
+                  onPress={() => setMeasureType(type)}
                   accessibilityRole="radio"
                   accessibilityState={{ checked: on }}
-                  accessibilityLabel={BODY_MEASUREMENT_LABELS[t]}
+                  accessibilityLabel={measurementLabel(type, lang)}
                 >
                   <Text
                     style={[
@@ -468,7 +520,7 @@ export default function ProfileScreen() {
                       on && { color: colors.lime }
                     ]}
                   >
-                    {BODY_MEASUREMENT_LABELS[t]}
+                    {measurementLabel(type, lang)}
                   </Text>
                 </TouchableOpacity>
               );
@@ -486,10 +538,10 @@ export default function ProfileScreen() {
               ]}
               value={measureInput}
               onChangeText={setMeasureInput}
-              placeholder="см"
+              placeholder={t('cm')}
               placeholderTextColor={colors.paperFaint}
               keyboardType="numeric"
-              accessibilityLabel={`${BODY_MEASUREMENT_LABELS[measureType]}, см`}
+              accessibilityLabel={t('profileMeasureA11y', { name: measurementLabel(measureType, lang) })}
             />
             <TouchableOpacity
               style={[styles.measureAddBtn, { backgroundColor: colors.lime, opacity: canAddMeasurement ? 1 : 0.4 }]}
@@ -502,9 +554,9 @@ export default function ProfileScreen() {
                 }
               }}
               accessibilityRole="button"
-              accessibilityLabel="Добавить замер"
+              accessibilityLabel={t('profileMeasureAdd')}
             >
-              <Text style={[styles.measureAddBtnText, { color: colors.ink }]}>Добавить</Text>
+              <Text style={[styles.measureAddBtnText, { color: colors.ink }]}>{t('measureAddBtn')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -518,12 +570,12 @@ export default function ProfileScreen() {
                   {e.dateKey}
                 </Text>
                 <Text style={[styles.measureHistoryVal, { color: colors.paper }]}>
-                  {e.valueCm} см
+                  {t('measureValueCm', { value: e.valueCm })}
                 </Text>
                 <TouchableOpacity
                   onPress={() => deleteBodyMeasurement(e.id)}
                   accessibilityRole="button"
-                  accessibilityLabel="Удалить замер"
+                  accessibilityLabel={t('profileMeasureDelete')}
                 >
                   <Text style={[styles.measureHistoryDel, { color: colors.paperFaint }]}>×</Text>
                 </TouchableOpacity>
@@ -532,45 +584,41 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.sectionHead}>
-          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>Метаболическое плато</Text>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionPlateau')}</Text>
           <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>Refeed / Diet Break</Text>
         </View>
         <ProtocolBanner />
 
         <View style={styles.sectionHead}>
-          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>Здоровье</Text>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionHealth')}</Text>
           <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>Health Connect</Text>
         </View>
         <HealthConnectCard />
 
         <View style={styles.sectionHead}>
-          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>Синхронизация</Text>
-          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>Аккаунт</Text>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionSync')}</Text>
+          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>{t('sectionSyncCount')}</Text>
         </View>
         <SyncAccountCard />
 
         <View style={styles.sectionHead}>
-          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>Данные</Text>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionData')}</Text>
         </View>
         <TouchableOpacity
           style={[styles.settingRow, { backgroundColor: colors.panel, borderColor: colors.line }]}
           onPress={exportData}
           accessibilityRole="button"
         >
-          <Text style={[styles.settingName, { color: colors.paper }]}>Экспорт данных</Text>
-          <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>
-            Скачать резервную копию (JSON)
-          </Text>
+          <Text style={[styles.settingName, { color: colors.paper }]}>{t('dataExportName')}</Text>
+          <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>{t('dataExportDesc')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.settingRow, { backgroundColor: colors.panel, borderColor: colors.line }]}
           onPress={importData}
           accessibilityRole="button"
         >
-          <Text style={[styles.settingName, { color: colors.paper }]}>Импорт данных</Text>
-          <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>
-            Восстановить из файла резервной копии
-          </Text>
+          <Text style={[styles.settingName, { color: colors.paper }]}>{t('dataImportName')}</Text>
+          <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>{t('dataImportDesc')}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

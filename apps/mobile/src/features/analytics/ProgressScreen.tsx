@@ -12,6 +12,7 @@ import {
 } from '@forma/core';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
+import { useT } from '@/i18n/strings';
 import { selectDailyTotals, selectTodayMeals, useFitPulseStore } from '@/state/useFitPulseStore';
 import { unifiedStreakDays, lastNDays } from '@/engines/WorkoutStats';
 import { allExerciseNames, allExerciseMetKeys, allExerciseBurnMeta } from '@/features/workout/catalog';
@@ -38,6 +39,7 @@ function workoutsFromSetLogs(
 export default function ProgressScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const t = useT();
 
   const setLogs = useFitPulseStore((s) => s.setLogs);
   const profile = useFitPulseStore((s) => s.profile);
@@ -128,32 +130,35 @@ export default function ProgressScreen() {
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]} edges={['top']}>
       <ScrollView contentContainerStyle={styles.body}>
-        <Text style={[styles.eyebrow, { color: colors.lime }]}>FitPulse · аналитика</Text>
-        <Text style={[styles.title, { color: colors.paper }]}>Прогресс</Text>
+        <Text style={[styles.eyebrow, { color: colors.lime }]}>{t('progressEyebrow')}</Text>
+        <Text style={[styles.title, { color: colors.paper }]}>{t('tabProgress')}</Text>
 
         <View style={styles.statsRow}>
           <View style={[styles.statCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
             <Text style={[styles.statVal, { color: colors.paper }]}>{streak}</Text>
-            <Text style={[styles.statLbl, { color: colors.paperFaint }]}>серия, дней</Text>
+            <Text style={[styles.statLbl, { color: colors.paperFaint }]}>{t('progressStatStreak')}</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
             <Text style={[styles.statVal, { color: colors.paper }]}>{weekSets}</Text>
-            <Text style={[styles.statLbl, { color: colors.paperFaint }]}>подходов / 7д</Text>
+            <Text style={[styles.statLbl, { color: colors.paperFaint }]}>{t('progressStatSets')}</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
             <Text style={[styles.statVal, { color: colors.paper }]}>
               {todayBurn > 0 ? `~${todayBurn}` : '—'}
             </Text>
-            <Text style={[styles.statLbl, { color: colors.paperFaint }]}>ккал сегодня</Text>
+            <Text style={[styles.statLbl, { color: colors.paperFaint }]}>{t('progressStatKcal')}</Text>
           </View>
         </View>
 
         <View
           style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}
           accessibilityRole="summary"
-          accessibilityLabel={`Восстановление ${recovery.recoveryScore} процентов, ${recovery.statusLabel}`}
+          accessibilityLabel={t('progressRecoveryA11y', {
+            score: recovery.recoveryScore,
+            status: recovery.statusLabel
+          })}
         >
-          <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>ВОССТАНОВЛЕНИЕ · OFFLINE</Text>
+          <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('progressRecoveryKicker')}</Text>
           <View style={styles.recoveryRow}>
             <Text
               style={[
@@ -178,10 +183,10 @@ export default function ProgressScreen() {
           <View style={styles.pillars}>
             {(
               [
-                ['Мышцы', recovery.muscularReadiness],
-                ['Энергия', recovery.energyRestoration],
-                ['Вода', recovery.hydrationScore],
-                ['ЦНС', recovery.cnsFreshness]
+                [t('progressMuscles'), recovery.muscularReadiness],
+                [t('progressEnergy'), recovery.energyRestoration],
+                [t('progressWater'), recovery.hydrationScore],
+                [t('progressCns'), recovery.cnsFreshness]
               ] as const
             ).map(([lbl, val]) => (
               <View key={lbl} style={[styles.pillar, { borderColor: colors.line }]}>
@@ -214,14 +219,14 @@ export default function ProgressScreen() {
         <ActivityCalendar setLogs={setLogs} allMeals={allMeals} />
 
         <View style={styles.importSection}>
-          <Text style={[styles.sectionLabel, { color: colors.paperDim }]}>С ЧАСОВ / GPS</Text>
+          <Text style={[styles.sectionLabel, { color: colors.paperDim }]}>{t('progressImportSection')}</Text>
           <ImportActivityButton />
           <ImportedActivitiesList />
         </View>
 
         {badges.length > 0 ? (
           <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
-            <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>ДОСТИЖЕНИЯ</Text>
+            <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('progressAchievements')}</Text>
             <View style={styles.badgeGrid}>
               {badges.map((b) => (
                 <View
@@ -246,7 +251,7 @@ export default function ProgressScreen() {
 
         {weekBurns.some((d) => d.kcal > 0) ? (
           <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
-            <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>ЖЖЕНИЕ · 7 ДНЕЙ</Text>
+            <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('progressBurnWeek')}</Text>
             {weekBurns.map((d) => (
               <View key={d.dateKey} style={styles.prRow}>
                 <Text style={[styles.prName, { color: colors.paperDim }]}>{d.dateKey.slice(5)}</Text>

@@ -22,6 +22,9 @@ import { applySessionProjection } from './data/applySessionProjection';
 import { getSessionService } from './data';
 import { formatLoadLabel, isBodyweightExercise, resolveWorkingLoadKg } from './catalog';
 import { EXERCISE_VIDEOS } from './exerciseMedia';
+import { importedByNumericId, IMPORTED_NUMERIC_ID_BASE } from './importedExerciseBridge';
+import { useLanguageStore } from '@/i18n/useLanguageStore';
+import { useT } from '@/i18n/strings';
 
 const beepSource = require('../../../assets/sfx/beep.wav');
 
@@ -73,6 +76,8 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
   ({ exercise, dayId, dayExercises, onFinished, onGoToExpected, onDayComplete }, ref) => {
     const colors = useThemeColors();
     const styles = createStyles(colors);
+    const t = useT();
+    const lang = useLanguageStore((s) => s.lang);
     const completedSetsToday = useFitPulseStore((s) => s.completedSetsToday);
     const setLogs = useFitPulseStore((s) => s.setLogs);
     const profileWeight = useFitPulseStore((s) => s.profile.weight);
@@ -276,32 +281,39 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         ref={ref}
         eyebrow={
           seq.totalSteps > 0
-            ? `Упр. ${String(exercise.index).padStart(2, '0')} · шаг ${seq.currentStepIndex + 1}/${seq.totalSteps}`
-            : `Упражнение ${String(exercise.index).padStart(2, '0')}`
+            ? t('sheetExerciseShort', {
+                index: String(exercise.index).padStart(2, '0'),
+                step: seq.currentStepIndex + 1,
+                total: seq.totalSteps
+              })
+            : t('sheetExerciseFull', { index: String(exercise.index).padStart(2, '0') })
         }
         title={exercise.name}
         onChange={(index) => setSheetOpen(index >= 0)}
       >
         {seq.isCurrent && !finished && seq.totalSteps > 0 && (
           <View style={styles.currentChip}>
-            <Text style={styles.currentChipText}>Текущий шаг сессии</Text>
+            <Text style={styles.currentChipText}>{t('sheetCurrentStep')}</Text>
           </View>
         )}
         {blockedBySequence && (
           <View style={styles.seqBanner} accessibilityRole="text">
-            <Text style={styles.seqBannerTitle}>Сначала другое упражнение</Text>
+            <Text style={styles.seqBannerTitle}>{t('sheetSeqBlockedTitle')}</Text>
             <Text style={styles.seqBannerBody}>
-              По плану сейчас: {seq.expectedName ?? 'предыдущее'} · шаг {seq.currentStepIndex + 1}/
-              {seq.totalSteps}
+              {t('sheetSeqBannerBody', {
+                name: seq.expectedName ?? t('sheetPrevExercise'),
+                step: seq.currentStepIndex + 1,
+                total: seq.totalSteps
+              })}
             </Text>
             {seq.expectedExerciseId != null && onGoToExpected && (
               <TouchableOpacity
                 style={styles.seqBannerCta}
                 onPress={() => onGoToExpected(seq.expectedExerciseId!)}
                 accessibilityRole="button"
-                accessibilityLabel="Перейти к текущему упражнению"
+                accessibilityLabel={t('sheetGoToCurrent')}
               >
-                <Text style={styles.seqBannerCtaText}>Перейти к нему</Text>
+                <Text style={styles.seqBannerCtaText}>{t('sheetGoToIt')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -330,19 +342,19 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
             <Text style={styles.gridVal}>
               {exercise.totalSets}×{exercise.workingReps}
             </Text>
-            <Text style={styles.gridLbl}>подходы</Text>
+            <Text style={styles.gridLbl}>{t('gridSets')}</Text>
           </View>
           <View style={styles.gridCell}>
             <Text style={styles.gridVal}>
               {isBodyweightExercise(exercise)
                 ? formatLoadLabel(exercise, bodyKg)
-                : `${exercise.workingWeight} кг`}
+                : `${exercise.workingWeight} ${t('kg')}`}
             </Text>
-            <Text style={styles.gridLbl}>рабочий вес</Text>
+            <Text style={styles.gridLbl}>{t('gridWeight')}</Text>
           </View>
           <View style={[styles.gridCell, { borderRightWidth: 0 }]}>
-            <Text style={styles.gridVal}>{exercise.restSeconds}с</Text>
-            <Text style={styles.gridLbl}>отдых</Text>
+            <Text style={styles.gridVal}>{exercise.restSeconds}{t('secShort')}</Text>
+            <Text style={styles.gridLbl}>{t('gridRest')}</Text>
           </View>
         </View>
 
@@ -353,14 +365,18 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         </View>
 
         {(() => {
-          const meta = datasetMetaForExercise(exercise.name);
-          if (!meta) return null;
-          const steps = meta.instructionsEn ?? [];
+          const imported =
+            exercise.id > IMPORTED_NUMERIC_ID_BASE ? importedByNumericId(exercise.id) : null;
+          const steps = imported
+            ? lang === 'en'
+              ? imported.instructionsEn
+              : imported.instructionsRu
+            : (datasetMetaForExercise(exercise.name)?.instructionsEn ?? []);
           if (!steps.length) return null;
           return (
             <View style={styles.datasetBlock}>
               <View style={styles.steps}>
-                <Text style={styles.stepsTitle}>Техника (EN)</Text>
+                <Text style={styles.stepsTitle}>{t('technique')}</Text>
                 {steps.map((step, i) => (
                   <Text key={i} style={styles.stepLine}>
                     {i + 1}. {step}
@@ -371,7 +387,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           );
         })()}
 
-        <Text style={styles.rirLabel}>Вес и повторы для следующего подхода</Text>
+        <Text style={styles.rirLabel}>{t('sheetRirLabel')}</Text>
         <View style={styles.stepperRow}>
           <View style={styles.stepperBlock}>
             <TouchableOpacity
@@ -380,20 +396,20 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
                 setWeight((w) => Math.max(weightStep, roundToStep(w - weightStep, weightStep)))
               }
               accessibilityRole="button"
-              accessibilityLabel="Уменьшить вес"
+              accessibilityLabel={t('sheetDecreaseWeight')}
               disabled={blockedBySequence}
             >
               <Text style={styles.stepperBtnText}>−</Text>
             </TouchableOpacity>
             <View style={styles.stepperValueWrap}>
               <Text style={styles.stepperValue}>{weight}</Text>
-              <Text style={styles.stepperUnit}>кг</Text>
+              <Text style={styles.stepperUnit}>{t('kg')}</Text>
             </View>
             <TouchableOpacity
               style={styles.stepperBtn}
               onPress={() => setWeight((w) => roundToStep(w + weightStep, weightStep))}
               accessibilityRole="button"
-              accessibilityLabel="Увеличить вес"
+              accessibilityLabel={t('sheetIncreaseWeight')}
               disabled={blockedBySequence}
             >
               <Text style={styles.stepperBtnText}>+</Text>
@@ -405,20 +421,20 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
               style={styles.stepperBtn}
               onPress={() => setReps((r) => Math.max(1, r - 1))}
               accessibilityRole="button"
-              accessibilityLabel="Уменьшить повторы"
+              accessibilityLabel={t('sheetDecreaseReps')}
               disabled={blockedBySequence}
             >
               <Text style={styles.stepperBtnText}>−</Text>
             </TouchableOpacity>
             <View style={styles.stepperValueWrap}>
               <Text style={styles.stepperValue}>{reps}</Text>
-              <Text style={styles.stepperUnit}>повт.</Text>
+              <Text style={styles.stepperUnit}>{t('sheetRepsUnit')}</Text>
             </View>
             <TouchableOpacity
               style={styles.stepperBtn}
               onPress={() => setReps((r) => r + 1)}
               accessibilityRole="button"
-              accessibilityLabel="Увеличить повторы"
+              accessibilityLabel={t('sheetIncreaseReps')}
               disabled={blockedBySequence}
             >
               <Text style={styles.stepperBtnText}>+</Text>
@@ -426,7 +442,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           </View>
         </View>
 
-        <Text style={styles.rirLabel}>Сколько повторений в запасе (RIR)?</Text>
+        <Text style={styles.rirLabel}>{t('sheetRirQuestion')}</Text>
         <View style={styles.rirRow}>
           {[1, 2, 3].map((val) => (
             <TouchableOpacity
@@ -449,7 +465,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           </View>
           <View style={[styles.gridCell, { borderRightWidth: 0 }]}>
             <Text style={styles.gridVal}>{oneRm > 0 ? oneRm : '—'}</Text>
-            <Text style={styles.gridLbl}>прогноз 1ПМ, кг</Text>
+            <Text style={styles.gridLbl}>{t('sheetOneRmLabel')}</Text>
           </View>
         </View>
 
@@ -457,9 +473,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           <View
             style={[styles.restTimer, { borderColor: colors.lime }]}
             accessibilityLiveRegion="polite"
-            accessibilityLabel={`Отдых ${formatRestClock(restRemaining)}`}
+            accessibilityLabel={t('sheetRestTimer', { time: formatRestClock(restRemaining) })}
           >
-            <Text style={styles.restLabel}>ОТДЫХ · ОСТАЛОСЬ</Text>
+            <Text style={styles.restLabel}>{t('sheetRestHeader')}</Text>
             <Text style={styles.restVal}>{formatRestClock(restRemaining)}</Text>
             <View style={styles.restBarTrack}>
               <View style={[styles.restBarFill, { width: `${restPct}%` }]} />
@@ -467,10 +483,10 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
             <TouchableOpacity
               onPress={skipRest}
               accessibilityRole="button"
-              accessibilityLabel="Пропустить отдых"
+              accessibilityLabel={t('sheetSkipRest')}
               hitSlop={{ top: 8, bottom: 8, left: 12, right: 12 }}
             >
-              <Text style={styles.restSkip}>пропустить</Text>
+              <Text style={styles.restSkip}>{t('sheetRestSkipLower')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -486,13 +502,20 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
                 <Text style={styles.setNum}>{setNum}</Text>
                 <Text style={styles.setSpec}>
                   {done
-                    ? `${logged!.weight} кг × ${logged!.reps}`
+                    ? t('sheetSetLogged', { weight: logged!.weight, reps: logged!.reps })
                     : isNext
-                      ? `→ ${weight} кг × ${reps}`
-                      : `план: ${formatLoadLabel(exercise, bodyKg)} × ${exercise.workingReps}`}
+                      ? t('sheetSetLoggedArrow', { weight, reps })
+                      : t('sheetSetPlan', {
+                          load: formatLoadLabel(exercise, bodyKg),
+                          reps: exercise.workingReps
+                        })}
                 </Text>
                 <Text style={done ? styles.setDone : styles.setPending}>
-                  {done ? '✓ выполнен' : isNext ? 'следующий' : 'не начат'}
+                  {done
+                    ? t('sheetStatusDone')
+                    : isNext
+                      ? t('sheetStatusNext')
+                      : t('sheetStatusNotStarted')}
                 </Text>
               </View>
             );
@@ -517,12 +540,12 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         >
           <Text style={styles.ctaText}>
             {finished
-              ? 'Упражнение завершено'
+              ? t('sheetExerciseDone')
               : blockedBySequence
-                ? 'Сначала предыдущее'
+                ? t('sheetDoPrevFirst')
                 : restRemaining !== null
-                  ? `Отдых ${formatRestClock(restRemaining)}`
-                  : `Записать подход ${completedSets + 1}`}
+                  ? t('sheetRestTimer', { time: formatRestClock(restRemaining) })
+                  : t('sheetLogSet', { number: completedSets + 1 })}
           </Text>
         </TouchableOpacity>
       </AppBottomSheet>
