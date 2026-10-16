@@ -204,15 +204,18 @@ jobs:
           # to that shared Android resource identifier.
           cat > "$RUNNER_TEMP/prune-duplicate-exercise-assets.gradle" <<'GRADLE'
           gradle.projectsEvaluated {
-            def appProject = gradle.rootProject.findProject(':app')
+            // Do not assume the Android application is registered under the literal
+            // Gradle path ':app'; locate it by project name across this build.
+            def appProject = gradle.rootProject.allprojects.find { it.name == 'app' }
             if (appProject == null) {
-              throw new GradleException("Android app project :app was not found")
+              throw new GradleException("Android app project named 'app' was not found; projects: " +
+                gradle.rootProject.allprojects.collect { it.path }.join(', '))
             }
 
             def bundleTask = appProject.tasks.findByName('createBundleReleaseJsAndAssets')
             def mergeTask = appProject.tasks.findByName('mergeReleaseResources')
             if (bundleTask == null || mergeTask == null) {
-              throw new GradleException("Expected React Native bundle and Android resource merge tasks were not found")
+              throw new GradleException("Expected React Native bundle and Android resource merge tasks were not found in ${appProject.path}")
             }
 
             def pruneTask = appProject.tasks.register('pruneDuplicateExerciseImages') {
