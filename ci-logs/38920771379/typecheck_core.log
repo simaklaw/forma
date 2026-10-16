@@ -1,0 +1,17 @@
+Scope: 4 of 8 workspace projects
+packages/core type-check$ tsc --noEmit
+packages/workout-domain type-check$ tsc --noEmit
+packages/workout-domain type-check: Done
+packages/core type-check: Done
+apps/mobile type-check$ tsc --noEmit
+apps/web type-check$ node ../../scripts/generate-web-route-tree.mjs && tsc --noEmit
+apps/web type-check: routeTree.gen.ts updated
+apps/web type-check: Done
+apps/mobile type-check: src/features/nutrition/AddFoodSheet.tsx(227,35): error TS2349: This expression is not callable.
+apps/mobile type-check:   Type 'String' has no call signatures.
+apps/mobile type-check: src/features/nutrition/AddFoodSheet.tsx(227,55): error TS2349: This expression is not callable.
+apps/mobile type-check:   Type 'String' has no call signatures.
+apps/mobile type-check: Failed
+/home/runner/work/forma/forma/apps/mobile:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @forma/mobile@0.1.0 type-check: `tsc --noEmit`
+Exit status 2
