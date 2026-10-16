@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import Svg, { Circle, Line, Path, Rect } from 'react-native-svg';
 import { fonts } from '@/core/theme/tokens';
 import { useThemeColors, useThemeMode } from '@/core/theme/useThemeColors';
