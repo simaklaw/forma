@@ -1,0 +1,690 @@
+import { useMemo } from 'react';
+import { useLanguageStore, type Language } from './useLanguageStore';
+import { MUSCLE_LABELS, type MuscleKey } from '@/domain/muscleKeys';
+
+/**
+ * Лёгкий i18n-слой: два словаря (ru/en), RU по умолчанию.
+ * Ключи типизированы через keyof — при добавлении строки TypeScript
+ * потребует и русский, и английский вариант.
+ */
+const RU = {
+  // Вкладки
+  tabWorkouts: 'Тренировки',
+  tabCatalog: 'Каталог',
+  tabNutrition: 'Питание',
+  tabProgress: 'Прогресс',
+  tabProfile: 'Профиль',
+
+  // Общие
+  close: 'Закрыть',
+  cancel: 'Отменить',
+  save: 'Сохранить',
+  delete: 'Удалить',
+  favoriteAdd: 'В избранное',
+  favoriteRemove: 'Убрать из избранного',
+  favoriteOn: '★ В избранном',
+  favoriteOff: '☆ В избранное',
+  favoritesOnly: 'Показать только избранное',
+  favoritesChip: '★ Избранное',
+  recentLabel: 'НЕДАВНИЕ',
+  technique: 'Техника',
+  muscleCaption: 'Целевые мышцы: ',
+  tip: 'Подсказка',
+  step: 'шаг',
+  kg: 'кг',
+  secShort: 'с',
+  kcal: 'ккал',
+  cm: 'см',
+  bodyweightLabel: 'свой вес',
+  bandsLabel: 'резинки',
+  gym: 'Зал',
+  gymShort: 'ЗАЛ',
+  home: 'Дом',
+  homeShort: 'ДОМ',
+  offlineBadge: 'Офлайн',
+  male: 'Мужской',
+  maleShort: 'М',
+  female: 'Женский',
+  femaleShort: 'Ж',
+  on: 'Вкл',
+  off: 'Выкл',
+  today: 'Сегодня',
+  done: 'готово',
+  search: 'Поиск',
+
+  // Справочник (CatalogScreen)
+  catalogSegmentPlans: 'Планы',
+  catalogSegmentLibrary: 'Справочник',
+  catalogSegmentTabata: 'Табата',
+  catalogSegmentPlansFull: 'Библиотека',
+  catalogHeaderLibrary: 'Каталог',
+  catalogHintLibrary: 'Справочник · свой вес / резинки',
+  catalogHintTabata: 'Табата · интервалы HIIT',
+  catalogHintOffline: 'Офлайн · дом · {shown} из {total}',
+  catalogReplaceBanner: 'Отменить замену',
+  catalogSearchPlaceholder: 'Найти упражнение или группу мышц',
+  catalogSearchA11y: 'Поиск упражнений',
+  catalogRecentA11y: '{name}. Недавнее упражнение',
+  catalogOpenDetailsA11y: '{name}. Открыть детали',
+  catalogEquipmentAll: 'Все виды оборудования',
+  catalogEquipmentAllChip: 'Всё оборудование',
+  catalogReplaceTitle: 'Замена в плане: {day}',
+  catalogReplaceBody: 'Выберите упражнение вместо «{name}» (слот {slot})',
+  catalogFavoritesEmpty: 'В избранном пока пусто. Откройте упражнение и нажмите «В избранное».',
+  catalogNothingFound: 'Ничего не найдено. Измените запрос или фильтр.',
+
+  // Панель справочника (ImportedLibraryPanel)
+  panelSearchPlaceholder: 'Поиск в справочнике (EN / RU)',
+  panelSearchA11y: 'Поиск в справочнике упражнений',
+  panelAnimationOf: 'Анимация: {name}',
+  panelSubstituting: 'Подставляю…',
+  panelSubstituteFor: 'Подставить вместо «{name}»',
+  panelSubstituteIntoDay: 'Подставить в план дня',
+  panelSaving: 'Сохраняем…',
+  panelCount: '{shown} из {total} · свой вес / резинки',
+  panelReplaceHint: 'Чтобы добавить в план: на экране тренировки нажмите «Заменить» у упражнения, затем выберите движение здесь.',
+
+  // Карточка упражнения (ExerciseDetailModal)
+  modalOnlyView: 'Только просмотр. Чтобы выполнить упражнение, запустите тренировку во вкладке «Тренировки». Долгое нажатие на упражнение дня открывает замену.',
+  modalReplaceNote: 'Замена сохранится только для этого дня плана (можно сбросить на экране «Тренировки»).',
+  modalWorkoutsTab: 'Тренировки',
+  statSets: 'Подходы',
+  statReps: 'Повторы',
+  statRest: 'Отдых',
+  statLoad: 'Нагрузка',
+  metaEquipment: 'Оборудование: {name}',
+  metaMuscles: 'Мышцы: {list}',
+
+  // Экран тренировки (ExerciseSheet)
+  sheetExerciseShort: 'Упр. {index} · шаг {step}/{total}',
+  sheetExerciseFull: 'Упражнение {index}',
+  sheetPrevExercise: 'предыдущее',
+  sheetGoToCurrent: 'Перейти к текущему упражнению',
+  sheetDecreaseWeight: 'Уменьшить вес',
+  sheetIncreaseWeight: 'Увеличить вес',
+  sheetDecreaseReps: 'Уменьшить повторы',
+  sheetIncreaseReps: 'Увеличить повторы',
+  sheetRestTimer: 'Отдых {time}',
+  sheetSkipRest: 'Пропустить отдых',
+  sheetSetLogged: '{weight} кг × {reps}',
+  sheetSetLoggedArrow: '→ {weight} кг × {reps}',
+  sheetSetPlan: 'план: {load} × {reps}',
+  sheetStatusDone: '✓ выполнен',
+  sheetStatusNext: 'следующий',
+  sheetStatusNotStarted: 'не начат',
+  sheetExerciseDone: 'Упражнение завершено',
+  sheetDoPrevFirst: 'Сначала предыдущее',
+  sheetLogSet: 'Записать подход {number}',
+  sheetCurrentStep: 'Текущий шаг сессии',
+  sheetSeqBlockedTitle: 'Сначала другое упражнение',
+  sheetSeqBannerBody: 'По плану сейчас: {name} · шаг {step}/{total}',
+  sheetGoToIt: 'Перейти к нему',
+  sheetRirLabel: 'Вес и повторы для следующего подхода',
+  sheetRirQuestion: 'Сколько повторений в запасе (RIR)?',
+  sheetOneRmLabel: 'прогноз 1ПМ, кг',
+  sheetRestHeader: 'ОТДЫХ · ОСТАЛОСЬ',
+  sheetRestSkipLower: 'пропустить',
+  sheetRepsUnit: 'повт.',
+  gridSets: 'подходы',
+  gridWeight: 'рабочий вес',
+  gridRest: 'отдых',
+
+  // Тренировки (WorkoutScreen)
+  workoutResume: 'Продолжить тренировку',
+  workoutRestart: 'Начать заново',
+  workoutExit: 'Выйти из тренировки',
+  workoutViewWorkout: 'Посмотреть тренировку',
+  workoutOpenCatalog: 'Открыть каталог упражнений',
+  workoutCatalogShort: 'Каталог',
+  workoutProgressSession: 'Прогресс сессии {done} из {total} подходов',
+  workoutBurnedToday: ' · ~{kcal} ккал',
+  workoutDayToday: '{day}, сегодня',
+  workoutStreakActive: 'Серия {count} {days} подряд',
+  workoutStreakNone: 'Серии пока нет',
+  workoutStreakSuffix: ' · серия',
+  workoutStreakHint: 'Серия: начните с полного дня',
+  workoutResetReplacements: 'Сбросить замены дня',
+  workoutExerciseProgress: '{name}, {done} из {total}',
+  workoutDoneSuffix: ' · готово',
+  workoutTitle: 'Тренировка',
+  workoutNoPlan: 'Нет плана',
+  sexShortFemale: 'жен',
+  sexShortMale: 'муж',
+  modeGymLower: 'зал',
+  modeHomeLower: 'дом',
+  workoutExerciseCount: '{count} упражнения',
+  workoutResumeHint: 'Есть незавершённая сессия · шаг {step}/{total}',
+  workoutResumeShort: 'Продолжить',
+  workoutExitShort: 'Выйти',
+  workoutStart: 'Начать тренировку',
+  workoutSetsWord: 'подходов',
+  perfWeekDays: 'Дней на неделе',
+  perfBurned: 'Сожжено, ккал',
+  perfRecord: 'Рекорд, кг',
+  sectionExercises: 'УПРАЖНЕНИЯ',
+  nowBadge: 'сейчас',
+  kgPr: 'кг PR',
+
+  // Питание (NutritionScreen)
+  mealBreakfast: 'Завтрак',
+  mealLunch: 'Обед',
+  mealSnack: 'Перекус',
+  mealDinner: 'Ужин',
+  nutritionTitle: 'Питание',
+  nutritionFillProfile: 'Заполните профиль для целей КБЖУ',
+  nutritionRemaining: 'Осталось {kcal} ккал',
+  nutritionOver: 'Сверх на {kcal} ккал',
+  nutritionGoalHint: 'Цели по ккал и БЖУ считаются из веса, роста, возраста и пола. Без этого кольцо и макросы не подставят фиктивные числа.',
+  nutritionProtein: 'Белок',
+  nutritionFats: 'Жиры',
+  nutritionCarbs: 'Углев.',
+  nutritionGlass: 'Стакан {number}',
+  nutritionAddToMeal: 'Добавить «{name}» в {meal}',
+  nutritionAddToMealShort: 'Добавить в {meal}',
+  nutritionRepeatYesterday: 'Повторить вчерашний {meal}',
+  nutritionMeals: 'Приёмы пищи',
+  nutritionMyDishes: 'Мои блюда',
+  nutritionAdd: '+ Добавить',
+  nutritionRepeatYesterdayShort: 'Повторить вчера',
+  nutritionNoEntries: 'Нет записей · нажмите «Добавить»',
+  budgetLabel: 'Бюджет',
+  nutritionTargetsAfterProfile: 'Цели появятся после профиля',
+  glassesWord: 'стаканов',
+  foodMacroLine: 'Б{protein} Ж{fat} У{carbs}',
+
+  // Добавление продукта (AddFoodSheet)
+  foodDiary: 'Дневник питания',
+  foodLocalBase: 'Локальная база',
+  foodLocalBaseAll: 'Нет точных совпадений — вся локальная база',
+  foodBarcode: 'Штрихкод · Open Food Facts',
+  foodLocalAndOff: 'Локально + Open Food Facts',
+  foodOffEmpty: 'OFF пусто — локальная база',
+  foodOffUnavailable: 'OFF недоступен — локальная база',
+  foodCustomProduct: 'Свой продукт',
+  foodFromBase: 'Из базы',
+  foodSearchPlaceholder: 'Поиск или штрихкод: рис, 4601234567890…',
+  foodSearchingOff: '{source} · ищу в Open Food Facts…',
+  foodAddToMealLower: 'Добавить в {meal}',
+  foodSaveAsDish: 'Сохранить как блюдо',
+  foodMyDish: 'Мой завтрак',
+  foodSaveDish: 'Сохранить блюдо',
+  foodPortion: 'Порция: {portion} г',
+  foodNothingFound: 'Ничего не найдено — попробуйте «Свой продукт»',
+  foodKcalPer100: '{kcal} ккал/100г',
+  foodName: 'Название',
+  foodKcal100Label: 'Ккал/100г',
+  foodProtein: 'Белки',
+  foodFats: 'Жиры',
+  foodCarbs: 'Углеводы, г/100г',
+  foodSaveAndAdd: 'Сохранить и добавить',
+  foodItemsWord: 'поз.',
+  foodDishName: 'Название блюда',
+
+  // Прогресс (ProgressScreen)
+  progressRecoveryA11y: 'Восстановление {score} процентов, {status}',
+  progressMuscles: 'Мышцы',
+  progressEnergy: 'Энергия',
+  progressWater: 'Вода',
+  progressCns: 'ЦНС',
+  progressEyebrow: 'FitPulse · аналитика',
+  progressStatStreak: 'серия, дней',
+  progressStatSets: 'подходов / 7д',
+  progressStatKcal: 'ккал сегодня',
+  progressRecoveryKicker: 'ВОССТАНОВЛЕНИЕ · OFFLINE',
+  progressImportSection: 'С ЧАСОВ / GPS',
+  progressAchievements: 'ДОСТИЖЕНИЯ',
+  progressBurnWeek: 'ЖЖЕНИЕ · 7 ДНЕЙ',
+
+  // Профиль (ProfileScreen)
+  profileExport: 'Экспорт',
+  profileExportDone: 'Файл сохранён: {path}',
+  profileExportError: 'Ошибка экспорта',
+  profileImport: 'Импорт',
+  profileImportDone: 'Данные восстановлены из файла',
+  profileImportError: 'Ошибка импорта',
+  profileImportBadFile: 'Файл повреждён или не в формате JSON',
+  profileTargetLine: 'Цель {target} ккал · BMR {bmr}',
+  profileFillForTargets: 'Заполните профиль для расчёта КБЖУ',
+  profileFillBody: 'Заполните вес, рост, возраст и пол — тогда появятся цели КБЖУ.',
+  profileMacrosLine: 'Белки {protein} г · жиры {fat} г · углеводы {carbs} г (ISSN 2.0 / 1.0 г на кг).',
+  profileThemeDark: 'Тёмная',
+  profileThemeLight: 'Светлая',
+  profileActivityLow: '1.2 низкая',
+  profileActivityMid: '1.375 ср.',
+  profileActivityHigh: '1.55 выс.',
+  profileGoalDeficit: 'Дефицит −12%',
+  profileGoalMaintain: 'Поддержание',
+  profileGoalSurplus: 'Профицит +10%',
+  profileMeasureAdd: 'Добавить замер',
+  profileMeasureDelete: 'Удалить замер',
+  profileMeasureCm: 'см',
+  profileMeasureA11y: '{name}, см',
+
+  // Язык (новая секция профиля)
+  profileHeaderEyebrow: 'FITPULSE · Аккаунт',
+  profileGateTitle: 'Заполните биометрию',
+  profileGateBody: 'Пол, вес, рост и возраст нужны для BMR/TDEE и целей КБЖУ. Без них вес по умолчанию не подставляется — кольцо питания и советы тренера ждут профиль.',
+  profileStatsLine: '{sex} · {age} лет · {height} см · {weight} кг',
+  sectionTheme: 'Оформление',
+  sectionThemeCount: 'тема',
+  themeSchemeName: 'Цветовая схема',
+  themeSchemeDesc: 'Тёмная ink или светлая спортивная — mint-акценты сохраняются',
+  sectionVoice: 'Тренировка',
+  sectionVoiceCount: 'голос',
+  voiceCuesName: 'Голосовые подсказки',
+  voiceCuesDesc: 'Название упражнения, номер подхода и отсчёт отдыха вслух — удобно, когда не смотрите в экран',
+  sectionParams: 'Параметры и КБЖУ',
+  sectionParamsCount: 'Миффлин-Сан Жеор',
+  labelSex: 'Пол',
+  labelAge: 'Возраст',
+  labelHeight: 'Рост, см',
+  labelWeight: 'Вес, кг',
+  labelActivity: 'Активность (PAL)',
+  labelBudget: 'Бюджет калорий',
+  resultTarget: 'Цель',
+  sectionMeasurements: 'Замеры тела',
+  sectionMeasurementsCount: 'обхваты',
+  measureAddBtn: 'Добавить',
+  measureValueCm: '{value} см',
+  sectionPlateau: 'Метаболическое плато',
+  sectionHealth: 'Здоровье',
+  sectionSync: 'Синхронизация',
+  sectionSyncCount: 'Аккаунт',
+  sectionData: 'Данные',
+  dataExportName: 'Экспорт данных',
+  dataExportDesc: 'Скачать резервную копию (JSON)',
+  dataImportName: 'Импорт данных',
+  dataImportDesc: 'Восстановить из файла резервной копии',
+  languageTitle: 'Язык',
+  languageRu: 'Русский',
+  languageEn: 'English'
+} as const;
+
+export type StringKey = keyof typeof RU;
+
+const EN: Record<StringKey, string> = {
+  tabWorkouts: 'Workouts',
+  tabCatalog: 'Catalog',
+  tabNutrition: 'Nutrition',
+  tabProgress: 'Progress',
+  tabProfile: 'Profile',
+
+  close: 'Close',
+  cancel: 'Cancel',
+  save: 'Save',
+  delete: 'Delete',
+  favoriteAdd: 'Add to favorites',
+  favoriteRemove: 'Remove from favorites',
+  favoriteOn: '★ Favorited',
+  favoriteOff: '☆ Add to favorites',
+  favoritesOnly: 'Show favorites only',
+  favoritesChip: '★ Favorites',
+  recentLabel: 'RECENT',
+  technique: 'Technique',
+  muscleCaption: 'Target muscles: ',
+  tip: 'Tip',
+  step: 'step',
+  kg: 'kg',
+  secShort: 's',
+  kcal: 'kcal',
+  cm: 'cm',
+  bodyweightLabel: 'bodyweight',
+  bandsLabel: 'bands',
+  gym: 'Gym',
+  gymShort: 'GYM',
+  home: 'Home',
+  homeShort: 'HOME',
+  offlineBadge: 'Offline',
+  male: 'Male',
+  maleShort: 'M',
+  female: 'Female',
+  femaleShort: 'F',
+  on: 'On',
+  off: 'Off',
+  today: 'Today',
+  done: 'done',
+  search: 'Search',
+
+  catalogSegmentPlans: 'Plans',
+  catalogSegmentLibrary: 'Library',
+  catalogSegmentTabata: 'Tabata',
+  catalogSegmentPlansFull: 'Library',
+  catalogHeaderLibrary: 'Catalog',
+  catalogHintLibrary: 'Library · bodyweight / bands',
+  catalogHintTabata: 'Tabata · HIIT intervals',
+  catalogHintOffline: 'Offline · home · {shown} of {total}',
+  catalogReplaceBanner: 'Undo replacement',
+  catalogSearchPlaceholder: 'Find an exercise or muscle group',
+  catalogSearchA11y: 'Exercise search',
+  catalogRecentA11y: '{name}. Recent exercise',
+  catalogOpenDetailsA11y: '{name}. Open details',
+  catalogEquipmentAll: 'All equipment',
+  catalogEquipmentAllChip: 'All equipment',
+  catalogReplaceTitle: 'Plan substitution: {day}',
+  catalogReplaceBody: 'Pick an exercise instead of "{name}" (slot {slot})',
+  catalogFavoritesEmpty: 'No favorites yet. Open an exercise and tap "Add to favorites".',
+  catalogNothingFound: 'Nothing found. Change the query or filter.',
+
+  panelSearchPlaceholder: 'Search the library (EN / RU)',
+  panelSearchA11y: 'Exercise library search',
+  panelAnimationOf: 'Animation: {name}',
+  panelSubstituting: 'Substituting…',
+  panelSubstituteFor: 'Substitute for "{name}"',
+  panelSubstituteIntoDay: 'Add to day plan',
+  panelSaving: 'Saving…',
+  panelCount: '{shown} of {total} · bodyweight / bands',
+  panelReplaceHint: 'To add to a plan: on the workout screen tap "Replace" on an exercise, then pick a movement here.',
+
+  modalOnlyView: 'View only. To perform the exercise, start a workout in the "Workouts" tab. Long-press a day exercise opens the substitution.',
+  modalReplaceNote: 'The substitution is saved for this plan day only (you can reset it on the Workouts screen).',
+  modalWorkoutsTab: 'Workouts',
+  statSets: 'Sets',
+  statReps: 'Reps',
+  statRest: 'Rest',
+  statLoad: 'Load',
+  metaEquipment: 'Equipment: {name}',
+  metaMuscles: 'Muscles: {list}',
+
+  sheetExerciseShort: 'Ex. {index} · step {step}/{total}',
+  sheetExerciseFull: 'Exercise {index}',
+  sheetPrevExercise: 'previous',
+  sheetGoToCurrent: 'Go to current exercise',
+  sheetDecreaseWeight: 'Decrease weight',
+  sheetIncreaseWeight: 'Increase weight',
+  sheetDecreaseReps: 'Decrease reps',
+  sheetIncreaseReps: 'Increase reps',
+  sheetRestTimer: 'Rest {time}',
+  sheetSkipRest: 'Skip rest',
+  sheetSetLogged: '{weight} kg × {reps}',
+  sheetSetLoggedArrow: '→ {weight} kg × {reps}',
+  sheetSetPlan: 'plan: {load} × {reps}',
+  sheetStatusDone: '✓ done',
+  sheetStatusNext: 'next',
+  sheetStatusNotStarted: 'not started',
+  sheetExerciseDone: 'Exercise complete',
+  sheetDoPrevFirst: 'Previous exercise first',
+  sheetLogSet: 'Log set {number}',
+  sheetCurrentStep: 'Current session step',
+  sheetSeqBlockedTitle: 'Another exercise first',
+  sheetSeqBannerBody: 'Per plan now: {name} · step {step}/{total}',
+  sheetGoToIt: 'Go to it',
+  sheetRirLabel: 'Weight and reps for the next set',
+  sheetRirQuestion: 'How many reps in reserve (RIR)?',
+  sheetOneRmLabel: '1RM estimate, kg',
+  sheetRestHeader: 'REST · REMAINING',
+  sheetRestSkipLower: 'skip',
+  sheetRepsUnit: 'reps',
+  gridSets: 'sets',
+  gridWeight: 'working weight',
+  gridRest: 'rest',
+
+  workoutResume: 'Resume workout',
+  workoutRestart: 'Start over',
+  workoutExit: 'Exit workout',
+  workoutViewWorkout: 'View workout',
+  workoutOpenCatalog: 'Open the exercise catalog',
+  workoutCatalogShort: 'Catalog',
+  workoutProgressSession: 'Session progress {done} of {total} sets',
+  workoutBurnedToday: ' · ~{kcal} kcal',
+  workoutDayToday: '{day}, today',
+  workoutStreakActive: '{count}-day streak',
+  workoutStreakNone: 'No streak yet',
+  workoutStreakSuffix: ' · streak',
+  workoutStreakHint: 'Streak: start with a full day',
+  workoutResetReplacements: 'Reset day substitutions',
+  workoutExerciseProgress: '{name}, {done} of {total}',
+  workoutDoneSuffix: ' · done',
+  workoutTitle: 'Workout',
+  workoutNoPlan: 'No plan',
+  sexShortFemale: 'F',
+  sexShortMale: 'M',
+  modeGymLower: 'gym',
+  modeHomeLower: 'home',
+  workoutExerciseCount: '{count} exercises',
+  workoutResumeHint: 'Unfinished session · step {step}/{total}',
+  workoutResumeShort: 'Resume',
+  workoutExitShort: 'Exit',
+  workoutStart: 'Start workout',
+  workoutSetsWord: 'sets',
+  perfWeekDays: 'Days this week',
+  perfBurned: 'Burned, kcal',
+  perfRecord: 'Record, kg',
+  sectionExercises: 'EXERCISES',
+  nowBadge: 'now',
+  kgPr: 'kg PR',
+
+  mealBreakfast: 'Breakfast',
+  mealLunch: 'Lunch',
+  mealSnack: 'Snack',
+  mealDinner: 'Dinner',
+  nutritionTitle: 'Nutrition',
+  nutritionFillProfile: 'Fill in your profile for macro targets',
+  nutritionRemaining: '{kcal} kcal left',
+  nutritionOver: '{kcal} kcal over',
+  nutritionGoalHint: 'Calorie and macro targets are computed from weight, height, age and sex. Without them the ring and macros will not show made-up numbers.',
+  nutritionProtein: 'Protein',
+  nutritionFats: 'Fats',
+  nutritionCarbs: 'Carbs',
+  nutritionGlass: 'Glass {number}',
+  nutritionAddToMeal: 'Add "{name}" to {meal}',
+  nutritionAddToMealShort: 'Add to {meal}',
+  nutritionRepeatYesterday: 'Repeat yesterday\u2019s {meal}',
+  nutritionMeals: 'Meals',
+  nutritionMyDishes: 'My dishes',
+  nutritionAdd: '+ Add',
+  nutritionRepeatYesterdayShort: 'Repeat yesterday',
+  nutritionNoEntries: 'No entries · tap "Add"',
+  budgetLabel: 'Budget',
+  nutritionTargetsAfterProfile: 'Targets appear after you fill in your profile',
+  glassesWord: 'glasses',
+  foodMacroLine: 'P{protein} F{fat} C{carbs}',
+
+  foodDiary: 'Food diary',
+  foodLocalBase: 'Local database',
+  foodLocalBaseAll: 'No exact matches — the whole local database',
+  foodBarcode: 'Barcode · Open Food Facts',
+  foodLocalAndOff: 'Local + Open Food Facts',
+  foodOffEmpty: 'OFF is empty — local database',
+  foodOffUnavailable: 'OFF unavailable — local database',
+  foodCustomProduct: 'Custom product',
+  foodFromBase: 'From database',
+  foodSearchPlaceholder: 'Search or barcode: rice, 4601234567890…',
+  foodSearchingOff: '{source} · searching Open Food Facts…',
+  foodAddToMealLower: 'Add to {meal}',
+  foodSaveAsDish: 'Save as a dish',
+  foodMyDish: 'My breakfast',
+  foodSaveDish: 'Save dish',
+  foodPortion: 'Portion: {portion} g',
+  foodNothingFound: 'Nothing found — try "Custom product"',
+  foodKcalPer100: '{kcal} kcal/100g',
+  foodName: 'Name',
+  foodKcal100Label: 'kcal/100g',
+  foodProtein: 'Protein',
+  foodFats: 'Fats',
+  foodCarbs: 'Carbs, g/100g',
+  foodSaveAndAdd: 'Save and add',
+  foodItemsWord: 'items',
+  foodDishName: 'Dish name',
+
+  progressRecoveryA11y: 'Recovery {score} percent, {status}',
+  progressMuscles: 'Muscles',
+  progressEnergy: 'Energy',
+  progressWater: 'Water',
+  progressCns: 'CNS',
+  progressEyebrow: 'FitPulse · analytics',
+  progressStatStreak: 'streak, days',
+  progressStatSets: 'sets / 7d',
+  progressStatKcal: 'kcal today',
+  progressRecoveryKicker: 'RECOVERY · OFFLINE',
+  progressImportSection: 'FROM WATCH / GPS',
+  progressAchievements: 'ACHIEVEMENTS',
+  progressBurnWeek: 'BURN · 7 DAYS',
+
+  profileExport: 'Export',
+  profileExportDone: 'File saved: {path}',
+  profileExportError: 'Export error',
+  profileImport: 'Import',
+  profileImportDone: 'Data restored from file',
+  profileImportError: 'Import error',
+  profileImportBadFile: 'The file is damaged or not in JSON format',
+  profileTargetLine: 'Target {target} kcal · BMR {bmr}',
+  profileFillForTargets: 'Fill in your profile to compute macro targets',
+  profileFillBody: 'Fill in weight, height, age and sex — macro targets will appear.',
+  profileMacrosLine: 'Protein {protein} g · fats {fat} g · carbs {carbs} g (ISSN 2.0 / 1.0 g per kg).',
+  profileThemeDark: 'Dark',
+  profileThemeLight: 'Light',
+  profileActivityLow: '1.2 low',
+  profileActivityMid: '1.375 mid',
+  profileActivityHigh: '1.55 high',
+  profileGoalDeficit: 'Deficit −12%',
+  profileGoalMaintain: 'Maintain',
+  profileGoalSurplus: 'Surplus +10%',
+  profileMeasureAdd: 'Add measurement',
+  profileMeasureDelete: 'Delete measurement',
+  profileMeasureCm: 'cm',
+  profileMeasureA11y: '{name}, cm',
+
+  profileHeaderEyebrow: 'FITPULSE · Account',
+  profileGateTitle: 'Fill in your biometrics',
+  profileGateBody: 'Sex, weight, height and age are needed for BMR/TDEE and macro targets. Without them no default weight is pre-filled — the nutrition ring and coach tips wait for your profile.',
+  profileStatsLine: '{sex} · {age} y · {height} cm · {weight} kg',
+  sectionTheme: 'Appearance',
+  sectionThemeCount: 'theme',
+  themeSchemeName: 'Color scheme',
+  themeSchemeDesc: 'Dark ink or light sporty — mint accents stay',
+  sectionVoice: 'Workout',
+  sectionVoiceCount: 'voice',
+  voiceCuesName: 'Voice cues',
+  voiceCuesDesc: 'Exercise name, set number and rest countdown spoken aloud — handy when you are not looking at the screen',
+  sectionParams: 'Body & macros',
+  sectionParamsCount: 'Mifflin-St Jeor',
+  labelSex: 'Sex',
+  labelAge: 'Age',
+  labelHeight: 'Height, cm',
+  labelWeight: 'Weight, kg',
+  labelActivity: 'Activity (PAL)',
+  labelBudget: 'Calorie budget',
+  resultTarget: 'Target',
+  sectionMeasurements: 'Body measurements',
+  sectionMeasurementsCount: 'girths',
+  measureAddBtn: 'Add',
+  measureValueCm: '{value} cm',
+  sectionPlateau: 'Metabolic plateau',
+  sectionHealth: 'Health',
+  sectionSync: 'Sync',
+  sectionSyncCount: 'Account',
+  sectionData: 'Data',
+  dataExportName: 'Export data',
+  dataExportDesc: 'Download a backup (JSON)',
+  dataImportName: 'Import data',
+  dataImportDesc: 'Restore from a backup file',
+  languageTitle: 'Language',
+  languageRu: 'Русский',
+  languageEn: 'English'
+};
+
+export const STRINGS: Record<Language, Record<StringKey, string>> = { ru: RU, en: EN };
+
+export type Translate = (key: StringKey, vars?: Record<string, string | number>) => string;
+
+function interpolate(template: string, vars?: Record<string, string | number>): string {
+  if (!vars) return template;
+  return template.replace(/\{([a-zA-Z]+)\}/g, (all, name: string) =>
+    name in vars ? String(vars[name]) : all
+  );
+}
+
+export function tFor(lang: Language): Translate {
+  return (key, vars) => interpolate(STRINGS[lang][key], vars);
+}
+
+export function useT(): Translate {
+  const lang = useLanguageStore((s) => s.lang);
+  return useMemo(() => tFor(lang), [lang]);
+}
+
+const MUSCLE_LABELS_EN: Record<MuscleKey, string> = {
+  chest: 'chest',
+  shoulders: 'shoulders',
+  biceps: 'biceps',
+  triceps: 'triceps',
+  core: 'core',
+  quads: 'quads',
+  hamstrings: 'hamstrings',
+  glutes: 'glutes',
+  lowerback: 'lower back',
+  back: 'back',
+  calves: 'calves'
+};
+
+export function muscleLabel(key: MuscleKey, lang: Language): string {
+  return lang === 'en' ? MUSCLE_LABELS_EN[key] : MUSCLE_LABELS[key];
+}
+
+export type EquipmentKey =
+  | 'bodyweight'
+  | 'none'
+  | 'bands'
+  | 'dumbbells'
+  | 'barbell'
+  | 'machine'
+  | 'pullup-bar'
+  | 'bench';
+
+const EQUIPMENT_LABELS_EN: Record<EquipmentKey, string> = {
+  bodyweight: 'bodyweight',
+  none: 'bodyweight',
+  bands: 'bands',
+  dumbbells: 'dumbbells',
+  barbell: 'barbell',
+  machine: 'machine',
+  'pullup-bar': 'pull-up bar',
+  bench: 'bench'
+};
+
+export function equipmentLabel(key: EquipmentKey, lang: Language): string {
+  if (lang === 'en') return EQUIPMENT_LABELS_EN[key];
+  return key === 'none' || key === 'bodyweight' ? RU.bodyweightLabel : key === 'bands' ? RU.bandsLabel : key;
+}
+
+export type ExerciseCategory = 'chest' | 'back' | 'legs' | 'abs' | 'arms' | 'glutes';
+
+const CATEGORY_LABELS: Record<Language, Record<ExerciseCategory, string>> = {
+  ru: { chest: 'Грудь', back: 'Спина', legs: 'Ноги', abs: 'Кор', arms: 'Руки', glutes: 'Ягодицы' },
+  en: { chest: 'Chest', back: 'Back', legs: 'Legs', abs: 'Core', arms: 'Arms', glutes: 'Glutes' }
+};
+
+export function categoryLabel(cat: ExerciseCategory, lang: Language): string {
+  return CATEGORY_LABELS[lang][cat];
+}
+
+const LEVEL_LABELS: Record<Language, Record<string, string>> = {
+  ru: { beginner: 'начальный', intermediate: 'средний', expert: 'продвинутый' },
+  en: { beginner: 'beginner', intermediate: 'intermediate', expert: 'advanced' }
+};
+
+export function levelLabel(level: string | null, lang: Language): string {
+  if (!level) return '';
+  return LEVEL_LABELS[lang][level] ?? level;
+}
+
+export type MeasurementType = 'waist' | 'chest' | 'hips' | 'bicep' | 'thigh' | 'neck';
+
+const MEASUREMENT_LABELS: Record<Language, Record<MeasurementType, string>> = {
+  ru: { waist: 'Талия', chest: 'Грудь', hips: 'Бёдра', bicep: 'Бицепс', thigh: 'Бедро (окружность)', neck: 'Шея' },
+  en: { waist: 'Waist', chest: 'Chest', hips: 'Hips', bicep: 'Bicep', thigh: 'Thigh (girth)', neck: 'Neck' }
+};
+
+export function measurementLabel(type: MeasurementType, lang: Language): string {
+  return MEASUREMENT_LABELS[lang][type];
+}
+
+/** Слово «день/дня/дней» для счётчика серии. */
+export function streakDayWord(count: number, lang: Language): string {
+  if (lang === 'en') return count === 1 ? 'day' : 'days';
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+  if (mod10 === 1 && mod100 !== 11) return 'день';
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'дня';
+  return 'дней';
+}
