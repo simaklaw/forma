@@ -276,22 +276,22 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         ref={ref}
         eyebrow={
           seq.totalSteps > 0
-            ? `Упр. ${String(exercise.index).padStart(2, '0')} · шаг ${seq.currentStepIndex + 1}/${seq.totalSteps}`
-            : `Упражнение ${String(exercise.index).padStart(2, '0')}`
+            ? `#?@. ${String(exercise.index).padStart(2, '0')} � H03 ${seq.currentStepIndex + 1}/${seq.totalSteps}`
+            : `#?@06=5=85 ${String(exercise.index).padStart(2, '0')}`
         }
         title={exercise.name}
         onChange={(index) => setSheetOpen(index >= 0)}
       >
         {seq.isCurrent && !finished && seq.totalSteps > 0 && (
           <View style={styles.currentChip}>
-            <Text style={styles.currentChipText}>Текущий шаг сессии</Text>
+            <Text style={styles.currentChipText}>"5:CI89 H03 A5AA88</Text>
           </View>
         )}
         {blockedBySequence && (
           <View style={styles.seqBanner} accessibilityRole="text">
-            <Text style={styles.seqBannerTitle}>Сначала другое упражнение</Text>
+            <Text style={styles.seqBannerTitle}>!=0G0;0 4@C3>5 C?@06=5=85</Text>
             <Text style={styles.seqBannerBody}>
-              По плану сейчас: {seq.expectedName ?? 'предыдущее'} · шаг {seq.currentStepIndex + 1}/
+              > ?;0=C A59G0A: {seq.expectedName ?? '?@54K4CI55'} � H03 {seq.currentStepIndex + 1}/
               {seq.totalSteps}
             </Text>
             {seq.expectedExerciseId != null && onGoToExpected && (
@@ -299,9 +299,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
                 style={styles.seqBannerCta}
                 onPress={() => onGoToExpected(seq.expectedExerciseId!)}
                 accessibilityRole="button"
-                accessibilityLabel="Перейти к текущему упражнению"
+                accessibilityLabel="5@59B8 : B5:CI5<C C?@06=5=8N"
               >
-                <Text style={styles.seqBannerCtaText}>Перейти к нему</Text>
+                <Text style={styles.seqBannerCtaText}>5@59B8 : =5<C</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -322,28 +322,27 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
               resizeMode="cover"
               accessibilityLabel={reference.name}
             />
-            <Text style={styles.refPhotoCaption}>фото техники: wger.de · {reference.name}</Text>
           </View>
         )}
 
         <View style={[styles.grid, { marginTop: spacing.md }]}>
           <View style={styles.gridCell}>
             <Text style={styles.gridVal}>
-              {exercise.totalSets}×{exercise.workingReps}
+              {exercise.totalSets}�{exercise.workingReps}
             </Text>
-            <Text style={styles.gridLbl}>подходы</Text>
+            <Text style={styles.gridLbl}>?>4E>4K</Text>
           </View>
           <View style={styles.gridCell}>
             <Text style={styles.gridVal}>
               {isBodyweightExercise(exercise)
                 ? formatLoadLabel(exercise, bodyKg)
-                : `${exercise.workingWeight} кг`}
+                : `${exercise.workingWeight} :3`}
             </Text>
-            <Text style={styles.gridLbl}>рабочий вес</Text>
+            <Text style={styles.gridLbl}>@01>G89 25A</Text>
           </View>
           <View style={[styles.gridCell, { borderRightWidth: 0 }]}>
-            <Text style={styles.gridVal}>{exercise.restSeconds}с</Text>
-            <Text style={styles.gridLbl}>отдых</Text>
+            <Text style={styles.gridVal}>{exercise.restSeconds}A</Text>
+            <Text style={styles.gridLbl}>>B4KE</Text>
           </View>
         </View>
 
@@ -357,27 +356,17 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           const meta = datasetMetaForExercise(exercise.name);
           if (!meta) return null;
           const steps = meta.instructionsEn ?? [];
-          const secondary = meta.secondaryMuscles ?? [];
-          if (!steps.length && !secondary.length) return null;
+          if (!steps.length) return null;
           return (
             <View style={styles.datasetBlock}>
-              {secondary.length > 0 ? (
-                <Text style={styles.datasetMeta}>
-                  Secondary: {secondary.join(', ')}
-                  {meta.target ? ` · target ${meta.target}` : ''}
-                  {meta.bodyPart ? ` · ${meta.bodyPart}` : ''}
-                </Text>
-              ) : null}
-              {steps.length > 0 ? (
-                <View style={styles.steps}>
-                  <Text style={styles.stepsTitle}>Steps (EN)</Text>
-                  {steps.map((step, i) => (
-                    <Text key={i} style={styles.stepLine}>
-                      {i + 1}. {step}
-                    </Text>
-                  ))}
-                </View>
-              ) : null}
+              <View style={styles.steps}>
+                <Text style={styles.stepsTitle}>Техника (EN)</Text>
+                {steps.map((step, i) => (
+                  <Text key={i} style={styles.stepLine}>
+                    {i + 1}. {step}
+                  </Text>
+                ))}
+              </View>
             </View>
           );
         })()}

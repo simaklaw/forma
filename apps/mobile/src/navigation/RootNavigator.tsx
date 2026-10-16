@@ -16,8 +16,10 @@ import type { TabParamList } from './types';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
-/** Minimal, consistent line icons — no emoji rendering differences between Android devices. */
-const ICONS: Record<string, 'workout' | 'catalog' | 'nutrition' | 'progress' | 'profile'> = {
+/** Minimal, consistent line icons â no emoji rendering differences between Android devices. */
+type TabName = keyof TabParamList;
+type TabIconKey = 'workout' | 'catalog' | 'nutrition' | 'progress' | 'profile';
+const ICONS: Record<TabName, TabIconKey> = {
   Тренировки: 'workout',
   Каталог: 'catalog',
   Питание: 'nutrition',
@@ -31,13 +33,13 @@ function TabIcon({
   active,
   inactive
 }: {
-  name: string;
+  name: TabName;
   focused: boolean;
   active: string;
   inactive: string;
 }) {
   const color = focused ? active : inactive;
-  const icon = ICONS[name] ?? 'workout';
+  const icon = ICONS[name];
   return (
     <View style={{ alignItems: 'center', gap: 4, minWidth: 28 }}>
       <Svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
@@ -104,7 +106,7 @@ export default function RootNavigator() {
   return (
     <NavigationContainer theme={navTheme}>
       <Tab.Navigator
-        initialRouteName="Тренировки"
+        initialRouteName="Ð¢ÑÐµÐ½Ð¸ÑÐ¾Ð²ÐºÐ¸"
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarStyle: {
@@ -141,11 +143,11 @@ export default function RootNavigator() {
           tabPress: () => RestTimerEngine.hapticTabSwitch()
         }}
       >
-        <Tab.Screen name="Тренировки" component={WorkoutScreen} />
-        <Tab.Screen name="Каталог" component={CatalogScreen} />
-        <Tab.Screen name="Питание" component={NutritionScreen} />
-        <Tab.Screen name="Прогресс" component={ProgressScreen} />
-        <Tab.Screen name="Профиль" component={ProfileScreen} />
+        <Tab.Screen name="Ð¢ÑÐµÐ½Ð¸ÑÐ¾Ð²ÐºÐ¸" component={WorkoutScreen} />
+        <Tab.Screen name="ÐÐ°ÑÐ°Ð»Ð¾Ð³" component={CatalogScreen} />
+        <Tab.Screen name="ÐÐ¸ÑÐ°Ð½Ð¸Ðµ" component={NutritionScreen} />
+        <Tab.Screen name="ÐÑÐ¾Ð³ÑÐµÑÑ" component={ProgressScreen} />
+        <Tab.Screen name="ÐÑÐ¾ÑÐ¸Ð»Ñ" component={ProfileScreen} />
       </Tab.Navigator>
     </NavigationContainer>
   );

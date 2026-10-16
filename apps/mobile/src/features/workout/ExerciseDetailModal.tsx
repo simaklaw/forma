@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Image,
   Modal,
   ScrollView,
   StyleSheet,
@@ -27,6 +26,8 @@ import {
   subscribeReplaceTarget,
   type ReplaceTarget
 } from './replaceTarget';
+import { EXERCISE_VIDEOS } from './exerciseMedia';
+import { techniqueCuesFromNote } from '@/lib/techniqueCues';
 
 interface Props {
   item: CatalogItem | null;
@@ -80,7 +81,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
       );
       clearReplaceTarget();
       onClose();
-      navigation.navigate('Тренировки');
+      navigation.navigate('Ð¢ÑÐµÐ½Ð¸ÑÐ¾Ð²ÐºÐ¸');
     } finally {
       setReplacing(false);
     }
@@ -89,11 +90,16 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
   if (!item) return null;
 
   const equipment = inferEquipment(item);
-  const loadLabel = item.workingWeight > 0 ? `${item.workingWeight} кг` : 'свой вес';
+  const loadLabel = item.workingWeight > 0 ? `${item.workingWeight} ÐºÐ³` : 'ÑÐ²Ð¾Ð¹ Ð²ÐµÑ';
   const canReplace =
     replaceTarget != null &&
     replaceTarget.mode === item.mode &&
     replaceTarget.currentExerciseId !== item.id;
+  const cues = techniqueCuesFromNote(item.note);
+  const videoSource =
+    item.mediaKey && EXERCISE_VIDEOS[item.mediaKey]
+      ? EXERCISE_VIDEOS[item.mediaKey]
+      : undefined;
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -102,15 +108,15 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
           <TouchableOpacity
             onPress={onClose}
             accessibilityRole="button"
-            accessibilityLabel="Закрыть"
+            accessibilityLabel="ÐÐ°ÐºÑÑÑÑ"
             style={[styles.barBtn, { borderColor: colors.lineStrong }]}
           >
-            <Text style={[styles.barBtnText, { color: colors.lime }]}>Закрыть</Text>
+            <Text style={[styles.barBtnText, { color: colors.lime }]}>ÐÐ°ÐºÑÑÑÑ</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={onToggleFavorite}
             accessibilityRole="button"
-            accessibilityLabel={favorited ? 'Убрать из избранного' : 'В избранное'}
+            accessibilityLabel={favorited ? 'Ð£Ð±ÑÐ°ÑÑ Ð¸Ð· Ð¸Ð·Ð±ÑÐ°Ð½Ð½Ð¾Ð³Ð¾' : 'Ð Ð¸Ð·Ð±ÑÐ°Ð½Ð½Ð¾Ðµ'}
             accessibilityState={{ selected: favorited }}
             style={[
               styles.barBtn,
@@ -121,14 +127,14 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
             ]}
           >
             <Text style={[styles.barBtnText, { color: favorited ? colors.lime : colors.paperDim }]}>
-              {favorited ? '★ В избранном' : '☆ В избранное'}
+              {favorited ? 'â Ð Ð¸Ð·Ð±ÑÐ°Ð½Ð½Ð¾Ð¼' : 'â Ð Ð¸Ð·Ð±ÑÐ°Ð½Ð½Ð¾Ðµ'}
             </Text>
           </TouchableOpacity>
         </View>
 
         <ScrollView contentContainerStyle={styles.body}>
           <Text style={[styles.eyebrow, { color: colors.lime }]}>
-            {item.mode === 'gym' ? 'ЗАЛ' : 'ДОМ'} · {item.dayName.toUpperCase()}
+            {item.mode === 'gym' ? 'ÐÐÐ' : 'ÐÐÐ'} Â· {item.dayName.toUpperCase()}
           </Text>
           <Text style={[styles.title, { color: colors.paper }]}>{item.name}</Text>
 
@@ -138,56 +144,47 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
               disabled={replacing}
               style={[styles.replaceCta, { backgroundColor: colors.lime }]}
               accessibilityRole="button"
-              accessibilityLabel="Подставить в план дня"
+              accessibilityLabel="ÐÐ¾Ð´ÑÑÐ°Ð²Ð¸ÑÑ Ð² Ð¿Ð»Ð°Ð½ Ð´Ð½Ñ"
             >
               <Text style={[styles.replaceCtaText, { color: colors.ink }]}>
                 {replacing
-                  ? 'Сохраняем…'
-                  : `Подставить вместо «${replaceTarget!.currentName}»`}
+                  ? 'Ð¡Ð¾ÑÑÐ°Ð½ÑÐµÐ¼â¦'
+                  : `ÐÐ¾Ð´ÑÑÐ°Ð²Ð¸ÑÑ Ð²Ð¼ÐµÑÑÐ¾ Â«${replaceTarget!.currentName}Â»`}
               </Text>
             </TouchableOpacity>
           ) : null}
 
-          {reference?.imageUrl ? (
-            <Image
-              source={{ uri: reference.imageUrl }}
-              style={[styles.photo, { borderColor: colors.lineStrong, backgroundColor: colors.panel }]}
-              resizeMode="cover"
-              accessibilityLabel="Справочное фото упражнения"
-            />
-          ) : null}
-
-          <ExerciseVideo label="ТЕХНИКА (ПЛЕЙСХОЛДЕР)" />
+          <ExerciseVideo source={videoSource} posterUri={reference?.imageUrl} cues={cues} />
 
           <View style={styles.statsRow}>
             <View style={[styles.stat, { borderColor: colors.line, backgroundColor: colors.panel }]}>
-              <Text style={[styles.statLabel, { color: colors.paperFaint }]}>Подходы</Text>
+              <Text style={[styles.statLabel, { color: colors.paperFaint }]}>ÐÐ¾Ð´ÑÐ¾Ð´Ñ</Text>
               <Text style={[styles.statValue, { color: colors.paper }]}>{item.totalSets}</Text>
             </View>
             <View style={[styles.stat, { borderColor: colors.line, backgroundColor: colors.panel }]}>
-              <Text style={[styles.statLabel, { color: colors.paperFaint }]}>Повторы</Text>
+              <Text style={[styles.statLabel, { color: colors.paperFaint }]}>ÐÐ¾Ð²ÑÐ¾ÑÑ</Text>
               <Text style={[styles.statValue, { color: colors.paper }]}>{item.workingReps}</Text>
             </View>
             <View style={[styles.stat, { borderColor: colors.line, backgroundColor: colors.panel }]}>
-              <Text style={[styles.statLabel, { color: colors.paperFaint }]}>Отдых</Text>
-              <Text style={[styles.statValue, { color: colors.paper }]}>{item.restSeconds}с</Text>
+              <Text style={[styles.statLabel, { color: colors.paperFaint }]}>ÐÑÐ´ÑÑ</Text>
+              <Text style={[styles.statValue, { color: colors.paper }]}>{item.restSeconds}Ñ</Text>
             </View>
             <View style={[styles.stat, { borderColor: colors.line, backgroundColor: colors.panel }]}>
-              <Text style={[styles.statLabel, { color: colors.paperFaint }]}>Нагрузка</Text>
+              <Text style={[styles.statLabel, { color: colors.paperFaint }]}>ÐÐ°Ð³ÑÑÐ·ÐºÐ°</Text>
               <Text style={[styles.statValue, { color: colors.paper }]}>{loadLabel}</Text>
             </View>
           </View>
 
           <Text style={[styles.metaLine, { color: colors.paperDim }]}>
-            Оборудование: {EQUIPMENT_LABELS[equipment]}
+            ÐÐ±Ð¾ÑÑÐ´Ð¾Ð²Ð°Ð½Ð¸Ðµ: {EQUIPMENT_LABELS[equipment]}
           </Text>
           <Text style={[styles.metaLine, { color: colors.paperDim }]}>
-            Мышцы: {item.targetMuscles.map((key) => MUSCLE_LABELS[key]).join(' · ')}
+            ÐÑÑÑÑ: {item.targetMuscles.map((key) => MUSCLE_LABELS[key]).join(' Â· ')}
           </Text>
 
           {item.note ? (
             <View style={[styles.noteBox, { borderColor: colors.line, backgroundColor: colors.panel }]}>
-              <Text style={[styles.noteLabel, { color: colors.lime }]}>Подсказка</Text>
+              <Text style={[styles.noteLabel, { color: colors.lime }]}>ÐÐ¾Ð´ÑÐºÐ°Ð·ÐºÐ°</Text>
               <Text style={[styles.noteBody, { color: colors.paper }]}>{item.note}</Text>
             </View>
           ) : null}
@@ -196,8 +193,8 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
 
           <Text style={[styles.readonlyHint, { color: colors.paperFaint }]}>
             {canReplace
-              ? 'Замена сохранится только для этого дня плана (можно сбросить на экране «Тренировки»).'
-              : 'Только просмотр. Чтобы выполнить упражнение, запустите тренировку во вкладке «Тренировки». Долгое нажатие на упражнение дня открывает замену.'}
+              ? 'ÐÐ°Ð¼ÐµÐ½Ð° ÑÐ¾ÑÑÐ°Ð½Ð¸ÑÑÑ ÑÐ¾Ð»ÑÐºÐ¾ Ð´Ð»Ñ ÑÑÐ¾Ð³Ð¾ Ð´Ð½Ñ Ð¿Ð»Ð°Ð½Ð° (Ð¼Ð¾Ð¶Ð½Ð¾ ÑÐ±ÑÐ¾ÑÐ¸ÑÑ Ð½Ð° ÑÐºÑÐ°Ð½Ðµ Â«Ð¢ÑÐµÐ½Ð¸ÑÐ¾Ð²ÐºÐ¸Â»).'
+              : 'Ð¢Ð¾Ð»ÑÐºÐ¾ Ð¿ÑÐ¾ÑÐ¼Ð¾ÑÑ. Ð§ÑÐ¾Ð±Ñ Ð²ÑÐ¿Ð¾Ð»Ð½Ð¸ÑÑ ÑÐ¿ÑÐ°Ð¶Ð½ÐµÐ½Ð¸Ðµ, Ð·Ð°Ð¿ÑÑÑÐ¸ÑÐµ ÑÑÐµÐ½Ð¸ÑÐ¾Ð²ÐºÑ Ð²Ð¾ Ð²ÐºÐ»Ð°Ð´ÐºÐµ Â«Ð¢ÑÐµÐ½Ð¸ÑÐ¾Ð²ÐºÐ¸Â». ÐÐ¾Ð»Ð³Ð¾Ðµ Ð½Ð°Ð¶Ð°ÑÐ¸Ðµ Ð½Ð° ÑÐ¿ÑÐ°Ð¶Ð½ÐµÐ½Ð¸Ðµ Ð´Ð½Ñ Ð¾ÑÐºÑÑÐ²Ð°ÐµÑ Ð·Ð°Ð¼ÐµÐ½Ñ.'}
           </Text>
         </ScrollView>
       </View>
@@ -233,12 +230,6 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   replaceCtaText: { fontFamily: fonts.bodySemi, fontSize: 14, textAlign: 'center' },
-  photo: {
-    width: '100%',
-    height: 180,
-    borderWidth: 1,
-    borderRadius: radius.card
-  },
   statsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   stat: {
     borderWidth: 1,

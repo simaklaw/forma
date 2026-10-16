@@ -51,6 +51,7 @@ export default function WorkoutScreen() {
   const [userPickedDay, setUserPickedDay] = useState(false);
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
   const [resumable, setResumable] = useState<WorkoutSession | null>(null);
+  const [sessionActionBusy, setSessionActionBusy] = useState(false);
 
   const trainingMode = useTrainingModeStore((s) => s.trainingMode);
   const setTrainingMode = useTrainingModeStore((s) => s.setTrainingMode);
@@ -195,7 +196,7 @@ export default function WorkoutScreen() {
   if (!activeDay) {
     return (
       <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]} edges={['top']}>
-        <Text style={[styles.title, { color: colors.paper }]}>Нет плана</Text>
+        <Text style={[styles.title, { color: colors.paper }]}>5B ?;0=0</Text>
       </SafeAreaView>
     );
   }
@@ -214,37 +215,40 @@ export default function WorkoutScreen() {
       <View style={styles.ticketMain}>
         <View style={{ flex: 1, paddingRight: 12 }}>
           <Text style={[styles.ticketLabel, { color: colors.paperFaint }]}>
-            Сегодня · {profileSex === 'female' ? 'жен' : 'муж'} · {trainingMode === 'gym' ? 'зал' : 'дом'}
+            !53>4=O � {profileSex === 'female' ? '65=' : '<C6'} � {trainingMode === 'gym' ? '70;' : '4><'}
           </Text>
           <Text style={[styles.ticketName, { color: colors.paper }]}>{activeDay.name}</Text>
           <Text style={[styles.ticketMeta, { color: colors.paperDim }]}>
-            {effectiveExercises.length} упражнения · {activeDay.meta}
-            {burnedToday > 0 ? ` · ~${burnedToday} ккал` : ''}
+            {effectiveExercises.length} C?@06=5=8O � {activeDay.meta}
+            {burnedToday > 0 ? ` � ~${burnedToday} ::0;` : ''}
           </Text>
           {resumable && dayIdFromTemplate(resumable.templateRevisionId) === activeDay.id ? (
             <View style={styles.resumeBlock}>
               <Text style={[styles.resumeHint, { color: colors.lime }]}>
-                Есть незавершённая сессия · шаг {resumable.currentStepIndex + 1}/{(resumable.steps ?? []).length}
+                ABL =57025@HQ==0O A5AA8O � H03 {resumable.currentStepIndex + 1}/{(resumable.steps ?? []).length}
               </Text>
               <View
                 style={styles.sessionProgress}
                 accessibilityRole="progressbar"
                 accessibilityValue={{ min: 0, max: 100, now: sessionPct }}
-                accessibilityLabel={`Прогресс сессии ${sessionDoneSets} из ${sessionTargetSets} подходов`}
+                accessibilityLabel={`@>3@5AA A5AA88 ${sessionDoneSets} 87 ${sessionTargetSets} ?>4E>4>2`}
               >
                 <View style={[styles.sessionProgressTrack, { backgroundColor: colors.line }]}>
                   <View style={[styles.sessionProgressFill, { backgroundColor: colors.lime, width: `${sessionPct}%` }]} />
                 </View>
                 <Text style={[styles.sessionProgressLbl, { color: colors.paperFaint }]}>
-                  {sessionDoneSets}/{sessionTargetSets} подходов · {sessionPct}%
+                  {sessionDoneSets}/{sessionTargetSets} ?>4E>4>2 � {sessionPct}%
                 </Text>
               </View>
               <View style={styles.resumeActions}>
                 <TouchableOpacity
-                  style={[styles.startPill, { backgroundColor: colors.lime }]}
+                  style={[styles.startPill, { backgroundColor: colors.lime }, sessionActionBusy && { opacity: 0.6 }]}
                   accessibilityRole="button"
                   accessibilityLabel="Продолжить тренировку"
+                  disabled={sessionActionBusy}
                   onPress={() => {
+                    if (sessionActionBusy) return;
+                    setSessionActionBusy(true);
                     void ActiveSessionController.ensureDaySession(activeDay.id, effectiveExercises)
                       .then((session) => {
                         if (!session) return;
@@ -254,16 +258,20 @@ export default function WorkoutScreen() {
                         const exId = step ? Number(step.snapshot.exerciseId) : effectiveExercises[0]?.id;
                         if (exId) openExercise(exId);
                       })
-                      .catch(() => {});
+                      .catch(() => {})
+                      .finally(() => setSessionActionBusy(false));
                   }}
                 >
                   <Text style={[styles.startPillText, { color: colors.ink }]}>▶  Продолжить</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.restartPill, { borderColor: colors.lineStrong }]}
+                  style={[styles.restartPill, { borderColor: colors.lineStrong }, sessionActionBusy && { opacity: 0.6 }]}
                   accessibilityRole="button"
                   accessibilityLabel="Начать заново"
+                  disabled={sessionActionBusy}
                   onPress={() => {
+                    if (sessionActionBusy) return;
+                    setSessionActionBusy(true);
                     void ActiveSessionController.restartDaySession(activeDay.id, effectiveExercises)
                       .then((session) => {
                         if (!session) return;
@@ -273,17 +281,22 @@ export default function WorkoutScreen() {
                         const exId = first ? Number(first.snapshot.exerciseId) : effectiveExercises[0]?.id;
                         if (exId) openExercise(exId);
                       })
-                      .catch(() => {});
+                      .catch(() => {})
+                      .finally(() => setSessionActionBusy(false));
                   }}
                 >
                   <Text style={[styles.restartPillText, { color: colors.paperDim }]}>Начать заново</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.restartPill, { borderColor: colors.ember }]}
+                  style={[styles.restartPill, { borderColor: colors.ember }, sessionActionBusy && { opacity: 0.6 }]}
                   accessibilityRole="button"
                   accessibilityLabel="Выйти из тренировки"
+                  disabled={sessionActionBusy}
                   onPress={() => {
+                    if (sessionActionBusy) return;
+                    setSessionActionBusy(true);
                     presentEarlyLeave((outcome) => {
+                      setSessionActionBusy(false);
                       if (outcome === 'cancelled') return;
                       void refreshResumable();
                     });
