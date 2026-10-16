@@ -3,7 +3,9 @@
  * Source: yuhonas/free-exercise-db (Unlicense / Public Domain).
  * Re-run the script to regenerate after a dataset update.
  *
- * instructionsEn is intentionally NOT translated — see import decision log.
+ * instructionsEn is the original dataset text; instructionsRu is a manual
+ * translation layer — keep scripts/lib/instructions-ru.json in sync and
+ * re-run the script after changes. UI falls back to instructionsEn when empty.
  * nameRu is null where no manual translation exists yet; UI must fall back
  * to nameEn in that case, not hide the exercise.
  */
@@ -17,6 +19,7 @@ export interface ImportedExercise {
   level: string | null;
   primaryMuscles: string[];
   instructionsEn: string[];
+  instructionsRu: string[];
   imageKeys: string[];
   sourceLicense: string;
   sourceUrl: string;
@@ -40,6 +43,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "At the top of the contraction your torso should be perpendicular to the ground. Reverse the motion, going only ¾ of the way down.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Лягте на пол и зафиксируйте стопы. Ноги должны быть согнуты в коленях.",
+      "Положите руки за голову или сбоку от неё. Начинайте, лежа спиной на полу, — это исходное положение.",
+      "Согните тазобедренные суставы и позвоночник, поднимая корпус к коленям.",
+      "В верхней точке корпус должен быть перпендикулярен полу. Опускайтесь, проходя лишь ¾ амплитуды вниз.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "3-4-sit-up-0",
       "3-4-sit-up-1"
@@ -62,6 +72,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "With the other leg, bend the hip and knee to 90 degrees. You may brace your leg with your hands if necessary. This will be your starting position.",
       "Extend your leg straight into the air, pausing briefly at the top. Return the leg to the starting position.",
       "Repeat for 10-20 repetitions, and then switch to the other leg."
+    ],
+    "instructionsRu": [
+      "Лягте на спину, одну ногу вытяните прямо.",
+      "Другую ногу согните в тазобедренном суставе и колене под 90 градусов. При необходимости придержите её руками — это исходное положение.",
+      "Выпрямите ногу вверх, задержитесь на мгновение в верхней точке и верните ногу в исходное положение.",
+      "Выполните 10-20 повторений, затем поменяйте ногу."
     ],
     "imageKeys": [
       "90-90-hamstring-0",
@@ -88,6 +104,14 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Crunch to the opposite side as you cycle your legs and bring closer your left elbow to your right knee and exhale.",
       "Continue alternating in this manner until all of the recommended repetitions for each side have been completed."
     ],
+    "instructionsRu": [
+      "Лягте на пол, прижав поясницу к полу. Руки положите рядом с головой. Следите, чтобы не напрягать шею во время выполнения. Поднимите плечи в положение скручивания.",
+      "Поднимите колени до прямого угла с полом, голени параллельны полу — это исходное положение.",
+      "Теперь одновременно медленно выполняйте круговое движение, как при педалировании: выпрямляйте правую ногу вперёд и подтягивайте колено левой. На выдохе, скручиваясь в сторону, тяните правый локоть к левому колену.",
+      "На вдохе вернитесь в исходное положение.",
+      "Скручивайтесь в противоположную сторону, продолжая «крутить педали»: тяните левый локоть к правому колену и выдыхайте.",
+      "Продолжайте чередовать стороны, пока не выполните рекомендованное количество повторений на каждую."
+    ],
     "imageKeys": [
       "air-bike-0",
       "air-bike-1"
@@ -109,6 +133,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Start off on your hands and knees, then lift your leg off the floor and hold the foot with your hand.",
       "Use your hand to hold the foot or ankle, keeping the knee fully flexed, stretching the quadriceps and hip flexors.",
       "Focus on extending your hips, thrusting them towards the floor. Hold for 10-20 seconds and then switch sides."
+    ],
+    "instructionsRu": [
+      "Встаньте на четвереньки, затем оторвите одну ногу от пола и возьмитесь рукой за стопу.",
+      "Держите стопу или лодыжку рукой, полностью согнув колено, — растягиваются квадрицепс и сгибатели бедра.",
+      "Сосредоточьтесь на распрямлении таза, направляя его к полу. Держите 10-20 секунд, затем поменяйте сторону."
     ],
     "imageKeys": [
       "all-fours-quad-stretch-0",
@@ -134,6 +163,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Now crunch over your torso forward and up around 3-4 inches to the left side and touch your left heel as you hold the contraction for a second. Exhale while performing this movement and then go back to the starting position as you inhale. Now that both heels have been touched, that is considered 1 repetition.",
       "Continue alternating sides in this manner until all prescribed repetitions are done."
     ],
+    "instructionsRu": [
+      "Лягте на пол, согнув колени; стопы на полу на расстоянии примерно 45-60 см. Руки вытянуты вдоль корпуса — это исходное положение.",
+      "Скручивайтесь вперёд и вверх примерно на 8-10 см вправо и коснитесь правой пятки, удерживая сокращение секунду. Делайте это на выдохе.",
+      "Медленно вернитесь в исходное положение на вдохе.",
+      "Теперь скручивайтесь вперёд и вверх примерно на 8-10 см влево и коснитесь левой пятки, удерживая сокращение секунду. Выдохните и вернитесь в исходное положение на вдохе. Касание обеих пяток считается одним повторением.",
+      "Продолжайте чередовать стороны до выполнения заданного количества повторений."
+    ],
     "imageKeys": [
       "alternate-heel-touchers-0",
       "alternate-heel-touchers-1"
@@ -156,6 +192,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Keeping your legs straight, extend through the hips to come to a near vertical position.",
       "Ensure that you do not round your back as you go down back to the starting position."
     ],
+    "instructionsRu": [
+      "Возьмите метровую резинку: встаньте на один её конец, расставив стопы немного, наклонитесь и накиньте второй конец за шею — это исходное положение.",
+      "Держа ноги прямыми, распрямитесь в тазобедренных суставах почти до вертикали.",
+      "Возвращаясь в исходное положение, не округляйте спину."
+    ],
     "imageKeys": [
       "band-good-morning-0",
       "band-good-morning-1"
@@ -177,6 +218,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Loop the band around a post. Standing a little ways away, loop the opposite end around the neck. Your hands can help hold the band in position.",
       "Begin by bending at the hips, getting your butt back as far as possible. Keep your back flat and bend forward to about 90 degrees. Your knees should be only slightly bent.",
       "Return to the starting position be driving through with the hips to come back to a standing position."
+    ],
+    "instructionsRu": [
+      "Закрепите резинку на стойке. Встаньте на небольшом расстоянии спиной к стойке и накиньте второй конец резинки на шею. Руками можно придерживать резинку.",
+      "Начните с наклона в тазобедренных суставах, отводя таз максимально назад. Держите спину прямой и наклоняйтесь примерно до 90 градусов. Колени лишь слегка согнуты.",
+      "Вернитесь в исходное положение, мощно распрямляясь в тазобедренных суставах."
     ],
     "imageKeys": [
       "band-good-morning-pull-through-0",
@@ -203,6 +249,14 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Return to the starting position and repeat for the desired rep count.",
       "Switch sides."
     ],
+    "instructionsRu": [
+      "Закрепите резинку на прочной стойке или ином предмете.",
+      "Встаньте левым боком к стойке и проденьте правую стопу в резинку, разместив её на лодыжке.",
+      "Выпрямитесь, при необходимости держась за стойку — это исходное положение.",
+      "Держа колено прямым, отведите правую ногу в сторону как можно дальше.",
+      "Вернитесь в исходное положение и выполните нужное количество повторений.",
+      "Поменяйте сторону."
+    ],
     "imageKeys": [
       "band-hip-adductions-0",
       "band-hip-adductions-1"
@@ -225,6 +279,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Initiate the movement by performing a reverse fly motion, moving your hands out laterally to your sides.",
       "Keep your elbows extended as you perform the movement, bringing the band to your chest. Ensure that you keep your shoulders back during the exercise.",
       "Pause as you complete the movement, returning to the starting position under control."
+    ],
+    "instructionsRu": [
+      "Вытяните руки прямо перед собой, держа резинку обеими руками.",
+      "Начните движение как в обратной разводке, разводя руки в стороны.",
+      "Держа локти выпрямленными, тяните резинку к груди. Плечи держите отведёнными назад.",
+      "Сделайте паузу в завершённой фазе и подконтрольно вернитесь в исходное положение."
     ],
     "imageKeys": [
       "band-pull-apart-0",
@@ -250,6 +310,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Squeeze your abs at the top of the movement for a second and then return to the starting position slowly as you breathe in. Tip: Maintain a controlled motion at all times.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Лягте на пол, руки вдоль корпуса.",
+      "Согните колени под углом около 75 градусов и приподнимите стопы над полом примерно на 5 см.",
+      "За счёт нижней части пресса подтяните колени к себе, сохраняя сгиб в коленях 75 градусов. Продолжайте, пока таз не оторвётся от пола за счёт обратного наклона таза. Выдыхайте в этой фазе. Совет: в конце движения колени окажутся над грудью.",
+      "В верхней точке на секунду напрягите пресс и медленно вернитесь в исходное положение на вдохе. Совет: всё время сохраняйте подконтрольное движение.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "bent-knee-hip-raise-0",
       "bent-knee-hip-raise-1"
@@ -273,6 +340,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Slowly lower your forearms back to the ground by allowing the elbows to flex.",
       "Repeat."
     ],
+    "instructionsRu": [
+      "Примите упор лёжа на предплечьях: тело держится на носках и предплечьях, корпус прямой, предплечья на ширине плеч — это исходное положение.",
+      "Плотно упираясь ладонями в пол, распрямите локти и поднимите тело над полом. Корпус держите жёстким.",
+      "Медленно опустите предплечья обратно на пол, сгибая локти.",
+      "Повторяйте."
+    ],
     "imageKeys": [
       "body-up-0",
       "body-up-1"
@@ -295,6 +368,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Begin the movement by flexing your knees and hips, sitting back with your hips.",
       "Continue down to full depth if you are able,and quickly reverse the motion until you return to the starting position. As you squat, keep your head and chest up and push your knees out."
     ],
+    "instructionsRu": [
+      "Встаньте, стопы на ширине плеч. Руки можно положить за голову — это исходное положение.",
+      "Начните движение со сгибания коленей и тазобедренных суставов, отводя таз назад.",
+      "Опускайтесь до полной глубины, если можете, и быстро вернитесь в исходное положение. Во время приседа держите голову и грудь поднятыми, колени разводите наружу."
+    ],
     "imageKeys": [
       "bodyweight-squat-0",
       "bodyweight-squat-1"
@@ -316,6 +394,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Begin by lying on your back on the ground. Your legs should be straight and your arms at your side. This will be your starting position.",
       "To perform the movement, tuck the knees toward your chest by flexing the hips and knees. Following this, extend your legs directly above you so that they are perpendicular to the ground. Rotate and elevate your pelvis to raise your glutes from the floor.",
       "After a brief pause, return to the starting position."
+    ],
+    "instructionsRu": [
+      "Лягте на спину на пол. Ноги прямые, руки вдоль корпуса — это исходное положение.",
+      "Подтяните колени к груди, сгибая тазобедренные суставы и колени. Затем выпрямите ноги вверх, перпендикулярно полу. Разверните и приподнимите таз, отрывая ягодицы от пола.",
+      "После короткой паузы вернитесь в исходное положение."
     ],
     "imageKeys": [
       "bottoms-up-0",
@@ -341,6 +424,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Lower back down slowly to your starting position as you breathe in. Tip: Don't let your back sag downwards.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Примите упор лёжа, но на локтях, опираясь на предплечья. Руки согнуты под 90 градусов.",
+      "Слегка прогните спину, а не держите её полностью прямой.",
+      "Поднимайте ягодицы к потолку, сильно напрягая пресс и сокращая расстояние между рёбрами и тазом. В итоге вы окажетесь в высокой позиции «мостика». Выдыхайте в этой фазе.",
+      "Медленно опуститесь в исходное положение на вдохе. Совет: не позволяйте спине провисать вниз.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "butt-ups-0",
       "butt-ups-1"
@@ -362,6 +452,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Lie flat on the floor on your back with the hands by your side and your knees bent. Your feet should be placed around shoulder width. This will be your starting position.",
       "Pushing mainly with your heels, lift your hips off the floor while keeping your back straight. Breathe out as you perform this part of the motion and hold at the top for a second.",
       "Slowly go back to the starting position as you breathe in."
+    ],
+    "instructionsRu": [
+      "Лягте на спину, руки вдоль корпуса, колени согнуты. Стопы примерно на ширине плеч — это исходное положение.",
+      "Отталкиваясь в основном пятками, поднимите таз над полом, держа спину прямой. Выдыхайте и задержитесь на секунду в верхней точке.",
+      "Медленно вернитесь в исходное положение на вдохе."
     ],
     "imageKeys": [
       "butt-lift-bridge-0",
@@ -386,6 +481,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Keeping the hands by your shoulder, stand up on your toes as you exhale and contract the calves hard at the top of the movement.",
       "After a one second contraction, slowly go back down to the starting position.",
       "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Возьмите резинку и встаньте на неё носками, следя, чтобы длина резинки между стопой и руками была одинаковой с обеих сторон.",
+      "Держась за концы резинки, поднимите руки к голове, как перед жимом над головой. Ладони смотрят вперёд, локти согнуты и разведены в стороны — резинка натянется. Это исходное положение.",
+      "Держа руки у плеч, поднимитесь на носки на выдохе и сильно сократите икры в верхней точке.",
+      "После секундного удержания медленно вернитесь в исходное положение.",
+      "Выполните рекомендованное количество повторений."
     ],
     "imageKeys": [
       "calf-raises-with-bands-0",
@@ -412,6 +514,14 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "As you accelerate up, move your outside foot away from your direction of travel. Leaving the ground, shift your body about 30 degrees for the next repetition.",
       "Return to the starting position and repeat the exercise, working all the way around until you are back where you started."
     ],
+    "instructionsRu": [
+      "Примите упор лёжа, опираясь на руки и носки.",
+      "Руки полностью выпрямлены на ширине плеч. Всё движение держите тело прямым — это исходное положение.",
+      "Опускайтесь, сгибая локти, приближая грудь к полу.",
+      "В нижней точке мощно выпрямите локти и вытолкните себя вверх как можно быстрее — до отрыва от пола. «Прыжок» должен составить 30-45 см в сторону.",
+      "Поднимаясь, отводите дальнюю от направления движения стопу в сторону. Отрываясь от земли, смещайте корпус примерно на 30 градусов для следующего повторения.",
+      "Вернитесь и продолжайте двигаться по кругу, пока не вернётесь в исходную точку."
+    ],
     "imageKeys": [
       "clock-push-up-0",
       "clock-push-up-1"
@@ -433,6 +543,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Begin by lying on your back on the ground. Your legs should be straight and your arms extended behind your head. This will be your starting position.",
       "To perform the movement, tuck the knees toward your chest, rotating your pelvis to lift your glutes from the floor. As you do so, flex the spine, bringing your arms back over your head to perform a simultaneous crunch motion.",
       "After a brief pause, return to the starting position."
+    ],
+    "instructionsRu": [
+      "Лягте на спину на пол. Ноги прямые, руки вытянуты за головой — это исходное положение.",
+      "Подтяните колени к груди, разворачивая таз и отрывая ягодицы от пола. Одновременно согните позвоночник, выводя руки над головой, — скручивание выполняется верхней и нижней частью корпуса одновременно.",
+      "После короткой паузы вернитесь в исходное положение."
     ],
     "imageKeys": [
       "cocoons-0",
@@ -457,6 +572,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Now curl up and bring your right elbow and shoulder across your body while bring your left knee in toward your left shoulder at the same time. Reach with your elbow and try to touch your knee. Exhale as you perform this movement. Tip: Try to bring your shoulder up towards your knee rather than just your elbow and remember that the key is to contract the abs as you perform the movement; not just to move the elbow.",
       "Now go back down to the starting position as you inhale and repeat with the left elbow and the right knee.",
       "Continue alternating in this manner until all prescribed repetitions are done."
+    ],
+    "instructionsRu": [
+      "Лягте на спину и согните колени примерно на 60 градусов.",
+      "Стопы полностью на полу, руки свободно за головой — это исходное положение.",
+      "Скручивайтесь, ведя правый локоть и плечо поперёк корпуса, одновременно подтягивая левое колено к левому плечу. Тянитесь локтем к колену. Выдыхайте. Совет: поднимайте плечо к колену, а не только локоть; главное — сокращать пресс, а не просто двигать локтем.",
+      "На вдохе вернитесь в исходное положение и повторите с левым локтем и правым коленом.",
+      "Продолжайте чередовать стороны до выполнения заданного количества повторений."
     ],
     "imageKeys": [
       "cross-body-crunch-0",
@@ -483,6 +605,14 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Slowly return to the starting position as you inhale.",
       "Perform for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Закрепите резинку на неподвижной стойке.",
+      "Встаньте спиной к стойке, возьмитесь за оба конца резинки и отойдите вперёд настолько, чтобы резинка натянулась.",
+      "Разведите руки в стороны параллельно полу, перпендикулярно корпусу (корпус и руки образуют букву «Т»), ладони смотрят вперёд. Руки почти прямые, локти слегка согнуты — это исходное положение.",
+      "Держа руки прямыми, полукругом сведите их перед грудью на выдохе, сокращая грудные мышцы. Задержите сокращение на секунду.",
+      "Медленно вернитесь в исходное положение на вдохе.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "cross-over-with-bands-0",
       "cross-over-with-bands-1"
@@ -506,6 +636,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Curl your upper body forward and bring your shoulder blades just off the floor. At all times, keep your arms aligned with your head, neck and shoulder. Don't move them forward from that position. Exhale as you perform this portion of the movement and hold the contraction for a second.",
       "Slowly lower down to the starting position as you inhale.",
       "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Лягте на пол, спина прямая, колени согнуты под углом около 60 градусов между бедром и голенью.",
+      "Стопы полностью на полу, руки вытяните за голову, скрестив ладони — это исходное положение.",
+      "Скручивайте верх корпуса вперёд, отрывая лопатки от пола. Всё время держите руки на одной линии с головой, шеей и плечами и не выводите их вперёд. Выдыхайте и удерживайте сокращение секунду.",
+      "Медленно опуститесь в исходное положение на вдохе.",
+      "Выполните рекомендованное количество повторений."
     ],
     "imageKeys": [
       "crunch-hands-overhead-0",
@@ -531,6 +668,14 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Continue to push down as hard as you can with your lower back as you contract your abdominals and exhale. Your shoulders should come up off the floor only about four inches, and your lower back should remain on the floor. At the top of the movement, contract your abdominals hard and keep the contraction for a second. Tip: Focus on slow, controlled movement - don't cheat yourself by using momentum.",
       "After the one second contraction, begin to come down slowly again to the starting position as you inhale.",
       "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Лягте на спину, стопы на полу или на скамье, колени согнуты под 90 градусов. Если стопы на скамье, поставьте их в 8-10 см друг от друга, носки внутрь, чтобы они соприкасались.",
+      "Положите руки свободно по обе стороны головы, локти держите сведёнными. Совет: не сцепляйте пальцы за головой.",
+      "Прижимая поясницу к полу для лучшей изоляции пресса, начинайте отрывать плечи от пола.",
+      "Продолжайте давить поясницей в пол, сокращая пресс на выдохе. Плечи отрываются всего на 10-15 см, поясница остаётся на полу. В верхней точке сильно напрягите пресс и задержитесь на секунду. Совет: двигайтесь медленно и подконтрольно, не используйте инерцию.",
+      "После секундного удержания медленно опуститесь в исходное положение на вдохе.",
+      "Выполните рекомендованное количество повторений."
     ],
     "imageKeys": [
       "crunches-0",
@@ -558,6 +703,15 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Stay tight and return the working leg to the starting position.",
       "Repeat on the opposite side, alternating until the set is complete."
     ],
+    "instructionsRu": [
+      "Лягте на спину, вытянув руки вверх к потолку.",
+      "Поднимите стопы, колени и бёдра до угла 90 градусов.",
+      "Сильно выдохните, опуская рёбра и прижимая спину к полу, подкручивая таз вверх и напрягая ягодицы. Удерживайте это положение всё упражнение — это исходное положение.",
+      "Начните, выпрямляя одну ногу: колено и тазобедренный сустав разгибаются, и нога замирает чуть выше пола.",
+      "Сохраняйте положение поясницы и таза во время движения — спина будет пытаться прогнуться.",
+      "Держите напряжение и верните рабочую ногу в исходное положение.",
+      "Повторите другой ногой, чередуя до конца подхода."
+    ],
     "imageKeys": [
       "dead-bug-0",
       "dead-bug-1"
@@ -580,6 +734,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Now, inhale and slowly lower yourself downward. Your torso should remain upright and your elbows should stay close to your body. This helps to better focus on tricep involvement. Lower yourself until there is a 90 degree angle formed between the upper arm and forearm.",
       "Then, exhale and push your torso back up using your triceps to bring your body back to the starting position.",
       "Repeat the movement for the prescribed amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Займите исходное положение на брусьях на прямых руках, почти зафиксировав локти.",
+      "На вдохе медленно опускайтесь. Корпус держите вертикально, локти прижаты к телу — так лучше нагружается трицепс. Опускайтесь до угла 90 градусов между плечом и предплечьем.",
+      "Затем на выдохе выжмите себя вверх трицепсом в исходное положение.",
+      "Выполните заданное количество повторений."
     ],
     "imageKeys": [
       "dips-triceps-version-0",
@@ -604,6 +764,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "As you go up, tuck your heels by flexing the knees, attempting to touch the buttocks.",
       "Finish the motion by landing with the knees only partially bent, using your legs to absorb the impact."
     ],
+    "instructionsRu": [
+      "Встаньте, слегка согнув колени.",
+      "Быстро присядьте на небольшую глубину, сгибая тазобедренные суставы и колени, и мгновенно выпрыгните вверх на максимальную высоту.",
+      "В полёте согните колени, подтягивая пятки к ягодицам.",
+      "Завершите движение, приземлившись на слегка согнутые колени и гася удар ногами."
+    ],
     "imageKeys": [
       "double-leg-butt-kick-0",
       "double-leg-butt-kick-1"
@@ -625,6 +791,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Lie on the floor, crossing your right leg across your bent left knee. Clasp your hands behind your head, beginning with your shoulder blades on the ground. This will be your starting position.",
       "Perform the motion by flexing the spine and rotating your torso to bring the left elbow to the right knee.",
       "Return to the starting position and repeat the movement for the desired number of repetitions before switching sides."
+    ],
+    "instructionsRu": [
+      "Лягте на пол, положив правую лодыжку на согнутое левое колено. Сцепите руки за головой; начинайте с лопатками на полу — это исходное положение.",
+      "Выполните движение, сгибая позвоночник и разворачивая корпус, чтобы приблизить левый локоть к правому колену.",
+      "Вернитесь в исходное положение и выполните нужное количество повторений, затем поменяйте сторону."
     ],
     "imageKeys": [
       "elbow-to-knee-0",
@@ -650,6 +821,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Execute the movement by rotating your arm in a backhand motion, keeping your elbow in place.",
       "Continue as far as you are able, pause, and then return to the starting position."
     ],
+    "instructionsRu": [
+      "Закрепите резинку на стойке на высоте локтя. Встаньте левым боком к резинке на расстоянии пары шагов.",
+      "Возьмитесь за конец резинки правой рукой, локоть плотно прижмите к боку. Рекомендуем зажать локтем валик или мягкий ролик, чтобы зафиксировать его положение.",
+      "В исходном положении локоть согнут под 90 градусов, кисть заведена поперёк корпуса перед собой.",
+      "Выполните движение, поворачивая руку назад (как в бэкхенде), не отрывая локоть от тела.",
+      "Дойдите до доступной амплитуды, сделайте паузу и вернитесь в исходное положение."
+    ],
     "imageKeys": [
       "external-rotation-with-band-0",
       "external-rotation-with-band-1"
@@ -671,6 +849,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Start in a relaxed position with one leg slightly forward. This will be your starting position.",
       "Skip by executing a step-hop pattern of right-right-step to left-left-step, and so on, alternating back and forth.",
       "Perform fast skips by maintaining close contact with the ground and reduce air time, moving as quickly as possible."
+    ],
+    "instructionsRu": [
+      "Встаньте свободно, одна нога чуть впереди — это исходное положение.",
+      "Выполняйте бег с подскоком по схеме «правая-правая-шаг», затем «левая-левая-шаг», чередуя стороны.",
+      "Делайте быстрые подскоки, минимально отрываясь от земли и двигаясь как можно быстрее."
     ],
     "imageKeys": [
       "fast-skipping-0",
@@ -696,6 +879,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "As you breathe in, slowly return to the starting position.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Лягте на коврик или плоскую скамью так, чтобы ноги свисали за краем.",
+      "Положите руки ладонями вниз под ягодицы или по бокам, держась за скамью (на коврике — ладонями вниз вдоль корпуса). Выпрямите ноги — это исходное положение.",
+      "Согните колени и на выдохе подтяните бёдра к животу. Продолжайте, пока колени не окажутся у груди. Задержитесь на секунду в сокращённой позиции.",
+      "На вдохе медленно вернитесь в исходное положение.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "flat-bench-leg-pull-in-0",
       "flat-bench-leg-pull-in-1"
@@ -720,6 +910,14 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Now pressing mainly with the ball of your feet, jump straight up in the air as high as possible, using the thighs like springs. Exhale during this portion of the movement.",
       "When you touch the floor again, immediately squat down and jump again.",
       "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Скрестите руки на груди.",
+      "Голову держите поднятой, спину прямой, стопы на ширине плеч.",
+      "Держа спину прямой и грудь поднятой, приседайте на вдохе, пока бёдра не станут параллельны полу или ниже.",
+      "Отталкиваясь в основном носками, выпрыгните вертикально вверх как можно выше, используя бёдра как пружины. Выдыхайте в этой фазе.",
+      "Приземлившись, сразу же снова присядьте и выпрыгните.",
+      "Выполните рекомендованное количество повторений."
     ],
     "imageKeys": [
       "freehand-jump-squat-0",
@@ -747,6 +945,15 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "As you inhale, slowly lower back to the starting position.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Лягте спиной на пол (или коврик), ноги вытянуты перед собой.",
+      "Согните колени и разведите внешние стороны бёдер к полу (коврику), соединив подошвы стоп.",
+      "Стремитесь свести подошвы и подтянуть их как можно ближе к себе, удерживая внешние стороны бёдер на полу (или почти касаясь его). Совет: в этой позиции ноги образуют форму ромба.",
+      "Скрестите руки перед грудью, касаясь ладонями противоположных плеч — это исходное положение.",
+      "На выдохе прижмите поясницу к полу, скручивая корпус вверх. Совет: это похоже на первую четверть полного подъёма корпуса. Задержитесь на секунду в верхней точке.",
+      "На вдохе медленно опуститесь в исходное положение.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "frog-sit-ups-0",
       "frog-sit-ups-1"
@@ -770,6 +977,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Go back to the initial position as you inhale and now repeat with the left leg.",
       "Continue to alternate legs until all of the recommended repetitions have been performed."
     ],
+    "instructionsRu": [
+      "Встаньте на колени на пол или коврик и наклонитесь вперёд, вытянув руки перпендикулярно корпусу, как в упоре с колен; руки на ширине плеч. Смотрите вперёд; колени согнуты так, что между бедром и голенью угол 90 градусов — это исходное положение.",
+      "На выдохе поднимите правую ногу, пока бедро не выровняется со спиной, сохраняя сгиб в колене 90 градусов. Напрягайте ягодицу всё движение и удерживайте сокращение в верхней точке секунду. Совет: в конце движения бедро параллельно полу, а голень перпендикулярна ему.",
+      "На вдохе вернитесь в исходное положение и повторите левой ногой.",
+      "Продолжайте чередовать ноги до выполнения рекомендованного количества повторений."
+    ],
     "imageKeys": [
       "glute-kickback-0",
       "glute-kickback-1"
@@ -791,6 +1004,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Begin in a pushup position on the floor. This will be your starting position.",
       "Using both legs, jump forward landing with your feet next to your hands. Keep your head up as you do so.",
       "Return to the starting position and immediately repeat the movement, continuing for 10-20 repetitions."
+    ],
+    "instructionsRu": [
+      "Примите упор лёжа на полу — это исходное положение.",
+      "Прыжком обеими ногами продвиньтесь вперёд, приземлив стопы рядом с ладонями. Голову держите поднятой.",
+      "Вернитесь в исходное положение и сразу повторите; выполните 10-20 повторений."
     ],
     "imageKeys": [
       "groiners-0",
@@ -816,6 +1034,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Push yourself back up slowly as you exhale until your elbows are nearly locked.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Встаньте спиной к стене, наклонитесь в пояснице и поставьте обе ладони на пол на ширине плеч.",
+      "Оттолкнитесь ногами в стойку у стены на прямых руках. Тело перевёрнуто, руки и ноги полностью выпрямлены, всё тело максимально прямое. Совет: если делаете впервые, попросите кого-нибудь подстраховать. Головой продолжайте смотреть в стену, а не вниз.",
+      "Медленно опускайтесь на вдохе, пока голова почти не коснётся пола. Совет: опускаться нужно очень медленно, чтобы избежать травмы головы.",
+      "На выдохе медленно выжмите себя вверх, пока локти почти не зафиксируются.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "handstand-push-ups-0",
       "handstand-push-ups-1"
@@ -837,6 +1062,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Position yourself on your hands and knees on the ground. Maintaining good posture, raise one bent knee off of the ground. This will be your starting position.",
       "Keeping the knee in a bent position, rotate the femur in an arc, attempting to make a big circle with your knee.",
       "Perform this slowly for a number of repetitions, and repeat on the other side."
+    ],
+    "instructionsRu": [
+      "Встаньте на четвереньки. Сохраняя ровную осанку, приподнимите одно согнутое колено над полом — это исходное положение.",
+      "Держа колено согнутым, вращайте бедро по дуге, стараясь описать коленом большой круг.",
+      "Выполняйте медленно нужное количество повторений, затем повторите другой ногой."
     ],
     "imageKeys": [
       "hip-circles-prone-0",
@@ -861,6 +1091,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Keeping your head and your chest up, move the resisted leg back as far as you can while keeping the knee straight.",
       "Return the leg to the starting position."
     ],
+    "instructionsRu": [
+      "Закрепите один конец резинки внизу стойки, второй наденьте на лодыжку.",
+      "Встаньте лицом к точке крепления и возьмитесь за стойку для устойчивости.",
+      "Держа голову и грудь поднятыми, отведите ногу с сопротивлением назад как можно дальше, сохраняя колено прямым.",
+      "Верните ногу в исходное положение."
+    ],
     "imageKeys": [
       "hip-extension-with-bands-0",
       "hip-extension-with-bands-1"
@@ -883,6 +1119,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Face away from the attachment point of the band.",
       "Keeping your head and your chest up, raise your knee up to 90 degrees and pause.",
       "Return the leg to the starting position."
+    ],
+    "instructionsRu": [
+      "Закрепите один конец резинки внизу стойки, второй наденьте на лодыжку.",
+      "Встаньте спиной к точке крепления.",
+      "Держа голову и грудь поднятыми, поднимите колено до 90 градусов и сделайте паузу.",
+      "Верните ногу в исходное положение."
     ],
     "imageKeys": [
       "hip-flexion-with-band-0",
@@ -908,6 +1150,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Now, keep your hands in place and slowly take short steps with your feet, moving only a few inches at a time.",
       "Continue walking until your feet are by hour hands, keeping your legs straight as you do so."
     ],
+    "instructionsRu": [
+      "Встаньте, стопы вместе. Держа ноги прямыми, наклонитесь и поставьте ладони на пол прямо перед собой — это исходное положение.",
+      "Медленно идите руками вперёд, переставляя их поочерёдно. Наклоняйтесь только в тазобедренных суставах, ноги держите прямыми.",
+      "Продолжайте, пока тело не окажется параллельно полу в положении упора лёжа.",
+      "Теперь зафиксируйте руки и медленно делайте короткие шаги стопами, проходя за раз по несколько сантиметров.",
+      "Продолжайте, пока стопы не окажутся у ладоней, держа ноги прямыми."
+    ],
     "imageKeys": [
       "inchworm-0",
       "inchworm-1"
@@ -931,6 +1180,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "With your upper arm in position, your elbow should be flexed to 90 degrees with your hand reaching away from your torso. This will be your starting position.",
       "Execute the movement by rotating your arm in a forehand motion, keeping your elbow in place.",
       "Continue as far as you are able, pause, and then return to the starting position."
+    ],
+    "instructionsRu": [
+      "Закрепите резинку на стойке на высоте локтя. Встаньте правым боком к резинке на расстоянии пары шагов.",
+      "Возьмитесь за конец резинки правой рукой, локоть плотно прижмите к боку. Рекомендуем зажать локтем валик или мягкий ролик, чтобы зафиксировать его положение.",
+      "В исходном положении локоть согнут под 90 градусов, кисть отведена от корпуса в сторону.",
+      "Выполните движение, поворачивая руку внутрь (как в форхенде), не отрывая локоть от тела.",
+      "Дойдите до доступной амплитуды, сделайте паузу и вернитесь в исходное положение."
     ],
     "imageKeys": [
       "internal-rotation-with-band-0",
@@ -956,6 +1212,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Now release the tension slowly.",
       "Rest for the recommended amount of time and repeat."
     ],
+    "instructionsRu": [
+      "Сидя или стоя, согните руки под 90 градусов и соедините ладони перед грудью. Совет: кисти раскрыты, ладони вместе, пальцы смотрят вперёд, перпендикулярно корпусу.",
+      "Давите ладонями друг на друга, сокращая грудные мышцы. Начните с лёгкого усилия и медленно наращивайте. Дышите ровно всё время удержания.",
+      "Удерживайте рекомендованное количество секунд.",
+      "Медленно отпустите напряжение.",
+      "Отдохните рекомендованное время и повторите."
+    ],
     "imageKeys": [
       "isometric-chest-squeezes-0",
       "isometric-chest-squeezes-1"
@@ -979,6 +1242,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Hold for the recommended number of seconds.",
       "Now release the tension slowly.",
       "Rest for the recommended amount of time and repeat with your hands placed on the back side of your head."
+    ],
+    "instructionsRu": [
+      "Держа голову и шею в нейтральном положении (ровно, взгляд вперёд), положите обе ладони на лоб.",
+      "Мягко давите вперёд, напрягая мышцы шеи, но не позволяя голове двигаться. Начните с лёгкого усилия и медленно наращивайте. Дышите ровно.",
+      "Удерживайте рекомендованное количество секунд.",
+      "Медленно отпустите напряжение.",
+      "Отдохните рекомендованное время и повторите, положив руки на затылок."
     ],
     "imageKeys": [
       "isometric-neck-exercise-front-and-back-0",
@@ -1004,6 +1274,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Now release the tension slowly.",
       "Rest for the recommended amount of time and repeat with your right hand placed on the right side of your head."
     ],
+    "instructionsRu": [
+      "Держа голову и шею в нейтральном положении (ровно, взгляд вперёд), положите левую ладонь на левую сторону головы.",
+      "Мягко давите влево, напрягая левые мышцы шеи, но не позволяя голове двигаться. Начните с лёгкого усилия и медленно наращивайте. Дышите ровно.",
+      "Удерживайте рекомендованное количество секунд.",
+      "Медленно отпустите напряжение.",
+      "Отдохните рекомендованное время и повторите с правой рукой на правой стороне головы."
+    ],
     "imageKeys": [
       "isometric-neck-exercise-sides-0",
       "isometric-neck-exercise-sides-1"
@@ -1026,6 +1303,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Begin by shifting your body weight as far to one side as possible, allowing the elbow on that side to flex as you lower your body.",
       "Reverse the motion by extending the flexed arm, pushing yourself up and then dropping to the other side.",
       "Repeat for the desired number of repetitions."
+    ],
+    "instructionsRu": [
+      "Примите упор лёжа, опираясь на руки и носки; тело прямое. Ладони чуть шире плеч — это исходное положение.",
+      "Перенесите вес тела как можно дальше в одну сторону, сгибая локоть этой стороны и опускаясь ниже.",
+      "Выпрямляя согнутую руку, вытолкните себя вверх и опуститесь на другую сторону.",
+      "Повторите нужное количество раз."
     ],
     "imageKeys": [
       "isometric-wipers-0",
@@ -1050,6 +1333,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "While inhaling, lower your arms and legs back to the starting position.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Лягте на пол (коврик) на спину, руки выпрямлены за головой, ноги вытянуты — это исходное положение.",
+      "На выдохе согнитесь в пояснице, одновременно поднимая ноги и руки навстречу друг другу — «складной нож». Совет: ноги прямые, подняты примерно на 35-45 градусов от пола, руки прямые и параллельны ногам; верх корпуса оторван от пола.",
+      "На вдохе опустите руки и ноги в исходное положение.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "jackknife-sit-up-0",
       "jackknife-sit-up-1"
@@ -1073,6 +1362,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "As you inhale, slowly go back in a controlled manner to the starting position.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Лягте на пол в базовую позицию подъёма корпуса: колени под 90 градусов, стопы на полу, руки скрещены на груди или вдоль корпуса — это исходное положение.",
+      "Сильно напрягая ягодицы и заднюю поверхность бедра, наполните лёгкие воздухом и медленно поднимайтесь на счёт 3-6 секунд, постепенно выдыхая. Совет: важно напрягать ягодицы и бицепсы бёдер — сгибатели бедра выключаются за счёт реципрокного торможения: мышцы, противоположные сокращённым, расслабляются.",
+      "На вдохе медленно и подконтрольно вернитесь в исходное положение.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "janda-sit-up-0",
       "janda-sit-up-1"
@@ -1095,6 +1390,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Now move your knees in a circular motion as you breathe normally.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Встаньте, ноги вместе, руки на поясе.",
+      "Выполняйте коленями круговые движения, дыша ровно.",
+      "Повторите рекомендованное количество раз."
+    ],
     "imageKeys": [
       "knee-circles-0",
       "knee-circles-1"
@@ -1116,6 +1416,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Begin in a comfortable standing position with your knees slightly bent. Hold your hands in front of you, palms down with your fingertips together at chest height. This will be your starting position.",
       "Rapidly dip down into a quarter squat and immediately explode upward. Drive the knees towards the chest, attempting to touch them to the palms of the hands.",
       "Jump as high as you can, raising your knees up, and then ensure a good land be re-extending your legs, absorbing impact through be allowing the knees to rebend."
+    ],
+    "instructionsRu": [
+      "Встаньте свободно, слегка согнув колени. Держите руки перед собой на высоте груди, ладони вниз, кончики пальцев касаются друг друга — это исходное положение.",
+      "Быстро присядьте в четверть приседа и мгновенно выпрыгните вверх. Тяните колени к груди, стараясь коснуться ладоней.",
+      "Прыгайте максимально высоко, поднимая колени, затем выпрямите ноги и приземлитесь, гася удар за счёт сгибания колен."
     ],
     "imageKeys": [
       "knee-tuck-jump-0",
@@ -1141,6 +1446,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Upon landing, immediately push off in the opposite direction, returning to your original start position.",
       "Continue back and forth for several repetitions."
     ],
+    "instructionsRu": [
+      "Примите положение полуприседа, развернувшись на 90 градусов от направления движения — это исходное положение.",
+      "Позвольте ведущей ноге сделать небольшое движение внутрь, перенося вес на внешнюю ногу.",
+      "Мгновенно оттолкнитесь и выпрыгните в сторону как можно дальше.",
+      "Приземлившись, сразу оттолкнитесь в обратном направлении, вернувшись в стартовую точку.",
+      "Продолжайте прыгать туда-обратно несколько повторений."
+    ],
     "imageKeys": [
       "lateral-bound-0",
       "lateral-bound-1"
@@ -1163,6 +1475,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Use your side shoulders to lift the handles to the sides as you exhale. Continue to lift the handles until they are slightly above parallel. Tip: As you lift the handles, slightly tilt the hand as if you were pouring water and keep your arms extended. Also, keep your torso stationary and pause for a second at the top of the movement.",
       "Lower the handles back down slowly to the starting position. Inhale as you perform this portion of the movement.",
       "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте на резинку так, чтобы натяжение начиналось на длине вытянутых рук. Возьмитесь за концы прямым хватом (ладони к бёдрам), чуть уже плеч. Руки прямые, локти слегка согнуты, спина прямая — это исходное положение.",
+      "На выдохе поднимите руки в стороны за счёт дельтовидных мышц. Поднимайте, пока руки не окажутся чуть выше параллели. Совет: поднимая руки, слегка наклоните кисть, будто выливаете воду, и держите руки почти прямыми. Корпус неподвижен; в верхней точке сделайте паузу на секунду.",
+      "Медленно опустите руки в исходное положение, вдыхая.",
+      "Выполните рекомендованное количество повторений."
     ],
     "imageKeys": [
       "lateral-raise-with-bands-0",
@@ -1187,6 +1505,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Return to the starting position as you inhale.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Лягте на коврик, ноги вытянуты; руки ладонями вниз рядом с корпусом или под ягодицами. Совет: удобнее держать руки рядом с собой — это исходное положение.",
+      "Согните колени и на выдохе подтяните бёдра к животу. Продолжайте, пока колени не окажутся примерно на уровне груди. Напрягите пресс и задержитесь на секунду в верхней точке. Совет: во время движения голени всегда остаются параллельны полу.",
+      "На вдохе вернитесь в исходное положение.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "leg-pull-in-0",
       "leg-pull-in-1"
@@ -1207,6 +1531,10 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     "instructionsEn": [
       "Lie on your stomach with your arms out to your sides. This will be your starting position.",
       "Using your lower back muscles, extend your spine lifting your chest off of the ground. Do not use your arms to push yourself up. Keep your head up during the movement. Repeat for 10-20 repetitions."
+    ],
+    "instructionsRu": [
+      "Лягте на живот, руки в стороны — это исходное положение.",
+      "За счёт мышц поясницы распрямите позвоночник, приподняв грудь над полом. Не отталкивайтесь руками. Голову держите поднятой. Выполните 10-20 повторений."
     ],
     "imageKeys": [
       "lower-back-curl-0",
@@ -1231,6 +1559,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Attempt to raise the bent knee off of the ground as your partner prevents any actual movement.",
       "After 10-20 seconds, relax the leg as your partner gently presses the knee towards the floor. Repeat with the other side."
     ],
+    "instructionsRu": [
+      "Лягте на спину, ноги вытянуты.",
+      "Перекиньте одну ногу согнутым коленом поперёк корпуса, стараясь коснуться коленом пола. Партнёр стоит на коленях рядом, одной рукой удерживая ваше плечо, другой контролируя скрещенную ногу — это исходное положение.",
+      "Пытайтесь поднять согнутое колено от пола, пока партнёр не даёт ему двигаться.",
+      "Через 10-20 секунд расслабьте ногу, пока партнёр мягко придавливает колено к полу. Повторите с другой стороны."
+    ],
     "imageKeys": [
       "lying-crossover-0",
       "lying-crossover-1"
@@ -1253,6 +1587,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Flex the hip of one leg, raising it off of the floor. Rotate the leg so the foot is over the opposite hip, the lower leg perpendicular to your body. Your partner should hold the knee and ankle in place. This will be your starting position.",
       "Attempt to push your leg towards your partner, who should be preventing any actual movement of the leg.",
       "After 10-20 seconds, completely relax as your partner gently pushes the ankle and knee towards your chest. Be sure to inform your helper when the stretch is adequate to prevent injury or overstretching."
+    ],
+    "instructionsRu": [
+      "Лягте на спину; партнёр стоит на коленях рядом.",
+      "Согните одну ногу в тазобедренном суставе, подняв её над полом. Разверните ногу так, чтобы стопа оказалась над противоположным тазобедренным суставом, голень перпендикулярна корпусу. Партнёр удерживает колено и лодыжку — это исходное положение.",
+      "Пытайтесь надавить ногой на партнёра, который не даёт ей двигаться.",
+      "Через 10-20 секунд полностью расслабьтесь, пока партнёр мягко ведёт лодыжку и колено к груди. Обязательно сообщите помощнику, когда растяжка достаточна, чтобы избежать травмы или перерастяжения."
     ],
     "imageKeys": [
       "lying-glute-0",
@@ -1277,6 +1617,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "After 10-20 seconds, relax your muscles as your partner gently pushes the foot towards your glutes, further stretching the quadriceps and hip flexors.",
       "After 10-20 seconds, switch sides."
     ],
+    "instructionsRu": [
+      "Лягте лицом вниз; партнёр стоит на коленях рядом. Согните одно колено и поднимите ногу, стараясь коснуться стопой ягодицы. Партнёр удерживает колено и лодыжку — это исходное положение.",
+      "Пытайтесь разогнуть колено, пока партнёр не даёт ноге двигаться.",
+      "Через 10-20 секунд расслабьте мышцы, пока партнёр мягко прижимает стопу к ягодице, углубляя растяжку квадрицепса и сгибателей бедра.",
+      "Через 10-20 секунд поменяйте сторону."
+    ],
     "imageKeys": [
       "lying-prone-quadriceps-0",
       "lying-prone-quadriceps-1"
@@ -1298,6 +1644,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Place a band around both ankles and another around both knees. There should be enough tension that they are tight when your feet are shoulder width apart.",
       "To begin, take short steps forward alternating your left and right foot.",
       "After several steps, do just the opposite and walk backward to where you started."
+    ],
+    "instructionsRu": [
+      "Наденьте резинку на лодыжки и вторую — на колени. Натяжение должно быть достаточным, чтобы резинки были натянуты при стопах на ширине плеч.",
+      "Начните с коротких шагов вперёд, чередуя левую и правую ногу.",
+      "Сделав несколько шагов, пройдите тем же способом назад до исходной точки."
     ],
     "imageKeys": [
       "monster-walk-0",
@@ -1325,6 +1676,15 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Remember to breathe in during the eccentric (lowering) part of the exercise and to breathe out during the concentric (upward) part of the exercise.",
       "Continue alternating in this manner until all of the recommended repetitions for each side have been completed."
     ],
+    "instructionsRu": [
+      "Лягте на пол, прижав поясницу к полу. Одну руку положите рядом с головой, другую — на пол сбоку.",
+      "Стопы должны быть подняты и опираться на плоскую поверхность.",
+      "Поднимите плечо со стороны руки, лежащей у головы.",
+      "Поднимайте плечо и корпус вверх, пока не коснётесь колена. Например, если правая рука у головы, поднимайтесь, пока правый локоть не коснётся левого колена. Вариант: наоборот — левым локтем к правому колену.",
+      "После касания колена локтем опустите корпус в исходное положение.",
+      "Помните: вдох — в негативной (нижней) фазе, выдох — в позитивной (верхней).",
+      "Продолжайте чередовать стороны, пока не выполните рекомендованное количество повторений на каждую."
+    ],
     "imageKeys": [
       "oblique-crunches-0",
       "oblique-crunches-1"
@@ -1349,6 +1709,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Crunch as high as you can, hold the contraction for a second and then slowly drop back down into the starting position.",
       "Remember to breathe in during the eccentric (lowering) part of the exercise and to breathe out during the concentric (elevation) part of the exercise."
     ],
+    "instructionsRu": [
+      "Лягте на правый бок, ноги одна на другой. Колени слегка согнуты.",
+      "Левую руку положите за голову.",
+      "Из этого положения поднимайте левый локоть вверх, как в обычном скручивании, но с акцентом на косые мышцы живота.",
+      "Скручивайтесь максимально высоко, удерживайте сокращение секунду и медленно опускайтесь в исходное положение.",
+      "Помните: вдох — в негативной (нижней) фазе, выдох — в позитивной (верхней)."
+    ],
     "imageKeys": [
       "oblique-crunches-on-the-floor-0",
       "oblique-crunches-on-the-floor-1"
@@ -1371,6 +1738,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Attempt to extend the arm straight into the air as your partner prevents you from doing actually doing so.",
       "After 10-20 seconds, relax the arm and allow your partner to further stretch the tricep by applying gentle pressure to the wrist. Hold for 10-20 seconds, and then switch sides."
     ],
+    "instructionsRu": [
+      "Сядьте на пол, выпрямив спину; партнёр сзади. Поднимите одну руку прямо вверх и согните локоть, стараясь коснуться кистью спины. Партнёр удерживает ваш локоть и запястье — это исходное положение.",
+      "Пытайтесь выпрямить руку вверх, пока партнёр не даёт ей двигаться.",
+      "Через 10-20 секунд расслабьте руку и позвольте партнёру углубить растяжку трицепса мягким давлением на запястье. Держите 10-20 секунд, затем поменяйте сторону."
+    ],
     "imageKeys": [
       "overhead-triceps-0",
       "overhead-triceps-1"
@@ -1391,6 +1763,10 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     "instructionsEn": [
       "Get into a prone position on the floor, supporting your weight on your toes and your forearms. Your arms are bent and directly below the shoulder.",
       "Keep your body straight at all times, and hold this position as long as possible. To increase difficulty, an arm or leg can be raised."
+    ],
+    "instructionsRu": [
+      "Примите упор лёжа на предплечьях: вес на носках и предплечьях, руки согнуты и прямо под плечами.",
+      "Держите тело прямым всё время и сохраняйте позицию максимально долго. Для усложнения можно поднять руку или ногу."
     ],
     "imageKeys": [
       "plank-0",
@@ -1417,6 +1793,14 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Return to the starting position and repeat the exercise.",
       "For added difficulty, add claps into the movement while you are air borne."
     ],
+    "instructionsRu": [
+      "Примите упор лёжа, опираясь на руки и носки.",
+      "Руки полностью выпрямлены на ширине плеч. Держите тело прямым всё упражнение — это исходное положение.",
+      "Опускайтесь, сгибая локти, приближая грудь к полу.",
+      "В нижней точке мощно выпрямите локти как можно быстрее. Стремитесь вытолкнуть корпус так, чтобы ладони оторвались от пола.",
+      "Вернитесь в исходное положение и повторите.",
+      "Для усложнения добавьте хлопок ладонями в безопорной фазе."
+    ],
     "imageKeys": [
       "plyo-push-up-0",
       "plyo-push-up-1"
@@ -1440,6 +1824,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Using your pectoral muscles, press your upper body back up to the starting position by extending the elbows. Exhale as you perform this step.",
       "After pausing at the contracted position, repeat the movement for the prescribed amount of repetitions."
     ],
+    "instructionsRu": [
+      "Поставьте ладони широко и встаньте в планку на носках и руках. Локти выпрямлены, тело прямое, таз не провисает — это исходное положение.",
+      "Начните, сгибая локти и опуская грудь к полу на вдохе.",
+      "За счёт грудных мышц выпрямите локти и выжмите корпус в исходное положение. Выдыхайте на этом шаге.",
+      "После паузы в сокращённой позиции выполните заданное количество повторений."
+    ],
     "imageKeys": [
       "push-up-wide-0",
       "push-up-wide-1"
@@ -1462,6 +1852,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Lower yourself until your chest almost touches the floor as you inhale.",
       "Using your triceps and some of your pectoral muscles, press your upper body back up to the starting position and squeeze your chest. Breathe out as you perform this step.",
       "After a second pause at the contracted position, repeat the movement for the prescribed amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Лягте лицом вниз и поставьте ладони уже ширины плеч (узкая постановка). Корпус удерживайте на прямых руках.",
+      "На вдохе опускайтесь, пока грудь почти не коснётся пола.",
+      "За счёт трицепса и частично грудных мышц выжмите себя в исходное положение, сокращая грудные. Выдыхайте на этом шаге.",
+      "После секундной паузы в верхней точке выполните заданное количество повторений."
     ],
     "imageKeys": [
       "push-ups-close-triceps-position-0",
@@ -1487,6 +1883,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Lower the arm back to the floor for another pushup and then twist to the other side.",
       "Repeat the series, alternating each side, for 10 or more reps."
     ],
+    "instructionsRu": [
+      "Примите упор лёжа на носках, ладони чуть шире плеч.",
+      "Выполните отжимание, сгибая локти. Опускаясь, держите тело прямым.",
+      "Выжимая себя вверх, перенесите вес на левую сторону корпуса, развернитесь, поднимая правую руку к потолку, — боковая планка.",
+      "Опустите руку обратно на пол, выполните следующее отжимание и развернитесь в другую сторону.",
+      "Повторяйте серию, чередуя стороны, 10 и более повторений."
+    ],
     "imageKeys": [
       "push-up-to-side-plank-0",
       "push-up-to-side-plank-1"
@@ -1509,6 +1912,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Next, lower yourself downward until your chest almost touches the floor as you inhale.",
       "Now breathe out and press your upper body back up to the starting position while squeezing your chest.",
       "After a brief pause at the top contracted position, you can begin to lower yourself downward again for as many repetitions as needed."
+    ],
+    "instructionsRu": [
+      "Лягте лицом вниз и поставьте ладони примерно в 90 см друг от друга, удерживая корпус на прямых руках.",
+      "На вдохе опускайтесь, пока грудь почти не коснётся пола.",
+      "Выдохните и выжмите корпус в исходное положение, сокращая грудные мышцы.",
+      "После короткой паузы в верхней точке снова опускайтесь — столько повторений, сколько нужно."
     ],
     "imageKeys": [
       "pushups-0",
@@ -1533,6 +1942,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Using your pectoral muscles, press your upper body back up to the starting position and squeeze your chest. Breathe out as you perform this step.",
       "After a second pause at the contracted position, repeat the movement for the prescribed amount of repetitions."
     ],
+    "instructionsRu": [
+      "Лягте лицом вниз, тело прямое, упор на носки; ладони шире плеч (широкая постановка) или уже плеч (узкая постановка). Корпус удерживайте на прямых руках.",
+      "На вдохе опускайтесь, пока грудь почти не коснётся пола.",
+      "За счёт грудных мышц выжмите себя в исходное положение, сокращая грудные. Выдыхайте на этом шаге.",
+      "После секундной паузы в верхней точке выполните заданное количество повторений."
+    ],
     "imageKeys": [
       "pushups-close-and-wide-hand-positions-0",
       "pushups-close-and-wide-hand-positions-1"
@@ -1553,6 +1968,10 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     "instructionsEn": [
       "Place yourself on your hands knees on an exercise mat. Your head should be looking forward and the bend of the knees should create a 90-degree angle between the hamstrings and the calves. This will be your starting position.",
       "Extend one leg up and behind you. The knee and hip should both extend. Repeat for 5-10 repetitions, and then switch sides."
+    ],
+    "instructionsRu": [
+      "Встаньте на четвереньки на коврике. Смотрите вперёд; колени согнуты так, что между бедром и голенью угол 90 градусов — это исходное положение.",
+      "Выпрямите одну ногу назад и вверх, разгибая колено и тазобедренный сустав. Выполните 5-10 повторений, затем поменяйте сторону."
     ],
     "imageKeys": [
       "rear-leg-raises-0",
@@ -1578,6 +1997,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Hold the contraction for a second and move your legs back to the starting position while exhaling.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Лягте на пол, ноги полностью вытянуты, руки ладонями на полу вдоль корпуса. Руки неподвижны всё упражнение.",
+      "Поднимите ноги так, чтобы бёдра стали перпендикулярны полу, стопы вместе и параллельны полу — это исходное положение.",
+      "На вдохе подтягивайте ноги к корпусу, подкручивая таз назад и отрывая бёдра от пола. В конце движения колени окажутся у груди.",
+      "Удерживайте сокращение секунду и верните ноги в исходное положение на выдохе.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "reverse-crunch-0",
       "reverse-crunch-1"
@@ -1599,6 +2025,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Begin in a relaxed stance with your feet shoulder width apart and hold your arms close to the body.",
       "To initiate the move, squat down halfway and explode back up as high as possible.",
       "Fully extend your entire body, reaching overhead as far as possible. As you land, absorb your impact through the legs."
+    ],
+    "instructionsRu": [
+      "Встаньте свободно, стопы на ширине плеч, руки прижаты к корпусу.",
+      "Начните движение с полуприседа и мгновенно выпрыгните как можно выше.",
+      "Полностью выпрямите тело, дотягиваясь руками как можно выше над головой. Приземляйтесь, гася удар ногами."
     ],
     "imageKeys": [
       "rocket-jump-0",
@@ -1624,6 +2055,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Hold the contraction for a second and move back to the starting position while breathing out. Now move to the opposite side performing the same techniques you applied to the right side.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Лягте на пол, заведя стопы под неподвижный упор, или попросите партнёра их удержать. Колени согнуты.",
+      "Поднимите верх корпуса так, чтобы он образовал с бёдрами воображаемую букву «V». Руки вытянуты перед собой перпендикулярно корпусу, кисти сцеплены — это исходное положение.",
+      "На выдохе разверните корпус вправо, пока руки не станут параллельны полу.",
+      "Удерживайте сокращение секунду и вернитесь в исходное положение. Затем повторите в другую сторону той же техникой.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "russian-twist-0",
       "russian-twist-1"
@@ -1648,6 +2086,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Switch movements by raising your right leg up and lowering your left leg. Remember to breathe while performing this exercise.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Лягте на спину, прижав её к полу (можно на коврик). Руки вытянуты в стороны, ладони вниз. Примечание: руки неподвижны всё упражнение.",
+      "Слегка согнув колени, поднимите ноги так, чтобы пятки были примерно в 15 см от пола — это исходное положение.",
+      "Поднимите левую ногу примерно до 45 градусов, одновременно опуская правую, пока её пятка не окажется в 5-8 см от пола.",
+      "Смените ноги: поднимите правую и опустите левую. Не забывайте дышать во время упражнения.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "scissor-kick-0",
       "scissor-kick-1"
@@ -1671,6 +2116,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "As you jump as high as you can, switch the position of your legs, moving your front leg to the back and the rear leg to the front.",
       "As you land, absorb the impact through the legs by adopting the lunge position, and repeat."
     ],
+    "instructionsRu": [
+      "Примите позицию выпада: одна стопа впереди, колено согнуто; заднее колено почти касается пола.",
+      "Следите, чтобы переднее колено было над серединой стопы. Оттолкнувшись обеими ногами, выпрыгните максимально высоко, помогая себе махами рук.",
+      "В полёте поменяйте ноги местами: передняя уходит назад, задняя — вперёд.",
+      "Приземляйтесь в выпад, гася удар ногами, и повторяйте."
+    ],
     "imageKeys": [
       "scissors-jump-0",
       "scissors-jump-1"
@@ -1692,6 +2143,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Sit on the floor with your knees bent and your partner standing behind you. Extend your arms straight behind you with your palms facing each other. Your partner will hold your wrists for you. This will be the starting position.",
       "Attempt to flex your elbows, while your partner prevents any actual movement.",
       "After 10-20 seconds, relax your arms while your partner gently pulls your wrists up to stretch your biceps. Be sure to let your partner know when the stretch is appropriate to prevent injury or overstretching."
+    ],
+    "instructionsRu": [
+      "Сядьте на пол, согнув колени; партнёр стоит сзади. Вытяните руки назад, ладони обращены друг к другу. Партнёр держит вас за запястья — это исходное положение.",
+      "Пытайтесь согнуть локти, пока партнёр не даёт рукам двигаться.",
+      "Через 10-20 секунд расслабьте руки, пока партнёр мягко подтягивает запястья вверх, растягивая бицепсы. Обязательно сообщите партнёру, когда растяжка достаточна, чтобы избежать травмы."
     ],
     "imageKeys": [
       "seated-biceps-0",
@@ -1715,6 +2171,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Keeping your elbows straight, attempt to move your arms to the front, with your partner gently restraining you to prevent any actual movement for 10-20 seconds.",
       "Now, relax your muscles and allow your partner to gently increase the stretch on the shoulders and chest. Hold for 10 to 20 seconds."
     ],
+    "instructionsRu": [
+      "Сядьте на пол, выпрямив спину, ноги согнуты; партнёр стоит сзади. Вытяните руки в стороны, ладони вниз, и уведите их как можно дальше назад, пока партнёр удерживает ваши запястья — это исходное положение.",
+      "Держа локти прямыми, пытайтесь перевести руки вперёд, пока партнёр мягко удерживает их 10-20 секунд, не давая двигаться.",
+      "Затем расслабьте мышцы и позвольте партнёру мягко углубить растяжку плеч и груди. Держите 10-20 секунд."
+    ],
     "imageKeys": [
       "seated-front-deltoid-0",
       "seated-front-deltoid-1"
@@ -1736,6 +2197,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "In a seated position with your knees bent, cross one ankle over the opposite knee. Your partner will stand behind you. Now, lean forward as your partner braces your shoulders with their hands. This will be your starting position.",
       "Attempt to push your torso back for 10-20 seconds, as your partner prevents any actual movement of your torso.",
       "Now relax your muscles as your partner increases the stretch by gently pushing your torso forward for 10-20 seconds."
+    ],
+    "instructionsRu": [
+      "Сядьте, согнув колени, и положите лодыжку одной ноги на колено другой. Партнёр стоит сзади. Наклонитесь вперёд, пока партнёр руками удерживает ваши плечи — это исходное положение.",
+      "10-20 секунд пытайтесь отклонить корпус назад, пока партнёр не даёт ему двигаться.",
+      "Затем расслабьте мышцы, пока партнёр мягко надавливает на плечи, углубляя наклон вперёд, ещё 10-20 секунд."
     ],
     "imageKeys": [
       "seated-glute-0",
@@ -1759,6 +2225,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Rotate the wrists so that the palms of your hands are facing forward. Your elbows should be bent, with the upper arms and forearms in line to the torso. This is your starting position.",
       "As you exhale, lift the handles up until your arms are fully extended overhead."
     ],
+    "instructionsRu": [
+      "Встаньте на резинку так, чтобы натяжение начиналось на длине вытянутых рук. Возьмитесь за концы и поднимите кисти к плечам с обеих сторон.",
+      "Разверните кисти ладонями вперёд. Локти согнуты, плечи и предплечья в одной линии с корпусом — это исходное положение.",
+      "На выдохе выжмите концы резинки вверх, пока руки полностью не выпрямятся над головой."
+    ],
     "imageKeys": [
       "shoulder-press-with-bands-0",
       "shoulder-press-with-bands-1"
@@ -1777,6 +2248,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "abdominals"
     ],
     "instructionsEn": [],
+    "instructionsRu": [
+      "Лягте на бок, опираясь на предплечье: локоть прямо под плечом, ноги вместе, тело прямое — это исходное положение.",
+      "Поднимите таз, образуя прямую линию от головы до стоп. Свободную руку положите на таз или вытяните вдоль корпуса.",
+      "Удерживайте позицию 20-40 секунд, ровно дыша и не опуская таз.",
+      "Опуститесь, отдохните и повторите на другой стороне."
+    ],
     "imageKeys": [
       "side-bridge-0",
       "side-bridge-1"
@@ -1795,6 +2272,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "abdominals"
     ],
     "instructionsEn": [],
+    "instructionsRu": [
+      "Лягте на правый бок: ноги вместе и чуть согнуты, правая рука вытянута вдоль корпуса, левая — за головой — это исходное положение.",
+      "На выдохе одновременно поднимите ноги и верх корпуса, стараясь сблизить левый локоть с бёдрами.",
+      "На вдохе медленно опуститесь в исходное положение.",
+      "Выполните нужное количество повторений, затем поменяйте сторону."
+    ],
     "imageKeys": [
       "side-jackknife-0",
       "side-jackknife-1"
@@ -1816,6 +2299,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Stand next to a chair, which you may hold onto as a support. Stand on one leg. This will be your starting position.",
       "Keeping your leg straight, raise it as far out to the side as possible, and swing it back down, allowing it to cross the opposite leg.",
       "Repeat this swinging motion 5-10 times, increasing the range of motion as you do so."
+    ],
+    "instructionsRu": [
+      "Встаньте рядом со стулом, за который можно держаться. Стойте на одной ноге — это исходное положение.",
+      "Держа свободную ногу прямой, поднимите её в сторону как можно выше, затем махните вниз, позволяя ей пересечь опорную ногу.",
+      "Повторите маховое движение 5-10 раз, постепенно увеличивая амплитуду."
     ],
     "imageKeys": [
       "side-leg-raises-0",
@@ -1840,6 +2328,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Lower yourself by allowing the elbow to flex until you touch the ground.",
       "Descend slowly, and reverse direction be extending the arm to return to the starting position."
     ],
+    "instructionsRu": [
+      "Лягте лицом вниз и примите упор на носки и одну руку. Рабочая рука прямо под плечом, полностью выпрямлена. Ноги вытянуты; для устойчивости расставьте стопы шире, чем в обычном отжимании.",
+      "Сохраняйте ровную осанку, свободную руку заведите за спину — это исходное положение.",
+      "Опускайтесь, сгибая локоть, пока корпус почти не коснётся пола.",
+      "Опускайтесь медленно и смените направление, выпрямляя руку в исходное положение."
+    ],
     "imageKeys": [
       "single-arm-push-up-0",
       "single-arm-push-up-1"
@@ -1863,6 +2357,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Immediately flex the knee and attempt to touch your butt with the heel of your jumping leg.",
       "Return the leg to a partially bent position underneath the hips and land. Your opposite leg should stay in relatively the same position throughout the drill."
     ],
+    "instructionsRu": [
+      "Встаньте на одну ногу, колено другой согнуто и поднято — это исходное положение.",
+      "Небольшим подседом (контрдвижением) оттолкнитесь вверх, разгибая тазобедренный сустав, колено и голеностоп опорной ноги.",
+      "В полёте сразу согните колено и постарайтесь коснуться пяткой ягодицы.",
+      "Верните ногу в слегка согнутое положение под тазом и приземлитесь. Другая нога всё упражнение остаётся примерно в том же положении."
+    ],
     "imageKeys": [
       "single-leg-butt-kick-0",
       "single-leg-butt-kick-1"
@@ -1885,6 +2385,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Raise one leg off of the ground, pulling the knee to your chest. This will be your starting position.",
       "Execute the movement by driving through the heel, extending your hip upward and raising your glutes off of the ground.",
       "Extend as far as possible, pause and then return to the starting position."
+    ],
+    "instructionsRu": [
+      "Лягте на пол, стопы на полу, колени согнуты.",
+      "Поднимите одну ногу над полом, подтянув колено к груди — это исходное положение.",
+      "Выполните движение, отталкиваясь пяткой опорной ноги и поднимая таз вверх, отрывая ягодицы от пола.",
+      "Поднимитесь максимально высоко, сделайте паузу и вернитесь в исходное положение."
     ],
     "imageKeys": [
       "single-leg-glute-bridge-0",
@@ -1910,6 +2416,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Once you feel the contraction for a second, lower your upper body back down to the starting position while inhaling.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Лягте на пол, заведя стопы под неподвижный упор, или попросите партнёра их удержать. Колени согнуты.",
+      "Положите руки за голову, сцепив пальцы — это исходное положение.",
+      "Поднимите верх корпуса, пока он не образует с бёдрами воображаемую букву «V». Выдыхайте в этой фазе.",
+      "Почувствовав сокращение секунду, на вдохе опустите корпус в исходное положение.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "sit-up-0",
       "sit-up-1"
@@ -1933,6 +2446,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "To perform the movement, extend through the elbow to to straighten your arms, ensuring that you keep your upper arm in place.",
       "Pause, and then return to the starting position."
     ],
+    "instructionsRu": [
+      "Для этого упражнения закрепите резинку внизу (например, за основание наклонной скамьи, стоя над ней). Как вариант — можно просто встать на резинку.",
+      "Начните, заведя резинку за голову: держите её прямым хватом, локти подняты — это исходное положение.",
+      "Выполните движение, выпрямляя локти и следя, чтобы плечо оставалось неподвижным.",
+      "Сделайте паузу и вернитесь в исходное положение."
+    ],
     "imageKeys": [
       "speed-band-overhead-triceps-0",
       "speed-band-overhead-triceps-1"
@@ -1954,6 +2473,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Begin in a prone position on the floor. Support your weight on your hands and toes, with your feet together and your body straight. Your arms should be bent to 90 degrees. This will be your starting position.",
       "Initiate the movement by raising one foot off of the ground. Externally rotate the leg and bring the knee toward your elbow, as far forward as possible.",
       "Return this leg to the starting position and repeat on the opposite side."
+    ],
+    "instructionsRu": [
+      "Примите упор лёжа: вес на руках и носках, стопы вместе, тело прямое, локти согнуты под 90 градусов — это исходное положение.",
+      "Начните движение, оторвав одну стопу от пола. Разверните ногу наружу и подтяните колено к локтю как можно дальше вперёд.",
+      "Верните ногу в исходное положение и повторите другой стороной."
     ],
     "imageKeys": [
       "spider-crawl-0",
@@ -1979,6 +2503,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "As you jump, bring your feet together, and move them back to their initial positions as you land.",
       "Absorb the impact by reverting back to the starting position."
     ],
+    "instructionsRu": [
+      "Примите позицию выпада: одна стопа впереди, колено согнуто; заднее колено почти касается пола.",
+      "Следите, чтобы переднее колено было над серединой стопы.",
+      "Оттолкнувшись обеими ногами, выпрыгните максимально высоко, помогая себе махами рук.",
+      "В полёте соедините стопы и снова разведите их при приземлении.",
+      "Гасите удар, возвращаясь в исходное положение выпада."
+    ],
     "imageKeys": [
       "split-jump-0",
       "split-jump-1"
@@ -2003,6 +2534,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Use the heel of your feet to push your body up to the starting position as you exhale.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "В начале убедитесь, что резинка разделена поровну между левой и правой сторонами тела: возьмитесь руками за оба конца и поставьте стопы посередине резинки, на ширине плеч.",
+      "При удержании концы резинки должны быть на одинаковой высоте с обеих сторон. Используйте прямой хват (ладони вперёд), концы резинки — у лица — это исходное положение.",
+      "Медленно сгибайте колени и опускайтесь, пока бёдра не станут параллельны полу, выдыхая.",
+      "Оттолкнитесь пятками и вернитесь в исходное положение на выдохе.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "squats-with-bands-0",
       "squats-with-bands-1"
@@ -2025,6 +2563,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Raise the unsupported knee to 90 degrees. This will be your starting position.",
       "Open the hip as far as possible, attempting to make a big circle with your knee.",
       "Perform this movement slowly for a number of repetitions, and repeat on the other side."
+    ],
+    "instructionsRu": [
+      "Встаньте на одну ногу, придерживаясь за вертикальную опору.",
+      "Поднимите свободное колено до 90 градусов — это исходное положение.",
+      "Раскройте тазобедренный сустав как можно сильнее, стараясь описать коленом большой круг.",
+      "Выполняйте медленно несколько повторений, затем повторите другой ногой."
     ],
     "imageKeys": [
       "standing-hip-circles-0",
@@ -2049,6 +2593,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Attempt to land with your feet out in front you, reaching as far as possible with your legs.",
       "Measure the distance from your landing point to the starting point and track results."
     ],
+    "instructionsRu": [
+      "Лучше выполнять это упражнение на песке или иной мягкой поверхности, где можно замерить дистанцию. Встаньте в полуприсед, стопы на ширине плеч.",
+      "Мощно махнув руками и сделав контрдвижение ногами, прыгните вперёд как можно дальше.",
+      "Стремитесь приземлиться на стопы перед собой, дотягиваясь ногами как можно дальше.",
+      "Замерьте расстояние от точки приземления до стартовой точки и отслеживайте результат."
+    ],
     "imageKeys": [
       "standing-long-jump-0",
       "standing-long-jump-1"
@@ -2072,6 +2622,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Go back to the starting position by using the triceps to raise the towel. Breathe out as you perform this step.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Встаньте, полностью выпрямив руки над головой и держа один конец полотенца обеими руками. Локти сведены, руки перпендикулярны полу, ладони обращены друг к другу; стопы на ширине плеч — это исходное положение.",
+      "Передайте партнёру другой конец полотенца, чтобы он создавал сопротивление. Держа плечи у головы (локти сведены) и перпендикулярно полу, опускайте сопротивление полукругом за голову, пока предплечья не коснутся бицепсов. Совет: плечи неподвижны, двигаются только предплечья. Вдыхайте на этом шаге.",
+      "Вернитесь в исходное положение, выпрямляя руки за счёт трицепса. Выдыхайте на этом шаге.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "standing-towel-triceps-extension-0",
       "standing-towel-triceps-extension-1"
@@ -2093,6 +2649,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Begin in a relaxed stance with your feet shoulder width apart and hold your arms close to the body.",
       "To initiate the move, squat down halfway and explode back up as high as possible. Fully extend your entire body, spreading your legs and arms away from the body.",
       "As you land, bring your limbs back in and absorb your impact through the legs."
+    ],
+    "instructionsRu": [
+      "Встаньте свободно, стопы на ширине плеч, руки прижаты к корпусу.",
+      "Начните движение с полуприседа и мгновенно выпрыгните как можно выше. Полностью выпрямите тело, разнося ноги и руки в стороны.",
+      "Приземляясь, верните конечности к корпусу и погасите удар ногами."
     ],
     "imageKeys": [
       "star-jump-0",
@@ -2118,6 +2679,13 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Once you have practiced this exercise, try to perform this exercise for longer than 20 seconds. Tip: You can work your way up to 40-60 seconds.",
       "Repeat for the recommended amount of sets."
     ],
+    "instructionsRu": [
+      "Встаньте прямо, стопы на ширине плеч, руки на бёдрах — это исходное положение.",
+      "Медленно вдохните максимально глубоко, затем начните выдыхать весь воздух, одновременно втягивая живот как можно сильнее, и удерживайте это положение. Представьте, что пупок тянется к позвоночнику.",
+      "Одно изометрическое удержание — около 20 секунд. В эти 20 секунд старайтесь дышать ровно. Затем вдохните и верните живот в исходное положение.",
+      "Освоив упражнение, старайтесь удерживать дольше 20 секунд. Совет: можно постепенно дойти до 40-60 секунд.",
+      "Выполните рекомендованное количество подходов."
+    ],
     "imageKeys": [
       "stomach-vacuum-0",
       "stomach-vacuum-1"
@@ -2140,6 +2708,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Simultaneously raise your arms, legs, and chest off of the floor and hold this contraction for 2 seconds. Tip: Squeeze your lower back to get the best results from this exercise. Remember to exhale during this movement. Note: When holding the contracted position, you should look like superman when he is flying.",
       "Slowly begin to lower your arms, legs and chest back down to the starting position while inhaling.",
       "Repeat for the recommended amount of repetitions prescribed in your program."
+    ],
+    "instructionsRu": [
+      "Лягте лицом вниз на пол или коврик, тело прямое. Руки полностью вытянуты перед собой — это исходное положение.",
+      "Одновременно поднимите руки, ноги и грудь над полом и удерживайте сокращение 2 секунды. Совет: для лучшего результата напрягайте поясницу. Не забывайте выдыхать. Примечание: в удержании вы должны выглядеть как Супермен в полёте.",
+      "Медленно опускайте руки, ноги и грудь в исходное положение, вдыхая.",
+      "Выполните рекомендованное программой количество повторений."
     ],
     "imageKeys": [
       "superman-0",
@@ -2166,6 +2740,14 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Slowly begin to lower your torso and arms back down to the starting position while inhaling. Remember to keep your arms straight out pointing towards your toes.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Лягте на пол или коврик, прижав спину к полу. Руки лежат вдоль корпуса, ладони вниз.",
+      "Ноги вместе. Медленно поднимите ноги вверх, пока они почти не станут перпендикулярны полу, колени слегка согнуты. Стопы параллельны полу.",
+      "Вытяните руки под углом 45 градусов к полу — это исходное положение.",
+      "Прижимая поясницу к полу, медленно поднимайте корпус, стараясь руками коснуться стоп. Выдыхайте в этой фазе.",
+      "Медленно опускайте корпус и руки в исходное положение, вдыхая. Держите руки прямыми, направленными к стопам.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "toe-touchers-0",
       "toe-touchers-1"
@@ -2191,6 +2773,14 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Slowly begin to lower your torso back down to the starting position while inhaling.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Лягте на пол или коврик, прижав спину к полу. Руки лежат вдоль корпуса, ладони вниз.",
+      "Скрестите ноги, обхватив одной лодыжкой другую. Медленно поднимите ноги, пока бёдра не станут перпендикулярны полу, колени слегка согнуты. Примечание: параллельны полу должны быть колени и стопы, а не бёдра.",
+      "Отрывая руки от пола, скрестите их на груди — это исходное положение.",
+      "Прижимая поясницу к полу, медленно поднимайте корпус. Выдыхайте в этой фазе.",
+      "Медленно опустите корпус в исходное положение, вдыхая.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "tuck-crunch-0",
       "tuck-crunch-1"
@@ -2214,6 +2804,12 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Lower the handles back down slowly to the starting position. Inhale as you perform this portion of the movement.",
       "Repeat for the recommended amount of repetitions."
     ],
+    "instructionsRu": [
+      "Встаньте на резинку так, чтобы натяжение начиналось на длине вытянутых рук. Возьмитесь за концы прямым хватом (ладони к бёдрам), чуть уже плеч. Концы резинки лежат на бёдрах. Руки выпрямлены, локти слегка согнуты, спина прямая — это исходное положение.",
+      "На выдохе тяните концы резинки вверх за счёт дельтовидных мышц, близко к корпусу. Продолжайте, пока кисти почти не коснутся подбородка. Совет: движение ведут локти — при подъёме локти всегда выше предплечий. Корпус неподвижен; в верхней точке пауза на секунду.",
+      "Медленно опустите руки в исходное положение, вдыхая.",
+      "Выполните рекомендованное количество повторений."
+    ],
     "imageKeys": [
       "upright-row-with-bands-0",
       "upright-row-with-bands-1"
@@ -2235,6 +2831,11 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
       "Start by standing straight with your feet being shoulder width apart from each other. Elevate your arms to the side of you until they are fully extended and parallel to the floor at a height that is evenly aligned with your shoulders. Tip: Your torso and arms should form the letter \"T: Your palms should be facing down. This is the starting position.",
       "Keeping your entire body stationary except for the wrists, begin to rotate both wrists forward in a circular motion. Tip: Pretend that you are trying to draw circles by using your hands as the brush. Breathe normally as you perform this exercise.",
       "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте прямо, стопы на ширине плеч. Поднимите руки в стороны до полного выпрямления, параллельно полу на уровне плеч. Совет: корпус и руки образуют букву «Т», ладони вниз — это исходное положение.",
+      "Не двигая ничем, кроме запястий, вращайте оба запястья вперёд по кругу. Совет: представляйте, что рисуете кистями круги. Дышите ровно.",
+      "Выполните рекомендованное количество повторений."
     ],
     "imageKeys": [
       "wrist-circles-0",

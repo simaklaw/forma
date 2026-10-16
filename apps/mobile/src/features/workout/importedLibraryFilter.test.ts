@@ -12,6 +12,7 @@ function sample(overrides: Partial<ImportedExercise> = {}): ImportedExercise {
     level: 'beginner',
     primaryMuscles: ['chest'],
     instructionsEn: ['Down and up.'],
+    instructionsRu: ['Вниз и вверх.'],
     imageKeys: [],
     sourceLicense: 'Unlicense',
     sourceUrl: 'https://example.com',
@@ -64,5 +65,11 @@ describe('filterImportedLibrary', () => {
     expect(IMPORTED_EXERCISE_LIBRARY.length).toBeGreaterThan(0);
     const all = filterImportedLibrary(IMPORTED_EXERCISE_LIBRARY, '', null);
     expect(all.length).toBe(IMPORTED_EXERCISE_LIBRARY.length);
+  });
+
+  it('every generated entry has non-empty Russian instructions (smoke)', () => {
+    for (const ex of IMPORTED_EXERCISE_LIBRARY) {
+      expect(ex.instructionsRu.length).toBeGreaterThan(0);
+    }
   });
 });

@@ -22,6 +22,13 @@ const OUT_IMAGES_FILE = path.resolve(
   'apps/mobile/src/features/workout/importedExerciseImages.generated.ts'
 );
 
+// Ручной слой переводов инструкций: scripts/lib/instructions-ru.json.
+// Ключ — slug упражнения (id без префикса «lib-»), значение — массив шагов на русском.
+const INSTRUCTIONS_RU_PATH = path.resolve(__dirname, 'lib/instructions-ru.json');
+const INSTRUCTIONS_RU: Record<string, string[]> = fs.existsSync(INSTRUCTIONS_RU_PATH)
+  ? JSON.parse(fs.readFileSync(INSTRUCTIONS_RU_PATH, 'utf-8'))
+  : {};
+
 const HOME_EQUIPMENT = new Set(['body only', 'bands']);
 const MUSCLE_TO_CATEGORY = {
   chest: 'chest',
@@ -247,6 +254,7 @@ for (const ex of filtered) {
     level: ex.level ?? null,
     primaryMuscles: ex.primaryMuscles ?? [],
     instructionsEn: ex.instructions ?? [],
+    instructionsRu: INSTRUCTIONS_RU[slug] ?? [],
     imageKeys: localImageKeys,
     sourceLicense: 'Unlicense',
     sourceUrl: `https://github.com/yuhonas/free-exercise-db/blob/main/exercises/${ex.id}.json`
@@ -273,7 +281,9 @@ const dataFileContent = `/**
  * Source: yuhonas/free-exercise-db (Unlicense / Public Domain).
  * Re-run the script to regenerate after a dataset update.
  *
- * instructionsEn is intentionally NOT translated — see import decision log.
+ * instructionsEn is the original dataset text; instructionsRu is a manual
+ * translation layer — keep scripts/lib/instructions-ru.json in sync and
+ * re-run the script after changes. UI falls back to instructionsEn when empty.
  * nameRu is null where no manual translation exists yet; UI must fall back
  * to nameEn in that case, not hide the exercise.
  */
@@ -287,6 +297,7 @@ export interface ImportedExercise {
   level: string | null;
   primaryMuscles: string[];
   instructionsEn: string[];
+  instructionsRu: string[];
   imageKeys: string[];
   sourceLicense: string;
   sourceUrl: string;
@@ -310,6 +321,8 @@ fs.writeFileSync(OUT_DATA_FILE, dataFileContent);
 fs.writeFileSync(OUT_IMAGES_FILE, imagesFileContent);
 
 console.log('Импортировано упражнений:', entries.length);
+const withRuInstructions = entries.filter((e) => e.instructionsRu.length > 0).length;
+console.log('Инструкции на русском:', withRuInstructions + '/' + entries.length);
 console.log('Без перевода названия (nameRu = null):', untranslatedCount);
 console.log(
   'Категория не распозналась по primaryMuscles (ушло в дефолт "abs"):',
