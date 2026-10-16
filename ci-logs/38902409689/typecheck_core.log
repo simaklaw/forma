@@ -1,0 +1,24 @@
+Scope: 4 of 8 workspace projects
+packages/core type-check$ tsc --noEmit
+packages/workout-domain type-check$ tsc --noEmit
+packages/workout-domain type-check: Done
+packages/core type-check: Done
+apps/mobile type-check$ tsc --noEmit
+apps/web type-check$ node ../../scripts/generate-web-route-tree.mjs && tsc --noEmit
+apps/web type-check: routeTree.gen.ts updated
+apps/web type-check: Done
+apps/mobile type-check: src/features/workout/ExerciseSheet.tsx(292,61): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+apps/mobile type-check: src/features/workout/ExerciseSheet.tsx(294,16): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+apps/mobile type-check: src/features/workout/ExerciseSheet.tsx(304,69): error TS1003: Identifier expected.
+apps/mobile type-check: src/features/workout/ExerciseSheet.tsx(333,43): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+apps/mobile type-check: src/features/workout/ExerciseSheet.tsx(333,46): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+apps/mobile type-check: src/features/workout/ExerciseSheet.tsx(341,45): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+apps/mobile type-check: src/features/workout/ExerciseSheet.tsx(345,42): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+apps/mobile type-check: src/features/workout/WorkoutScreen.tsx(218,16): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+apps/mobile type-check: src/features/workout/WorkoutScreen.tsx(240,58): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+apps/mobile type-check: src/features/workout/WorkoutScreen.tsx(240,61): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+apps/mobile type-check: src/features/workout/WorkoutScreen.tsx(240,63): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+apps/mobile type-check: Failed
+/home/runner/work/forma/forma/apps/mobile:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @forma/mobile@0.1.0 type-check: `tsc --noEmit`
+Exit status 2
