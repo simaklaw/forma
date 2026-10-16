@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="900" viewBox="0 0 420 900" role="img" aria-labelledby="title desc">
+  <title id="title">FitPulse Premium Performance — mobile design concept</title>
+  <desc id="desc">Dark premium fitness app home screen with mint accents, a workout hero card, weekly consistency, and clean line navigation.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#111923"/><stop offset=".55" stop-color="#0B0F14"/><stop offset="1" stop-color="#101820"/></linearGradient>
+    <linearGradient id="hero" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1D302F"/><stop offset=".55" stop-color="#172322"/><stop offset="1" stop-color="#121820"/></linearGradient>
+    <linearGradient id="mint" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#00B894"/><stop offset="1" stop-color="#64FFD4"/></linearGradient>
+    <radialGradient id="glow"><stop offset="0" stop-color="#00E5A8" stop-opacity=".18"/><stop offset="1" stop-color="#00E5A8" stop-opacity="0"/></radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#000" flood-opacity=".28"/></filter>
+    <style>
+      .body{font-family:Inter,Arial,sans-serif}.display{font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif}
+      .muted{fill:#92A29F}.paper{fill:#F8FAFC}.mintText{fill:#00E5A8}.small{font-size:11px;letter-spacing:1.25px;font-weight:700}
+    </style>
+  </defs>
+  <rect width="420" height="900" rx="42" fill="#070A0D"/>
+  <rect x="8" y="8" width="404" height="884" rx="35" fill="url(#bg)"/>
+  <circle cx="370" cy="118" r="150" fill="url(#glow)"/>
+  <text x="28" y="36" class="body paper" font-size="12" font-weight="700">9:41</text>
+  <g transform="translate(354 25)" stroke="#F8FAFC" stroke-width="1.6" fill="none" stroke-linecap="round"><path d="M0 8h4M0 5h7M0 2h10"/><rect x="18" y="0" width="24" height="12" rx="3"/><rect x="20" y="2" width="16" height="8" rx="1.5" fill="#00E5A8" stroke="none"/></g>
+  <g class="body">
+    <rect x="26" y="58" width="38" height="38" rx="12" fill="#00E5A8" fill-opacity=".11" stroke="#00E5A8" stroke-opacity=".65"/>
+    <path d="M37 78h4l3-9 5 17 3-8h4" stroke="#00E5A8" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="76" y="70" class="small mintText">FITPULSE / DAILY PERFORMANCE</text>
+    <text x="76" y="92" class="display paper" font-size="29" font-weight="700">Your day.</text>
+    <circle cx="370" cy="77" r="19" fill="#182028" stroke="#FFFFFF" stroke-opacity=".09"/>
+    <circle cx="370" cy="73" r="5" fill="none" stroke="#DDE7E4" stroke-width="1.6"/>
+    <path d="M360 86c1-6 5-8 10-8s9 2 10 8" fill="none" stroke="#DDE7E4" stroke-width="1.6" stroke-linecap="round"/>
+    <text x="28" y="132" class="small muted">THURSDAY, OCT 16</text>
+    <text x="28" y="160" class="display paper" font-size="31" font-weight="700">Build momentum</text>
+    <text x="28" y="181" fill="#A8B5B2" font-size="13">One good session at a time.</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="22" y="207" width="376" height="292" rx="25" fill="url(#hero)" stroke="#7AF8D5" stroke-opacity=".25"/>
+    <path d="M22 231q0-24 25-24h326q25 0 25 24" fill="none" stroke="#00E5A8" stroke-opacity=".3"/>
+    <circle cx="340" cy="268" r="92" fill="url(#glow)"/>
+    <g class="body">
+      <rect x="42" y="228" width="115" height="27" rx="13.5" fill="#00E5A8" fill-opacity=".12" stroke="#00E5A8" stroke-opacity=".24"/>
+      <circle cx="56" cy="241.5" r="3.5" fill="#00E5A8"/>
+      <text x="67" y="245" font-size="10" font-weight="700" letter-spacing=".8" class="mintText">TODAY'S SESSION</text>
+      <text x="42" y="293" class="display paper" font-size="36" font-weight="700">Upper body</text>
+      <text x="42" y="316" font-size="12" fill="#B1BFBC">Strength · Focus &amp; control</text>
+      <g transform="translate(276 275)" stroke="#72F9D7" stroke-width="3" fill="none" stroke-linecap="round">
+        <path d="M-38 0h76"/><path d="M-29 -17v34M-21 -23v46M29 -17v34M21 -23v46"/>
+        <path d="M-44 -10v20M44 -10v20" stroke-width="5"/>
+      </g>
+      <path d="M42 342h336" stroke="#FFFFFF" stroke-opacity=".09"/>
+      <text x="42" y="369" class="display paper" font-size="24" font-weight="700">6 exercises</text>
+      <text x="184" y="368" class="body muted" font-size="12">· 38 min · Strength</text>
+      <rect x="42" y="390" width="336" height="7" rx="3.5" fill="#FFFFFF" fill-opacity=".1"/>
+      <rect x="42" y="390" width="118" height="7" rx="3.5" fill="url(#mint)"/>
+      <text x="42" y="418" font-size="11" fill="#9DADAA">WEEKLY CONSISTENCY</text>
+      <text x="378" y="418" font-size="11" fill="#00E5A8" text-anchor="end" font-weight="700">3 OF 5 SESSIONS</text>
+      <rect x="42" y="438" width="336" height="43" rx="14" fill="url(#mint)"/>
+      <text x="210" y="465" font-size="14" fill="#06110E" font-weight="800" text-anchor="middle">Start workout  →</text>
+    </g>
+  </g>
+  <g class="body">
+    <text x="28" y="538" class="small muted">YOUR MOMENTUM</text>
+    <text x="28" y="567" class="display paper" font-size="27" font-weight="700">Consistency wins.</text>
+    <rect x="22" y="585" width="180" height="120" rx="20" fill="#121820" stroke="#FFFFFF" stroke-opacity=".08"/>
+    <rect x="214" y="585" width="184" height="120" rx="20" fill="#121820" stroke="#FFFFFF" stroke-opacity=".08"/>
+    <text x="40" y="612" font-size="11" fill="#91A09D" font-weight="700">ACTIVE STREAK</text>
+    <text x="40" y="657" class="display paper" font-size="38" font-weight="700">04 <tspan font-size="16" fill="#9AA9A6">days</tspan></text>
+    <path d="M40 679l13-5 12 2 13-12 12 5 12-16 13 3 13-10" fill="none" stroke="#00E5A8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="232" y="612" font-size="11" fill="#91A09D" font-weight="700">WEEKLY VOLUME</text>
+    <text x="232" y="657" class="display paper" font-size="35" font-weight="700">2,840 <tspan font-size="14" fill="#9AA9A6">kg</tspan></text>
+    <g transform="translate(232 675)" fill="#00E5A8">
+      <rect width="8" height="10" rx="2" opacity=".35"/><rect x="13" y="-6" width="8" height="16" rx="2" opacity=".5"/><rect x="26" y="-1" width="8" height="11" rx="2" opacity=".65"/><rect x="39" y="-13" width="8" height="23" rx="2" opacity=".8"/><rect x="52" y="-18" width="8" height="28" rx="2"/>
+    </g>
+    <rect x="22" y="724" width="376" height="87" rx="20" fill="#121820" stroke="#FFFFFF" stroke-opacity=".08"/>
+    <rect x="38" y="741" width="38" height="38" rx="12" fill="#00E5A8" fill-opacity=".11"/>
+    <path d="M49 759h16M57 751v16" stroke="#00E5A8" stroke-width="2.4" stroke-linecap="round"/>
+    <text x="90" y="750" font-size="11" fill="#00E5A8" font-weight="700" letter-spacing=".8">COACH INSIGHT</text>
+    <text x="90" y="770" font-size="13" fill="#F8FAFC" font-weight="700">Small progress is still progress.</text>
+    <text x="90" y="789" font-size="11" fill="#9AA9A6">Keep the rhythm. Let the results compound.</text>
+  </g>
+  <rect x="8" y="826" width="404" height="66" rx="0" fill="#0B0F14" fill-opacity=".96"/>
+  <path d="M8 826h404" stroke="#FFFFFF" stroke-opacity=".08"/>
+  <g class="body" text-anchor="middle" font-size="10" font-weight="600">
+    <g transform="translate(56 842)" stroke="#00E5A8" stroke-width="1.7" fill="none" stroke-linecap="round"><path d="M-10 0h20M-7 -6v12M7 -6v12M-12 -3v6M12 -3v6"/></g><text x="56" y="870" fill="#00E5A8">Workout</text>
+    <g transform="translate(133 842)" stroke="#778783" stroke-width="1.6" fill="none"><rect x="-8" y="-8" width="6" height="6" rx="1"/><rect x="2" y="-8" width="6" height="6" rx="1"/><rect x="-8" y="2" width="6" height="6" rx="1"/><rect x="2" y="2" width="6" height="6" rx="1"/></g><text x="133" y="870" fill="#778783">Catalog</text>
+    <g transform="translate(210 842)" stroke="#778783" stroke-width="1.6" fill="none"><circle r="9"/><circle r="4.5"/></g><text x="210" y="870" fill="#778783">Nutrition</text>
+    <g transform="translate(287 842)" stroke="#778783" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M-9 7h18M-7 4l4-5 4 3 6-9"/></g><text x="287" y="870" fill="#778783">Progress</text>
+    <g transform="translate(364 842)" stroke="#778783" stroke-width="1.6" fill="none"><circle cy="-4" r="4"/><path d="M-8 8c1-5 4-7 8-7s7 2 8 7"/></g><text x="364" y="870" fill="#778783">Profile</text>
+  </g>
+</svg>
