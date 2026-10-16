@@ -4,19 +4,19 @@ import { fonts, radius, spacing } from '@/core/theme/tokens';
 export const workoutScreenStyles = StyleSheet.create({
   screen: { flex: 1 },
   header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
     paddingBottom: spacing.md,
     borderBottomWidth: 1
   },
-  eyebrow: { fontFamily: fonts.mono, fontSize: 11, letterSpacing: 1, marginBottom: 4 },
+  eyebrow: { fontFamily: fonts.mono, fontSize: 10, letterSpacing: 1.4, marginBottom: 5 },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontFamily: fonts.mono, fontSize: 28 },
+  title: { fontFamily: fonts.mono, fontSize: 30, letterSpacing: 0.15 },
   catalogButton: {
     borderWidth: 1,
-    borderRadius: radius.pill,
+    borderRadius: 14,
     paddingHorizontal: 14,
-    paddingVertical: 8
+    paddingVertical: 9
   },
   catalogButtonText: { fontFamily: fonts.bodySemi, fontSize: 13 },
   modeTabs: {
@@ -28,38 +28,38 @@ export const workoutScreenStyles = StyleSheet.create({
   modeTab: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: radius.pill,
+    borderRadius: 14,
     alignItems: 'center',
-    paddingVertical: 10
+    paddingVertical: 11
   },
   modeTabText: { fontFamily: fonts.bodySemi, fontSize: 14 },
   dayTabs: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, gap: 8 },
   dayTab: {
     borderWidth: 1,
-    borderRadius: radius.pill,
+    borderRadius: 12,
     paddingHorizontal: 14,
-    paddingVertical: 8
+    paddingVertical: 9
   },
   dayTabText: { fontFamily: fonts.bodySemi, fontSize: 13 },
   body: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: 40 },
   ticket: {
-    borderWidth: 1,
-    borderRadius: radius.card,
+    borderWidth: 1.2,
+    borderRadius: 22,
     overflow: 'hidden',
     marginBottom: spacing.md
   },
-  ticketMain: { flexDirection: 'row', padding: spacing.md },
+  ticketMain: { flexDirection: 'row', padding: spacing.lg },
   ticketLabel: { fontFamily: fonts.body, fontSize: 11, marginBottom: 4 },
-  ticketName: { fontFamily: fonts.bodySemi, fontSize: 18, marginBottom: 4 },
+  ticketName: { fontFamily: fonts.mono, fontSize: 23, letterSpacing: 0.1, marginBottom: 5 },
   ticketMeta: { fontFamily: fonts.body, fontSize: 12, marginBottom: 12 },
   resumeBlock: { gap: 8 },
   resumeHint: { fontFamily: fonts.body, fontSize: 12 },
   resumeActions: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   startPill: {
     alignSelf: 'flex-start',
-    borderRadius: radius.pill,
-    paddingHorizontal: 16,
-    paddingVertical: 10
+    borderRadius: 14,
+    paddingHorizontal: 17,
+    paddingVertical: 11
   },
   startPillText: { fontFamily: fonts.bodySemi, fontSize: 14 },
   restartPill: {
@@ -77,20 +77,20 @@ export const workoutScreenStyles = StyleSheet.create({
   ticketPerf: { flexDirection: 'row', borderTopWidth: 1 },
   perfCell: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 8,
     borderRightWidth: 1,
     alignItems: 'center'
   },
-  perfVal: { fontFamily: fonts.mono, fontSize: 18 },
+  perfVal: { fontFamily: fonts.mono, fontSize: 20 },
   perfLbl: { fontFamily: fonts.body, fontSize: 10, marginTop: 2 },
   streakRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     borderWidth: 1,
-    borderRadius: radius.control,
-    paddingVertical: 10,
+    borderRadius: 16,
+    paddingVertical: 12,
     paddingHorizontal: spacing.md,
     marginBottom: spacing.sm
   },
