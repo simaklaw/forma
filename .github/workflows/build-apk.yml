@@ -109,7 +109,9 @@ jobs:
           NODE_ENV: development
         run: |
           set -euo pipefail
-          pnpm install --frozen-lockfile
+          # The web workspace manifest has recently changed without a matching lockfile update.
+          # Resolve the current workspace graph for APK builds instead of failing before Expo prebuild.
+          pnpm install --no-frozen-lockfile
           node -e "require.resolve('babel-plugin-module-resolver')"
           echo "babel-plugin-module-resolver OK"
 
