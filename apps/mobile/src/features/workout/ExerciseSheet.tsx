@@ -322,7 +322,6 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
               resizeMode="cover"
               accessibilityLabel={reference.name}
             />
-            <Text style={styles.refPhotoCaption}>фото техники: wger.de · {reference.name}</Text>
           </View>
         )}
 
@@ -357,27 +356,17 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           const meta = datasetMetaForExercise(exercise.name);
           if (!meta) return null;
           const steps = meta.instructionsEn ?? [];
-          const secondary = meta.secondaryMuscles ?? [];
-          if (!steps.length && !secondary.length) return null;
+          if (!steps.length) return null;
           return (
             <View style={styles.datasetBlock}>
-              {secondary.length > 0 ? (
-                <Text style={styles.datasetMeta}>
-                  Secondary: {secondary.join(', ')}
-                  {meta.target ? ` · target ${meta.target}` : ''}
-                  {meta.bodyPart ? ` · ${meta.bodyPart}` : ''}
-                </Text>
-              ) : null}
-              {steps.length > 0 ? (
-                <View style={styles.steps}>
-                  <Text style={styles.stepsTitle}>Steps (EN)</Text>
-                  {steps.map((step, i) => (
-                    <Text key={i} style={styles.stepLine}>
-                      {i + 1}. {step}
-                    </Text>
-                  ))}
-                </View>
-              ) : null}
+              <View style={styles.steps}>
+                <Text style={styles.stepsTitle}>Техника (EN)</Text>
+                {steps.map((step, i) => (
+                  <Text key={i} style={styles.stepLine}>
+                    {i + 1}. {step}
+                  </Text>
+                ))}
+              </View>
             </View>
           );
         })()}

@@ -17,7 +17,9 @@ import type { TabParamList } from './types';
 const Tab = createBottomTabNavigator<TabParamList>();
 
 /** Minimal, consistent line icons — no emoji rendering differences between Android devices. */
-const ICONS: Record<string, 'workout' | 'catalog' | 'nutrition' | 'progress' | 'profile'> = {
+type TabName = keyof TabParamList;
+type TabIconKey = 'workout' | 'catalog' | 'nutrition' | 'progress' | 'profile';
+const ICONS: Record<TabName, TabIconKey> = {
   Тренировки: 'workout',
   Каталог: 'catalog',
   Питание: 'nutrition',
@@ -31,13 +33,13 @@ function TabIcon({
   active,
   inactive
 }: {
-  name: string;
+  name: TabName;
   focused: boolean;
   active: string;
   inactive: string;
 }) {
   const color = focused ? active : inactive;
-  const icon = ICONS[name] ?? 'workout';
+  const icon = ICONS[name];
   return (
     <View style={{ alignItems: 'center', gap: 4, minWidth: 28 }}>
       <Svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">

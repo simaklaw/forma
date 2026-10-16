@@ -158,7 +158,7 @@ export default function ImportedLibraryPanel() {
         }}
       />
       <Text style={[styles.count, { color: colors.paperFaint }]}>
-        {filtered.length} из {IMPORTED_EXERCISE_LIBRARY.length} · bodyweight / резинки · Unlicense
+        {filtered.length} из {IMPORTED_EXERCISE_LIBRARY.length} · свой вес / резинки
       </Text>
       <FlatList
         data={filtered}
@@ -233,11 +233,6 @@ export default function ImportedLibraryPanel() {
                     ) : null;
                   })
                 : null}
-              {gifUri && !videoSource ? (
-                <Text style={[styles.meta, { color: colors.paperFaint, marginBottom: 8 }]}>
-                  Анимация © Gym visual — gymvisual.com
-                </Text>
-              ) : null}
               <View style={styles.titleRow}>
                 <Text style={[styles.modalTitle, { color: colors.paper }]}>
                   {displayName(selected)}
@@ -253,13 +248,13 @@ export default function ImportedLibraryPanel() {
               ) : null}
               <Text style={[styles.meta, { color: colors.paperDim, marginTop: 6 }]}>
                 {CATEGORY_LABELS[selected.category]} ·{' '}
-                {selected.equipment === 'bands' ? 'резинки' : 'свой вес'} · источник Unlicense
+                {selected.equipment === 'bands' ? 'резинки' : 'свой вес'}
               </Text>
 
               {selected.instructionsEn.length > 0 ? (
                 <View style={styles.section}>
                   <Text style={[styles.sectionLabel, { color: colors.paperFaint }]}>
-                    Техника (на английском, перевод скоро)
+                    Техника (EN)
                   </Text>
                   {selected.instructionsEn.map((line, i) => (
                     <Text key={i} style={[styles.instruction, { color: colors.paperDim }]}>

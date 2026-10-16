@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Image,
   Modal,
   ScrollView,
   StyleSheet,
@@ -27,6 +26,8 @@ import {
   subscribeReplaceTarget,
   type ReplaceTarget
 } from './replaceTarget';
+import { EXERCISE_VIDEOS } from './exerciseMedia';
+import { techniqueCuesFromNote } from '@/lib/techniqueCues';
 
 interface Props {
   item: CatalogItem | null;
@@ -94,6 +95,11 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
     replaceTarget != null &&
     replaceTarget.mode === item.mode &&
     replaceTarget.currentExerciseId !== item.id;
+  const cues = techniqueCuesFromNote(item.note);
+  const videoSource =
+    item.mediaKey && EXERCISE_VIDEOS[item.mediaKey]
+      ? EXERCISE_VIDEOS[item.mediaKey]
+      : undefined;
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -148,16 +154,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
             </TouchableOpacity>
           ) : null}
 
-          {reference?.imageUrl ? (
-            <Image
-              source={{ uri: reference.imageUrl }}
-              style={[styles.photo, { borderColor: colors.lineStrong, backgroundColor: colors.panel }]}
-              resizeMode="cover"
-              accessibilityLabel="Справочное фото упражнения"
-            />
-          ) : null}
-
-          <ExerciseVideo label="ТЕХНИКА (ПЛЕЙСХОЛДЕР)" />
+          <ExerciseVideo source={videoSource} posterUri={reference?.imageUrl} cues={cues} />
 
           <View style={styles.statsRow}>
             <View style={[styles.stat, { borderColor: colors.line, backgroundColor: colors.panel }]}>
@@ -233,12 +230,6 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   replaceCtaText: { fontFamily: fonts.bodySemi, fontSize: 14, textAlign: 'center' },
-  photo: {
-    width: '100%',
-    height: 180,
-    borderWidth: 1,
-    borderRadius: radius.card
-  },
   statsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   stat: {
     borderWidth: 1,
