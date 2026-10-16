@@ -215,16 +215,16 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
       snapPoints={['75%', '92%']}
     >
       <View style={styles.tabs}>
-        {(['database', 'custom'] as const).map((t) => (
+        {(['database', 'custom'] as const).map((tabId) => (
           <TouchableOpacity
-            key={t}
-            style={[styles.tab, tab === t && styles.tabOn]}
-            onPress={() => setTab(t)}
+            key={tabId}
+            style={[styles.tab, tab === tabId && styles.tabOn]}
+            onPress={() => setTab(tabId)}
             accessibilityRole="tab"
-            accessibilityState={{ selected: tab === t }}
+            accessibilityState={{ selected: tab === tabId }}
           >
-            <Text style={[styles.tabText, tab === t && styles.tabTextOn]}>
-              {t === 'database' ? t('foodFromBase') : t('foodCustomProduct')}
+            <Text style={[styles.tabText, tab === tabId && styles.tabTextOn]}>
+              {tabId === 'database' ? t('foodFromBase') : t('foodCustomProduct')}
             </Text>
           </TouchableOpacity>
         ))}
