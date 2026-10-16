@@ -210,7 +210,7 @@ export default function WorkoutScreen() {
     sessionTargetSets > 0 ? Math.min(100, Math.round((sessionDoneSets / sessionTargetSets) * 100)) : 0;
 
   const ticket = (
-    <View style={[styles.ticket, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+    <View style={[styles.ticket, { backgroundColor: colors.panelRaised, borderColor: colors.lineStrong }]}>
       <View style={styles.ticketMain}>
         <View style={{ flex: 1, paddingRight: 12 }}>
           <Text style={[styles.ticketLabel, { color: colors.paperFaint }]}>
@@ -325,7 +325,7 @@ export default function WorkoutScreen() {
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]} edges={['top']}>
       <View style={[styles.header, { borderBottomColor: colors.line }]}>
-        <Text style={[styles.eyebrow, { color: colors.lime }]}>FitPulse · {todayLabel} · {profileSex === 'female' ? 'жен' : 'муж'} · день цикла</Text>
+        <Text style={[styles.eyebrow, { color: colors.lime }]}>FITPULSE  /  {todayLabel}</Text>
         <View style={styles.titleRow}>
           <Text style={[styles.title, { color: colors.paper }]}>Тренировка</Text>
           <TouchableOpacity
