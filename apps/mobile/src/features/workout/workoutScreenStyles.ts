@@ -43,11 +43,10 @@ export const workoutScreenStyles = StyleSheet.create({
   dayTabText: { fontFamily: fonts.bodySemi, fontSize: 13 },
   body: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: 40 },
   ticket: {
-    borderWidth: 1,
+    borderWidth: 1.2,
     borderRadius: 22,
     overflow: 'hidden',
-    marginBottom: spacing.md,
-    borderWidth: 1.2
+    marginBottom: spacing.md
   },
   ticketMain: { flexDirection: 'row', padding: spacing.lg },
   ticketLabel: { fontFamily: fonts.body, fontSize: 11, marginBottom: 4 },
