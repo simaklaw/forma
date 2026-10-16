@@ -196,7 +196,51 @@ jobs:
           set -euo pipefail
           echo "ANDROID_HOME=${ANDROID_HOME:-}"
           chmod +x ./gradlew
-          ./gradlew assembleRelease --no-daemon --stacktrace
+
+          # React Native's Android resource names omit the file extension. The exercise
+          # dataset intentionally ships matching .jpg previews and .gif demos, which
+          # therefore collide during mergeReleaseResources. Keep the GIF resource so
+          # exercise demonstrations remain available; both asset references resolve
+          # to that shared Android resource identifier.
+          cat > "$RUNNER_TEMP/prune-duplicate-exercise-assets.gradle" <<'GRADLE'
+          gradle.projectsEvaluated {
+            def appProject = gradle.rootProject.findProject(':app')
+            if (appProject == null) {
+              throw new GradleException("Android app project :app was not found")
+            }
+
+            def bundleTask = appProject.tasks.findByName('createBundleReleaseJsAndAssets')
+            def mergeTask = appProject.tasks.findByName('mergeReleaseResources')
+            if (bundleTask == null || mergeTask == null) {
+              throw new GradleException("Expected React Native bundle and Android resource merge tasks were not found")
+            }
+
+            def pruneTask = appProject.tasks.register('pruneDuplicateExerciseImages') {
+              dependsOn bundleTask
+              doLast {
+                def generatedRes = new File(appProject.buildDir, 'generated/res/createBundleReleaseJsAndAssets')
+                int removed = 0
+                if (generatedRes.exists()) {
+                  generatedRes.eachFileRecurse { file ->
+                    if (file.isFile() && file.name.endsWith('.jpg') && file.name.startsWith('assets_exercises_dataset_')) {
+                      def gif = new File(file.parentFile, file.name.substring(0, file.name.lastIndexOf('.')) + '.gif')
+                      if (gif.exists()) {
+                        if (!file.delete()) {
+                          throw new GradleException("Could not remove duplicate exercise image resource: ${file}")
+                        }
+                        removed++
+                      }
+                    }
+                  }
+                }
+                println "Pruned ${removed} duplicate exercise JPG resources; GIF resources retained"
+              }
+            }
+            mergeTask.configure { dependsOn pruneTask }
+          }
+          GRADLE
+
+          ./gradlew -I "$RUNNER_TEMP/prune-duplicate-exercise-assets.gradle" assembleRelease --no-daemon --stacktrace
 
       - name: Verify bundle inside APK
         shell: bash
