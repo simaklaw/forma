@@ -208,8 +208,12 @@ jobs:
             // Gradle path ':app'; locate it by project name across this build.
             def appProject = gradle.rootProject.allprojects.find { it.name == 'app' }
             if (appProject == null) {
-              throw new GradleException("Android app project named 'app' was not found; projects: " +
-                gradle.rootProject.allprojects.collect { it.path }.join(', '))
+              // The init script also runs for Gradle included builds used by React
+              // Native plugins. Those builds do not contain the Android :app project;
+              // skip them and let the callback configure the actual app build.
+              println "Skipping duplicate exercise image cleanup for Gradle build without app project: " +
+                gradle.rootProject.allprojects.collect { it.path }.join(', ')
+              return
             }
 
             def bundleTask = appProject.tasks.findByName('createBundleReleaseJsAndAssets')
