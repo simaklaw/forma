@@ -35,12 +35,12 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { TabParamList } from '@/navigation/types';
 
 const CATEGORY_LABELS: Record<ImportedExercise['category'], string> = {
-  chest: 'ÐÑÑÐ´Ñ',
-  back: 'Ð¡Ð¿Ð¸Ð½Ð°',
-  legs: 'ÐÐ¾Ð³Ð¸',
-  abs: 'ÐÐ¾Ñ',
-  arms: 'Ð ÑÐºÐ¸',
-  glutes: 'Ð¯Ð³Ð¾Ð´Ð¸ÑÑ'
+  chest: 'Грудь',
+  back: 'Спина',
+  legs: 'Ноги',
+  abs: 'Кор',
+  arms: 'Руки',
+  glutes: 'Ягодицы'
 };
 
 function displayName(ex: ImportedExercise): string {
@@ -79,7 +79,7 @@ export default function ImportedLibraryPanel() {
       );
       clearReplaceTarget();
       setSelected(null);
-      navigation.navigate('Ð¢ÑÐµÐ½Ð¸ÑÐ¾Ð²ÐºÐ¸');
+      navigation.navigate('Тренировки');
     } finally {
       setReplacing(false);
     }
@@ -122,13 +122,13 @@ export default function ImportedLibraryPanel() {
       <TextInput
         value={query}
         onChangeText={setQuery}
-        placeholder="ÐÐ¾Ð¸ÑÐº Ð² ÑÐ¿ÑÐ°Ð²Ð¾ÑÐ½Ð¸ÐºÐµ (EN / RU)"
+        placeholder="Поиск в справочнике (EN / RU)"
         placeholderTextColor={colors.paperFaint}
         style={[
           styles.search,
           { backgroundColor: colors.panel, borderColor: colors.lineStrong, color: colors.paper }
         ]}
-        accessibilityLabel="ÐÐ¾Ð¸ÑÐº Ð² ÑÐ¿ÑÐ°Ð²Ð¾ÑÐ½Ð¸ÐºÐµ ÑÐ¿ÑÐ°Ð¶Ð½ÐµÐ½Ð¸Ð¹"
+        accessibilityLabel="Поиск в справочнике упражнений"
         returnKeyType="search"
       />
       <FlatList
@@ -192,9 +192,9 @@ export default function ImportedLibraryPanel() {
                   ) : null}
                 </View>
                 <Text style={[styles.meta, { color: colors.paperFaint }]}>
-                  {CATEGORY_LABELS[item.category]} Â·{' '}
-                  {item.equipment === 'bands' ? 'ÑÐµÐ·Ð¸Ð½ÐºÐ¸' : 'ÑÐ²Ð¾Ð¹ Ð²ÐµÑ'}
-                  {item.level ? ` Â· ${item.level}` : ''}
+                  {CATEGORY_LABELS[item.category]} ·{' '}
+                  {item.equipment === 'bands' ? 'резинки' : 'свой вес'}
+                  {item.level ? ` · ${item.level}` : ''}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -211,7 +211,7 @@ export default function ImportedLibraryPanel() {
           <View style={[styles.modalRoot, { backgroundColor: colors.ink }]}>
             <View style={styles.modalHeader}>
               <TouchableOpacity onPress={() => setSelected(null)} accessibilityRole="button">
-                <Text style={[styles.close, { color: colors.lime }]}>ÐÐ°ÐºÑÑÑÑ</Text>
+                <Text style={[styles.close, { color: colors.lime }]}>Закрыть</Text>
               </TouchableOpacity>
             </View>
             <ScrollView contentContainerStyle={styles.modalBody}>
@@ -222,7 +222,7 @@ export default function ImportedLibraryPanel() {
                   source={{ uri: gifUri }}
                   style={styles.hero}
                   resizeMode="contain"
-                  accessibilityLabel={`ÐÐ½Ð¸Ð¼Ð°ÑÐ¸Ñ: ${displayName(selected)}`}
+                  accessibilityLabel={`Анимация: ${displayName(selected)}`}
                 />
               ) : null}
               {!videoSource && !gifUri
@@ -247,7 +247,7 @@ export default function ImportedLibraryPanel() {
                 <Text style={[styles.meta, { color: colors.paperFaint }]}>{selected.nameEn}</Text>
               ) : null}
               <Text style={[styles.meta, { color: colors.paperDim, marginTop: 6 }]}>
-                {CATEGORY_LABELS[selected.category]} Â·{' '}
+                {CATEGORY_LABELS[selected.category]} ·{' '}
                 {selected.equipment === 'bands' ? 'резинки' : 'свой вес'}
               </Text>
 
@@ -273,14 +273,14 @@ export default function ImportedLibraryPanel() {
                 >
                   <Text style={[styles.replaceCtaText, { color: colors.ink }]}>
                     {replacing
-                      ? 'ÐÐ¾Ð´ÑÑÐ°Ð²Ð»ÑÑâ¦'
-                      : `ÐÐ¾Ð´ÑÑÐ°Ð²Ð¸ÑÑ Ð²Ð¼ÐµÑÑÐ¾ Â«${replaceTarget!.currentName}Â»`}
+                      ? 'Подставляю…'
+                      : `Подставить вместо «${replaceTarget!.currentName}»`}
                   </Text>
                 </TouchableOpacity>
               ) : (
                 <Text style={[styles.hint, { color: colors.paperFaint }]}>
-                  Ð§ÑÐ¾Ð±Ñ Ð´Ð¾Ð±Ð°Ð²Ð¸ÑÑ Ð² Ð¿Ð»Ð°Ð½: Ð½Ð° ÑÐºÑÐ°Ð½Ðµ ÑÑÐµÐ½Ð¸ÑÐ¾Ð²ÐºÐ¸ Ð½Ð°Ð¶Ð¼Ð¸ÑÐµ Â«ÐÐ°Ð¼ÐµÐ½Ð¸ÑÑÂ» Ñ ÑÐ¿ÑÐ°Ð¶Ð½ÐµÐ½Ð¸Ñ, Ð·Ð°ÑÐµÐ¼
-                  Ð²ÑÐ±ÐµÑÐ¸ÑÐµ Ð´Ð²Ð¸Ð¶ÐµÐ½Ð¸Ðµ Ð·Ð´ÐµÑÑ.
+                  Чтобы добавить в план: на экране тренировки нажмите «Заменить» у упражнения, затем
+                  выберите движение здесь.
                 </Text>
               )}
             </ScrollView>

@@ -196,7 +196,7 @@ export default function WorkoutScreen() {
   if (!activeDay) {
     return (
       <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]} edges={['top']}>
-        <Text style={[styles.title, { color: colors.paper }]}>5B ?;0=0</Text>
+        <Text style={[styles.title, { color: colors.paper }]}>Нет плана</Text>
       </SafeAreaView>
     );
   }
@@ -215,29 +215,29 @@ export default function WorkoutScreen() {
       <View style={styles.ticketMain}>
         <View style={{ flex: 1, paddingRight: 12 }}>
           <Text style={[styles.ticketLabel, { color: colors.paperFaint }]}>
-            !53>4=O � {profileSex === 'female' ? '65=' : '<C6'} � {trainingMode === 'gym' ? '70;' : '4><'}
+            Сегодня · {profileSex === 'female' ? 'жен' : 'муж'} · {trainingMode === 'gym' ? 'зал' : 'дом'}
           </Text>
           <Text style={[styles.ticketName, { color: colors.paper }]}>{activeDay.name}</Text>
           <Text style={[styles.ticketMeta, { color: colors.paperDim }]}>
-            {effectiveExercises.length} C?@06=5=8O � {activeDay.meta}
-            {burnedToday > 0 ? ` � ~${burnedToday} ::0;` : ''}
+            {effectiveExercises.length} упражнения · {activeDay.meta}
+            {burnedToday > 0 ? ` · ~${burnedToday} ккал` : ''}
           </Text>
           {resumable && dayIdFromTemplate(resumable.templateRevisionId) === activeDay.id ? (
             <View style={styles.resumeBlock}>
               <Text style={[styles.resumeHint, { color: colors.lime }]}>
-                ABL =57025@HQ==0O A5AA8O � H03 {resumable.currentStepIndex + 1}/{(resumable.steps ?? []).length}
+                Есть незавершённая сессия · шаг {resumable.currentStepIndex + 1}/{(resumable.steps ?? []).length}
               </Text>
               <View
                 style={styles.sessionProgress}
                 accessibilityRole="progressbar"
                 accessibilityValue={{ min: 0, max: 100, now: sessionPct }}
-                accessibilityLabel={`@>3@5AA A5AA88 ${sessionDoneSets} 87 ${sessionTargetSets} ?>4E>4>2`}
+                accessibilityLabel={`Прогресс сессии ${sessionDoneSets} из ${sessionTargetSets} подходов`}
               >
                 <View style={[styles.sessionProgressTrack, { backgroundColor: colors.line }]}>
                   <View style={[styles.sessionProgressFill, { backgroundColor: colors.lime, width: `${sessionPct}%` }]} />
                 </View>
                 <Text style={[styles.sessionProgressLbl, { color: colors.paperFaint }]}>
-                  {sessionDoneSets}/{sessionTargetSets} ?>4E>4>2 � {sessionPct}%
+                  {sessionDoneSets}/{sessionTargetSets} подходов · {sessionPct}%
                 </Text>
               </View>
               <View style={styles.resumeActions}>
