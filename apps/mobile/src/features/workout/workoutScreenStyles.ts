@@ -37,6 +37,8 @@ export const workoutScreenStyles = StyleSheet.create({
   dayTab: {
     borderWidth: 1,
     borderRadius: 12,
+    minWidth: 46,
+    alignItems: 'center',
     paddingHorizontal: 14,
     paddingVertical: 9
   },
@@ -129,6 +131,12 @@ export const workoutScreenStyles = StyleSheet.create({
     height: 44,
     borderRadius: radius.control
   },
+  logThumbFallback: {
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  logThumbInitials: { fontFamily: fonts.mono, fontSize: 13 },
   logIndex: { fontFamily: fonts.mono, fontSize: 14, width: 28 },
   logNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   logName: { fontSize: 15, fontFamily: fonts.bodySemi, flexShrink: 1 },

@@ -41,6 +41,8 @@ import { workoutScreenStyles as styles } from './workoutScreenStyles';
 import {
   WEEKDAY_RU_FULL,
   SHOW_GYM_MODE_TOGGLE,
+  dayChipLabel,
+  exerciseInitials,
   isAnyPlanComplete,
   selectPlanWeekDaysCompleted,
   selectPlanCurrentStreak,
@@ -665,11 +667,9 @@ export default function WorkoutScreen() {
               <Text
                 style={[styles.dayTabText, { color: colors.paperDim }, active && { color: colors.lime }]}
                 numberOfLines={1}
-                adjustsFontSizeToFit
-                minimumFontScale={0.75}
               >
                 {isToday ? '· ' : ''}
-                {day.name.split(' — ')[0] || day.name}
+                {dayChipLabel(day.name)}
               </Text>
             </TouchableOpacity>
           );
@@ -785,7 +785,17 @@ export default function WorkoutScreen() {
               {thumb ? (
                 <Image source={thumb} style={styles.logThumb} />
               ) : (
-                <View style={[styles.logThumb, { backgroundColor: colors.line }]} />
+                <View
+                  style={[
+                    styles.logThumb,
+                    styles.logThumbFallback,
+                    { backgroundColor: colors.ink, borderColor: colors.line }
+                  ]}
+                >
+                  <Text style={[styles.logThumbInitials, { color: colors.paperFaint }]}>
+                    {exerciseInitials(ex.name)}
+                  </Text>
+                </View>
               )}
               <Text style={[styles.logIndex, { color: colors.paperFaint }]}>
                 {String(i + 1).padStart(2, '0')}
