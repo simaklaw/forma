@@ -296,6 +296,7 @@ const RU = {
   dataImportName: 'Импорт данных',
   dataImportDesc: 'Восстановить из файла резервной копии',
   languageTitle: 'Язык',
+  languageRu: 'Русский',
   languageEn: 'English',
 
   // Программа тренировок (Фаза 3)
@@ -621,6 +622,7 @@ const EN: Record<StringKey, string> = {
   dataImportName: 'Import data',
   dataImportDesc: 'Restore from a backup file',
   languageTitle: 'Language',
+  languageRu: 'Русский',
   languageEn: 'English',
 
   myWorkoutTitle: 'My workout',

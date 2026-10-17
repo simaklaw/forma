@@ -269,9 +269,9 @@ export default function WorkoutScreen() {
   const ticketSex = profileSex === 'female' ? t('sexShortFemale') : t('sexShortMale');
   const ticketMode = trainingMode === 'gym' ? t('modeGymLower') : t('modeHomeLower');
   const ticketGoal =
-    profileGoal === 'deficit'
+    profileGoal === 'recomp'
       ? t('profileGoalDeficit')
-      : profileGoal === 'surplus'
+      : profileGoal === 'gain'
         ? t('profileGoalSurplus')
         : t('profileGoalMaintain');
 
