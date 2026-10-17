@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -36,6 +36,7 @@ import { setReplaceTarget } from './replaceTarget';
 import type { TabParamList } from '@/navigation/types';
 import { EXERCISE_THUMBNAILS } from './exerciseMedia';
 import { presentEarlyLeave } from './session/earlyLeave';
+import { BusyGuard } from './sessionActionGuard';
 import { workoutScreenStyles as styles } from './workoutScreenStyles';
 import {
   WEEKDAY_RU_FULL,
@@ -64,6 +65,9 @@ export default function WorkoutScreen() {
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
   const [resumable, setResumable] = useState<WorkoutSession | null>(null);
   const [sessionActionBusy, setSessionActionBusy] = useState(false);
+  // issue #167: state-флаг в замыкании onPress видит устаревшее значение между тапами,
+  // поэтому захват выполняет синхронный guard в ref, а state отражает занятость для UI.
+  const sessionGuard = useRef(new BusyGuard());
   const [selectedProgramLength, setSelectedProgramLength] = useState<ProgramLengthWeeks>(4);
   const [streakDetail, setStreakDetail] = useState<string | null>(null);
 
@@ -261,6 +265,17 @@ export default function WorkoutScreen() {
     setStreakDetail((prev) => (prev === label ? null : label));
   }
 
+  /** Захват session-действия: false — действие уже выполняется (двойной тап). */
+  function acquireSessionAction(): boolean {
+    if (!sessionGuard.current.tryAcquire()) return false;
+    setSessionActionBusy(true);
+    return true;
+  }
+  function releaseSessionAction() {
+    sessionGuard.current.release();
+    setSessionActionBusy(false);
+  }
+
   if (!activeDay) {
     return (
       <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]} edges={['top']}>
@@ -324,14 +339,18 @@ export default function WorkoutScreen() {
                 </Text>
               </View>
               <View style={styles.resumeActions}>
-                <TouchableOpacity
-                  style={[styles.startPill, { backgroundColor: colors.lime }, sessionActionBusy && { opacity: 0.6 }]}
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.startPill,
+                    { backgroundColor: colors.lime },
+                    pressed && { backgroundColor: colors.accentPressed },
+                    sessionActionBusy && { opacity: 0.6 }
+                  ]}
                   accessibilityRole="button"
                   accessibilityLabel={t('workoutResume')}
                   disabled={sessionActionBusy}
                   onPress={() => {
-                    if (sessionActionBusy) return;
-                    setSessionActionBusy(true);
+                    if (sessionActionBusy || !acquireSessionAction()) return;
                     void ActiveSessionController.ensureDaySession(activeDay.id, effectiveExercises)
                       .then((session) => {
                         if (!session) return;
@@ -342,19 +361,23 @@ export default function WorkoutScreen() {
                         if (exId) openExercise(exId);
                       })
                       .catch(() => {})
-                      .finally(() => setSessionActionBusy(false));
+                      .finally(releaseSessionAction);
                   }}
                 >
-                  <Text style={[styles.startPillText, { color: colors.ink }]}>▶  {t('workoutResumeShort')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.restartPill, { borderColor: colors.lineStrong }, sessionActionBusy && { opacity: 0.6 }]}
+                  <Text style={[styles.startPillText, { color: colors.onAccent }]}>▶  {t('workoutResumeShort')}</Text>
+                </Pressable>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.restartPill,
+                    { borderColor: colors.lineStrong },
+                    pressed && { backgroundColor: colors.surfacePressed },
+                    sessionActionBusy && { opacity: 0.6 }
+                  ]}
                   accessibilityRole="button"
                   accessibilityLabel={t('workoutRestart')}
                   disabled={sessionActionBusy}
                   onPress={() => {
-                    if (sessionActionBusy) return;
-                    setSessionActionBusy(true);
+                    if (sessionActionBusy || !acquireSessionAction()) return;
                     void ActiveSessionController.restartDaySession(activeDay.id, effectiveExercises)
                       .then((session) => {
                         if (!session) return;
@@ -365,39 +388,47 @@ export default function WorkoutScreen() {
                         if (exId) openExercise(exId);
                       })
                       .catch(() => {})
-                      .finally(() => setSessionActionBusy(false));
+                      .finally(releaseSessionAction);
                   }}
                 >
                   <Text style={[styles.restartPillText, { color: colors.paperDim }]}>{t('workoutRestart')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.restartPill, { borderColor: colors.ember }, sessionActionBusy && { opacity: 0.6 }]}
+                </Pressable>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.restartPill,
+                    { borderColor: colors.ember },
+                    pressed && { backgroundColor: colors.surfacePressed },
+                    sessionActionBusy && { opacity: 0.6 }
+                  ]}
                   accessibilityRole="button"
                   accessibilityLabel={t('workoutExit')}
                   disabled={sessionActionBusy}
                   onPress={() => {
-                    if (sessionActionBusy) return;
-                    setSessionActionBusy(true);
+                    if (sessionActionBusy || !acquireSessionAction()) return;
                     presentEarlyLeave((outcome) => {
-                      setSessionActionBusy(false);
+                      releaseSessionAction();
                       if (outcome === 'cancelled') return;
                       void refreshResumable();
                     });
                   }}
                 >
                   <Text style={[styles.restartPillText, { color: colors.ember }]}>{t('workoutExitShort')}</Text>
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </View>
           ) : (
-            <TouchableOpacity
-              style={[styles.startPill, { backgroundColor: colors.lime }]}
+            <Pressable
+              style={({ pressed }) => [
+                styles.startPill,
+                { backgroundColor: colors.lime },
+                pressed && { backgroundColor: colors.accentPressed }
+              ]}
               accessibilityRole="button"
               accessibilityLabel={t('workoutViewWorkout')}
               onPress={() => previewSheetRef.current?.expand()}
             >
-              <Text style={[styles.startPillText, { color: colors.ink }]}>▶  {t('workoutStart')}</Text>
-            </TouchableOpacity>
+              <Text style={[styles.startPillText, { color: colors.onAccent }]}>▶  {t('workoutStart')}</Text>
+            </Pressable>
           )}
         </View>
       </View>
@@ -569,16 +600,20 @@ export default function WorkoutScreen() {
                 );
               })}
             </View>
-            <TouchableOpacity
-              style={[styles.programStartBtn, { backgroundColor: colors.lime }]}
+            <Pressable
+              style={({ pressed }) => [
+                styles.programStartBtn,
+                { backgroundColor: colors.lime },
+                pressed && { backgroundColor: colors.accentPressed }
+              ]}
               onPress={() => startProgram(selectedProgramLength)}
               accessibilityRole="button"
               accessibilityLabel={t('programStartCta')}
             >
-              <Text style={[styles.programStartText, { color: colors.ink }]}>
+              <Text style={[styles.programStartText, { color: colors.onAccent }]}>
                 ▶  {t('programStartCta')}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       )}
@@ -627,7 +662,12 @@ export default function WorkoutScreen() {
               accessibilityState={{ selected: active }}
               accessibilityLabel={isToday ? t('workoutDayToday', { day: day.name }) : day.name}
             >
-              <Text style={[styles.dayTabText, { color: colors.paperDim }, active && { color: colors.lime }]} numberOfLines={1}>
+              <Text
+                style={[styles.dayTabText, { color: colors.paperDim }, active && { color: colors.lime }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.75}
+              >
                 {isToday ? '· ' : ''}
                 {day.name.split(' — ')[0] || day.name}
               </Text>
@@ -788,6 +828,7 @@ export default function WorkoutScreen() {
         exercises={effectiveExercises}
         onClose={() => previewSheetRef.current?.close()}
         onStart={() => {
+          if (sessionActionBusy || !acquireSessionAction()) return;
           previewSheetRef.current?.close();
           void ActiveSessionController.ensureDaySession(activeDay.id, effectiveExercises)
             .then((session) => {
@@ -796,7 +837,8 @@ export default function WorkoutScreen() {
               const first = effectiveExercises[0];
               if (first) openExercise(first.id);
             })
-            .catch(() => {});
+            .catch(() => {})
+            .finally(releaseSessionAction);
         }}
       />
       <ExerciseSheet

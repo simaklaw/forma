@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import GorhomBottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import AppBottomSheet from '@/components/BottomSheet';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
@@ -63,14 +63,18 @@ const WorkoutPreviewSheet = forwardRef<GorhomBottomSheet, Props>(
         </BottomSheetScrollView>
 
         <View style={styles.footer}>
-          <TouchableOpacity
-            style={[styles.startBtn, { backgroundColor: colors.lime }]}
+          <Pressable
+            style={({ pressed }) => [
+              styles.startBtn,
+              { backgroundColor: colors.lime },
+              pressed && { backgroundColor: colors.accentPressed }
+            ]}
             onPress={onStart}
             accessibilityRole="button"
             accessibilityLabel="Начать тренировку"
           >
-            <Text style={[styles.startBtnText, { color: colors.ink }]}>▶ Начать тренировку</Text>
-          </TouchableOpacity>
+            <Text style={[styles.startBtnText, { color: colors.onAccent }]}>▶ Начать тренировку</Text>
+          </Pressable>
         </View>
       </AppBottomSheet>
     );
