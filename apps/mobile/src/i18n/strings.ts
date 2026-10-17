@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useLanguageStore, type Language } from './useLanguageStore';
 import { MUSCLE_LABELS, type MuscleKey } from '@/domain/muscleKeys';
+import type { ProgramTemplateId } from '@/features/workout/program/readyPrograms';
 
 /**
  * Лёгкий i18n-слой: два словаря (ru/en), RU по умолчанию.
@@ -326,6 +327,36 @@ const RU = {
   programResetTitle: 'Сбросить программу?',
   programResetBody: 'Недели и пропуски будут очищены. История тренировок останется.',
   programResetConfirm: 'Сбросить',
+
+  // Готовые программы и каталог (Фаза 4)
+  catalogSegmentPrograms: 'Программы',
+  catalogHintPrograms: 'Готовые программы · сила, жиросжигание, выносливость',
+  goalStrength: 'Сила',
+  goalFatloss: 'Жиросжигание',
+  goalEndurance: 'Выносливость',
+  tplStrengthDesc:
+    'Базовые подходы и постепенная прогрессия повторов — сила без железа, дома.',
+  tplFatlossDesc:
+    'Интервальные круги с коротким отдыхом и кардио-движениями — максимум расхода.',
+  tplEnduranceDesc:
+    'Многоповторная работа и короткий отдых — тонус мышц и выносливость.',
+  programsPanelActiveBadge: 'Активна',
+  programsPanelLevelLabel: 'Уровень',
+  programsPanelReplaceTitle: 'Заменить программу?',
+  programsPanelReplaceBody:
+    'Текущая программа будет сброшена. История тренировок сохранится.',
+  programsPanelReplaceConfirm: 'Заменить',
+  programTemplateLine: '{name} · {level}',
+  catalogLevelAllChip: 'Любой уровень',
+  importedModalMuscles: 'Целевые мышцы',
+  equipmentDumbbellsLabel: 'гантели',
+  equipmentBarbellLabel: 'штанга',
+  equipmentMachineLabel: 'тренажёр',
+  equipmentCableLabel: 'блок',
+  equipmentKettlebellLabel: 'гиря',
+  equipmentEzBarLabel: 'EZ-гриф',
+  equipmentPullupBarLabel: 'турник',
+  equipmentBenchLabel: 'скамья',
   playerPrev: 'Назад',
   playerNext: 'Далее',
   playerPause: 'Пауза',
@@ -651,6 +682,32 @@ const EN: Record<StringKey, string> = {
   programResetTitle: 'Reset program?',
   programResetBody: 'Weeks and skips will be cleared. Workout history stays.',
   programResetConfirm: 'Reset',
+
+  catalogSegmentPrograms: 'Programs',
+  catalogHintPrograms: 'Ready-made programs · strength, fat loss, endurance',
+  goalStrength: 'Strength',
+  goalFatloss: 'Fat loss',
+  goalEndurance: 'Endurance',
+  tplStrengthDesc:
+    'Base sets with gradual rep progression — strength without iron, at home.',
+  tplFatlossDesc: 'Interval circuits with short rests and cardio moves — maximum burn.',
+  tplEnduranceDesc: 'High-rep work and short rests — muscle tone and endurance.',
+  programsPanelActiveBadge: 'Active',
+  programsPanelLevelLabel: 'Level',
+  programsPanelReplaceTitle: 'Replace program?',
+  programsPanelReplaceBody: 'The current program will be reset. Workout history stays.',
+  programsPanelReplaceConfirm: 'Replace',
+  programTemplateLine: '{name} · {level}',
+  catalogLevelAllChip: 'Any level',
+  importedModalMuscles: 'Target muscles',
+  equipmentDumbbellsLabel: 'dumbbells',
+  equipmentBarbellLabel: 'barbell',
+  equipmentMachineLabel: 'machine',
+  equipmentCableLabel: 'cable',
+  equipmentKettlebellLabel: 'kettlebell',
+  equipmentEzBarLabel: 'EZ bar',
+  equipmentPullupBarLabel: 'pull-up bar',
+  equipmentBenchLabel: 'bench',
   playerPrev: 'Back',
   playerNext: 'Next',
   playerPause: 'Pause',
@@ -713,6 +770,9 @@ export type EquipmentKey =
   | 'dumbbells'
   | 'barbell'
   | 'machine'
+  | 'cable'
+  | 'kettlebell'
+  | 'ez-bar'
   | 'pullup-bar'
   | 'bench';
 
@@ -723,13 +783,29 @@ const EQUIPMENT_LABELS_EN: Record<EquipmentKey, string> = {
   dumbbells: 'dumbbells',
   barbell: 'barbell',
   machine: 'machine',
+  cable: 'cable',
+  kettlebell: 'kettlebell',
+  'ez-bar': 'EZ bar',
   'pullup-bar': 'pull-up bar',
   bench: 'bench'
 };
 
+const EQUIPMENT_LABELS_RU: Record<EquipmentKey, string> = {
+  bodyweight: RU.bodyweightLabel,
+  none: RU.bodyweightLabel,
+  bands: RU.bandsLabel,
+  dumbbells: RU.equipmentDumbbellsLabel,
+  barbell: RU.equipmentBarbellLabel,
+  machine: RU.equipmentMachineLabel,
+  cable: RU.equipmentCableLabel,
+  kettlebell: RU.equipmentKettlebellLabel,
+  'ez-bar': RU.equipmentEzBarLabel,
+  'pullup-bar': RU.equipmentPullupBarLabel,
+  bench: RU.equipmentBenchLabel
+};
+
 export function equipmentLabel(key: EquipmentKey, lang: Language): string {
-  if (lang === 'en') return EQUIPMENT_LABELS_EN[key];
-  return key === 'none' || key === 'bodyweight' ? RU.bodyweightLabel : key === 'bands' ? RU.bandsLabel : key;
+  return lang === 'en' ? EQUIPMENT_LABELS_EN[key] : EQUIPMENT_LABELS_RU[key];
 }
 
 export type ExerciseCategory = 'chest' | 'back' | 'legs' | 'abs' | 'arms' | 'glutes';
@@ -751,6 +827,16 @@ const LEVEL_LABELS: Record<Language, Record<string, string>> = {
 export function levelLabel(level: string | null, lang: Language): string {
   if (!level) return '';
   return LEVEL_LABELS[lang][level] ?? level;
+}
+
+const PROGRAM_TEMPLATE_TITLES: Record<ProgramTemplateId, Record<Language, string>> = {
+  'strength-home': { ru: 'Сила · дом', en: 'Strength · home' },
+  'fatloss-home': { ru: 'Жиросжигание · дом', en: 'Fat loss · home' },
+  'endurance-home': { ru: 'Выносливость · дом', en: 'Endurance · home' }
+};
+
+export function programTemplateTitle(id: ProgramTemplateId, lang: Language): string {
+  return PROGRAM_TEMPLATE_TITLES[id][lang];
 }
 
 export type MeasurementType = 'waist' | 'chest' | 'hips' | 'bicep' | 'thigh' | 'neck';
