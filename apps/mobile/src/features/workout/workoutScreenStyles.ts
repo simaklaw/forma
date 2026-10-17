@@ -136,5 +136,43 @@ export const workoutScreenStyles = StyleSheet.create({
   nowBadgeText: { fontSize: 10, fontFamily: fonts.bodySemi },
   logSpec: { fontSize: 12, fontFamily: fonts.body, marginTop: 2 },
   logPr: { fontFamily: fonts.mono, fontSize: 14 },
-  logPrLbl: { fontSize: 10, marginTop: 2 }
+  logPrLbl: { fontSize: 10, marginTop: 2 },
+  programRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
+  programChip: {
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 6
+  },
+  programChipText: { fontFamily: fonts.mono, fontSize: 11 },
+  programSkip: {
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 6
+  },
+  programSkipText: { fontFamily: fonts.body, fontSize: 11 },
+  programCard: { borderWidth: 1.2, borderRadius: 22, padding: spacing.lg, gap: 10 },
+  programCardTitle: { fontFamily: fonts.mono, fontSize: 18, letterSpacing: 0.1 },
+  programCardBody: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17 },
+  programLengthRow: { flexDirection: 'row', gap: 8 },
+  programLengthBtn: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: 'center'
+  },
+  programLengthText: { fontFamily: fonts.bodySemi, fontSize: 13 },
+  programStartBtn: { borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
+  programStartText: { fontFamily: fonts.bodySemi, fontSize: 14 },
+  programDoneBtn: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingHorizontal: 14,
+    paddingVertical: 9
+  },
+  programDoneBtnText: { fontFamily: fonts.body, fontSize: 13 },
+  streakDetail: { fontFamily: fonts.body, fontSize: 12, marginBottom: spacing.sm, marginTop: -2 }
 });
