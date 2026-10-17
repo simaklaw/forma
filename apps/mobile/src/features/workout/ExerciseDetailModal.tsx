@@ -9,13 +9,13 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import MuscleMap, { MUSCLE_LABELS } from '@/components/MuscleMap';
+import MuscleMap from '@/components/MuscleMap';
 import ExerciseVideo from '@/components/ExerciseVideo';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import type { TabParamList } from '@/navigation/types';
 import type { CatalogItem } from './catalogBrowser';
-import { EQUIPMENT_LABELS, inferEquipment } from './catalogBrowser';
+import { inferEquipment } from './catalogBrowser';
 import { useExerciseReference } from './useExerciseReference';
 import { isFavorite, pushRecent, toggleFavorite } from './exerciseFavorites';
 import { catalogFor } from './catalog';
@@ -28,6 +28,8 @@ import {
 } from './replaceTarget';
 import { EXERCISE_VIDEOS } from './exerciseMedia';
 import { techniqueCuesFromNote } from '@/lib/techniqueCues';
+import { useLanguageStore } from '@/i18n/useLanguageStore';
+import { useT, equipmentLabel, muscleLabel } from '@/i18n/strings';
 
 interface Props {
   item: CatalogItem | null;
@@ -38,6 +40,8 @@ interface Props {
 
 export default function ExerciseDetailModal({ item, visible, onClose, onFavoriteChange }: Props) {
   const colors = useThemeColors();
+  const t = useT();
+  const lang = useLanguageStore((s) => s.lang);
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const reference = useExerciseReference(item?.wgerSearchTerm ?? null);
   const [favorited, setFavorited] = useState(false);
@@ -90,7 +94,10 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
   if (!item) return null;
 
   const equipment = inferEquipment(item);
-  const loadLabel = item.workingWeight > 0 ? `${item.workingWeight} кг` : 'свой вес';
+  const loadLabel =
+    item.workingWeight > 0
+      ? `${item.workingWeight} ${t('kg')}`
+      : t('bodyweightLabel');
   const canReplace =
     replaceTarget != null &&
     replaceTarget.mode === item.mode &&
@@ -108,15 +115,15 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
           <TouchableOpacity
             onPress={onClose}
             accessibilityRole="button"
-            accessibilityLabel="Закрыть"
+            accessibilityLabel={t('close')}
             style={[styles.barBtn, { borderColor: colors.lineStrong }]}
           >
-            <Text style={[styles.barBtnText, { color: colors.lime }]}>Закрыть</Text>
+            <Text style={[styles.barBtnText, { color: colors.lime }]}>{t('close')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={onToggleFavorite}
             accessibilityRole="button"
-            accessibilityLabel={favorited ? 'Убрать из избранного' : 'В избранное'}
+            accessibilityLabel={favorited ? t('favoriteRemove') : t('favoriteAdd')}
             accessibilityState={{ selected: favorited }}
             style={[
               styles.barBtn,
@@ -127,14 +134,14 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
             ]}
           >
             <Text style={[styles.barBtnText, { color: favorited ? colors.lime : colors.paperDim }]}>
-              {favorited ? '★ В избранном' : '☆ В избранное'}
+              {favorited ? t('favoriteOn') : t('favoriteOff')}
             </Text>
           </TouchableOpacity>
         </View>
 
         <ScrollView contentContainerStyle={styles.body}>
           <Text style={[styles.eyebrow, { color: colors.lime }]}>
-            {item.mode === 'gym' ? 'ЗАЛ' : 'ДОМ'} · {item.dayName.toUpperCase()}
+            {item.mode === 'gym' ? t('gymShort') : t('homeShort')} · {item.dayName.toUpperCase()}
           </Text>
           <Text style={[styles.title, { color: colors.paper }]}>{item.name}</Text>
 
@@ -144,12 +151,12 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
               disabled={replacing}
               style={[styles.replaceCta, { backgroundColor: colors.lime }]}
               accessibilityRole="button"
-              accessibilityLabel="Подставить в план дня"
+              accessibilityLabel={t('panelSubstituteIntoDay')}
             >
               <Text style={[styles.replaceCtaText, { color: colors.ink }]}>
                 {replacing
-                  ? 'Сохраняем…'
-                  : `Подставить вместо «${replaceTarget!.currentName}»`}
+                  ? t('panelSaving')
+                  : t('panelSubstituteFor', { name: replaceTarget!.currentName })}
               </Text>
             </TouchableOpacity>
           ) : null}
@@ -158,33 +165,35 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
 
           <View style={styles.statsRow}>
             <View style={[styles.stat, { borderColor: colors.line, backgroundColor: colors.panel }]}>
-              <Text style={[styles.statLabel, { color: colors.paperFaint }]}>Подходы</Text>
+              <Text style={[styles.statLabel, { color: colors.paperFaint }]}>{t('statSets')}</Text>
               <Text style={[styles.statValue, { color: colors.paper }]}>{item.totalSets}</Text>
             </View>
             <View style={[styles.stat, { borderColor: colors.line, backgroundColor: colors.panel }]}>
-              <Text style={[styles.statLabel, { color: colors.paperFaint }]}>Повторы</Text>
+              <Text style={[styles.statLabel, { color: colors.paperFaint }]}>{t('statReps')}</Text>
               <Text style={[styles.statValue, { color: colors.paper }]}>{item.workingReps}</Text>
             </View>
             <View style={[styles.stat, { borderColor: colors.line, backgroundColor: colors.panel }]}>
-              <Text style={[styles.statLabel, { color: colors.paperFaint }]}>Отдых</Text>
-              <Text style={[styles.statValue, { color: colors.paper }]}>{item.restSeconds}с</Text>
+              <Text style={[styles.statLabel, { color: colors.paperFaint }]}>{t('statRest')}</Text>
+              <Text style={[styles.statValue, { color: colors.paper }]}>{item.restSeconds}{t('secShort')}</Text>
             </View>
             <View style={[styles.stat, { borderColor: colors.line, backgroundColor: colors.panel }]}>
-              <Text style={[styles.statLabel, { color: colors.paperFaint }]}>Нагрузка</Text>
+              <Text style={[styles.statLabel, { color: colors.paperFaint }]}>{t('statLoad')}</Text>
               <Text style={[styles.statValue, { color: colors.paper }]}>{loadLabel}</Text>
             </View>
           </View>
 
           <Text style={[styles.metaLine, { color: colors.paperDim }]}>
-            Оборудование: {EQUIPMENT_LABELS[equipment]}
+            {t('metaEquipment', { name: equipmentLabel(equipment, lang) })}
           </Text>
           <Text style={[styles.metaLine, { color: colors.paperDim }]}>
-            Мышцы: {item.targetMuscles.map((key) => MUSCLE_LABELS[key]).join(' · ')}
+            {t('metaMuscles', {
+              list: item.targetMuscles.map((key) => muscleLabel(key, lang)).join(' · ')
+            })}
           </Text>
 
           {item.note ? (
             <View style={[styles.noteBox, { borderColor: colors.line, backgroundColor: colors.panel }]}>
-              <Text style={[styles.noteLabel, { color: colors.lime }]}>Подсказка</Text>
+              <Text style={[styles.noteLabel, { color: colors.lime }]}>{t('tip')}</Text>
               <Text style={[styles.noteBody, { color: colors.paper }]}>{item.note}</Text>
             </View>
           ) : null}
@@ -192,9 +201,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
           <MuscleMap targetMuscles={item.targetMuscles} />
 
           <Text style={[styles.readonlyHint, { color: colors.paperFaint }]}>
-            {canReplace
-              ? 'Замена сохранится только для этого дня плана (можно сбросить на экране «Тренировки»).'
-              : 'Только просмотр. Чтобы выполнить упражнение, запустите тренировку во вкладке «Тренировки». Долгое нажатие на упражнение дня открывает замену.'}
+            {canReplace ? t('modalReplaceNote') : t('modalOnlyView')}
           </Text>
         </ScrollView>
       </View>

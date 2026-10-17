@@ -5,6 +5,7 @@ import Slider from '@react-native-community/slider';
 import AppBottomSheet from '@/components/BottomSheet';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
+import { useT } from '@/i18n/strings';
 import { useFitPulseStore, selectTodayMeals, DayMeals } from '@/state/useFitPulseStore';
 import { OpenFoodFactsService, NormalizedFood } from '@/services/OpenFoodFactsService';
 
@@ -72,6 +73,7 @@ interface Props {
 const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel, onClose }, ref) => {
   const colors = useThemeColors();
   const styles = createStyles(colors);
+  const t = useT();
   const addFoodItem = useFitPulseStore((s) => s.addFoodItem);
   const customFoods = useFitPulseStore((s) => s.customFoods);
   const addCustomFood = useFitPulseStore((s) => s.addCustomFood);
@@ -82,7 +84,7 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
   const [tab, setTab] = useState<Tab>('database');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<NormalizedFood[]>(LOCAL_PRESETS);
-  const [sourceLabel, setSourceLabel] = useState('Локальная база');
+  const [sourceLabel, setSourceLabel] = useState(() => t('foodLocalBase'));
   const [loading, setLoading] = useState(false);
   const [portion, setPortion] = useState(100);
 
@@ -116,12 +118,12 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
       setSourceLabel(
         q.trim()
           ? filtered.length > 0
-            ? 'Локальная база'
-            : 'Нет точных совпадений — вся локальная база'
-          : 'Локальная база'
+            ? t('foodLocalBase')
+            : t('foodLocalBaseAll')
+          : t('foodLocalBase')
       );
     },
-    [catalogPresets]
+    [catalogPresets, t]
   );
 
   useEffect(() => {
@@ -144,7 +146,7 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
           const byCode = await OpenFoodFactsService.getNormalizedByBarcode(q);
           if (byCode) {
             setResults([byCode]);
-            setSourceLabel('Штрихкод · Open Food Facts');
+            setSourceLabel(t('foodBarcode'));
             setLoading(false);
             return;
           }
@@ -155,14 +157,14 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
           const localNames = new Set(local.map((f) => f.name.trim().toLowerCase()));
           const merged = [...local, ...remote.filter((r) => !localNames.has(r.name.trim().toLowerCase()))];
           setResults(merged);
-          setSourceLabel('Локально + Open Food Facts');
+          setSourceLabel(t('foodLocalAndOff'));
         } else {
           runLocalFilter(query);
-          setSourceLabel('OFF пусто — локальная база');
+          setSourceLabel(t('foodOffEmpty'));
         }
       } catch {
         runLocalFilter(query);
-        setSourceLabel('OFF недоступен — локальная база');
+        setSourceLabel(t('foodOffUnavailable'));
       } finally {
         setLoading(false);
       }
@@ -171,7 +173,7 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [query, tab, runLocalFilter, catalogPresets]);
+  }, [query, tab, runLocalFilter, catalogPresets, t]);
 
   function logFromFood(item: NormalizedFood) {
     const mult = portion / 100;
@@ -189,7 +191,7 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
 
   function confirmCustom() {
     const def = {
-      name: name.trim() || 'Свой продукт',
+      name: name.trim() || t('foodCustomProduct'),
       kcal: parseFloat(kcal100) || 0,
       protein: parseFloat(protein100) || 0,
       fat: parseFloat(fat100) || 0,
@@ -207,22 +209,22 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
   return (
     <AppBottomSheet
       ref={ref}
-      eyebrow="Дневник питания"
-      title={`Добавить в ${mealLabel.toLowerCase()}`}
+      eyebrow={t('foodDiary')}
+      title={t('foodAddToMealLower', { meal: mealLabel.toLowerCase() })}
       onClose={onClose}
       snapPoints={['75%', '92%']}
     >
       <View style={styles.tabs}>
-        {(['database', 'custom'] as const).map((t) => (
+        {(['database', 'custom'] as const).map((tabId) => (
           <TouchableOpacity
-            key={t}
-            style={[styles.tab, tab === t && styles.tabOn]}
-            onPress={() => setTab(t)}
+            key={tabId}
+            style={[styles.tab, tab === tabId && styles.tabOn]}
+            onPress={() => setTab(tabId)}
             accessibilityRole="tab"
-            accessibilityState={{ selected: tab === t }}
+            accessibilityState={{ selected: tab === tabId }}
           >
-            <Text style={[styles.tabText, tab === t && styles.tabTextOn]}>
-              {t === 'database' ? 'Из базы' : 'Свой продукт'}
+            <Text style={[styles.tabText, tab === tabId && styles.tabTextOn]}>
+              {tabId === 'database' ? t('foodFromBase') : t('foodCustomProduct')}
             </Text>
           </TouchableOpacity>
         ))}
@@ -232,7 +234,7 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
         <ScrollView keyboardShouldPersistTaps="handled">
           <TextInput
             style={styles.searchInput}
-            placeholder="Поиск или штрихкод: рис, 4601234567890…"
+            placeholder={t('foodSearchPlaceholder')}
             placeholderTextColor={colors.paperFaint}
             value={query}
             onChangeText={setQuery}
@@ -240,9 +242,9 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
             autoCapitalize="none"
           />
           <Text style={styles.sourceLabel}>
-            {loading ? `${sourceLabel} · ищу в Open Food Facts…` : sourceLabel}
+            {loading ? t('foodSearchingOff', { source: sourceLabel }) : sourceLabel}
           </Text>
-          <Text style={styles.label}>Порция: {portion} г</Text>
+          <Text style={styles.label}>{t('foodPortion', { portion })}</Text>
           <Slider
             minimumValue={25}
             maximumValue={400}
@@ -255,7 +257,7 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
           />
           <View style={styles.presetList}>
             {results.length === 0 ? (
-              <Text style={styles.empty}>Ничего не найдено — попробуйте «Свой продукт»</Text>
+              <Text style={styles.empty}>{t('foodNothingFound')}</Text>
             ) : (
               results.slice(0, 24).map((item, i) => (
                 <TouchableOpacity
@@ -266,7 +268,7 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
                   <Text style={styles.presetName} numberOfLines={1}>
                     {item.name}
                   </Text>
-                  <Text style={styles.presetKcal}>{item.kcal} ккал/100г</Text>
+                  <Text style={styles.presetKcal}>{t('foodKcalPer100', { kcal: item.kcal })}</Text>
                 </TouchableOpacity>
               ))
             )}
@@ -275,35 +277,35 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
       ) : (
         <ScrollView keyboardShouldPersistTaps="handled">
           <View style={styles.formRow}>
-            <Text style={styles.label}>Название</Text>
+            <Text style={styles.label}>{t('foodName')}</Text>
             <TextInput
               style={styles.input}
               value={name}
               onChangeText={setName}
-              placeholder="Свой продукт"
+              placeholder={t('foodCustomProduct')}
               placeholderTextColor={colors.paperFaint}
             />
           </View>
           <View style={styles.formGrid}>
             <View style={styles.formCol}>
-              <Text style={styles.label}>Ккал/100г</Text>
+              <Text style={styles.label}>{t('foodKcal100Label')}</Text>
               <TextInput style={styles.input} value={kcal100} onChangeText={setKcal100} keyboardType="numeric" />
             </View>
             <View style={styles.formCol}>
-              <Text style={styles.label}>Белки</Text>
+              <Text style={styles.label}>{t('foodProtein')}</Text>
               <TextInput style={styles.input} value={protein100} onChangeText={setProtein100} keyboardType="numeric" />
             </View>
             <View style={styles.formCol}>
-              <Text style={styles.label}>Жиры</Text>
+              <Text style={styles.label}>{t('foodFats')}</Text>
               <TextInput style={styles.input} value={fat100} onChangeText={setFat100} keyboardType="numeric" />
             </View>
           </View>
           <View style={styles.formRow}>
-            <Text style={styles.label}>Углеводы, г/100г</Text>
+            <Text style={styles.label}>{t('foodCarbs')}</Text>
             <TextInput style={styles.input} value={carbs100} onChangeText={setCarbs100} keyboardType="numeric" />
           </View>
           <View style={styles.formRow}>
-            <Text style={styles.label}>Порция: {portion} г</Text>
+            <Text style={styles.label}>{t('foodPortion', { portion })}</Text>
             <Slider
               minimumValue={25}
               maximumValue={400}
@@ -316,7 +318,7 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
             />
           </View>
           <TouchableOpacity style={styles.cta} onPress={confirmCustom} accessibilityRole="button">
-            <Text style={styles.ctaText}>Сохранить и добавить</Text>
+            <Text style={styles.ctaText}>{t('foodSaveAndAdd')}</Text>
           </TouchableOpacity>
         </ScrollView>
       )}
@@ -328,21 +330,21 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
               style={styles.saveTemplateBtn}
               onPress={() => setShowSaveTemplate(true)}
               accessibilityRole="button"
-              accessibilityLabel="Сохранить как блюдо"
+              accessibilityLabel={t('foodSaveAsDish')}
             >
               <Text style={styles.saveTemplateBtnText}>
-                Сохранить как блюдо · {mealItems.length} поз. ·{' '}
-                {mealItems.reduce((s, i) => s + i.kcal, 0)} ккал
+                {t('foodSaveAsDish')} · {mealItems.length} {t('foodItemsWord')} ·{' '}
+                {mealItems.reduce((s, i) => s + i.kcal, 0)} {t('kcal')}
               </Text>
             </TouchableOpacity>
           ) : (
             <View>
-              <Text style={styles.label}>Название блюда</Text>
+              <Text style={styles.label}>{t('foodDishName')}</Text>
               <TextInput
                 style={styles.input}
                 value={templateName}
                 onChangeText={setTemplateName}
-                placeholder="Мой завтрак"
+                placeholder={t('foodMyDish')}
                 placeholderTextColor={colors.paperFaint}
               />
               <View style={styles.saveTemplateActions}>
@@ -354,7 +356,7 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
                   }}
                   accessibilityRole="button"
                 >
-                  <Text style={styles.saveTemplateCancelText}>Отмена</Text>
+                  <Text style={styles.saveTemplateCancelText}>{t('cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.saveTemplateConfirm}
@@ -365,9 +367,9 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
                     onClose();
                   }}
                   accessibilityRole="button"
-                  accessibilityLabel="Сохранить блюдо"
+                  accessibilityLabel={t('foodSaveDish')}
                 >
-                  <Text style={styles.saveTemplateConfirmText}>Сохранить</Text>
+                  <Text style={styles.saveTemplateConfirmText}>{t('save')}</Text>
                 </TouchableOpacity>
               </View>
             </View>

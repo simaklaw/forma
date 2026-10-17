@@ -6,6 +6,7 @@ import Svg, { Circle, Line, Path, Rect } from 'react-native-svg';
 import { fonts } from '@/core/theme/tokens';
 import { useThemeColors, useThemeMode } from '@/core/theme/useThemeColors';
 import { RestTimerEngine } from '@/engines/RestTimerEngine';
+import { useT, type StringKey } from '@/i18n/strings';
 
 import WorkoutScreen from '@/features/workout/WorkoutScreen';
 import CatalogScreen from '@/features/workout/CatalogScreen';
@@ -25,6 +26,15 @@ const ICONS: Record<TabName, TabIconKey> = {
   Питание: 'nutrition',
   Прогресс: 'progress',
   Профиль: 'profile'
+};
+
+/** Подписи вкладок берутся из i18n-словаря: route-имена остаются RU-строками. */
+const TAB_LABEL_KEYS: Record<TabName, StringKey> = {
+  Тренировки: 'tabWorkouts',
+  Каталог: 'tabCatalog',
+  Питание: 'tabNutrition',
+  Прогресс: 'tabProgress',
+  Профиль: 'tabProfile'
 };
 
 function TabIcon({
@@ -87,6 +97,7 @@ function TabIcon({
 export default function RootNavigator() {
   const colors = useThemeColors();
   const mode = useThemeMode();
+  const t = useT();
 
   const navTheme = useMemo(
     () => ({
@@ -109,6 +120,7 @@ export default function RootNavigator() {
         initialRouteName="Тренировки"
         screenOptions={({ route }) => ({
           headerShown: false,
+          tabBarLabel: t(TAB_LABEL_KEYS[route.name]),
           tabBarStyle: {
             backgroundColor: mode === 'light' ? 'rgba(255,255,255,0.96)' : 'rgba(11,15,20,0.96)',
             borderTopColor: colors.line,

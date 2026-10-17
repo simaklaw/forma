@@ -86,7 +86,7 @@ export function importedToExerciseDef(ex: ImportedExercise, index = 1): Exercise
     totalSets: 3,
     restSeconds: 60,
     targetMuscles: muscleKeyFromPrimary(ex.primaryMuscles),
-    note: ex.instructionsEn[0] ?? '',
+    note: ex.instructionsRu[0] ?? ex.instructionsEn[0] ?? '',
     wgerSearchTerm: ex.nameEn
   };
 }

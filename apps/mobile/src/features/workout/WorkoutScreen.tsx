@@ -7,6 +7,8 @@ import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { estimateBurnFromSetLogs, toDateKey as coreToDateKey } from '@forma/core';
 import { fonts } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
+import { useLanguageStore } from '@/i18n/useLanguageStore';
+import { useT, streakDayWord } from '@/i18n/strings';
 import ExerciseSheet from './ExerciseSheet';
 import WorkoutPreviewSheet from './WorkoutPreviewSheet';
 import CompletionFeedbackSheet from './CompletionFeedbackSheet';
@@ -15,7 +17,7 @@ import { WorkoutCoachCard } from './WorkoutCoachCard';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { useSessionFeedbackStore } from '@/state/useSessionFeedbackStore';
 import { useTrainingModeStore } from '@/state/useTrainingModeStore';
-import { ruDayWord, toDateKey } from '@/engines/WorkoutStats';
+import { toDateKey } from '@/engines/WorkoutStats';
 import type { WorkoutSession } from '@forma/workout-domain';
 import { ActiveSessionController, dayIdFromTemplate } from './session/ActiveSessionController';
 import { applySessionProjection } from './data/applySessionProjection';
@@ -38,6 +40,8 @@ import {
 
 export default function WorkoutScreen() {
   const colors = useThemeColors();
+  const t = useT();
+  const lang = useLanguageStore((s) => s.lang);
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const sheetRef = useRef<GorhomBottomSheet>(null);
   const previewSheetRef = useRef<GorhomBottomSheet>(null);
@@ -196,7 +200,7 @@ export default function WorkoutScreen() {
   if (!activeDay) {
     return (
       <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]} edges={['top']}>
-        <Text style={[styles.title, { color: colors.paper }]}>Нет плана</Text>
+        <Text style={[styles.title, { color: colors.paper }]}>{t('workoutNoPlan')}</Text>
       </SafeAreaView>
     );
   }
@@ -209,42 +213,50 @@ export default function WorkoutScreen() {
     : 0;
   const sessionPct =
     sessionTargetSets > 0 ? Math.min(100, Math.round((sessionDoneSets / sessionTargetSets) * 100)) : 0;
+  const ticketSex = profileSex === 'female' ? t('sexShortFemale') : t('sexShortMale');
+  const ticketMode = trainingMode === 'gym' ? t('modeGymLower') : t('modeHomeLower');
 
   const ticket = (
     <View style={[styles.ticket, { backgroundColor: colors.panelRaised, borderColor: colors.lineStrong }]}>
       <View style={styles.ticketMain}>
         <View style={{ flex: 1, paddingRight: 12 }}>
           <Text style={[styles.ticketLabel, { color: colors.paperFaint }]}>
-            Сегодня · {profileSex === 'female' ? 'жен' : 'муж'} · {trainingMode === 'gym' ? 'зал' : 'дом'}
+            {t('today')} · {ticketSex} · {ticketMode}
           </Text>
           <Text style={[styles.ticketName, { color: colors.paper }]}>{activeDay.name}</Text>
           <Text style={[styles.ticketMeta, { color: colors.paperDim }]}>
-            {effectiveExercises.length} упражнения · {activeDay.meta}
-            {burnedToday > 0 ? ` · ~${burnedToday} ккал` : ''}
+            {t('workoutExerciseCount', { count: effectiveExercises.length })} · {activeDay.meta}
+            {burnedToday > 0 ? t('workoutBurnedToday', { kcal: burnedToday }) : ''}
           </Text>
           {resumable && dayIdFromTemplate(resumable.templateRevisionId) === activeDay.id ? (
             <View style={styles.resumeBlock}>
               <Text style={[styles.resumeHint, { color: colors.lime }]}>
-                Есть незавершённая сессия · шаг {resumable.currentStepIndex + 1}/{(resumable.steps ?? []).length}
+                {t('workoutResumeHint', {
+                  step: resumable.currentStepIndex + 1,
+                  total: (resumable.steps ?? []).length
+                })}
               </Text>
               <View
                 style={styles.sessionProgress}
                 accessibilityRole="progressbar"
                 accessibilityValue={{ min: 0, max: 100, now: sessionPct }}
-                accessibilityLabel={`Прогресс сессии ${sessionDoneSets} из ${sessionTargetSets} подходов`}
+                accessibilityLabel={t('workoutProgressSession', {
+                  done: sessionDoneSets,
+                  total: sessionTargetSets
+                })}
               >
                 <View style={[styles.sessionProgressTrack, { backgroundColor: colors.line }]}>
                   <View style={[styles.sessionProgressFill, { backgroundColor: colors.lime, width: `${sessionPct}%` }]} />
                 </View>
                 <Text style={[styles.sessionProgressLbl, { color: colors.paperFaint }]}>
-                  {sessionDoneSets}/{sessionTargetSets} подходов · {sessionPct}%
+                  {sessionDoneSets}/{sessionTargetSets} {t('workoutSetsWord')} · {sessionPct}%
                 </Text>
               </View>
               <View style={styles.resumeActions}>
                 <TouchableOpacity
                   style={[styles.startPill, { backgroundColor: colors.lime }, sessionActionBusy && { opacity: 0.6 }]}
                   accessibilityRole="button"
-                  accessibilityLabel="Продолжить тренировку"
+                  accessibilityLabel={t('workoutResume')}
                   disabled={sessionActionBusy}
                   onPress={() => {
                     if (sessionActionBusy) return;
@@ -262,12 +274,12 @@ export default function WorkoutScreen() {
                       .finally(() => setSessionActionBusy(false));
                   }}
                 >
-                  <Text style={[styles.startPillText, { color: colors.ink }]}>▶  Продолжить</Text>
+                  <Text style={[styles.startPillText, { color: colors.ink }]}>▶  {t('workoutResumeShort')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.restartPill, { borderColor: colors.lineStrong }, sessionActionBusy && { opacity: 0.6 }]}
                   accessibilityRole="button"
-                  accessibilityLabel="Начать заново"
+                  accessibilityLabel={t('workoutRestart')}
                   disabled={sessionActionBusy}
                   onPress={() => {
                     if (sessionActionBusy) return;
@@ -285,12 +297,12 @@ export default function WorkoutScreen() {
                       .finally(() => setSessionActionBusy(false));
                   }}
                 >
-                  <Text style={[styles.restartPillText, { color: colors.paperDim }]}>Начать заново</Text>
+                  <Text style={[styles.restartPillText, { color: colors.paperDim }]}>{t('workoutRestart')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.restartPill, { borderColor: colors.ember }, sessionActionBusy && { opacity: 0.6 }]}
                   accessibilityRole="button"
-                  accessibilityLabel="Выйти из тренировки"
+                  accessibilityLabel={t('workoutExit')}
                   disabled={sessionActionBusy}
                   onPress={() => {
                     if (sessionActionBusy) return;
@@ -302,7 +314,7 @@ export default function WorkoutScreen() {
                     });
                   }}
                 >
-                  <Text style={[styles.restartPillText, { color: colors.ember }]}>Выйти</Text>
+                  <Text style={[styles.restartPillText, { color: colors.ember }]}>{t('workoutExitShort')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -310,10 +322,10 @@ export default function WorkoutScreen() {
             <TouchableOpacity
               style={[styles.startPill, { backgroundColor: colors.lime }]}
               accessibilityRole="button"
-              accessibilityLabel="Посмотреть тренировку"
+              accessibilityLabel={t('workoutViewWorkout')}
               onPress={() => previewSheetRef.current?.expand()}
             >
-              <Text style={[styles.startPillText, { color: colors.ink }]}>▶  Начать тренировку</Text>
+              <Text style={[styles.startPillText, { color: colors.ink }]}>▶  {t('workoutStart')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -321,15 +333,15 @@ export default function WorkoutScreen() {
       <View style={[styles.ticketPerf, { borderTopColor: colors.line }]}>
         <View style={[styles.perfCell, { borderRightColor: colors.line }]}>
           <Text style={[styles.perfVal, { color: colors.paper }]}>{weekDaysCompleted}/7</Text>
-          <Text style={[styles.perfLbl, { color: colors.paperFaint }]}>Дней на неделе</Text>
+          <Text style={[styles.perfLbl, { color: colors.paperFaint }]}>{t('perfWeekDays')}</Text>
         </View>
         <View style={[styles.perfCell, { borderRightColor: colors.line }]}>
           <Text style={[styles.perfVal, { color: colors.paper }]}>{burnedToday > 0 ? `~${burnedToday}` : '—'}</Text>
-          <Text style={[styles.perfLbl, { color: colors.paperFaint }]}>Сожжено, ккал</Text>
+          <Text style={[styles.perfLbl, { color: colors.paperFaint }]}>{t('perfBurned')}</Text>
         </View>
         <View style={[styles.perfCell, { borderRightWidth: 0 }]}>
           <Text style={[styles.perfVal, { color: colors.paper }]}>{overallPr !== null ? `${overallPr}` : '—'}</Text>
-          <Text style={[styles.perfLbl, { color: colors.paperFaint }]}>Рекорд, кг</Text>
+          <Text style={[styles.perfLbl, { color: colors.paperFaint }]}>{t('perfRecord')}</Text>
         </View>
       </View>
     </View>
@@ -340,21 +352,21 @@ export default function WorkoutScreen() {
       <View style={[styles.header, { borderBottomColor: colors.line }]}>
         <Text style={[styles.eyebrow, { color: colors.lime }]}>FITPULSE  /  {todayLabel}</Text>
         <View style={styles.titleRow}>
-          <Text style={[styles.title, { color: colors.paper }]}>Тренировка</Text>
+          <Text style={[styles.title, { color: colors.paper }]}>{t('workoutTitle')}</Text>
           <TouchableOpacity
             onPress={() => navigation.navigate('Каталог')}
             style={[styles.catalogButton, { borderColor: colors.lineStrong, backgroundColor: colors.panel }]}
             accessibilityRole="button"
-            accessibilityLabel="Открыть каталог упражнений"
+            accessibilityLabel={t('workoutOpenCatalog')}
           >
-            <Text style={[styles.catalogButtonText, { color: colors.lime }]}>Каталог</Text>
+            <Text style={[styles.catalogButtonText, { color: colors.lime }]}>{t('workoutCatalogShort')}</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       {SHOW_GYM_MODE_TOGGLE && (
         <View style={styles.modeTabs} accessibilityRole="tablist">
-          {([{ id: 'gym' as const, label: 'Зал' }, { id: 'home' as const, label: 'Дом' }] as const).map((m) => {
+          {([{ id: 'gym' as const, label: t('gym') }, { id: 'home' as const, label: t('home') }] as const).map((m) => {
             const active = trainingMode === m.id;
             return (
               <TouchableOpacity
@@ -385,7 +397,7 @@ export default function WorkoutScreen() {
               onPress={() => selectDay(day.id)}
               accessibilityRole="tab"
               accessibilityState={{ selected: active }}
-              accessibilityLabel={isToday ? `${day.name}, сегодня` : day.name}
+              accessibilityLabel={isToday ? t('workoutDayToday', { day: day.name }) : day.name}
             >
               <Text style={[styles.dayTabText, { color: colors.paperDim }, active && { color: colors.lime }]} numberOfLines={1}>
                 {isToday ? '· ' : ''}
@@ -401,20 +413,23 @@ export default function WorkoutScreen() {
           style={[styles.streakRow, { backgroundColor: colors.panel, borderColor: colors.line }]}
           accessibilityLabel={
             currentStreak > 0
-              ? `Серия ${currentStreak} ${ruDayWord(currentStreak)} подряд`
-              : 'Серии пока нет'
+              ? t('workoutStreakActive', {
+                  count: currentStreak,
+                  days: streakDayWord(currentStreak, lang)
+                })
+              : t('workoutStreakNone')
           }
         >
           <Text style={[styles.streakText, { color: colors.paperDim, flex: 1 }]} numberOfLines={1}>
             {currentStreak > 0 ? (
               <>
                 <Text style={{ color: colors.ember, fontFamily: fonts.bodySemi }}>
-                  {currentStreak} {ruDayWord(currentStreak)}
+                  {currentStreak} {streakDayWord(currentStreak, lang)}
                 </Text>
-                {' · серия'}
+                {t('workoutStreakSuffix')}
               </>
             ) : (
-              'Серия: начните с полного дня'
+              t('workoutStreakHint')
             )}
           </Text>
           <View style={styles.ticks}>
@@ -437,7 +452,7 @@ export default function WorkoutScreen() {
         <WorkoutCoachCard dayName={activeDay.name} anyDoneToday={anyDoneToday} exerciseNames={exerciseMetKeys} exerciseMeta={exerciseBurnMeta} />
 
         <View style={styles.sectionHead}>
-          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>УПРАЖНЕНИЯ</Text>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionExercises')}</Text>
           <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>
             {todayDoneCount}/{effectiveExercises.length}
           </Text>
@@ -448,9 +463,9 @@ export default function WorkoutScreen() {
                 void clearDayOverride(trainingMode, activeDay.id).then(() => setOverrideTick((t) => t + 1));
               }}
               accessibilityRole="button"
-              accessibilityLabel="Сбросить замены дня"
+              accessibilityLabel={t('workoutResetReplacements')}
             >
-              <Text style={[styles.resetOverrideText, { color: colors.paperDim }]}>Сбросить замены дня</Text>
+              <Text style={[styles.resetOverrideText, { color: colors.paperDim }]}>{t('workoutResetReplacements')}</Text>
             </TouchableOpacity>
           ) : null}
         </View>
@@ -487,7 +502,11 @@ export default function WorkoutScreen() {
                 navigation.navigate('Каталог');
               }}
               accessibilityRole="button"
-              accessibilityLabel={`${ex.name}, ${doneSets} из ${ex.totalSets}`}
+              accessibilityLabel={t('workoutExerciseProgress', {
+                name: ex.name,
+                done: doneSets,
+                total: ex.totalSets
+              })}
             >
               {thumb ? (
                 <Image source={thumb} style={styles.logThumb} />
@@ -504,19 +523,23 @@ export default function WorkoutScreen() {
                   </Text>
                   {isCurrent ? (
                     <View style={[styles.nowBadge, { backgroundColor: colors.lime }]}>
-                      <Text style={[styles.nowBadgeText, { color: colors.ink }]}>сейчас</Text>
+                      <Text style={[styles.nowBadgeText, { color: colors.ink }]}>{t('nowBadge')}</Text>
                     </View>
                   ) : null}
                 </View>
                 <Text style={[styles.logSpec, { color: colors.paperDim }]}>
                   {ex.totalSets}×{ex.workingReps} · {formatLoadLabel(ex, safeWeightKg)}
-                  {finished ? ' · готово' : doneSets > 0 ? ` · ${doneSets}/${ex.totalSets}` : ''}
+                  {finished
+                    ? t('workoutDoneSuffix')
+                    : doneSets > 0
+                      ? ` · ${doneSets}/${ex.totalSets}`
+                      : ''}
                 </Text>
               </View>
               {exPr != null ? (
                 <View style={{ alignItems: 'flex-end' }}>
                   <Text style={[styles.logPr, { color: colors.lime }]}>{exPr}</Text>
-                  <Text style={[styles.logPrLbl, { color: colors.paperFaint }]}>кг PR</Text>
+                  <Text style={[styles.logPrLbl, { color: colors.paperFaint }]}>{t('kgPr')}</Text>
                 </View>
               ) : null}
             </TouchableOpacity>

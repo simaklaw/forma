@@ -21,7 +21,9 @@ import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, { Easing, useAnimatedProps, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import Svg, { Circle, Line, Rect } from 'react-native-svg';
-import { MUSCLE_LABELS, type MuscleKey } from '@/domain/muscleKeys';
+import { type MuscleKey } from '@/domain/muscleKeys';
+import { useLanguageStore } from '@/i18n/useLanguageStore';
+import { useT, muscleLabel } from '@/i18n/strings';
 import { fonts, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 
@@ -78,11 +80,13 @@ interface Props {
 export default function MuscleMap({ targetMuscles }: Props) {
   const colors = useThemeColors();
   const styles = createStyles(colors);
+  const t = useT();
+  const lang = useLanguageStore((s) => s.lang);
   return (
     <View
       style={styles.wrap}
       accessible
-      accessibilityLabel={`Целевые мышцы: ${targetMuscles.map((k) => MUSCLE_LABELS[k]).join(', ')}`}
+      accessibilityLabel={`${t('muscleCaption')}${targetMuscles.map((k) => muscleLabel(k, lang)).join(', ')}`}
     >
       <Svg width={WIDTH} height={HEIGHT} viewBox={`0 0 ${WIDTH} ${HEIGHT}`}>
         {/* Silhouette: head, torso, arms, hips, legs — stroke only, same
@@ -102,8 +106,8 @@ export default function MuscleMap({ targetMuscles }: Props) {
         })}
       </Svg>
       <Text style={styles.caption}>
-        <Text style={styles.captionLabel}>Целевые мышцы: </Text>
-        {targetMuscles.map((k) => MUSCLE_LABELS[k]).join(', ')}
+        <Text style={styles.captionLabel}>{t('muscleCaption')}</Text>
+        {targetMuscles.map((k) => muscleLabel(k, lang)).join(', ')}
       </Text>
     </View>
   );

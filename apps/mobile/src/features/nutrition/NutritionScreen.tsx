@@ -5,6 +5,8 @@ import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { isProfileComplete, toDateKey } from '@forma/core';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
+import { useLanguageStore } from '@/i18n/useLanguageStore';
+import { useT, type StringKey } from '@/i18n/strings';
 import {
   useFitPulseStore,
   selectDailyTotals,
@@ -20,11 +22,11 @@ import ProfileGateBanner from '@/components/ProfileGateBanner';
 import ScreenHeader from '@/components/ScreenHeader';
 import AddFoodSheet from './AddFoodSheet';
 
-const MEAL_LABELS: Record<keyof DayMeals, string> = {
-  breakfast: 'Завтрак',
-  lunch: 'Обед',
-  snack: 'Перекус',
-  dinner: 'Ужин'
+const MEAL_LABEL_KEYS: Record<keyof DayMeals, StringKey> = {
+  breakfast: 'mealBreakfast',
+  lunch: 'mealLunch',
+  snack: 'mealSnack',
+  dinner: 'mealDinner'
 };
 
 const WATER_MAX = 8;
@@ -38,6 +40,9 @@ function formatClockTime(ms?: number): string {
 export default function NutritionScreen() {
   const colors = useThemeColors();
   const styles = createStyles(colors);
+  const t = useT();
+  const lang = useLanguageStore((s) => s.lang);
+  const locale = lang === 'en' ? 'en-US' : 'ru-RU';
   const sheetRef = useRef<GorhomBottomSheet>(null);
   const [activeMeal, setActiveMeal] = React.useState<keyof DayMeals>('breakfast');
 
@@ -71,10 +76,10 @@ export default function NutritionScreen() {
   const remainingKcal = complete ? Math.round(budget - totals.kcal) : 0;
 
   const headerSubtitle = !complete
-    ? 'Заполните профиль для целей КБЖУ'
+    ? t('nutritionFillProfile')
     : remainingKcal >= 0
-      ? `Осталось ${remainingKcal.toLocaleString('ru-RU')} ккал`
-      : `Сверх на ${Math.abs(remainingKcal).toLocaleString('ru-RU')} ккал`;
+      ? t('nutritionRemaining', { kcal: remainingKcal.toLocaleString(locale) })
+      : t('nutritionOver', { kcal: Math.abs(remainingKcal).toLocaleString(locale) });
 
   function openAddFood(mealKey: keyof DayMeals) {
     setActiveMeal(mealKey);
@@ -88,13 +93,13 @@ export default function NutritionScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScreenHeader eyebrow="Сегодня" title="Питание" subtitle={headerSubtitle} />
+      <ScreenHeader eyebrow={t('today')} title={t('nutritionTitle')} subtitle={headerSubtitle} />
 
       <ScrollView contentContainerStyle={styles.body}>
         {!complete ? (
           <ProfileGateBanner
             inset
-            body="Цели по ккал и БЖУ считаются из веса, роста, возраста и пола. Без этого кольцо и макросы не подставят фиктивные числа."
+            body={t('nutritionGoalHint')}
           />
         ) : null}
 
@@ -107,19 +112,19 @@ export default function NutritionScreen() {
           />
           <View style={styles.macroCol}>
             <MacroBar
-              label="Белок"
+              label={t('nutritionProtein')}
               value={totals.protein}
               target={targets.proteinTarget || 0}
               color={colors.macroProtein}
             />
             <MacroBar
-              label="Жиры"
+              label={t('nutritionFats')}
               value={totals.fat}
               target={targets.fatTarget || 0}
               color={colors.macroFat}
             />
             <MacroBar
-              label="Углев."
+              label={t('nutritionCarbs')}
               value={totals.carbs}
               target={targets.carbTarget || 0}
               color={colors.macroCarb}
@@ -127,28 +132,28 @@ export default function NutritionScreen() {
             {complete ? (
               <View style={styles.budgetRow}>
                 <View style={styles.budgetChip}>
-                  <Text style={styles.budgetChipLabel}>Цель</Text>
+                  <Text style={styles.budgetChipLabel}>{t('resultTarget')}</Text>
                   <Text style={styles.budgetChipVal}>
-                    {targets.target.toLocaleString('ru-RU')}
+                    {targets.target.toLocaleString(locale)}
                   </Text>
                 </View>
                 {burned > 0 ? (
                   <View style={[styles.budgetChip, styles.budgetChipBurn]}>
-                    <Text style={styles.budgetChipLabelBurn}>Тренировка</Text>
+                    <Text style={styles.budgetChipLabelBurn}>{t('workoutTitle')}</Text>
                     <Text style={styles.budgetChipValBurn}>
-                      +{burned.toLocaleString('ru-RU')}
+                      +{burned.toLocaleString(locale)}
                     </Text>
                   </View>
                 ) : null}
                 <View style={[styles.budgetChip, styles.budgetChipTotal]}>
-                  <Text style={styles.budgetChipLabel}>Бюджет</Text>
+                  <Text style={styles.budgetChipLabel}>{t('budgetLabel')}</Text>
                   <Text style={styles.budgetChipValLime}>
-                    {budget.toLocaleString('ru-RU')}
+                    {budget.toLocaleString(locale)}
                   </Text>
                 </View>
               </View>
             ) : (
-              <Text style={styles.remainHint}>Цели появятся после профиля</Text>
+              <Text style={styles.remainHint}>{t('nutritionTargetsAfterProfile')}</Text>
             )}
           </View>
         </View>
@@ -157,9 +162,9 @@ export default function NutritionScreen() {
 
         <View style={styles.waterCard}>
           <View style={styles.waterHead}>
-            <Text style={styles.waterTitle}>Вода</Text>
+            <Text style={styles.waterTitle}>{t('progressWater')}</Text>
             <Text style={styles.waterCount}>
-              <Text style={{ color: colors.cyan }}>{waterGlasses}</Text> / {WATER_MAX} стаканов
+              <Text style={{ color: colors.cyan }}>{waterGlasses}</Text> / {WATER_MAX} {t('glassesWord')}
             </Text>
           </View>
           <View style={styles.waterCells}>
@@ -171,7 +176,7 @@ export default function NutritionScreen() {
                   style={[styles.waterCell, filled && styles.waterCellFilled]}
                   onPress={() => toggleWater(i)}
                   accessibilityRole="button"
-                  accessibilityLabel={`Стакан ${i + 1}`}
+                  accessibilityLabel={t('nutritionGlass', { number: i + 1 })}
                   accessibilityState={{ selected: filled }}
                 />
               );
@@ -181,7 +186,7 @@ export default function NutritionScreen() {
 
         {savedMeals.length > 0 ? (
           <View style={styles.savedMealsRow}>
-            <Text style={styles.sectionTitle}>Мои блюда</Text>
+            <Text style={styles.sectionTitle}>{t('nutritionMyDishes')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {savedMeals.map((m) => (
                 <TouchableOpacity
@@ -189,7 +194,10 @@ export default function NutritionScreen() {
                   style={styles.savedMealChip}
                   onPress={() => logSavedMeal(activeMeal, m.id)}
                   accessibilityRole="button"
-                  accessibilityLabel={`Добавить «${m.name}» в ${MEAL_LABELS[activeMeal]}`}
+                  accessibilityLabel={t('nutritionAddToMeal', {
+                  name: m.name,
+                  meal: t(MEAL_LABEL_KEYS[activeMeal])
+                })}
                 >
                   <Text style={styles.savedMealChipText} numberOfLines={1}>
                     {m.name}
@@ -201,24 +209,24 @@ export default function NutritionScreen() {
         ) : null}
 
         <View style={styles.sectionHead}>
-          <Text style={styles.sectionTitle}>Приёмы пищи</Text>
-          <Text style={styles.sectionCount}>{totals.kcal.toLocaleString('ru-RU')} ккал</Text>
+          <Text style={styles.sectionTitle}>{t('nutritionMeals')}</Text>
+          <Text style={styles.sectionCount}>{totals.kcal.toLocaleString(locale)} {t('kcal')}</Text>
         </View>
 
-        {(Object.keys(MEAL_LABELS) as (keyof DayMeals)[]).map((key) => (
+        {(Object.keys(MEAL_LABEL_KEYS) as (keyof DayMeals)[]).map((key) => (
           <View key={key} style={styles.mealGroup}>
             <View style={styles.mealHead}>
-              <Text style={styles.mealName}>{MEAL_LABELS[key]}</Text>
+              <Text style={styles.mealName}>{t(MEAL_LABEL_KEYS[key])}</Text>
               <Text style={styles.mealKcal}>
-                {meals[key].reduce((sum, i) => sum + i.kcal, 0)} ккал
+                {meals[key].reduce((sum, i) => sum + i.kcal, 0)} {t('kcal')}
               </Text>
               <TouchableOpacity
                 style={styles.addBtn}
                 onPress={() => openAddFood(key)}
                 accessibilityRole="button"
-                accessibilityLabel={`Добавить в ${MEAL_LABELS[key]}`}
+                accessibilityLabel={t('nutritionAddToMealShort', { meal: t(MEAL_LABEL_KEYS[key]) })}
               >
-                <Text style={styles.addBtnText}>+ Добавить</Text>
+                <Text style={styles.addBtnText}>{t('nutritionAdd')}</Text>
               </TouchableOpacity>
             </View>
             {meals[key].length === 0 && selectYesterdayMealItems(allMeals, key).length > 0 ? (
@@ -226,18 +234,20 @@ export default function NutritionScreen() {
                 style={styles.repeatBtn}
                 onPress={() => copyFoodItems(key, selectYesterdayMealItems(allMeals, key))}
                 accessibilityRole="button"
-                accessibilityLabel={`Повторить вчерашний ${MEAL_LABELS[key].toLowerCase()}`}
+                accessibilityLabel={t('nutritionRepeatYesterday', {
+                  meal: t(MEAL_LABEL_KEYS[key]).toLowerCase()
+                })}
               >
                 <Text style={styles.repeatBtnText}>
-                  ⟲ Повторить вчера ·{' '}
+                  ⟲ {t('nutritionRepeatYesterdayShort')} ·{' '}
                   {selectYesterdayMealItems(allMeals, key).reduce((sum, i) => sum + i.kcal, 0)}{' '}
-                  ккал
+                  {t('kcal')}
                 </Text>
               </TouchableOpacity>
             ) : null}
             {meals[key].length === 0 ? (
               <TouchableOpacity onPress={() => openAddFood(key)} accessibilityRole="button">
-                <Text style={styles.empty}>Нет записей · нажмите «Добавить»</Text>
+                <Text style={styles.empty}>{t('nutritionNoEntries')}</Text>
               </TouchableOpacity>
             ) : (
               meals[key].map((item) => (
@@ -247,13 +257,17 @@ export default function NutritionScreen() {
                     {item.name}
                   </Text>
                   <Text style={styles.foodMacro}>
-                    Б{item.protein} Ж{item.fat} У{item.carbs}
+                    {t('foodMacroLine', {
+                      protein: item.protein,
+                      fat: item.fat,
+                      carbs: item.carbs
+                    })}
                   </Text>
                   <Text style={styles.foodKcal}>{item.kcal}</Text>
                   <TouchableOpacity
                     onPress={() => removeFoodItem(key, item.id)}
                     accessibilityRole="button"
-                    accessibilityLabel="Удалить"
+                    accessibilityLabel={t('delete')}
                   >
                     <Text style={styles.foodDel}>×</Text>
                   </TouchableOpacity>
@@ -267,7 +281,7 @@ export default function NutritionScreen() {
       <AddFoodSheet
         ref={sheetRef}
         mealKey={activeMeal}
-        mealLabel={MEAL_LABELS[activeMeal]}
+        mealLabel={t(MEAL_LABEL_KEYS[activeMeal])}
         onClose={() => sheetRef.current?.close()}
       />
     </SafeAreaView>
