@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -177,7 +178,12 @@ export default function CatalogScreen() {
         </View>
       ) : null}
 
-      <View style={styles.modeTabs} accessibilityRole="tablist">
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.modeTabs}
+        accessibilityRole="tablist"
+      >
         {(
           [
             { id: 'plans' as const, label: t('catalogSegmentPlans') },
@@ -196,7 +202,7 @@ export default function CatalogScreen() {
               }}
               disabled={disabled}
               style={[
-                styles.modeTab,
+                styles.segmentTab,
                 { borderColor: colors.lineStrong, backgroundColor: colors.panel },
                 active && { borderColor: colors.lime, backgroundColor: colors.limeDim },
                 disabled && { opacity: 0.5 }
@@ -210,7 +216,7 @@ export default function CatalogScreen() {
             </TouchableOpacity>
           );
         })}
-      </View>
+      </ScrollView>
 
       {catalogScope === 'programs' ? (
         <ProgramsPanel />
@@ -496,6 +502,14 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     alignItems: 'center',
     paddingVertical: 10
+  },
+  /** issue #171: сегменты каталога — контентная ширина в горизонтальном скролле. */
+  segmentTab: {
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 14
   },
   modeText: { fontFamily: fonts.bodySemi, fontSize: 14 },
   modeCount: { fontFamily: fonts.mono, fontSize: 11, marginTop: 2 },
