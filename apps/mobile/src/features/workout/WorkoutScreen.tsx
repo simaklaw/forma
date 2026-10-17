@@ -693,7 +693,7 @@ export default function WorkoutScreen() {
               : t('workoutStreakNone')
           }
         >
-          <Text style={[styles.streakText, { color: colors.paperDim, flex: 1 }]} numberOfLines={1}>
+          <Text style={[styles.streakText, { color: colors.paperDim, flex: 1 }]} numberOfLines={2}>
             {currentStreak > 0 ? (
               <>
                 <Text style={{ color: colors.ember, fontFamily: fonts.bodySemi }}>
@@ -815,7 +815,7 @@ export default function WorkoutScreen() {
               </Text>
               <View style={{ flex: 1 }}>
                 <View style={styles.logNameRow}>
-                  <Text style={[styles.logName, { color: colors.paper }]} numberOfLines={1}>
+                  <Text style={[styles.logName, { color: colors.paper }]} numberOfLines={2}>
                     {ex.name}
                   </Text>
                   {isCurrent ? (
