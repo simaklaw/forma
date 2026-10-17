@@ -87,7 +87,7 @@ export default function WorkoutScreen() {
       program?.templateId
         ? readyProgramDays(program.templateId, program.templateLevel ?? 'intermediate')
         : null,
-    [program?.templateId, program.templateLevel]
+    [program?.templateId, program?.templateLevel]
   );
   const plan = useMemo(
     () => templatePlan ?? catalogFor(trainingMode, profileSex),
