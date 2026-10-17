@@ -239,4 +239,38 @@ describe('ActiveSessionController', () => {
     });
     expect(result).toBeNull();
   });
+
+  it('prepare_session freezes weightKgSnapshot — profile edits do not touch history', async () => {
+    const a = await ActiveSessionController.ensureDaySession('legs', exercises);
+    expect(a!.weightKgSnapshot).toBe(78);
+
+    useFitPulseStore.getState().updateProfile({ weight: 90 });
+
+    const same = await ActiveSessionController.ensureDaySession('legs', exercises);
+    expect(same!.sessionId).toBe(a!.sessionId);
+    expect(same!.weightKgSnapshot).toBe(78);
+
+    const next = await ActiveSessionController.restartDaySession('legs', exercises);
+    expect(next!.weightKgSnapshot).toBe(90);
+
+    const stored = await getSessionService().getSession(a!.sessionId);
+    expect(stored?.weightKgSnapshot).toBe(78);
+  });
+
+  it('skipCurrentStep marks the step skipped and advances; pause keeps skip available', async () => {
+    await ActiveSessionController.ensureDaySession('legs', exercises);
+
+    const skipped = await ActiveSessionController.skipCurrentStep('time');
+    expect(skipped).not.toBeNull();
+    expect(skipped!.currentStepIndex).toBe(1);
+    expect(skipped!.steps[0]?.skipped).toBe(true);
+    expect(skipped!.steps[0]?.skipReason).toBe('time');
+
+    const paused = await ActiveSessionController.pauseSession();
+    expect(paused?.status).toBe('paused');
+
+    const skippedWhilePaused = await ActiveSessionController.skipCurrentStep('other');
+    expect(skippedWhilePaused).not.toBeNull();
+    expect(skippedWhilePaused!.steps[1]?.skipped).toBe(true);
+  });
 });
