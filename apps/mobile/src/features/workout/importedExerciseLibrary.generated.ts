@@ -8,6 +8,11 @@
  * re-run the script after changes. UI falls back to instructionsEn when empty.
  * nameRu is null where no manual translation exists yet; UI must fall back
  * to nameEn in that case, not hide the exercise.
+ *
+ * Gym entries (dumbbells/barbell/cable/machine/kettlebell/ez-bar) are a
+ * curated allowlist with full Russian names and instructions. Their
+ * imageKeys are intentionally empty: media assets await a budget decision,
+ * so the UI shows the phase-1 placeholder instead of dataset photos.
  */
 
 export interface ImportedExercise {
@@ -15,7 +20,15 @@ export interface ImportedExercise {
   nameEn: string;
   nameRu: string | null;
   category: 'chest' | 'back' | 'legs' | 'abs' | 'arms' | 'glutes';
-  equipment: 'bodyweight' | 'bands';
+  equipment:
+    | 'bodyweight'
+    | 'bands'
+    | 'dumbbells'
+    | 'barbell'
+    | 'cable'
+    | 'machine'
+    | 'kettlebell'
+    | 'ez-bar';
   level: string | null;
   primaryMuscles: string[];
   instructionsEn: string[];
@@ -2843,5 +2856,1734 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     ],
     "sourceLicense": "Unlicense",
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Wrist_Circles.json"
+  },
+  {
+    "id": "lib-ab-crunch-machine",
+    "nameEn": "Ab Crunch Machine",
+    "nameRu": "Скручивания на пресс в тренажёре",
+    "category": "abs",
+    "equipment": "machine",
+    "level": "intermediate",
+    "primaryMuscles": [
+      "abdominals"
+    ],
+    "instructionsEn": [
+      "Select a light resistance and sit down on the ab machine placing your feet under the pads provided and grabbing the top handles. Your arms should be bent at a 90 degree angle as you rest the triceps on the pads provided. This will be your starting position.",
+      "At the same time, begin to lift the legs up as you crunch your upper torso. Breathe out as you perform this movement. Tip: Be sure to use a slow and controlled motion. Concentrate on using your abs to move the weight while relaxing your legs and feet.",
+      "After a second pause, slowly return to the starting position as you breathe in.",
+      "Repeat the movement for the prescribed amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Сядьте в тренажёр, зафиксируйте стопы, возьмитесь за рукояти над плечами.",
+      "На выдохе скрутите корпус вперёд, сокращая пресс. Движение — из рёбер, не из таза.",
+      "На вдохе плавно вернитесь назад, не бросая вес."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Ab_Crunch_Machine.json"
+  },
+  {
+    "id": "lib-alternate-hammer-curl",
+    "nameEn": "Alternate Hammer Curl",
+    "nameRu": "Молотковые сгибания поочерёдно",
+    "category": "arms",
+    "equipment": "dumbbells",
+    "level": "beginner",
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "instructionsEn": [
+      "Stand up with your torso upright and a dumbbell in each hand being held at arms length. The elbows should be close to the torso.",
+      "The palms of the hands should be facing your torso. This will be your starting position.",
+      "While holding the upper arm stationary, curl the right weight forward while contracting the biceps as you breathe out. Continue the movement until your biceps is fully contracted and the dumbbells are at shoulder level. Hold the contracted position for a second as you squeeze the biceps. Tip: Only the forearms should move.",
+      "Slowly begin to bring the dumbbells back to starting position as your breathe in.",
+      "Repeat the movement with the left hand. This equals one repetition.",
+      "Continue alternating in this manner for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте прямо, гантели по бокам нейтральным хватом (ладони к бёдрам).",
+      "На выдохе согните одну руку к плечу, сохраняя нейтральный хват (большой палец вверх).",
+      "На вдохе опустите и повторите другой рукой. Чередуйте руки без спешки."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Alternate_Hammer_Curl.json"
+  },
+  {
+    "id": "lib-arnold-dumbbell-press",
+    "nameEn": "Arnold Dumbbell Press",
+    "nameRu": "Жим Арнольда",
+    "category": "arms",
+    "equipment": "dumbbells",
+    "level": "intermediate",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "instructionsEn": [
+      "Sit on an exercise bench with back support and hold two dumbbells in front of you at about upper chest level with your palms facing your body and your elbows bent. Tip: Your arms should be next to your torso. The starting position should look like the contracted portion of a dumbbell curl.",
+      "Now to perform the movement, raise the dumbbells as you rotate the palms of your hands until they are facing forward.",
+      "Continue lifting the dumbbells until your arms are extended above you in straight arm position. Breathe out as you perform this portion of the movement.",
+      "After a second pause at the top, begin to lower the dumbbells to the original position by rotating the palms of your hands towards you. Tip: The left arm will be rotated in a counter clockwise manner while the right one will be rotated clockwise. Breathe in as you perform this portion of the movement.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Сядьте с прямой спиной. Гантели перед плечами, ладони к себе — это исходное положение.",
+      "Начинайте выжимать гантели вверх, одновременно разворачивая ладони вперёд.",
+      "В верхней точке руки прямые, ладони вперёд. На вдохе опустите, разворачивая ладони обратно к себе."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Arnold_Dumbbell_Press.json"
+  },
+  {
+    "id": "lib-barbell-bench-press-medium-grip",
+    "nameEn": "Barbell Bench Press - Medium Grip",
+    "nameRu": "Жим штанги лёжа (средний хват)",
+    "category": "chest",
+    "equipment": "barbell",
+    "level": "beginner",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "instructionsEn": [
+      "Lie back on a flat bench. Using a medium width grip (a grip that creates a 90-degree angle in the middle of the movement between the forearms and the upper arms), lift the bar from the rack and hold it straight over you with your arms locked. This will be your starting position.",
+      "From the starting position, breathe in and begin coming down slowly until the bar touches your middle chest.",
+      "After a brief pause, push the bar back to the starting position as you breathe out. Focus on pushing the bar using your chest muscles. Lock your arms and squeeze your chest in the contracted position at the top of the motion, hold for a second and then start coming down slowly again. Tip: Ideally, lowering the weight should take about twice as long as raising it.",
+      "Repeat the movement for the prescribed amount of repetitions.",
+      "When you are done, place the bar back in the rack."
+    ],
+    "instructionsRu": [
+      "Лягте на скамью, стопы полностью на полу. Возьмитесь за гриф хватом чуть шире плеч и снимите штангу со стоек на прямые руки — это исходное положение.",
+      "На вдохе плавно опустите гриф к средней части груди, локти держите под углом около 45 градусов к корпусу.",
+      "На выдохе выжмите штангу вверх, сводя лопатки и не отрывая таз от скамьи. Не отбивайте гриф от груди.",
+      "Выполните рекомендованное количество повторений и верните штангу на стойки."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Barbell_Bench_Press_-_Medium_Grip.json"
+  },
+  {
+    "id": "lib-barbell-curl",
+    "nameEn": "Barbell Curl",
+    "nameRu": "Сгибания рук со штангой",
+    "category": "arms",
+    "equipment": "barbell",
+    "level": "beginner",
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "instructionsEn": [
+      "Stand up with your torso upright while holding a barbell at a shoulder-width grip. The palm of your hands should be facing forward and the elbows should be close to the torso. This will be your starting position.",
+      "While holding the upper arms stationary, curl the weights forward while contracting the biceps as you breathe out. Tip: Only the forearms should move.",
+      "Continue the movement until your biceps are fully contracted and the bar is at shoulder level. Hold the contracted position for a second and squeeze the biceps hard.",
+      "Slowly begin to bring the bar back to starting position as your breathe in.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте прямо, штанга в прямых руках хватом снизу, локти у корпуса.",
+      "На выдохе согните локти, поднимая штангу к плечам, без раскачки корпусом. Локти не уходят вперёд.",
+      "На вдохе плавно опустите штангу, полностью выпрямляя руки внизу."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Barbell_Curl.json"
+  },
+  {
+    "id": "lib-barbell-deadlift",
+    "nameEn": "Barbell Deadlift",
+    "nameRu": "Становая тяга со штангой",
+    "category": "back",
+    "equipment": "barbell",
+    "level": "intermediate",
+    "primaryMuscles": [
+      "lower back"
+    ],
+    "instructionsEn": [
+      "Stand in front of a loaded barbell.",
+      "While keeping the back as straight as possible, bend your knees, bend forward and grasp the bar using a medium (shoulder width) overhand grip. This will be the starting position of the exercise. Tip: If it is difficult to hold on to the bar with this grip, alternate your grip or use wrist straps.",
+      "While holding the bar, start the lift by pushing with your legs while simultaneously getting your torso to the upright position as you breathe out. In the upright position, stick your chest out and contract the back by bringing the shoulder blades back. Think of how the soldiers in the military look when they are in standing in attention.",
+      "Go back to the starting position by bending at the knees while simultaneously leaning the torso forward at the waist while keeping the back straight. When the weights on the bar touch the floor you are back at the starting position and ready to perform another repetition.",
+      "Perform the amount of repetitions prescribed in the program."
+    ],
+    "instructionsRu": [
+      "Подойдите к штанге: стопы под грифом на ширине плеч, гриф над шнуровкой. Возьмитесь хватом чуть шире колен, спина прямая, таз назад, грудь вперёд.",
+      "На выдохе мощно встаньте со штангой за счёт ног и таза, гриф скользит вдоль голеней, спина нейтральная.",
+      "В верхней точке выпрямитесь, не отклоняясь назад. На вдохе плавно верните штангу на пол тем же путем. Не гонитесь за весом в ущерб технике."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Barbell_Deadlift.json"
+  },
+  {
+    "id": "lib-barbell-full-squat",
+    "nameEn": "Barbell Full Squat",
+    "nameRu": "Приседания со штангой в полную глубину",
+    "category": "legs",
+    "equipment": "barbell",
+    "level": "intermediate",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "instructionsEn": [
+      "This exercise is best performed inside a squat rack for safety purposes. To begin, first set the bar on a rack just above shoulder level. Once the correct height is chosen and the bar is loaded, step under the bar and place the back of your shoulders (slightly below the neck) across it.",
+      "Hold on to the bar using both arms at each side and lift it off the rack by first pushing with your legs and at the same time straightening your torso.",
+      "Step away from the rack and position your legs using a shoulder-width medium stance with the toes slightly pointed out. Keep your head up at all times and maintain a straight back. This will be your starting position.",
+      "Begin to slowly lower the bar by bending the knees and sitting back with your hips as you maintain a straight posture with the head up. Continue down until your hamstrings are on your calves. Inhale as you perform this portion of the movement.",
+      "Begin to raise the bar as you exhale by pushing the floor with the heel or middle of your foot as you straighten the legs and extend the hips to go back to the starting position.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Снимите штангу со стоек на трапеции, стопы чуть шире плеч.",
+      "На вдохе приседайте до полной глубины, сохраняя нейтральную спину и колени над носками. Пятки не отрываются.",
+      "На выдохе встаньте. Работайте с весом, при котором техника сохраняется в нижней точке."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Barbell_Full_Squat.json"
+  },
+  {
+    "id": "lib-barbell-glute-bridge",
+    "nameEn": "Barbell Glute Bridge",
+    "nameRu": "Ягодичный мостик со штангой",
+    "category": "glutes",
+    "equipment": "barbell",
+    "level": "intermediate",
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "instructionsEn": [
+      "Begin seated on the ground with a loaded barbell over your legs. Using a fat bar or having a pad on the bar can greatly reduce the discomfort caused by this exercise. Roll the bar so that it is directly above your hips, and lay down flat on the floor.",
+      "Begin the movement by driving through with your heels, extending your hips vertically through the bar. Your weight should be supported by your upper back and the heels of your feet.",
+      "Extend as far as possible, then reverse the motion to return to the starting position."
+    ],
+    "instructionsRu": [
+      "Лягте на пол, стопы на ширине плеч у таза, колени согнуты. Штанга на бёдрах, придерживайте её руками.",
+      "На выдохе поднимите таз вверх, пока корпус и бёдра не образуют прямую линию. Сожмите ягодицы вверху на секунду.",
+      "На вдохе плавно опустите таз, не касаясь пола между повторениями."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Barbell_Glute_Bridge.json"
+  },
+  {
+    "id": "lib-barbell-hip-thrust",
+    "nameEn": "Barbell Hip Thrust",
+    "nameRu": "Подъём таза со штангой с опорой (хип траст)",
+    "category": "glutes",
+    "equipment": "barbell",
+    "level": "intermediate",
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "instructionsEn": [
+      "Begin seated on the ground with a bench directly behind you. Have a loaded barbell over your legs. Using a fat bar or having a pad on the bar can greatly reduce the discomfort caused by this exercise.",
+      "Roll the bar so that it is directly above your hips, and lean back against the bench so that your shoulder blades are near the top of it.",
+      "Begin the movement by driving through your feet, extending your hips vertically through the bar. Your weight should be supported by your shoulder blades and your feet. Extend as far as possible, then reverse the motion to return to the starting position."
+    ],
+    "instructionsRu": [
+      "Сядьте на пол, верх спины на скамье, штанга на бёдрах (подложите полотенце). Стопы на ширине плеч.",
+      "На выдохе поднимите таз до прямой линии корпус-бёдра, подбородок чуть опущен, ягодицы сжаты вверху.",
+      "На вдохе плавно опустите таз. Не переразгибайте поясницу в верхней точке."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Barbell_Hip_Thrust.json"
+  },
+  {
+    "id": "lib-barbell-incline-bench-press-medium-grip",
+    "nameEn": "Barbell Incline Bench Press - Medium Grip",
+    "nameRu": "Жим штанги на наклонной скамье",
+    "category": "chest",
+    "equipment": "barbell",
+    "level": "beginner",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "instructionsEn": [
+      "Lie back on an incline bench. Using a medium-width grip (a grip that creates a 90-degree angle in the middle of the movement between the forearms and the upper arms), lift the bar from the rack and hold it straight over you with your arms locked. This will be your starting position.",
+      "As you breathe in, come down slowly until you feel the bar on you upper chest.",
+      "After a second pause, bring the bar back to the starting position as you breathe out and push the bar using your chest muscles. Lock your arms in the contracted position, squeeze your chest, hold for a second and then start coming down slowly again. Tip: it should take at least twice as long to go down than to come up.",
+      "Repeat the movement for the prescribed amount of repetitions.",
+      "When you are done, place the bar back in the rack."
+    ],
+    "instructionsRu": [
+      "Установите скамью под углом 30–45 градусов. Лягте на неё, стопы на полу, возьмитесь за гриф хватом чуть шире плеч.",
+      "Снимите штангу со стоек и опускайте её на вдохе к верхней части груди, контролируя движение.",
+      "На выдохе выжмите штангу вверх, не выпрямляя локти «в замок» рывком. Акцент — на верхнем отделе груди."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Barbell_Incline_Bench_Press_-_Medium_Grip.json"
+  },
+  {
+    "id": "lib-barbell-lunge",
+    "nameEn": "Barbell Lunge",
+    "nameRu": "Выпады со штангой",
+    "category": "legs",
+    "equipment": "barbell",
+    "level": "intermediate",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "instructionsEn": [
+      "This exercise is best performed inside a squat rack for safety purposes. To begin, first set the bar on a rack just below shoulder level. Once the correct height is chosen and the bar is loaded, step under the bar and place the back of your shoulders (slightly below the neck) across it.",
+      "Hold on to the bar using both arms at each side and lift it off the rack by first pushing with your legs and at the same time straightening your torso.",
+      "Step away from the rack and step forward with your right leg and squat down through your hips, while keeping the torso upright and maintaining balance. Inhale as you go down. Note: Do not allow your knee to go forward beyond your toes as you come down, as this will put undue stress on the knee joint. li>",
+      "Using mainly the heel of your foot, push up and go back to the starting position as you exhale.",
+      "Repeat the movement for the recommended amount of repetitions and then perform with the left leg."
+    ],
+    "instructionsRu": [
+      "Положите штангу на трапеции, встаньте прямо, стопы вместе.",
+      "На вдохе шагните вперёд и опуститесь в выпад до касания задним коленом почти пола. Корпус вертикально.",
+      "На выдохе оттолкнитесь передней ногой и вернитесь в исходное положение. Меняйте ноги."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Barbell_Lunge.json"
+  },
+  {
+    "id": "lib-barbell-shrug",
+    "nameEn": "Barbell Shrug",
+    "nameRu": "Шраги со штангой",
+    "category": "back",
+    "equipment": "barbell",
+    "level": "beginner",
+    "primaryMuscles": [
+      "traps"
+    ],
+    "instructionsEn": [
+      "Stand up straight with your feet at shoulder width as you hold a barbell with both hands in front of you using a pronated grip (palms facing the thighs). Tip: Your hands should be a little wider than shoulder width apart. You can use wrist wraps for this exercise for a better grip. This will be your starting position.",
+      "Raise your shoulders up as far as you can go as you breathe out and hold the contraction for a second. Tip: Refrain from trying to lift the barbell by using your biceps.",
+      "Slowly return to the starting position as you breathe in.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте прямо, штанга в прямых руках перед собой, стопы на ширине плеч.",
+      "На выдохе поднимите плечи вверх к ушам, без вращения и сгибания локтей. Задержитесь на секунду.",
+      "На вдохе плавно опустите плечи, растягивая трапеции."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Barbell_Shrug.json"
+  },
+  {
+    "id": "lib-barbell-squat",
+    "nameEn": "Barbell Squat",
+    "nameRu": "Приседания со штангой",
+    "category": "legs",
+    "equipment": "barbell",
+    "level": "beginner",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "instructionsEn": [
+      "This exercise is best performed inside a squat rack for safety purposes. To begin, first set the bar on a rack to just below shoulder level. Once the correct height is chosen and the bar is loaded, step under the bar and place the back of your shoulders (slightly below the neck) across it.",
+      "Hold on to the bar using both arms at each side and lift it off the rack by first pushing with your legs and at the same time straightening your torso.",
+      "Step away from the rack and position your legs using a shoulder width medium stance with the toes slightly pointed out. Keep your head up at all times and also maintain a straight back. This will be your starting position. (Note: For the purposes of this discussion we will use the medium stance described above which targets overall development; however you can choose any of the three stances discussed in the foot stances section).",
+      "Begin to slowly lower the bar by bending the knees and hips as you maintain a straight posture with the head up. Continue down until the angle between the upper leg and the calves becomes slightly less than 90-degrees. Inhale as you perform this portion of the movement. Tip: If you performed the exercise correctly, the front of the knees should make an imaginary straight line with the toes that is perpendicular to the front. If your knees are past that imaginary line (if they are past your toes) then you are placing undue stress on the knee and the exercise has been performed incorrectly.",
+      "Begin to raise the bar as you exhale by pushing the floor with the heel of your foot as you straighten the legs again and go back to the starting position.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Расположите штангу на верхней части трапеций, стопы на ширине плеч, носки чуть разведены.",
+      "На вдохе приседайте, отводя таз назад и разводя колени по направлению носков, до комфортной глубины. Грудь вперёд, пятки на полу.",
+      "На выдохе мощно встаньте, выпрямляя таз и колени. Держите спину нейтральной всю амплитуду."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Barbell_Squat.json"
+  },
+  {
+    "id": "lib-bent-over-barbell-row",
+    "nameEn": "Bent Over Barbell Row",
+    "nameRu": "Тяга штанги в наклоне",
+    "category": "back",
+    "equipment": "barbell",
+    "level": "beginner",
+    "primaryMuscles": [
+      "middle back"
+    ],
+    "instructionsEn": [
+      "Holding a barbell with a pronated grip (palms facing down), bend your knees slightly and bring your torso forward, by bending at the waist, while keeping the back straight until it is almost parallel to the floor. Tip: Make sure that you keep the head up. The barbell should hang directly in front of you as your arms hang perpendicular to the floor and your torso. This is your starting position.",
+      "Now, while keeping the torso stationary, breathe out and lift the barbell to you. Keep the elbows close to the body and only use the forearms to hold the weight. At the top contracted position, squeeze the back muscles and hold for a brief pause.",
+      "Then inhale and slowly lower the barbell back to the starting position.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Возьмите штангу хватом сверху, наклоните корпус примерно до 45 градусов, колени слегка согнуты, спина прямая.",
+      "На выдохе тяните штангу к низу живота, локти назад, лопатки друг к другу.",
+      "На вдохе плавно опустите штанги вниз, не округляя поясницу и не выпрямляя корпус."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Bent_Over_Barbell_Row.json"
+  },
+  {
+    "id": "lib-butterfly",
+    "nameEn": "Butterfly",
+    "nameRu": "Сведение в тренажёре «бабочка»",
+    "category": "chest",
+    "equipment": "machine",
+    "level": "beginner",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "instructionsEn": [
+      "Sit on the machine with your back flat on the pad.",
+      "Take hold of the handles. Tip: Your upper arms should be positioned parallel to the floor; adjust the machine accordingly. This will be your starting position.",
+      "Push the handles together slowly as you squeeze your chest in the middle. Breathe out during this part of the motion and hold the contraction for a second.",
+      "Return back to the starting position slowly as you inhale until your chest muscles are fully stretched.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Сядьте в тренажёр, прижмите спину к спинке, возьмитесь за рукояти. Руки на уровне плеч — это исходное положение.",
+      "На выдохе плавно сведите рукояти перед собой, сокращая грудные мышцы. Задержитесь на секунду.",
+      "На вдохе подконтрольно разведите руки обратно, не позволяя весу «падать»."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Butterfly.json"
+  },
+  {
+    "id": "lib-cable-crossover",
+    "nameEn": "Cable Crossover",
+    "nameRu": "Кроссовер на блоках",
+    "category": "chest",
+    "equipment": "cable",
+    "level": "beginner",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "instructionsEn": [
+      "To get yourself into the starting position, place the pulleys on a high position (above your head), select the resistance to be used and hold the pulleys in each hand.",
+      "Step forward in front of an imaginary straight line between both pulleys while pulling your arms together in front of you. Your torso should have a small forward bend from the waist. This will be your starting position.",
+      "With a slight bend on your elbows in order to prevent stress at the biceps tendon, extend your arms to the side (straight out at both sides) in a wide arc until you feel a stretch on your chest. Breathe in as you perform this portion of the movement. Tip: Keep in mind that throughout the movement, the arms and torso should remain stationary; the movement should only occur at the shoulder joint.",
+      "Return your arms back to the starting position as you breathe out. Make sure to use the same arc of motion used to lower the weights.",
+      "Hold for a second at the starting position and repeat the movement for the prescribed amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте между блоками кроссовера, стойки выше головы. Возьмитесь за рукояти, шагните вперёд на один шаг, корпус слегка наклонён.",
+      "На выдохе сведите руки перед собой по дуге вниз-вперёд, сокращая грудные. Не сгибайте локти в движении.",
+      "На вдохе плавно верните руки в исходное положение, чувствуя растяжение. Выполните рекомендованное количество повторений."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Cable_Crossover.json"
+  },
+  {
+    "id": "lib-cable-crunch",
+    "nameEn": "Cable Crunch",
+    "nameRu": "Скручивания на блоке стоя",
+    "category": "abs",
+    "equipment": "cable",
+    "level": "beginner",
+    "primaryMuscles": [
+      "abdominals"
+    ],
+    "instructionsEn": [
+      "Kneel below a high pulley that contains a rope attachment.",
+      "Grasp cable rope attachment and lower the rope until your hands are placed next to your face.",
+      "Flex your hips slightly and allow the weight to hyperextend the lower back. This will be your starting position.",
+      "With the hips stationary, flex the waist as you contract the abs so that the elbows travel towards the middle of the thighs. Exhale as you perform this portion of the movement and hold the contraction for a second.",
+      "Slowly return to the starting position as you inhale. Tip: Make sure that you keep constant tension on the abs throughout the movement. Also, do not choose a weight so heavy that the lower back handles the brunt of the work.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Возьмитесь за канат верхнего блока, встаньте на колени или наклонитесь, прижмите руки к голове. Таз зафиксирован назад.",
+      "На выдохе скрутите корпус вниз, приводя рёбра к тазу. Работает пресс, а не тазобедренные суставы.",
+      "На вдохе подконтрольно вернитесь в исходное положение, растягивая пресс."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Cable_Crunch.json"
+  },
+  {
+    "id": "lib-cable-rope-overhead-triceps-extension",
+    "nameEn": "Cable Rope Overhead Triceps Extension",
+    "nameRu": "Разгибания на трицепс из-за головы с канатом",
+    "category": "arms",
+    "equipment": "cable",
+    "level": "beginner",
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "instructionsEn": [
+      "Attach a rope to the bottom pulley of the pulley machine.",
+      "Grasping the rope with both hands, extend your arms with your hands directly above your head using a neutral grip (palms facing each other). Your elbows should be in close to your head and the arms should be perpendicular to the floor with the knuckles aimed at the ceiling. This will be your starting position.",
+      "Slowly lower the rope behind your head as you hold the upper arms stationary. Inhale as you perform this movement and pause when your triceps are fully stretched.",
+      "Return to the starting position by flexing your triceps as you breathe out.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Установите канат на верхнем блоке (или нижнем, если стоите спиной). Возьмитесь за концы, наклонитесь вперёд, локти у головы, направлены вперёд.",
+      "На выдохе разогните локти, выводя канат вперёд-вниз и разводя концы в стороны в конце движения.",
+      "На вдохе плавно верните в исходное положение, растягивая трицепс."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Cable_Rope_Overhead_Triceps_Extension.json"
+  },
+  {
+    "id": "lib-close-grip-barbell-bench-press",
+    "nameEn": "Close-Grip Barbell Bench Press",
+    "nameRu": "Жим штанги узким хватом",
+    "category": "arms",
+    "equipment": "barbell",
+    "level": "beginner",
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "instructionsEn": [
+      "Lie back on a flat bench. Using a close grip (around shoulder width), lift the bar from the rack and hold it straight over you with your arms locked. This will be your starting position.",
+      "As you breathe in, come down slowly until you feel the bar on your middle chest. Tip: Make sure that - as opposed to a regular bench press - you keep the elbows close to the torso at all times in order to maximize triceps involvement.",
+      "After a second pause, bring the bar back to the starting position as you breathe out and push the bar using your triceps muscles. Lock your arms in the contracted position, hold for a second and then start coming down slowly again. Tip: It should take at least twice as long to go down than to come up.",
+      "Repeat the movement for the prescribed amount of repetitions.",
+      "When you are done, place the bar back in the rack."
+    ],
+    "instructionsRu": [
+      "Лягте на скамью, возьмитесь за гриф на ширине плеч или чуть уже. Снимите штангу на прямые руки.",
+      "На вдохе опустите гриф к низу груди, локти вдоль корпуса.",
+      "На выдохе выжмите штангу вверх, трицепсом. Акцент на трицепс, но берегите запястья — не слишком узкий хват."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Close-Grip_Barbell_Bench_Press.json"
+  },
+  {
+    "id": "lib-close-grip-front-lat-pulldown",
+    "nameEn": "Close-Grip Front Lat Pulldown",
+    "nameRu": "Тяга верхнего блока узким хватом",
+    "category": "back",
+    "equipment": "cable",
+    "level": "beginner",
+    "primaryMuscles": [
+      "lats"
+    ],
+    "instructionsEn": [
+      "Sit down on a pull-down machine with a wide bar attached to the top pulley. Make sure that you adjust the knee pad of the machine to fit your height. These pads will prevent your body from being raised by the resistance attached to the bar.",
+      "Grab the bar with the palms facing forward using the prescribed grip. Note on grips: For a wide grip, your hands need to be spaced out at a distance wider than your shoulder width. For a medium grip, your hands need to be spaced out at a distance equal to your shoulder width and for a close grip at a distance smaller than your shoulder width.",
+      "As you have both arms extended in front of you - while holding the bar at the chosen grip width - bring your torso back around 30 degrees or so while creating a curvature on your lower back and sticking your chest out. This is your starting position.",
+      "As you breathe out, bring the bar down until it touches your upper chest by drawing the shoulders and the upper arms down and back. Tip: Concentrate on squeezing the back muscles once you reach the full contracted position. The upper torso should remain stationary (only the arms should move). The forearms should do no other work except for holding the bar; therefore do not try to pull the bar down using the forearms.",
+      "After a second in the contracted position, while squeezing your shoulder blades together, slowly raise the bar back to the starting position when your arms are fully extended and the lats are fully stretched. Inhale during this portion of the movement.",
+      "6. Repeat this motion for the prescribed amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Сядьте и возьмитесь за гриф узким хватом сверху. Корпус слегка отклонён назад.",
+      "На выдохе тяните гриф к груди, локти направлены вниз, лопатки сводятся.",
+      "На вдохе плавно верните гриф в верхнее положение, полностью вытягивая руки."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Close-Grip_Front_Lat_Pulldown.json"
+  },
+  {
+    "id": "lib-concentration-curls",
+    "nameEn": "Concentration Curls",
+    "nameRu": "Концентрированные сгибания",
+    "category": "arms",
+    "equipment": "dumbbells",
+    "level": "beginner",
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "instructionsEn": [
+      "Sit down on a flat bench with one dumbbell in front of you between your legs. Your legs should be spread with your knees bent and feet on the floor.",
+      "Use your right arm to pick the dumbbell up. Place the back of your right upper arm on the top of your inner right thigh. Rotate the palm of your hand until it is facing forward away from your thigh. Tip: Your arm should be extended and the dumbbell should be above the floor. This will be your starting position.",
+      "While holding the upper arm stationary, curl the weights forward while contracting the biceps as you breathe out. Only the forearms should move. Continue the movement until your biceps are fully contracted and the dumbbells are at shoulder level. Tip: At the top of the movement make sure that the little finger of your arm is higher than your thumb. This guarantees a good contraction. Hold the contracted position for a second as you squeeze the biceps.",
+      "Slowly begin to bring the dumbbells back to starting position as your breathe in. Caution: Avoid swinging motions at any time.",
+      "Repeat for the recommended amount of repetitions. Then repeat the movement with the left arm."
+    ],
+    "instructionsRu": [
+      "Сядьте на скамью, расставьте стопы, уприте локоть рабочей руки в бедро изнутри. Гантель на прямом локте.",
+      "На выдохе согните локоть, поднимая гантель к плечу, без раскачки. В верхней точке сожмите бицепс.",
+      "На вдохе плавно опустите. Повторения на одну руку, затем поменяйте."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Concentration_Curls.json"
+  },
+  {
+    "id": "lib-decline-barbell-bench-press",
+    "nameEn": "Decline Barbell Bench Press",
+    "nameRu": "Жим штанги на скамье с отрицательным наклоном",
+    "category": "chest",
+    "equipment": "barbell",
+    "level": "beginner",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "instructionsEn": [
+      "Secure your legs at the end of the decline bench and slowly lay down on the bench.",
+      "Using a medium width grip (a grip that creates a 90-degree angle in the middle of the movement between the forearms and the upper arms), lift the bar from the rack and hold it straight over you with your arms locked. The arms should be perpendicular to the floor. This will be your starting position. Tip: In order to protect your rotator cuff, it is best if you have a spotter help you lift the barbell off the rack.",
+      "As you breathe in, come down slowly until you feel the bar on your lower chest.",
+      "After a second pause, bring the bar back to the starting position as you breathe out and push the bar using your chest muscles. Lock your arms and squeeze your chest in the contracted position, hold for a second and then start coming down slowly again. Tip: It should take at least twice as long to go down than to come up).",
+      "Repeat the movement for the prescribed amount of repetitions.",
+      "When you are done, place the bar back in the rack."
+    ],
+    "instructionsRu": [
+      "Зафиксируйте ноги под валиками скамьи с наклоном вниз. Возьмитесь за гриф хватом чуть шире плеч.",
+      "Снимите штангу со стоек и на вдохе опустите её к нижней части груди.",
+      "На выдохе выжмите штангу вверх. Акцент — на нижнем отделе груди; не заламывайте шею."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Decline_Barbell_Bench_Press.json"
+  },
+  {
+    "id": "lib-dumbbell-bench-press",
+    "nameEn": "Dumbbell Bench Press",
+    "nameRu": "Жим гантелей лёжа",
+    "category": "chest",
+    "equipment": "dumbbells",
+    "level": "beginner",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "instructionsEn": [
+      "Lie down on a flat bench with a dumbbell in each hand resting on top of your thighs. The palms of your hands will be facing each other.",
+      "Then, using your thighs to help raise the dumbbells up, lift the dumbbells one at a time so that you can hold them in front of you at shoulder width.",
+      "Once at shoulder width, rotate your wrists forward so that the palms of your hands are facing away from you. The dumbbells should be just to the sides of your chest, with your upper arm and forearm creating a 90 degree angle. Be sure to maintain full control of the dumbbells at all times. This will be your starting position.",
+      "Then, as you breathe out, use your chest to push the dumbbells up. Lock your arms at the top of the lift and squeeze your chest, hold for a second and then begin coming down slowly. Tip: Ideally, lowering the weight should take about twice as long as raising it.",
+      "Repeat the movement for the prescribed amount of repetitions of your training program."
+    ],
+    "instructionsRu": [
+      "Лягте на скамью, гантели удерживайте по бокам от груди, локти согнуты, стопы на полу — это исходное положение.",
+      "На выдохе выжмите гантели вверх, слегка сводя их над грудью, не сталкивая друг с другом.",
+      "На вдохе плавно опустите гантели, чувствуя растяжение грудных, локти под углом около 45 градусов к корпусу."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Dumbbell_Bench_Press.json"
+  },
+  {
+    "id": "lib-dumbbell-bicep-curl",
+    "nameEn": "Dumbbell Bicep Curl",
+    "nameRu": "Сгибания рук с гантелями",
+    "category": "arms",
+    "equipment": "dumbbells",
+    "level": "beginner",
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "instructionsEn": [
+      "Stand up straight with a dumbbell in each hand at arm's length. Keep your elbows close to your torso and rotate the palms of your hands until they are facing forward. This will be your starting position.",
+      "Now, keeping the upper arms stationary, exhale and curl the weights while contracting your biceps. Continue to raise the weights until your biceps are fully contracted and the dumbbells are at shoulder level. Hold the contracted position for a brief pause as you squeeze your biceps.",
+      "Then, inhale and slowly begin to lower the dumbbells back to the starting position.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте прямо, гантели по бокам, ладони к корпусу.",
+      "На выдохе согните локти, поднимая гантели и разворачивая ладони к себе. Локти неподвижны.",
+      "На вдохе плавно опустите, разворачивая ладони обратно."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Dumbbell_Bicep_Curl.json"
+  },
+  {
+    "id": "lib-dumbbell-flyes",
+    "nameEn": "Dumbbell Flyes",
+    "nameRu": "Разведения гантелей лёжа",
+    "category": "chest",
+    "equipment": "dumbbells",
+    "level": "beginner",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "instructionsEn": [
+      "Lie down on a flat bench with a dumbbell on each hand resting on top of your thighs. The palms of your hand will be facing each other.",
+      "Then using your thighs to help raise the dumbbells, lift the dumbbells one at a time so you can hold them in front of you at shoulder width with the palms of your hands facing each other. Raise the dumbbells up like you're pressing them, but stop and hold just before you lock out. This will be your starting position.",
+      "With a slight bend on your elbows in order to prevent stress at the biceps tendon, lower your arms out at both sides in a wide arc until you feel a stretch on your chest. Breathe in as you perform this portion of the movement. Tip: Keep in mind that throughout the movement, the arms should remain stationary; the movement should only occur at the shoulder joint.",
+      "Return your arms back to the starting position as you squeeze your chest muscles and breathe out. Tip: Make sure to use the same arc of motion used to lower the weights.",
+      "Hold for a second at the contracted position and repeat the movement for the prescribed amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Лягте на скамью, гантели над грудью на почти прямых руках, локти слегка согнуты и зафиксированы.",
+      "На вдохе разведите руки в стороны по широкой дуге до комфортного растяжения груди, не сгибая локти сильнее.",
+      "На выдохе плавно сведите гантели над грудью, как будто обнимаете дерево. Работайте без рывков и боли в плечах."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Dumbbell_Flyes.json"
+  },
+  {
+    "id": "lib-dumbbell-lunges",
+    "nameEn": "Dumbbell Lunges",
+    "nameRu": "Выпады с гантелями",
+    "category": "legs",
+    "equipment": "dumbbells",
+    "level": "beginner",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "instructionsEn": [
+      "Stand with your torso upright holding two dumbbells in your hands by your sides. This will be your starting position.",
+      "Step forward with your right leg around 2 feet or so from the foot being left stationary behind and lower your upper body down, while keeping the torso upright and maintaining balance. Inhale as you go down. Note: As in the other exercises, do not allow your knee to go forward beyond your toes as you come down, as this will put undue stress on the knee joint. Make sure that you keep your front shin perpendicular to the ground.",
+      "Using mainly the heel of your foot, push up and go back to the starting position as you exhale.",
+      "Repeat the movement for the recommended amount of repetitions and then perform with the left leg."
+    ],
+    "instructionsRu": [
+      "Встаньте прямо, гантели в руках по бокам.",
+      "На вдохе шагните вперёд в выпад: переднее бедро параллельно полу, колено над стопой, заднее колено почти касается пола.",
+      "На выдохе оттолкнитесь и встаньте. Чередуйте ноги или идите шагами."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Dumbbell_Lunges.json"
+  },
+  {
+    "id": "lib-dumbbell-shrug",
+    "nameEn": "Dumbbell Shrug",
+    "nameRu": "Шраги с гантелями",
+    "category": "back",
+    "equipment": "dumbbells",
+    "level": "beginner",
+    "primaryMuscles": [
+      "traps"
+    ],
+    "instructionsEn": [
+      "Stand erect with a dumbbell on each hand (palms facing your torso), arms extended on the sides.",
+      "Lift the dumbbells by elevating the shoulders as high as possible while you exhale. Hold the contraction at the top for a second. Tip: The arms should remain extended at all times. Refrain from using the biceps to help lift the dumbbells. Only the shoulders should be moving up and down.",
+      "Lower the dumbbells back to the original position.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте прямо, гантели в прямых руках по бокам.",
+      "На выдохе поднимите плечи вверх как можно выше, не сгибая локти.",
+      "На вдохе плавно опустите плечи вниз. Не вращайте плечами по кругу."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Dumbbell_Shrug.json"
+  },
+  {
+    "id": "lib-ez-bar-skullcrusher",
+    "nameEn": "EZ-Bar Skullcrusher",
+    "nameRu": "Французский жим с EZ-грифом",
+    "category": "arms",
+    "equipment": "ez-bar",
+    "level": "beginner",
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "instructionsEn": [
+      "Using a close grip, lift the EZ bar and hold it with your elbows in as you lie on the bench. Your arms should be perpendicular to the floor. This will be your starting position.",
+      "Keeping the upper arms stationary, lower the bar by allowing the elbows to flex. Inhale as you perform this portion of the movement. Pause once the bar is directly above the forehead.",
+      "Lift the bar back to the starting position by extending the elbow and exhaling.",
+      "Repeat."
+    ],
+    "instructionsRu": [
+      "Лягте на скамью, удерживайте EZ-гриф на прямых руках над грудью хватом сверху.",
+      "На вдохе согните локти, опуская гриф ко лбу или чуть за голову. Плечи неподвижны, двигаются только предплечья.",
+      "На выдохе разогните локти вверх. Локти не разъезжаются в стороны."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/EZ-Bar_Skullcrusher.json"
+  },
+  {
+    "id": "lib-face-pull",
+    "nameEn": "Face Pull",
+    "nameRu": "Тяга к лицу на блоке с канатом",
+    "category": "arms",
+    "equipment": "cable",
+    "level": "intermediate",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "instructionsEn": [
+      "Facing a high pulley with a rope or dual handles attached, pull the weight directly towards your face, separating your hands as you do so. Keep your upper arms parallel to the ground."
+    ],
+    "instructionsRu": [
+      "Установите канат на верхнем блоке. Возьмитесь за концы, шагните назад, руки прямые.",
+      "На выдохе тяните канат к лицу, разводя концы в стороны к ушам, локти высоко. Сведите лопатки.",
+      "На вдохе плавно верните руки вперёд. Упражнение укрепляет задние дельты и здоровье плеч."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Face_Pull.json"
+  },
+  {
+    "id": "lib-front-dumbbell-raise",
+    "nameEn": "Front Dumbbell Raise",
+    "nameRu": "Подъём гантели перед собой",
+    "category": "arms",
+    "equipment": "dumbbells",
+    "level": "beginner",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "instructionsEn": [
+      "Pick a couple of dumbbells and stand with a straight torso and the dumbbells on front of your thighs at arms length with the palms of the hand facing your thighs. This will be your starting position.",
+      "While maintaining the torso stationary (no swinging), lift the left dumbbell to the front with a slight bend on the elbow and the palms of the hands always facing down. Continue to go up until you arm is slightly above parallel to the floor. Exhale as you execute this portion of the movement and pause for a second at the top. Inhale after the second pause.",
+      "Now lower the dumbbell back down slowly to the starting position as you simultaneously lift the right dumbbell.",
+      "Continue alternating in this fashion until all of the recommended amount of repetitions have been performed for each arm."
+    ],
+    "instructionsRu": [
+      "Встаньте прямо, гантели перед бёдрами, ладони к себе.",
+      "На выдохе поднимите прямую руку вперёд до уровня плеч, без рывка и отклонения корпуса.",
+      "На вдохе плавно опустите. Чередуйте руки или поднимайте обе сразу."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Front_Dumbbell_Raise.json"
+  },
+  {
+    "id": "lib-front-squat-clean-grip",
+    "nameEn": "Front Squat (Clean Grip)",
+    "nameRu": "Фронтальные приседания (хват «корзинка»)",
+    "category": "legs",
+    "equipment": "barbell",
+    "level": "intermediate",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "instructionsEn": [
+      "To begin, first set the bar in a rack slightly below shoulder level. Rest the bar on top of the deltoids, pushing into the clavicles, and lightly touching the throat. Your hands should be in a clean grip, touching the bar only with your fingers to help keep it in position.",
+      "Lift the bar off the rack by first pushing with your legs and at the same time straightening your torso. Step away from the rack and position your legs using a shoulder width medium stance with the toes slightly pointed out. Keep your head and elbows up at all times. This will be your starting position.",
+      "Bend at the knees, sitting down between your legs. Continue down until your hamstrings are on your calves. Keep your knees aligned with your feet by consciously using your abductors to push your knees out as you squat.",
+      "Begin to raise the bar as you exhale by pushing the floor mainly with the heel or middle of your foot as you straighten the legs again and return to the starting position."
+    ],
+    "instructionsRu": [
+      "Установите штангу на передние дельты, локти высоко, гриф на пальцах. Стопы на ширине плеч.",
+      "На вдохе приседайте, держа корпус вертикально и локти поднятыми — иначе гриф скатится.",
+      "На выдохе встаньте. Фронтальные приседания нагружают квадрицепсы и требуют высокой мобильности кистей."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Front_Squat_Clean_Grip.json"
+  },
+  {
+    "id": "lib-goblet-squat",
+    "nameEn": "Goblet Squat",
+    "nameRu": "Гоблет-приседания с гирей у груди",
+    "category": "legs",
+    "equipment": "kettlebell",
+    "level": "beginner",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "instructionsEn": [
+      "Stand holding a light kettlebell by the horns close to your chest. This will be your starting position.",
+      "Squat down between your legs until your hamstrings are on your calves. Keep your chest and head up and your back straight.",
+      "At the bottom position, pause and use your elbows to push your knees out. Return to the starting position, and repeat for 10-20 repetitions."
+    ],
+    "instructionsRu": [
+      "Возьмите гирю за дужку обеими руками у груди, локти вниз. Стопы на ширине плеч, носки чуть разведены.",
+      "На вдохе приседайте между колен, разводя их наружу, локти проходят между коленями. Спина прямая, пятки на полу.",
+      "На выдохе встаньте, сохраняя гирю у груди. Гоблет-присед отлично ставит технику."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Goblet_Squat.json"
+  },
+  {
+    "id": "lib-good-morning",
+    "nameEn": "Good Morning",
+    "nameRu": "Наклоны со штангой (гуд морнинг)",
+    "category": "legs",
+    "equipment": "barbell",
+    "level": "intermediate",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "instructionsEn": [
+      "Begin with a bar on a rack at shoulder height. Rack the bar across the rear of your shoulders as you would a power squat, not on top of your shoulders. Keep your back tight, shoulder blades pinched together, and your knees slightly bent. Step back from the rack.",
+      "Begin by bending at the hips, moving them back as you bend over to near parallel. Keep your back arched and your cervical spine in proper alignment.",
+      "Reverse the motion by extending through the hips with your glutes and hamstrings. Continue until you have returned to the starting position."
+    ],
+    "instructionsRu": [
+      "Положите штангу на трапеции, встаньте прямо, стопы на ширине плеч, колени слегка согнуты.",
+      "На вдохе наклоните корпус вперёд, отводя таз назад, пока спина не станет почти параллельна полу. Спина прямая всё движение.",
+      "На выдохе вернитесь в вертикальное положение за счёт поясницы и ягодиц. Начинайте с малым весом."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Good_Morning.json"
+  },
+  {
+    "id": "lib-hack-squat",
+    "nameEn": "Hack Squat",
+    "nameRu": "Гакк-приседания",
+    "category": "legs",
+    "equipment": "machine",
+    "level": "beginner",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "instructionsEn": [
+      "Place the back of your torso against the back pad of the machine and hook your shoulders under the shoulder pads provided.",
+      "Position your legs in the platform using a shoulder width medium stance with the toes slightly pointed out. Tip: Keep your head up at all times and also maintain the back on the pad at all times.",
+      "Place your arms on the side handles of the machine and disengage the safety bars (which on most designs is done by moving the side handles from a facing front position to a diagonal position).",
+      "Now straighten your legs without locking the knees. This will be your starting position. (Note: For the purposes of this discussion we will use the medium stance described above which targets overall development; however you can choose any of the three stances described in the foot positioning section).",
+      "Begin to slowly lower the unit by bending the knees as you maintain a straight posture with the head up (back on the pad at all times). Continue down until the angle between the upper leg and the calves becomes slightly less than 90-degrees (which is the point in which the upper legs are below parallel to the floor). Inhale as you perform this portion of the movement. Tip: If you performed the exercise correctly, the front of the knees should make an imaginary straight line with the toes that is perpendicular to the front. If your knees are past that imaginary line (if they are past your toes) then you are placing undue stress on the knee and the exercise has been performed incorrectly.",
+      "Begin to raise the unit as you exhale by pushing the floor with mainly with the heel of your foot as you straighten the legs again and go back to the starting position.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте в гакк-тренажёр: спина и таз прижаты к спинке, плечи под упорами, стопы на платформе.",
+      "На вдохе приседайте, сгибая колени до комфортной глубины, колени по направлению носков.",
+      "На выдохе мощно выпрямитесь, не блокируя колени. Не отрывайте пятки."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Hack_Squat.json"
+  },
+  {
+    "id": "lib-incline-dumbbell-flyes",
+    "nameEn": "Incline Dumbbell Flyes",
+    "nameRu": "Разведения гантелей на наклонной скамье",
+    "category": "chest",
+    "equipment": "dumbbells",
+    "level": "beginner",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "instructionsEn": [
+      "Hold a dumbbell on each hand and lie on an incline bench that is set to an incline angle of no more than 30 degrees.",
+      "Extend your arms above you with a slight bend at the elbows.",
+      "Now rotate the wrists so that the palms of your hands are facing you. Tip: The pinky fingers should be next to each other. This will be your starting position.",
+      "As you breathe in, start to slowly lower the arms to the side while keeping the arms extended and while rotating the wrists until the palms of the hand are facing each other. Tip: At the end of the movement the arms will be by your side with the palms facing the ceiling.",
+      "As you exhale start to bring the dumbbells back up to the starting position by reversing the motion and rotating the hands so that the pinky fingers are next to each other again. Tip: Keep in mind that the movement will only happen at the shoulder joint and at the wrist. There is no motion that happens at the elbow joint.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Установите скамью под углом 30–45 градусов. Лягте с гантелями над верхней частью груди, локти чуть согнуты.",
+      "На вдохе разведите руки в стороны, растягивая верх груди.",
+      "На выдохе сведите гантели по дуге, сохраняя небольшой сгиб в локтях."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Incline_Dumbbell_Flyes.json"
+  },
+  {
+    "id": "lib-incline-dumbbell-press",
+    "nameEn": "Incline Dumbbell Press",
+    "nameRu": "Жим гантелей на наклонной скамье",
+    "category": "chest",
+    "equipment": "dumbbells",
+    "level": "beginner",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "instructionsEn": [
+      "Lie back on an incline bench with a dumbbell in each hand atop your thighs. The palms of your hands will be facing each other.",
+      "Then, using your thighs to help push the dumbbells up, lift the dumbbells one at a time so that you can hold them at shoulder width.",
+      "Once you have the dumbbells raised to shoulder width, rotate your wrists forward so that the palms of your hands are facing away from you. This will be your starting position.",
+      "Be sure to keep full control of the dumbbells at all times. Then breathe out and push the dumbbells up with your chest.",
+      "Lock your arms at the top, hold for a second, and then start slowly lowering the weight. Tip Ideally, lowering the weights should take about twice as long as raising them.",
+      "Repeat the movement for the prescribed amount of repetitions.",
+      "When you are done, place the dumbbells back on your thighs and then on the floor. This is the safest manner to release the dumbbells."
+    ],
+    "instructionsRu": [
+      "Установите скамью под углом 30–45 градусов. Сядьте с гантелями, прижмите спину к скамье, гантели на уровне плеч.",
+      "На выдохе выжмите гантели вверх по дуге, почти сводя их над грудью.",
+      "На вдохе подконтрольно опустите гантели к верхней части груди."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Incline_Dumbbell_Press.json"
+  },
+  {
+    "id": "lib-kettlebell-turkish-get-up-lunge-style",
+    "nameEn": "Kettlebell Turkish Get-Up (Lunge style)",
+    "nameRu": "Турецкий подъём с гирей",
+    "category": "arms",
+    "equipment": "kettlebell",
+    "level": "intermediate",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "instructionsEn": [
+      "Lie on your back on the floor and press a kettlebell to the top position by extending the elbow. Bend the knee on the same side as the kettlebell.",
+      "Keeping the kettlebell locked out at all times, pivot to the opposite side and use your non- working arm to assist you in driving forward to the lunge position. Using your free hand, push yourself to a seated position, then progressing to one knee.",
+      "While looking up at the kettlebell, slowly stand up. Reverse the motion back to the starting position and repeat."
+    ],
+    "instructionsRu": [
+      "Лягте на пол, выжмите гирю прямой рукой вверх, одноимённое колено согнуто. Взгляд на гирю.",
+      "Опираясь на свободный локоть, затем на ладонь, поднимите корпус, выведите таз и перенесите ногу назад в положение на колене.",
+      "Встаньте из выпада, всё время удерживая гирю над собой на прямой руке. Вернитесь вниз в обратном порядке. Медленно и под контролем."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Kettlebell_Turkish_Get-Up_Lunge_style.json"
+  },
+  {
+    "id": "lib-leg-extensions",
+    "nameEn": "Leg Extensions",
+    "nameRu": "Разгибания ног сидя в тренажёре",
+    "category": "legs",
+    "equipment": "machine",
+    "level": "beginner",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "instructionsEn": [
+      "For this exercise you will need to use a leg extension machine. First choose your weight and sit on the machine with your legs under the pad (feet pointed forward) and the hands holding the side bars. This will be your starting position. Tip: You will need to adjust the pad so that it falls on top of your lower leg (just above your feet). Also, make sure that your legs form a 90-degree angle between the lower and upper leg. If the angle is less than 90-degrees then that means the knee is over the toes which in turn creates undue stress at the knee joint. If the machine is designed that way, either look for another machine or just make sure that when you start executing the exercise you stop going down once you hit the 90-degree angle.",
+      "Using your quadriceps, extend your legs to the maximum as you exhale. Ensure that the rest of the body remains stationary on the seat. Pause a second on the contracted position.",
+      "Slowly lower the weight back to the original position as you inhale, ensuring that you do not go past the 90-degree angle limit.",
+      "Repeat for the recommended amount of times."
+    ],
+    "instructionsRu": [
+      "Сядьте в тренажёр, упритесь спиной, валик над подъёмом стоп. Возьмитесь за ручки.",
+      "На выдохе разгибайте колени до почти прямых ног, задержитесь на секунду вверху.",
+      "На вдохе плавно опустите вес, не бросая валик вниз."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Leg_Extensions.json"
+  },
+  {
+    "id": "lib-leg-press",
+    "nameEn": "Leg Press",
+    "nameRu": "Жим ногами в тренажёре",
+    "category": "legs",
+    "equipment": "machine",
+    "level": "beginner",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "instructionsEn": [
+      "Using a leg press machine, sit down on the machine and place your legs on the platform directly in front of you at a medium (shoulder width) foot stance. (Note: For the purposes of this discussion we will use the medium stance described above which targets overall development; however you can choose any of the three stances described in the foot positioning section).",
+      "Lower the safety bars holding the weighted platform in place and press the platform all the way up until your legs are fully extended in front of you. Tip: Make sure that you do not lock your knees. Your torso and the legs should make a perfect 90-degree angle. This will be your starting position.",
+      "As you inhale, slowly lower the platform until your upper and lower legs make a 90-degree angle.",
+      "Pushing mainly with the heels of your feet and using the quadriceps go back to the starting position as you exhale.",
+      "Repeat for the recommended amount of repetitions and ensure to lock the safety pins properly once you are done. You do not want that platform falling on you fully loaded."
+    ],
+    "instructionsRu": [
+      "Сядьте в тренажёр, прижмите спину и таз к спинке, стопы на платформе на ширине плеч.",
+      "На выдохе выжмите платформу вверх, не блокируя колени в замок полностью.",
+      "На вдохе подконтрольно опустите платформу до угла около 90 градусов в коленях, не отрывая таз."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Leg_Press.json"
+  },
+  {
+    "id": "lib-lying-leg-curls",
+    "nameEn": "Lying Leg Curls",
+    "nameRu": "Сгибания ног лёжа в тренажёре",
+    "category": "legs",
+    "equipment": "machine",
+    "level": "beginner",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "instructionsEn": [
+      "Adjust the machine lever to fit your height and lie face down on the leg curl machine with the pad of the lever on the back of your legs (just a few inches under the calves). Tip: Preferably use a leg curl machine that is angled as opposed to flat since an angled position is more favorable for hamstrings recruitment.",
+      "Keeping the torso flat on the bench, ensure your legs are fully stretched and grab the side handles of the machine. Position your toes straight (or you can also use any of the other two stances described on the foot positioning section). This will be your starting position.",
+      "As you exhale, curl your legs up as far as possible without lifting the upper legs from the pad. Once you hit the fully contracted position, hold it for a second.",
+      "As you inhale, bring the legs back to the initial position. Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Лягте на скамью тренажёра, валик над пятками/икрами, возьмитесь за ручки. Бёдра прижаты.",
+      "На выдохе согните колени, поднимая валик к ягодицам. Пауза в верхней точке.",
+      "На вдохе плавно опустите ноги, не отрывая бёдра от скамьи и не помогая поясницей."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Lying_Leg_Curls.json"
+  },
+  {
+    "id": "lib-machine-bench-press",
+    "nameEn": "Machine Bench Press",
+    "nameRu": "Жим в тренажёре сидя",
+    "category": "chest",
+    "equipment": "machine",
+    "level": "beginner",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "instructionsEn": [
+      "Sit down on the Chest Press Machine and select the weight.",
+      "Step on the lever provided by the machine since it will help you to bring the handles forward so that you can grab the handles and fully extend the arms.",
+      "Grab the handles with a palms-down grip and lift your elbows so that your upper arms are parallel to the floor to the sides of your torso. Tip: Your forearms will be pointing forward since you are grabbing the handles. Once you bring the handles forward and extend the arms you will be at the starting position.",
+      "Now bring the handles back towards you as you breathe in.",
+      "Push the handles away from you as you flex your pecs and you breathe out. Hold the contraction for a second before going back to the starting position.",
+      "Repeat for the recommended amount of reps.",
+      "When finished step on the lever again and slowly get the handles back to their original place."
+    ],
+    "instructionsRu": [
+      "Сядьте в тренажёр, прижмите спину к спинке, возьмитесь за рукояти на уровне груди.",
+      "На выдохе выжмите рукояти вперёд до почти полного выпрямления рук.",
+      "На вдохе плавно верните рукояти, не сталкивая вес с упором. Траектория фиксирована — следите за дыханием."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Machine_Bench_Press.json"
+  },
+  {
+    "id": "lib-one-arm-dumbbell-row",
+    "nameEn": "One-Arm Dumbbell Row",
+    "nameRu": "Тяга гантели одной рукой",
+    "category": "back",
+    "equipment": "dumbbells",
+    "level": "beginner",
+    "primaryMuscles": [
+      "middle back"
+    ],
+    "instructionsEn": [
+      "Choose a flat bench and place a dumbbell on each side of it.",
+      "Place the right leg on top of the end of the bench, bend your torso forward from the waist until your upper body is parallel to the floor, and place your right hand on the other end of the bench for support.",
+      "Use the left hand to pick up the dumbbell on the floor and hold the weight while keeping your lower back straight. The palm of the hand should be facing your torso. This will be your starting position.",
+      "Pull the resistance straight up to the side of your chest, keeping your upper arm close to your side and keeping the torso stationary. Breathe out as you perform this step. Tip: Concentrate on squeezing the back muscles once you reach the full contracted position. Also, make sure that the force is performed with the back muscles and not the arms. Finally, the upper torso should remain stationary and only the arms should move. The forearms should do no other work except for holding the dumbbell; therefore do not try to pull the dumbbell up using the forearms.",
+      "Lower the resistance straight down to the starting position. Breathe in as you perform this step.",
+      "Repeat the movement for the specified amount of repetitions.",
+      "Switch sides and repeat again with the other arm."
+    ],
+    "instructionsRu": [
+      "Упритесь коленом и ладонью в скамью, вторая нога на полу. Спина прямая, параллельна полу. Гантель в свободной руке на прямом локте.",
+      "На выдохе тяните гантель к тазу, локоть идёт назад вдоль корпуса, лопатка сокращается вверху.",
+      "На вдохе плавно опустите гантель, растягивая широчайшую. Поменяйте сторону."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/One-Arm_Dumbbell_Row.json"
+  },
+  {
+    "id": "lib-one-arm-kettlebell-row",
+    "nameEn": "One-Arm Kettlebell Row",
+    "nameRu": "Тяга гири одной рукой",
+    "category": "back",
+    "equipment": "kettlebell",
+    "level": "intermediate",
+    "primaryMuscles": [
+      "middle back"
+    ],
+    "instructionsEn": [
+      "Place a kettlebell in front of your feet. Bend your knees slightly and then push your butt out as much as possible as you bend over to get in the starting position. Grab the kettlebell and pull it to your stomach, retracting your shoulder blade and flexing the elbow. Keep your back straight. Lower and repeat."
+    ],
+    "instructionsRu": [
+      "Поставьте гирю перед собой, наклонитесь с прямой спиной и упритесь свободной рукой в колено или скамью.",
+      "На выдохе тяните гирю к тазу, локоть назад вдоль корпуса, лопатка сокращается вверху.",
+      "На вдохе плавно опустите гирю. Поменяйте сторону."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/One-Arm_Kettlebell_Row.json"
+  },
+  {
+    "id": "lib-one-legged-cable-kickback",
+    "nameEn": "One-Legged Cable Kickback",
+    "nameRu": "Отведение ноги назад на блоке",
+    "category": "glutes",
+    "equipment": "cable",
+    "level": "intermediate",
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "instructionsEn": [
+      "Hook a leather ankle cuff to a low cable pulley and then attach the cuff to your ankle.",
+      "Face the weight stack from a distance of about two feet, grasping the steel frame for support.",
+      "While keeping your knees and hips bent slightly and your abs tight, contract your glutes to slowly \"kick\" the working leg back in a semicircular arc as high as it will comfortably go as you breathe out. Tip: At full extension, squeeze your glutes for a second in order to achieve a peak contraction.",
+      "Now slowly bring your working leg forward, resisting the pull of the cable until you reach the starting position.",
+      "Repeat for the recommended amount of repetitions.",
+      "Switch legs and repeat the movement for the other side."
+    ],
+    "instructionsRu": [
+      "Закрепите манжету на лодыжке, встаньте лицом к блоку, слегка наклонитесь, держась за опору.",
+      "На выдохе отведите ногу назад и вверх за счёт ягодицы, не прогибая поясницу.",
+      "На вдохе плавно верните ногу. Выполните повторения, затем поменяйте сторону."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/One-Legged_Cable_Kickback.json"
+  },
+  {
+    "id": "lib-pallof-press",
+    "nameEn": "Pallof Press",
+    "nameRu": "Паллоф-пресс",
+    "category": "abs",
+    "equipment": "cable",
+    "level": "beginner",
+    "primaryMuscles": [
+      "abdominals"
+    ],
+    "instructionsEn": [
+      "Connect a standard handle to a tower, andâif possibleâposition the cable to shoulder height. If not, a low pulley will suffice.",
+      "With your side to the cable, grab the handle with both hands and step away from the tower. You should be approximately arm's length away from the pulley, with the tension of the weight on the cable.",
+      "With your feet positioned hip-width apart and knees slightly bent, hold the cable to the middle of your chest. This will be your starting position.",
+      "Press the cable away from your chest, fully extending both arms. You core should be tight and engaged.",
+      "Hold the repetition for several seconds before returning to the starting position.",
+      "At the conclusion of the set, repeat facing the other direction."
+    ],
+    "instructionsRu": [
+      "Установите рукоять на блоке на высоте груди, встаньте боком к блоку, возьмитесь за рукоять обеими руками у груди.",
+      "Выжмите руки вперёд на прямые руки, сопротивляясь скручивающему усилию блока. Корпус неподвижен, пресс напряжён.",
+      "Удерживайте 2–3 секунды, верните руки к груди. Держите бедра и плечи «квадратными» к полу. Поменяйте сторону."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Pallof_Press.json"
+  },
+  {
+    "id": "lib-preacher-curl",
+    "nameEn": "Preacher Curl",
+    "nameRu": "Сгибания на скамье Скотта",
+    "category": "arms",
+    "equipment": "barbell",
+    "level": "beginner",
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "instructionsEn": [
+      "To perform this movement you will need a preacher bench and an E-Z bar. Grab the E-Z curl bar at the close inner handle (either have someone hand you the bar which is preferable or grab the bar from the front bar rest provided by most preacher benches). The palm of your hands should be facing forward and they should be slightly tilted inwards due to the shape of the bar.",
+      "With the upper arms positioned against the preacher bench pad and the chest against it, hold the E-Z Curl Bar at shoulder length. This will be your starting position.",
+      "As you breathe in, slowly lower the bar until your upper arm is extended and the biceps is fully stretched.",
+      "As you exhale, use the biceps to curl the weight up until your biceps is fully contracted and the bar is at shoulder height. Squeeze the biceps hard and hold this position for a second.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Сядьте за скамью Скотта, уприте трицепсы в подушку, возьмите гриф/гантели хватом снизу, руки почти прямые.",
+      "На выдохе согните локти до полного сокращения бицепсов. Плечи прижаты к подушке.",
+      "На вдохе плавно опустите до почти прямых рук, не «отрывая» плечи. Не бросайте вес внизу."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Preacher_Curl.json"
+  },
+  {
+    "id": "lib-pull-through",
+    "nameEn": "Pull Through",
+    "nameRu": "Протяжка на блоке между ног",
+    "category": "glutes",
+    "equipment": "cable",
+    "level": "beginner",
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "instructionsEn": [
+      "Begin standing a few feet in front of a low pulley with a rope or handle attached. Face away from the machine, straddling the cable, with your feet set wide apart.",
+      "Begin the movement by reaching through your legs as far as possible, bending at the hips. Keep your knees slightly bent. Keeping your arms straight, extend through the hip to stand straight up. Avoid pulling upward through the shoulders; all of the motion should originate through the hips."
+    ],
+    "instructionsRu": [
+      "Установите канатную рукоять на нижнем блоке. Встаньте спиной к блоку, шагните вперёд, возьмитесь за рукоять между ног, наклонитесь вперёд с прямой спиной.",
+      "На выдохе выпрямитесь, проводя рукоять между ног вперёд за счёт ягодиц. Руки прямые — работают таз и ягодицы.",
+      "На вдохе отведите таз назад, снова наклоняясь и растягивая заднюю цепь."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Pull_Through.json"
+  },
+  {
+    "id": "lib-reverse-flyes",
+    "nameEn": "Reverse Flyes",
+    "nameRu": "Разведения гантелей на заднюю дельту",
+    "category": "arms",
+    "equipment": "dumbbells",
+    "level": "beginner",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "instructionsEn": [
+      "To begin, lie down on an incline bench with the chest and stomach pressing against the incline. Have the dumbbells in each hand with the palms facing each other (neutral grip).",
+      "Extend the arms in front of you so that they are perpendicular to the angle of the bench. The legs should be stationary while applying pressure with the ball of your toes. This is the starting position.",
+      "Maintaining the slight bend of the elbows, move the weights out and away from each other (to the side) in an arc motion while exhaling. Tip: Try to squeeze your shoulder blades together to get the best results from this exercise.",
+      "The arms should be elevated until they are parallel to the floor.",
+      "Feel the contraction and slowly lower the weights back down to the starting position while inhaling.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Наклоните корпус вперёд почти до параллели с полом (или лягте грудью на наклонную скамью), гантели под грудью, локти чуть согнуты.",
+      "На выдохе разведите руки в стороны до уровня плеч, большими пальцами вниз, сокращая задние дельты.",
+      "На вдохе плавно сведите руки вниз. Не помогайте поясницей."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Reverse_Flyes.json"
+  },
+  {
+    "id": "lib-romanian-deadlift",
+    "nameEn": "Romanian Deadlift",
+    "nameRu": "Румынская тяга",
+    "category": "legs",
+    "equipment": "barbell",
+    "level": "intermediate",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "instructionsEn": [
+      "Put a barbell in front of you on the ground and grab it using a pronated (palms facing down) grip that a little wider than shoulder width. Tip: Depending on the weight used, you may need wrist wraps to perform the exercise and also a raised platform in order to allow for better range of motion.",
+      "Bend the knees slightly and keep the shins vertical, hips back and back straight. This will be your starting position.",
+      "Keeping your back and arms completely straight at all times, use your hips to lift the bar as you exhale. Tip: The movement should not be fast but steady and under control.",
+      "Once you are standing completely straight up, lower the bar by pushing the hips back, only slightly bending the knees, unlike when squatting. Tip: Take a deep breath at the start of the movement and keep your chest up. Hold your breath as you lower and exhale as you complete the movement.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте прямо со штангой в руках, колени слегка согнуты и зафиксированы.",
+      "На вдохе наклонитесь вперёд, отводя таз назад, гриф скользит вдоль бёдер почти вплотную. Спина прямая.",
+      "Почувствовав растяжение бицепсов бёдер, на выдохе вернитесь в вертикальное положение за счёт ягодиц."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Romanian_Deadlift.json"
+  },
+  {
+    "id": "lib-seated-cable-rows",
+    "nameEn": "Seated Cable Rows",
+    "nameRu": "Тяга горизонтального блока",
+    "category": "back",
+    "equipment": "cable",
+    "level": "beginner",
+    "primaryMuscles": [
+      "middle back"
+    ],
+    "instructionsEn": [
+      "For this exercise you will need access to a low pulley row machine with a V-bar. Note: The V-bar will enable you to have a neutral grip where the palms of your hands face each other. To get into the starting position, first sit down on the machine and place your feet on the front platform or crossbar provided making sure that your knees are slightly bent and not locked.",
+      "Lean over as you keep the natural alignment of your back and grab the V-bar handles.",
+      "With your arms extended pull back until your torso is at a 90-degree angle from your legs. Your back should be slightly arched and your chest should be sticking out. You should be feeling a nice stretch on your lats as you hold the bar in front of you. This is the starting position of the exercise.",
+      "Keeping the torso stationary, pull the handles back towards your torso while keeping the arms close to it until you touch the abdominals. Breathe out as you perform that movement. At that point you should be squeezing your back muscles hard. Hold that contraction for a second and slowly go back to the original position while breathing in.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Сядьте на скамью блочного тренажёра, уприте стопы в платформы, колени слегка согнуты. Возьмитесь за рукоять, корпус прямой.",
+      "На выдохе тяните рукоять к животу, локти назад, лопатки сводятся в конце движения. Грудью не наклоняйтесь назад.",
+      "На вдохе плавно отпустите рукоять вперёд, растягивая спину, сохраняя спину прямой."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Seated_Cable_Rows.json"
+  },
+  {
+    "id": "lib-seated-calf-raise",
+    "nameEn": "Seated Calf Raise",
+    "nameRu": "Подъёмы на носки сидя",
+    "category": "legs",
+    "equipment": "machine",
+    "level": "beginner",
+    "primaryMuscles": [
+      "calves"
+    ],
+    "instructionsEn": [
+      "Sit on the machine and place your toes on the lower portion of the platform provided with the heels extending off. Choose the toe positioning of your choice (forward, in, or out) as per the beginning of this chapter.",
+      "Place your lower thighs under the lever pad, which will need to be adjusted according to the height of your thighs. Now place your hands on top of the lever pad in order to prevent it from slipping forward.",
+      "Lift the lever slightly by pushing your heels up and release the safety bar. This will be your starting position.",
+      "Slowly lower your heels by bending at the ankles until the calves are fully stretched. Inhale as you perform this movement.",
+      "Raise the heels by extending the ankles as high as possible as you contract the calves and breathe out. Hold the top contraction for a second.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Сядьте в тренажёр, стопы носками на платформе, упор на бёдра.",
+      "На выдохе поднимите носки вверх максимально, пауза вверху.",
+      "На вдохе плавно опуститесь, растягивая икры. Сидячий вариант сильнее нагружает камбаловидную мышцу."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Seated_Calf_Raise.json"
+  },
+  {
+    "id": "lib-seated-dumbbell-press",
+    "nameEn": "Seated Dumbbell Press",
+    "nameRu": "Жим гантелей сидя",
+    "category": "arms",
+    "equipment": "dumbbells",
+    "level": "beginner",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "instructionsEn": [
+      "Grab a couple of dumbbells and sit on a military press bench or a utility bench that has a back support on it as you place the dumbbells upright on top of your thighs.",
+      "Clean the dumbbells up one at a time by using your thighs to bring the dumbbells up to shoulder height at each side.",
+      "Rotate the wrists so that the palms of your hands are facing forward. This is your starting position.",
+      "As you exhale, push the dumbbells up until they touch at the top.",
+      "After a second pause, slowly come down back to the starting position as you inhale.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Сядьте на скамью со спинкой, гантели на уровне плеч, ладони вперёд, спина прижата.",
+      "На выдохе выжмите гантели вверх, почти сводя их над головой.",
+      "На вдохе плавно опустите гантели к плечам, не выводя локти сильно вперёд."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Seated_Dumbbell_Press.json"
+  },
+  {
+    "id": "lib-seated-leg-curl",
+    "nameEn": "Seated Leg Curl",
+    "nameRu": "Сгибания ног сидя в тренажёре",
+    "category": "legs",
+    "equipment": "machine",
+    "level": "beginner",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "instructionsEn": [
+      "Adjust the machine lever to fit your height and sit on the machine with your back against the back support pad.",
+      "Place the back of lower leg on top of padded lever (just a few inches under the calves) and secure the lap pad against your thighs, just above the knees. Then grasp the side handles on the machine as you point your toes straight (or you can also use any of the other two stances) and ensure that the legs are fully straight right in front of you. This will be your starting position.",
+      "As you exhale, pull the machine lever as far as possible to the back of your thighs by flexing at the knees. Keep your torso stationary at all times. Hold the contracted position for a second.",
+      "Slowly return to the starting position as you breathe in.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Сядьте в тренажёр, прижмите спину, валик над ахилловыми сухожилиями, опустите упор на бёдра.",
+      "На выдохе согните колени, поднимая валик вниз-назад, задержитесь на секунду.",
+      "На вдохе подконтрольно верните вес. Сидячее положение сильнее растягивает бицепс бедра."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Seated_Leg_Curl.json"
+  },
+  {
+    "id": "lib-side-lateral-raise",
+    "nameEn": "Side Lateral Raise",
+    "nameRu": "Махи гантелями в стороны",
+    "category": "arms",
+    "equipment": "dumbbells",
+    "level": "beginner",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "instructionsEn": [
+      "Pick a couple of dumbbells and stand with a straight torso and the dumbbells by your side at arms length with the palms of the hand facing you. This will be your starting position.",
+      "While maintaining the torso in a stationary position (no swinging), lift the dumbbells to your side with a slight bend on the elbow and the hands slightly tilted forward as if pouring water in a glass. Continue to go up until you arms are parallel to the floor. Exhale as you execute this movement and pause for a second at the top.",
+      "Lower the dumbbells back down slowly to the starting position as you inhale.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте прямо, гантели по бокам вдоль корпуса, локти слегка согнуты.",
+      "На выдохе поднимите руки в стороны до уровня плеч, мизинцы чуть вверх, без раскачки корпусом.",
+      "На вдохе плавно опустите гантели. Работайте средним весом и чистой техникой."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Side_Lateral_Raise.json"
+  },
+  {
+    "id": "lib-split-squat-with-dumbbells",
+    "nameEn": "Split Squat with Dumbbells",
+    "nameRu": "Приседания в ножницы с гантелями",
+    "category": "legs",
+    "equipment": "dumbbells",
+    "level": "beginner",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "instructionsEn": [
+      "Position yourself into a staggered stance with the rear foot elevated and front foot forward.",
+      "Hold a dumbbell in each hand, letting them hang at the sides. This will be your starting position.",
+      "Begin by descending, flexing your knee and hip to lower your body down. Maintain good posture througout the movement. Keep the front knee in line with the foot as you perform the exercise.",
+      "At the bottom of the movement, drive through the heel to extend the knee and hip to return to the starting position."
+    ],
+    "instructionsRu": [
+      "Встаньте в положение выпада: одна стопа впереди, другая сзади на носке. Гантели в руках по бокам.",
+      "На вдохе опускайтесь вниз, сгибая оба колена до 90 градусов. Корпус вертикально.",
+      "На выдохе встаньте. Выполните повторения на одну ногу, затем поменяйте стороны."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Split_Squat_with_Dumbbells.json"
+  },
+  {
+    "id": "lib-standing-barbell-calf-raise",
+    "nameEn": "Standing Barbell Calf Raise",
+    "nameRu": "Подъёмы на носки со штангой",
+    "category": "legs",
+    "equipment": "barbell",
+    "level": "beginner",
+    "primaryMuscles": [
+      "calves"
+    ],
+    "instructionsEn": [
+      "This exercise is best performed inside a squat rack for safety purposes. To begin, first set the bar on a rack that best matches your height. Once the correct height is chosen and the bar is loaded, step under the bar and place the bar on the back of your shoulders (slightly below the neck).",
+      "Hold on to the bar using both arms at each side and lift it off the rack by first pushing with your legs and at the same time straightening your torso.",
+      "Step away from the rack and position your legs using a shoulder width medium stance with the toes slightly pointed out. Keep your head up at all times as looking down will get you off balance and also maintain a straight back. The knees should be kept with a slight bend; never locked. This will be your starting position. Tip: For better range of motion you may also place the ball of your feet on a wooden block but be careful as this option requires more balance and a sturdy block.",
+      "Raise your heels as you breathe out by extending your ankles as high as possible and flexing your calf. Ensure that the knee is kept stationary at all times. There should be no bending at any time. Hold the contracted position by a second before you start to go back down.",
+      "Go back slowly to the starting position as you breathe in by lowering your heels as you bend the ankles until calves are stretched.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Положите штангу на трапеции, встаньте носками на платформу или блин, пятки на весу.",
+      "На выдохе поднимитесь на носки как можно выше, удерживая равновесие.",
+      "На вдохе плавно опуститесь в глубокое растяжение. Не пружиньте рывками."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Standing_Barbell_Calf_Raise.json"
+  },
+  {
+    "id": "lib-standing-biceps-cable-curl",
+    "nameEn": "Standing Biceps Cable Curl",
+    "nameRu": "Сгибания рук на нижнем блоке",
+    "category": "arms",
+    "equipment": "cable",
+    "level": "beginner",
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "instructionsEn": [
+      "Stand up with your torso upright while holding a cable curl bar that is attached to a low pulley. Grab the cable bar at shoulder width and keep the elbows close to the torso. The palm of your hands should be facing up (supinated grip). This will be your starting position.",
+      "While holding the upper arms stationary, curl the weights while contracting the biceps as you breathe out. Only the forearms should move. Continue the movement until your biceps are fully contracted and the bar is at shoulder level. Hold the contracted position for a second as you squeeze the muscle.",
+      "Slowly begin to bring the curl bar back to starting position as your breathe in.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте перед нижним блоком, возьмитесь за прямую рукоять хватом снизу, руки прямые.",
+      "На выдохе согните локти, поднимая рукоять к плечам, локти у корпуса.",
+      "На вдохе плавно опустите. Блок держит постоянное напряжение бицепса по всей амплитуде."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Standing_Biceps_Cable_Curl.json"
+  },
+  {
+    "id": "lib-standing-calf-raises",
+    "nameEn": "Standing Calf Raises",
+    "nameRu": "Подъёмы на носки стоя",
+    "category": "legs",
+    "equipment": "machine",
+    "level": "beginner",
+    "primaryMuscles": [
+      "calves"
+    ],
+    "instructionsEn": [
+      "Adjust the padded lever of the calf raise machine to fit your height.",
+      "Place your shoulders under the pads provided and position your toes facing forward (or using any of the two other positions described at the beginning of the chapter). The balls of your feet should be secured on top of the calf block with the heels extending off it. Push the lever up by extending your hips and knees until your torso is standing erect. The knees should be kept with a slight bend; never locked. Toes should be facing forward, outwards or inwards as described at the beginning of the chapter. This will be your starting position.",
+      "Raise your heels as you breathe out by extending your ankles as high as possible and flexing your calf. Ensure that the knee is kept stationary at all times. There should be no bending at any time. Hold the contracted position by a second before you start to go back down.",
+      "Go back slowly to the starting position as you breathe in by lowering your heels as you bend the ankles until calves are stretched.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте носками на платформу (пятки на весу), прямые ноги, гантели в руках или без веса.",
+      "На выдохе поднимитесь на носки максимально высоко, задержитесь на секунду, сжимая икры.",
+      "На вдохе плавно опуститесь, растягивая икры внизу. Полная амплитуда важнее веса."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Standing_Calf_Raises.json"
+  },
+  {
+    "id": "lib-standing-dumbbell-triceps-extension",
+    "nameEn": "Standing Dumbbell Triceps Extension",
+    "nameRu": "Разгибание гантели из-за головы стоя",
+    "category": "arms",
+    "equipment": "dumbbells",
+    "level": "beginner",
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "instructionsEn": [
+      "To begin, stand up with a dumbbell held by both hands. Your feet should be about shoulder width apart from each other. Slowly use both hands to grab the dumbbell and lift it over your head until both arms are fully extended.",
+      "The resistance should be resting in the palms of your hands with your thumbs around it. The palm of the hands should be facing up towards the ceiling. This will be your starting position.",
+      "Keeping your upper arms close to your head with elbows in and perpendicular to the floor, lower the resistance in a semicircular motion behind your head until your forearms touch your biceps. Tip: The upper arms should remain stationary and only the forearms should move. Breathe in as you perform this step.",
+      "Go back to the starting position by using the triceps to raise the dumbbell. Breathe out as you perform this step.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте прямо, держите одну гантель двумя руками над головой на прямых руках.",
+      "На вдохе согните локти, опуская гантель за голову. Локти смотрят вперёд и остаются близко к голове.",
+      "На выдохе разогните локти вверх, сокращая трицепс. Спина прямая, без прогиба."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Standing_Dumbbell_Triceps_Extension.json"
+  },
+  {
+    "id": "lib-standing-military-press",
+    "nameEn": "Standing Military Press",
+    "nameRu": "Армейский жим стоя",
+    "category": "arms",
+    "equipment": "barbell",
+    "level": "beginner",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "instructionsEn": [
+      "Start by placing a barbell that is about chest high on a squat rack. Once you have selected the weights, grab the barbell using a pronated (palms facing forward) grip. Make sure to grip the bar wider than shoulder width apart from each other.",
+      "Slightly bend the knees and place the barbell on your collar bone. Lift the barbell up keeping it lying on your chest. Take a step back and position your feet shoulder width apart from each other.",
+      "Once you pick up the barbell with the correct grip length, lift the bar up over your head by locking your arms. Hold at about shoulder level and slightly in front of your head. This is your starting position.",
+      "Lower the bar down to the collarbone slowly as you inhale.",
+      "Lift the bar back up to the starting position as you exhale.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте прямо, штанга на верху груди, хват чуть шире плеч. Ягодицы и пресс напряжены.",
+      "На выдохе выжмите штангу вверх над головой до почти прямых рук. Голова «прячется» под гриф в верхней точке.",
+      "На вдохе плавно опустите штангу к груди. Не прогибайте поясницу: рёбра вниз."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Standing_Military_Press.json"
+  },
+  {
+    "id": "lib-stiff-legged-dumbbell-deadlift",
+    "nameEn": "Stiff-Legged Dumbbell Deadlift",
+    "nameRu": "Мёртвая тяга с гантелями на прямых ногах",
+    "category": "legs",
+    "equipment": "dumbbells",
+    "level": "beginner",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "instructionsEn": [
+      "Grasp a couple of dumbbells holding them by your side at arm's length.",
+      "Stand with your torso straight and your legs spaced using a shoulder width or narrower stance. The knees should be slightly bent. This is your starting position.",
+      "Keeping the knees stationary, lower the dumbbells to over the top of your feet by bending at the waist while keeping your back straight. Keep moving forward as if you were going to pick something from the floor until you feel a stretch on the hamstrings. Exhale as you perform this movement",
+      "Start bringing your torso up straight again by extending your hips and waist until you are back at the starting position. Inhale as you perform this movement.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте прямо, гантели перед бёдрами, колени почти прямые.",
+      "На вдохе наклонитесь с прямой спиной, отводя таз назад, гантели опускаются вдоль ног.",
+      "На выдохе вернитесь в исходное положение за счёт ягодиц и бицепсов бёдер."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Stiff-Legged_Dumbbell_Deadlift.json"
+  },
+  {
+    "id": "lib-straight-arm-pulldown",
+    "nameEn": "Straight-Arm Pulldown",
+    "nameRu": "Пуловер на блоке прямыми руками",
+    "category": "back",
+    "equipment": "cable",
+    "level": "beginner",
+    "primaryMuscles": [
+      "lats"
+    ],
+    "instructionsEn": [
+      "You will start by grabbing the wide bar from the top pulley of a pulldown machine and using a wider than shoulder-width pronated (palms down) grip. Step backwards two feet or so.",
+      "Bend your torso forward at the waist by around 30-degrees with your arms fully extended in front of you and a slight bend at the elbows. If your arms are not fully extended then you need to step a bit more backwards until they are. Once your arms are fully extended and your torso is slightly bent at the waist, tighten the lats and then you are ready to begin.",
+      "While keeping the arms straight, pull the bar down by contracting the lats until your hands are next to the side of the thighs. Breathe out as you perform this step.",
+      "While keeping the arms straight, go back to the starting position while breathing in.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте перед верхним блоком, возьмитесь за прямую рукоять хватом сверху на почти прямых руках. Корпус наклонён вперёд.",
+      "На выдохе тяните рукоять вниз к бёдрам прямыми руками, за счёт широчайших. Держите руки почти прямыми всё движение.",
+      "На вдохе плавно верните рукоять вверх, чувствуя растяжение широчайших."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Straight-Arm_Pulldown.json"
+  },
+  {
+    "id": "lib-t-bar-row-with-handle",
+    "nameEn": "T-Bar Row with Handle",
+    "nameRu": "Тяга Т-грифа с рукоятью",
+    "category": "back",
+    "equipment": "barbell",
+    "level": "beginner",
+    "primaryMuscles": [
+      "middle back"
+    ],
+    "instructionsEn": [
+      "Position a bar into a landmine or in a corner to keep it from moving. Load an appropriate weight onto your end.",
+      "Stand over the bar, and position a Double D row handle around the bar next to the collar. Using your hips and legs, rise to a standing position.",
+      "Assume a wide stance with your hips back and your chest up. Your arms should be extended. This will be your starting position.",
+      "Pull the weight to your upper abdomen by retracting the shoulder blades and flexing the elbows. Do not jerk the weight or cheat during the movement.",
+      "After a brief pause, return to the starting position."
+    ],
+    "instructionsRu": [
+      "Встаньте над Т-грифом, уприте стопы в платформы, возьмитесь за рукояти. Корпус наклонён, спина прямая.",
+      "На выдохе тяните гриф к низу живота, локти назад, грудь вперёд.",
+      "На вдохе подконтрольно опустите вес, не выпрямляя корпус рывком."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/T-Bar_Row_with_Handle.json"
+  },
+  {
+    "id": "lib-triceps-pushdown",
+    "nameEn": "Triceps Pushdown",
+    "nameRu": "Разгибания на трицепс на блоке",
+    "category": "arms",
+    "equipment": "cable",
+    "level": "beginner",
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "instructionsEn": [
+      "Attach a straight or angled bar to a high pulley and grab with an overhand grip (palms facing down) at shoulder width.",
+      "Standing upright with the torso straight and a very small inclination forward, bring the upper arms close to your body and perpendicular to the floor. The forearms should be pointing up towards the pulley as they hold the bar. This is your starting position.",
+      "Using the triceps, bring the bar down until it touches the front of your thighs and the arms are fully extended perpendicular to the floor. The upper arms should always remain stationary next to your torso and only the forearms should move. Exhale as you perform this movement.",
+      "After a second hold at the contracted position, bring the bar slowly up to the starting point. Breathe in as you perform this step.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте перед верхним блоком, возьмитесь за рукоять хватом сверху, локти прижаты к корпусу, предплечья вверх.",
+      "На выдохе разогните локти, опуская рукоять до бёдер. Плечи и локти неподвижны.",
+      "На вдохе плавно верните рукоять вверх до сгиба в локтях около 90 градусов, не поднимая локти."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Triceps_Pushdown.json"
+  },
+  {
+    "id": "lib-upright-barbell-row",
+    "nameEn": "Upright Barbell Row",
+    "nameRu": "Тяга штанги к подбородку",
+    "category": "arms",
+    "equipment": "barbell",
+    "level": "beginner",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "instructionsEn": [
+      "Grasp a barbell with an overhand grip that is slightly less than shoulder width. The bar should be resting on the top of your thighs with your arms extended and a slight bend in your elbows. Your back should also be straight. This will be your starting position.",
+      "Now exhale and use the sides of your shoulders to lift the bar, raising your elbows up and to the side. Keep the bar close to your body as you raise it. Continue to lift the bar until it nearly touches your chin. Tip: Your elbows should drive the motion, and should always be higher than your forearms. Remember to keep your torso stationary and pause for a second at the top of the movement.",
+      "Lower the bar back down slowly to the starting position. Inhale as you perform this portion of the movement.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Встаньте прямо, штанга в прямых руках перед бёдрами, хват уже плеч.",
+      "На выдохе тяните гриф вверх к подбородку, разводя локти в стороны и вверх. Локти всегда выше предплечий.",
+      "На вдохе плавно опустите штангу. При дискомфорте в плечах уменьшите амплитуду или вес."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Upright_Barbell_Row.json"
+  },
+  {
+    "id": "lib-vertical-swing",
+    "nameEn": "Vertical Swing",
+    "nameRu": "Махи гирей двумя руками",
+    "category": "legs",
+    "equipment": "dumbbells",
+    "level": "beginner",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "instructionsEn": [
+      "Allow the dumbbell to hang at arms length between your legs, holding it with both hands. Keep your back straight and your head up.",
+      "Swing the dumbbell between your legs, flexing at the hips and bending the knees slightly.",
+      "Powerfully reverse the motion by extending at the hips, knees, and ankles to propel yourself upward, swinging the dumbell over your head.",
+      "As you land, absorb the impact through your legs and draw the dumbbell to your torso before the next repetition."
+    ],
+    "instructionsRu": [
+      "Поставьте гирю на пол перед собой, стопы чуть шире плеч. Возьмитесь за дужку двумя руками, спина прямая, таз назад.",
+      "Махом гири назад между ног загрузите заднюю цепь, затем мощно вытолкните таз вперёд — гиря взлетает вперёд до уровня груди. Руки не тянут — работает тело.",
+      "Дайте гире свободно упасть назад между ног, снова наклоняясь тазом. Всё движение — ритмичный «маятник» без пауз."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Vertical_Swing.json"
+  },
+  {
+    "id": "lib-wide-grip-lat-pulldown",
+    "nameEn": "Wide-Grip Lat Pulldown",
+    "nameRu": "Тяга верхнего блока широким хватом",
+    "category": "back",
+    "equipment": "cable",
+    "level": "beginner",
+    "primaryMuscles": [
+      "lats"
+    ],
+    "instructionsEn": [
+      "Sit down on a pull-down machine with a wide bar attached to the top pulley. Make sure that you adjust the knee pad of the machine to fit your height. These pads will prevent your body from being raised by the resistance attached to the bar.",
+      "Grab the bar with the palms facing forward using the prescribed grip. Note on grips: For a wide grip, your hands need to be spaced out at a distance wider than shoulder width. For a medium grip, your hands need to be spaced out at a distance equal to your shoulder width and for a close grip at a distance smaller than your shoulder width.",
+      "As you have both arms extended in front of you holding the bar at the chosen grip width, bring your torso back around 30 degrees or so while creating a curvature on your lower back and sticking your chest out. This is your starting position.",
+      "As you breathe out, bring the bar down until it touches your upper chest by drawing the shoulders and the upper arms down and back. Tip: Concentrate on squeezing the back muscles once you reach the full contracted position. The upper torso should remain stationary and only the arms should move. The forearms should do no other work except for holding the bar; therefore do not try to pull down the bar using the forearms.",
+      "After a second at the contracted position squeezing your shoulder blades together, slowly raise the bar back to the starting position when your arms are fully extended and the lats are fully stretched. Inhale during this portion of the movement.",
+      "Repeat this motion for the prescribed amount of repetitions."
+    ],
+    "instructionsRu": [
+      "Сядьте, уприте бёдра под валик. Возьмитесь за гриф широким хватом сверху и слегка отклоните корпус назад.",
+      "На выдохе тяните гриф к верхней части груди, сводя лопатки и ведя локти вниз-назад.",
+      "На вдохе подконтрольно отпустите гриф вверх, растягивая широчайшие, не поднимая плечи к ушам."
+    ],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Wide-Grip_Lat_Pulldown.json"
   }
 ];

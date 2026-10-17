@@ -30,6 +30,92 @@ const INSTRUCTIONS_RU: Record<string, string[]> = fs.existsSync(INSTRUCTIONS_RU_
   : {};
 
 const HOME_EQUIPMENT = new Set(['body only', 'bands']);
+
+// Курируемый allowlist тренажерных упражнений (Фаза 4): импортируются по id
+// датасета, без общего фильтра по оборудованию. Порядок в файле результата:
+// сначала домашние (body only / bands), затем тренажерные — Bridge (числовые
+// id 100_000+index) рассчитан на этот порядок, не менять.
+const GYM_IMPORT_IDS = new Set([
+  'Ab_Crunch_Machine',
+  'Alternate_Hammer_Curl',
+  'Arnold_Dumbbell_Press',
+  'Barbell_Bench_Press_-_Medium_Grip',
+  'Barbell_Curl',
+  'Barbell_Deadlift',
+  'Barbell_Full_Squat',
+  'Barbell_Glute_Bridge',
+  'Barbell_Hip_Thrust',
+  'Barbell_Incline_Bench_Press_-_Medium_Grip',
+  'Barbell_Lunge',
+  'Barbell_Shrug',
+  'Barbell_Squat',
+  'Bent_Over_Barbell_Row',
+  'Butterfly',
+  'Cable_Crossover',
+  'Cable_Crunch',
+  'Cable_Rope_Overhead_Triceps_Extension',
+  'Close-Grip_Barbell_Bench_Press',
+  'Close-Grip_Front_Lat_Pulldown',
+  'Concentration_Curls',
+  'Decline_Barbell_Bench_Press',
+  'Dumbbell_Bench_Press',
+  'Dumbbell_Bicep_Curl',
+  'Dumbbell_Flyes',
+  'Dumbbell_Lunges',
+  'Dumbbell_Shrug',
+  'EZ-Bar_Skullcrusher',
+  'Face_Pull',
+  'Front_Dumbbell_Raise',
+  'Front_Squat_Clean_Grip',
+  'Goblet_Squat',
+  'Good_Morning',
+  'Hack_Squat',
+  'Incline_Dumbbell_Flyes',
+  'Incline_Dumbbell_Press',
+  'Kettlebell_Turkish_Get-Up_Lunge_style',
+  'Leg_Extensions',
+  'Leg_Press',
+  'Lying_Leg_Curls',
+  'Machine_Bench_Press',
+  'One-Arm_Dumbbell_Row',
+  'One-Arm_Kettlebell_Row',
+  'One-Legged_Cable_Kickback',
+  'Pallof_Press',
+  'Preacher_Curl',
+  'Pull_Through',
+  'Reverse_Flyes',
+  'Romanian_Deadlift',
+  'Seated_Cable_Rows',
+  'Seated_Calf_Raise',
+  'Seated_Dumbbell_Press',
+  'Seated_Leg_Curl',
+  'Side_Lateral_Raise',
+  'Split_Squat_with_Dumbbells',
+  'Standing_Barbell_Calf_Raise',
+  'Standing_Biceps_Cable_Curl',
+  'Standing_Calf_Raises',
+  'Standing_Dumbbell_Triceps_Extension',
+  'Standing_Military_Press',
+  'Stiff-Legged_Dumbbell_Deadlift',
+  'Straight-Arm_Pulldown',
+  'T-Bar_Row_with_Handle',
+  'Triceps_Pushdown',
+  'Upright_Barbell_Row',
+  'Vertical_Swing',
+  'Wide-Grip_Lat_Pulldown'
+]);
+
+// Нормализация оборудования датасета → union интерфейса ImportedExercise.
+const EQUIPMENT_IMPORT = {
+  'body only': 'bodyweight',
+  bands: 'bands',
+  dumbbell: 'dumbbells',
+  barbell: 'barbell',
+  cable: 'cable',
+  machine: 'machine',
+  kettlebells: 'kettlebell',
+  'e-z curl bar': 'ez-bar'
+};
 const MUSCLE_TO_CATEGORY = {
   chest: 'chest',
   lats: 'back',
@@ -199,16 +285,87 @@ const NAME_TRANSLATIONS = {
   'Spider Crawl': 'Паучий краул',
   'Standing Hip Circles': 'Круги бедром стоя',
   'Standing Towel Triceps Extension': 'Разгибание на трицепс полотенцем стоя',
-  'Stomach Vacuum': 'Вакуум живота'
+  'Stomach Vacuum': 'Вакуум живота',
+
+  // Тренажерные упражнения (Фаза 4) — курируемый набор с полным переводом.
+  "Ab Crunch Machine": "Скручивания на пресс в тренажёре",
+  "Alternate Hammer Curl": "Молотковые сгибания поочерёдно",
+  "Arnold Dumbbell Press": "Жим Арнольда",
+  "Barbell Bench Press - Medium Grip": "Жим штанги лёжа (средний хват)",
+  "Barbell Curl": "Сгибания рук со штангой",
+  "Barbell Deadlift": "Становая тяга со штангой",
+  "Barbell Full Squat": "Приседания со штангой в полную глубину",
+  "Barbell Glute Bridge": "Ягодичный мостик со штангой",
+  "Barbell Hip Thrust": "Подъём таза со штангой с опорой (хип траст)",
+  "Barbell Incline Bench Press - Medium Grip": "Жим штанги на наклонной скамье",
+  "Barbell Lunge": "Выпады со штангой",
+  "Barbell Shrug": "Шраги со штангой",
+  "Barbell Squat": "Приседания со штангой",
+  "Bent Over Barbell Row": "Тяга штанги в наклоне",
+  "Butterfly": "Сведение в тренажёре «бабочка»",
+  "Cable Crossover": "Кроссовер на блоках",
+  "Cable Crunch": "Скручивания на блоке стоя",
+  "Cable Rope Overhead Triceps Extension": "Разгибания на трицепс из-за головы с канатом",
+  "Close-Grip Barbell Bench Press": "Жим штанги узким хватом",
+  "Close-Grip Front Lat Pulldown": "Тяга верхнего блока узким хватом",
+  "Concentration Curls": "Концентрированные сгибания",
+  "Decline Barbell Bench Press": "Жим штанги на скамье с отрицательным наклоном",
+  "Dumbbell Bench Press": "Жим гантелей лёжа",
+  "Dumbbell Bicep Curl": "Сгибания рук с гантелями",
+  "Dumbbell Flyes": "Разведения гантелей лёжа",
+  "Dumbbell Lunges": "Выпады с гантелями",
+  "Dumbbell Shrug": "Шраги с гантелями",
+  "EZ-Bar Skullcrusher": "Французский жим с EZ-грифом",
+  "Face Pull": "Тяга к лицу на блоке с канатом",
+  "Front Dumbbell Raise": "Подъём гантели перед собой",
+  "Front Squat (Clean Grip)": "Фронтальные приседания (хват «корзинка»)",
+  "Goblet Squat": "Гоблет-приседания с гирей у груди",
+  "Good Morning": "Наклоны со штангой (гуд морнинг)",
+  "Hack Squat": "Гакк-приседания",
+  "Incline Dumbbell Flyes": "Разведения гантелей на наклонной скамье",
+  "Incline Dumbbell Press": "Жим гантелей на наклонной скамье",
+  "Kettlebell Turkish Get-Up (Lunge style)": "Турецкий подъём с гирей",
+  "Leg Extensions": "Разгибания ног сидя в тренажёре",
+  "Leg Press": "Жим ногами в тренажёре",
+  "Lying Leg Curls": "Сгибания ног лёжа в тренажёре",
+  "Machine Bench Press": "Жим в тренажёре сидя",
+  "One-Arm Dumbbell Row": "Тяга гантели одной рукой",
+  "One-Arm Kettlebell Row": "Тяга гири одной рукой",
+  "One-Legged Cable Kickback": "Отведение ноги назад на блоке",
+  "Pallof Press": "Паллоф-пресс",
+  "Preacher Curl": "Сгибания на скамье Скотта",
+  "Pull Through": "Протяжка на блоке между ног",
+  "Reverse Flyes": "Разведения гантелей на заднюю дельту",
+  "Romanian Deadlift": "Румынская тяга",
+  "Seated Cable Rows": "Тяга горизонтального блока",
+  "Seated Calf Raise": "Подъёмы на носки сидя",
+  "Seated Dumbbell Press": "Жим гантелей сидя",
+  "Seated Leg Curl": "Сгибания ног сидя в тренажёре",
+  "Side Lateral Raise": "Махи гантелями в стороны",
+  "Split Squat with Dumbbells": "Приседания в ножницы с гантелями",
+  "Standing Barbell Calf Raise": "Подъёмы на носки со штангой",
+  "Standing Biceps Cable Curl": "Сгибания рук на нижнем блоке",
+  "Standing Calf Raises": "Подъёмы на носки стоя",
+  "Standing Dumbbell Triceps Extension": "Разгибание гантели из-за головы стоя",
+  "Standing Military Press": "Армейский жим стоя",
+  "Stiff-Legged Dumbbell Deadlift": "Мёртвая тяга с гантелями на прямых ногах",
+  "Straight-Arm Pulldown": "Пуловер на блоке прямыми руками",
+  "T-Bar Row with Handle": "Тяга Т-грифа с рукоятью",
+  "Triceps Pushdown": "Разгибания на трицепс на блоке",
+  "Upright Barbell Row": "Тяга штанги к подбородку",
+  "Vertical Swing": "Махи гирей двумя руками",
+  "Wide-Grip Lat Pulldown": "Тяга верхнего блока широким хватом"
 };
 
 const exercises = JSON.parse(
   fs.readFileSync(path.join(DATASET_DIR, 'dist/exercises.json'), 'utf-8')
 );
 
-const filtered = exercises.filter(
+const homeExercises = exercises.filter(
   (ex) => HOME_EQUIPMENT.has(ex.equipment) && !requiresUnsupportedEquipment(ex)
 );
+const gymExercises = exercises.filter((ex) => GYM_IMPORT_IDS.has(ex.id));
+const filtered = [...homeExercises, ...gymExercises];
 
 fs.mkdirSync(OUT_ASSETS_DIR, { recursive: true });
 
@@ -228,29 +385,32 @@ for (const ex of filtered) {
   const nameRu = translateName(ex.name, NAME_TRANSLATIONS);
   if (!nameRu) untranslatedCount++;
 
+  const isGymPick = GYM_IMPORT_IDS.has(ex.id);
   const localImageKeys = [];
-  (ex.images ?? []).forEach((imgRelPath, idx) => {
-    const srcPath = path.join(DATASET_DIR, 'exercises', imgRelPath);
-    if (!fs.existsSync(srcPath)) return;
-    const destDir = path.join(OUT_ASSETS_DIR, slug);
-    fs.mkdirSync(destDir, { recursive: true });
-    const destPath = path.join(destDir, `${idx}.jpg`);
-    expectedImagePaths.add(destPath);
-    fs.copyFileSync(srcPath, destPath);
+  if (!isGymPick) {
+    (ex.images ?? []).forEach((imgRelPath, idx) => {
+      const srcPath = path.join(DATASET_DIR, 'exercises', imgRelPath);
+      if (!fs.existsSync(srcPath)) return;
+      const destDir = path.join(OUT_ASSETS_DIR, slug);
+      fs.mkdirSync(destDir, { recursive: true });
+      const destPath = path.join(destDir, `${idx}.jpg`);
+      expectedImagePaths.add(destPath);
+      fs.copyFileSync(srcPath, destPath);
 
-    const key = `${slug}-${idx}`;
-    localImageKeys.push(key);
-    imageRequireLines.push(
-      `  '${key}': require('../../../assets/exercise-library/${slug}/${idx}.jpg'),`
-    );
-  });
+      const key = `${slug}-${idx}`;
+      localImageKeys.push(key);
+      imageRequireLines.push(
+        `  '${key}': require('../../../assets/exercise-library/${slug}/${idx}.jpg'),`
+      );
+    });
+  }
 
   entries.push({
     id: `lib-${slug}`,
     nameEn: ex.name,
     nameRu: nameRu,
     category,
-    equipment: ex.equipment === 'bands' ? 'bands' : 'bodyweight',
+    equipment: EQUIPMENT_IMPORT[ex.equipment] ?? 'bodyweight',
     level: ex.level ?? null,
     primaryMuscles: ex.primaryMuscles ?? [],
     instructionsEn: ex.instructions ?? [],
@@ -286,6 +446,11 @@ const dataFileContent = `/**
  * re-run the script after changes. UI falls back to instructionsEn when empty.
  * nameRu is null where no manual translation exists yet; UI must fall back
  * to nameEn in that case, not hide the exercise.
+ *
+ * Gym entries (dumbbells/barbell/cable/machine/kettlebell/ez-bar) are a
+ * curated allowlist with full Russian names and instructions. Their
+ * imageKeys are intentionally empty: media assets await a budget decision,
+ * so the UI shows the phase-1 placeholder instead of dataset photos.
  */
 
 export interface ImportedExercise {
@@ -293,7 +458,15 @@ export interface ImportedExercise {
   nameEn: string;
   nameRu: string | null;
   category: 'chest' | 'back' | 'legs' | 'abs' | 'arms' | 'glutes';
-  equipment: 'bodyweight' | 'bands';
+  equipment:
+    | 'bodyweight'
+    | 'bands'
+    | 'dumbbells'
+    | 'barbell'
+    | 'cable'
+    | 'machine'
+    | 'kettlebell'
+    | 'ez-bar';
   level: string | null;
   primaryMuscles: string[];
   instructionsEn: string[];
