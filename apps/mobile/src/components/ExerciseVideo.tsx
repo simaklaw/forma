@@ -168,7 +168,7 @@ export default function ExerciseVideo({
           <View style={styles.playBadge}>
             <Text style={styles.playBadgeText}>▶</Text>
           </View>
-        )}
+        ) : null}
 
         <Text style={styles.heroLabel}>
           {source != null || gifAsset != null ? label : 'ТЕХНИКА · ПО ШАГАМ'}
