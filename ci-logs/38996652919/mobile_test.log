@@ -1,0 +1,571 @@
+
+> @forma/mobile@0.1.0 test /home/runner/work/forma/forma/apps/mobile
+> jest "--ci" "--passWithNoTests"
+
+PASS src/engines/WorkoutStats.test.ts
+PASS src/features/workout/program/programEngine.test.ts
+PASS src/state/useFitPulseStore.test.ts
+PASS src/features/sync/syncPullService.test.ts
+  ● Console
+
+    console.info
+      [FitPulse:sync-auth] sync credentials ready { user_id: '11111111-2222-5333-8444-555555555555', revalidated: false }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:sync-pull] pull applied { applied: 3, skipped: 0, pages: 2, cursor: 3 }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:sync-auth] sync credentials ready { user_id: '11111111-2222-5333-8444-555555555555', revalidated: false }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:sync-pull] pull applied { applied: 1, skipped: 1, pages: 1, cursor: 2 }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:sync-auth] sync credentials ready { user_id: '11111111-2222-5333-8444-555555555555', revalidated: false }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:sync-pull] pull applied { applied: 1, skipped: 0, pages: 1, cursor: 6 }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.warn
+      [FitPulse:sync-auth] sync register failed; staying offline { err: 'register_failed_500' }
+
+    [0m [90m 31 |[39m       [36mbreak[39m[33m;[39m
+     [90m 32 |[39m     [36mcase[39m [32m'warn'[39m[33m:[39m
+    [31m[1m>[22m[39m[90m 33 |[39m       console[33m.[39mwarn([33m...[39margs)[33m;[39m
+     [90m    |[39m                   [31m[1m^[22m[39m
+     [90m 34 |[39m       [36mbreak[39m[33m;[39m
+     [90m 35 |[39m     [36mcase[39m [32m'error'[39m[33m:[39m
+     [90m 36 |[39m       console[33m.[39merror([33m...[39margs)[33m;[39m[0m
+
+      at apply (src/core/logger.ts:33:19)
+      at Object.emit (src/core/logger.ts:46:48)
+      at warn (src/features/auth/syncAuth.ts:158:9)
+          at Generator.throw (<anonymous>)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _throw (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
+
+    console.info
+      [FitPulse:sync-auth] sync credentials ready { user_id: '11111111-2222-5333-8444-555555555555', revalidated: false }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.warn
+      [FitPulse:sync-pull] pull interrupted; cursor kept { err: 'pull_failed_503', pages: 1 }
+
+    [0m [90m 31 |[39m       [36mbreak[39m[33m;[39m
+     [90m 32 |[39m     [36mcase[39m [32m'warn'[39m[33m:[39m
+    [31m[1m>[22m[39m[90m 33 |[39m       console[33m.[39mwarn([33m...[39margs)[33m;[39m
+     [90m    |[39m                   [31m[1m^[22m[39m
+     [90m 34 |[39m       [36mbreak[39m[33m;[39m
+     [90m 35 |[39m     [36mcase[39m [32m'error'[39m[33m:[39m
+     [90m 36 |[39m       console[33m.[39merror([33m...[39margs)[33m;[39m[0m
+
+      at apply (src/core/logger.ts:33:19)
+      at Object.emit (src/core/logger.ts:46:48)
+      at SyncPullService.warn (src/features/sync/syncPullService.ts:170:11)
+          at Generator.throw (<anonymous>)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _throw (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
+
+    console.info
+      [FitPulse:sync-pull] pull applied { applied: 1, skipped: 0, pages: 1, cursor: 1 }
+
+      at apply (src/core/logger.ts:30:19)
+          at Generator.throw (<anonymous>)
+
+PASS src/features/workout/data/HttpOutboxTransport.test.ts
+  ● Console
+
+    console.warn
+      [FitPulse:http-outbox] outbox send skipped: missing userId or token
+
+    [0m [90m 31 |[39m       [36mbreak[39m[33m;[39m
+     [90m 32 |[39m     [36mcase[39m [32m'warn'[39m[33m:[39m
+    [31m[1m>[22m[39m[90m 33 |[39m       console[33m.[39mwarn([33m...[39margs)[33m;[39m
+     [90m    |[39m                   [31m[1m^[22m[39m
+     [90m 34 |[39m       [36mbreak[39m[33m;[39m
+     [90m 35 |[39m     [36mcase[39m [32m'error'[39m[33m:[39m
+     [90m 36 |[39m       console[33m.[39merror([33m...[39margs)[33m;[39m[0m
+
+      at apply (src/core/logger.ts:33:19)
+      at Object.emit (src/core/logger.ts:46:48)
+      at Object.warn (src/features/workout/data/HttpOutboxTransport.ts:125:13)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at ../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+      at Object.apply [as send] (src/features/workout/data/HttpOutboxTransport.ts:123:15)
+      at Object.send (src/features/workout/data/HttpOutboxTransport.test.ts:85:25)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at ../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+    console.warn
+      [FitPulse:http-outbox] outbox send skipped: missing userId or token
+
+    [0m [90m 31 |[39m       [36mbreak[39m[33m;[39m
+     [90m 32 |[39m     [36mcase[39m [32m'warn'[39m[33m:[39m
+    [31m[1m>[22m[39m[90m 33 |[39m       console[33m.[39mwarn([33m...[39margs)[33m;[39m
+     [90m    |[39m                   [31m[1m^[22m[39m
+     [90m 34 |[39m       [36mbreak[39m[33m;[39m
+     [90m 35 |[39m     [36mcase[39m [32m'error'[39m[33m:[39m
+     [90m 36 |[39m       console[33m.[39merror([33m...[39margs)[33m;[39m[0m
+
+      at apply (src/core/logger.ts:33:19)
+      at Object.emit (src/core/logger.ts:46:48)
+      at Object.warn (src/features/workout/data/HttpOutboxTransport.ts:125:13)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at ../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+      at Object.apply [as send] (src/features/workout/data/HttpOutboxTransport.ts:123:15)
+      at Object.send (src/features/workout/data/HttpOutboxTransport.test.ts:93:28)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+    console.warn
+      [FitPulse:http-outbox] resolveEnrichment failed; pushing thin payload {
+        sessionId: '00000000-0000-7000-8000-0000000000s1',
+        err: 'sqlite locked'
+      }
+
+    [0m [90m 31 |[39m       [36mbreak[39m[33m;[39m
+     [90m 32 |[39m     [36mcase[39m [32m'warn'[39m[33m:[39m
+    [31m[1m>[22m[39m[90m 33 |[39m       console[33m.[39mwarn([33m...[39margs)[33m;[39m
+     [90m    |[39m                   [31m[1m^[22m[39m
+     [90m 34 |[39m       [36mbreak[39m[33m;[39m
+     [90m 35 |[39m     [36mcase[39m [32m'error'[39m[33m:[39m
+     [90m 36 |[39m       console[33m.[39merror([33m...[39margs)[33m;[39m[0m
+
+      at apply (src/core/logger.ts:33:19)
+      at Object.emit (src/core/logger.ts:46:48)
+      at Object.warn (src/features/workout/data/HttpOutboxTransport.ts:154:13)
+          at Generator.throw (<anonymous>)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _throw (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
+
+PASS src/features/workout/data/sqlite/SqliteSessionRepository.txn.test.ts
+PASS src/features/workout/session/ActiveSessionController.test.ts
+  ● Console
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'legs',
+        sessionId: '01a147c7-eb96-7125-9038-4404ae11130e',
+        steps: 2
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'legs',
+        sessionId: '01a147c7-ebb2-7d3d-956c-780577c271e2',
+        steps: 2
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'legs',
+        sessionId: '01a147c7-ebb6-7b8d-9dd9-e0de4c4ba545',
+        steps: 2
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] abandoned previous day session { fromTemplate: 'day-legs@2026-09-26.1', nextDayId: 'push' }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'push',
+        sessionId: '01a147c7-ebb8-754a-9ec3-73a4855505ac',
+        steps: 2
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'legs',
+        sessionId: '01a147c7-ebbb-72b2-b555-40f392e70673',
+        steps: 2
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] abandoned previous day session { fromTemplate: 'day-legs@2026-09-26.1', nextDayId: 'push' }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'push',
+        sessionId: '01a147c7-ebbc-7304-8dc6-8e82ba145b87',
+        steps: 2
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'legs',
+        sessionId: '01a147c7-ebbe-7c71-9f1e-b190a7d441c8',
+        steps: 2
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] restart: abandoned previous session { sessionId: '01a147c7-ebbe-7c71-9f1e-b190a7d441c8' }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'legs',
+        sessionId: '01a147c7-ebc0-7359-845c-44f8222ca1ba',
+        steps: 2
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'legs',
+        sessionId: '01a147c7-ebc2-779a-8bec-b645fe2e9f41',
+        steps: 2
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] restart: abandoned previous session { sessionId: '01a147c7-ebc2-779a-8bec-b645fe2e9f41' }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'legs',
+        sessionId: '01a147c7-ebc6-70b5-abb4-eaa01afbbfa1',
+        steps: 2
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'legs',
+        sessionId: '01a147c7-ebc8-7320-83d7-d240fed1f8b6',
+        steps: 2
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'legs',
+        sessionId: '01a147c7-ebcb-7c2b-b31d-916baab12645',
+        steps: 2
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'legs',
+        sessionId: '01a147c7-ebcc-7294-b20e-3b9e89c7e28b',
+        steps: 2
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'legs',
+        sessionId: '01a147c7-ebce-7d79-8624-087b32ba76db',
+        steps: 2
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] restart: abandoned previous session { sessionId: '01a147c7-ebce-7d79-8624-087b32ba76db' }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'legs',
+        sessionId: '01a147c7-ebd8-7118-86fd-6571ef2cc8ba',
+        steps: 2
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'legs',
+        sessionId: '01a147c7-ebda-78ee-a95a-063d2bc09ad0',
+        steps: 2
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] skipped current step { sessionId: '01a147c7-ebda-78ee-a95a-063d2bc09ad0', reason: 'time' }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] skipped current step { sessionId: '01a147c7-ebda-78ee-a95a-063d2bc09ad0', reason: 'other' }
+
+      at apply (src/core/logger.ts:30:19)
+
+PASS src/features/workout/data/SessionRepository.contract.test.ts
+PASS src/features/workout/data/SessionCommandService.test.ts
+PASS src/features/auth/syncAuth.test.ts
+  ● Console
+
+    console.info
+      [FitPulse:sync-auth] sync credentials ready { user_id: '11111111-2222-5333-8444-555555555555', revalidated: false }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:sync-auth] sync credentials ready { user_id: '11111111-2222-5333-8444-555555555555', revalidated: false }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:sync-auth] sync credentials ready { user_id: '11111111-2222-5333-8444-555555555555', revalidated: true }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.warn
+      [FitPulse:sync-auth] sync register failed; staying offline { err: 'register_failed_400' }
+
+    [0m [90m 31 |[39m       [36mbreak[39m[33m;[39m
+     [90m 32 |[39m     [36mcase[39m [32m'warn'[39m[33m:[39m
+    [31m[1m>[22m[39m[90m 33 |[39m       console[33m.[39mwarn([33m...[39margs)[33m;[39m
+     [90m    |[39m                   [31m[1m^[22m[39m
+     [90m 34 |[39m       [36mbreak[39m[33m;[39m
+     [90m 35 |[39m     [36mcase[39m [32m'error'[39m[33m:[39m
+     [90m 36 |[39m       console[33m.[39merror([33m...[39margs)[33m;[39m[0m
+
+      at apply (src/core/logger.ts:33:19)
+      at Object.emit (src/core/logger.ts:46:48)
+      at warn (src/features/auth/syncAuth.ts:158:9)
+          at Generator.throw (<anonymous>)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _throw (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
+
+PASS src/engines/MetabolicEngine.test.ts
+PASS src/features/workout/ExerciseMediaService.test.ts
+PASS src/features/workout/importedLibraryFilter.test.ts
+PASS src/core/theme/themeContrast.test.ts
+PASS src/features/workout/data/sqlite/runMigrations.test.ts
+PASS src/features/auth/oidcClient.test.ts
+PASS src/features/workout/catalogIntegrity.test.ts
+PASS src/features/workout/program/readyPrograms.test.ts
+PASS src/features/workout/workoutResult.test.ts
+PASS src/services/WgerExerciseService.test.ts
+  ● Console
+
+    console.warn
+      WgerExerciseService: image search failed for unique-term-5 Error: offline
+          at Object.<anonymous> (/home/runner/work/forma/forma/apps/mobile/src/services/WgerExerciseService.test.ts:51:61)
+          at Generator.next (<anonymous>)
+          at asyncGeneratorStep (/home/runner/work/forma/forma/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+          at _next (/home/runner/work/forma/forma/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+          at /home/runner/work/forma/forma/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+          at new Promise (<anonymous>)
+          at Object.<anonymous> (/home/runner/work/forma/forma/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+          at Promise.then.completed (/home/runner/work/forma/forma/node_modules/jest-circus/build/utils.js:298:28)
+          at new Promise (<anonymous>)
+          at callAsyncCircusFn (/home/runner/work/forma/forma/node_modules/jest-circus/build/utils.js:231:10)
+          at _callCircusTest (/home/runner/work/forma/forma/node_modules/jest-circus/build/run.js:316:40)
+          at processTicksAndRejections (node:internal/process/task_queues:103:5)
+          at _runTest (/home/runner/work/forma/forma/node_modules/jest-circus/build/run.js:252:3)
+          at _runTestsForDescribeBlock (/home/runner/work/forma/forma/node_modules/jest-circus/build/run.js:126:9)
+          at _runTestsForDescribeBlock (/home/runner/work/forma/forma/node_modules/jest-circus/build/run.js:121:9)
+          at run (/home/runner/work/forma/forma/node_modules/jest-circus/build/run.js:71:3)
+          at runAndTransformResultsToJestFormat (/home/runner/work/forma/forma/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+          at jestAdapter (/home/runner/work/forma/forma/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+          at runTestInternal (/home/runner/work/forma/forma/node_modules/jest-runner/build/runTest.js:367:16)
+          at runTest (/home/runner/work/forma/forma/node_modules/jest-runner/build/runTest.js:444:34)
+          at Object.worker (/home/runner/work/forma/forma/node_modules/jest-runner/build/testWorker.js:106:12)
+
+    [0m [90m 114 |[39m       [36mreturn[39m result[33m;[39m
+     [90m 115 |[39m     } [36mcatch[39m (error) {
+    [31m[1m>[22m[39m[90m 116 |[39m       console[33m.[39mwarn([32m"WgerExerciseService: image search failed for"[39m[33m,[39m term[33m,[39m error)[33m;[39m
+     [90m     |[39m               [31m[1m^[22m[39m
+     [90m 117 |[39m       [36mthis[39m[33m.[39mimageCache[33m.[39m[36mset[39m(cacheKey[33m,[39m [36mnull[39m)[33m;[39m
+     [90m 118 |[39m       [36mreturn[39m [36mnull[39m[33m;[39m
+     [90m 119 |[39m     }[0m
+
+      at Function.warn (../../packages/core/src/services/WgerExerciseService.ts:116:15)
+          at Generator.throw (<anonymous>)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _throw (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
+
+    console.warn
+      WgerExerciseService: image search failed for unique-term-6 Error: Network response was not ok
+          at Function.<anonymous> (/home/runner/work/forma/forma/packages/core/src/services/WgerExerciseService.ts:97:31)
+          at Generator.next (<anonymous>)
+          at asyncGeneratorStep (/home/runner/work/forma/forma/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+          at _next (/home/runner/work/forma/forma/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+          at processTicksAndRejections (node:internal/process/task_queues:103:5)
+
+    [0m [90m 114 |[39m       [36mreturn[39m result[33m;[39m
+     [90m 115 |[39m     } [36mcatch[39m (error) {
+    [31m[1m>[22m[39m[90m 116 |[39m       console[33m.[39mwarn([32m"WgerExerciseService: image search failed for"[39m[33m,[39m term[33m,[39m error)[33m;[39m
+     [90m     |[39m               [31m[1m^[22m[39m
+     [90m 117 |[39m       [36mthis[39m[33m.[39mimageCache[33m.[39m[36mset[39m(cacheKey[33m,[39m [36mnull[39m)[33m;[39m
+     [90m 118 |[39m       [36mreturn[39m [36mnull[39m[33m;[39m
+     [90m 119 |[39m     }[0m
+
+      at Function.warn (../../packages/core/src/services/WgerExerciseService.ts:116:15)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+PASS src/features/workout/dayPlanOverrides.test.ts
+FAIL src/state/useThemeStore.test.ts
+  ● useThemeStore (issue #160: light/dark/system) › toggleMode переключает и пинует предпочтение
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "light"
+    Received: "dark"
+
+    [0m [90m 48 |[39m     useThemeStore[33m.[39mgetState()[33m.[39mtoggleMode()[33m;[39m
+     [90m 49 |[39m     [36mconst[39m s [33m=[39m useThemeStore[33m.[39mgetState()[33m;[39m
+    [31m[1m>[22m[39m[90m 50 |[39m     expect(s[33m.[39mpreference)[33m.[39mtoBe([32m'light'[39m)[33m;[39m
+     [90m    |[39m                          [31m[1m^[22m[39m
+     [90m 51 |[39m     expect(s[33m.[39mmode)[33m.[39mtoBe([32m'light'[39m)[33m;[39m
+     [90m 52 |[39m   })[33m;[39m
+     [90m 53 |[39m })[33m;[39m[0m
+
+      at Object.toBe (src/state/useThemeStore.test.ts:50:26)
+
+PASS src/engines/VoiceCuesEngine.test.ts
+PASS src/features/workout/session/sequentialStep.test.ts
+PASS src/features/workout/data/sessionProjections.test.ts
+PASS src/features/workout/data/OutboxDrainService.test.ts
+  ● Console
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'legs',
+        sessionId: '01a147c7-efb8-7b45-85b0-e44947de36bf',
+        steps: 1
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'legs',
+        sessionId: '01a147c7-efd8-70f6-841e-59100698ae19',
+        steps: 1
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'legs',
+        sessionId: '01a147c7-efe1-7999-987d-a377f75ee2b9',
+        steps: 1
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:outbox] pruned accepted outbox rows { count: 2, retentionDays: 0 }
+
+      at apply (src/core/logger.ts:30:19)
+
+PASS src/features/workout/catalogBrowser.test.ts
+PASS src/features/health/mapWorkoutToHealth.test.ts
+PASS src/features/workout/session/hydrateSessionReadModel.test.ts
+  ● Console
+
+    console.info
+      [FitPulse:session] started day session {
+        dayId: 'legs',
+        sessionId: '01a147c7-f032-7dae-90dc-f8e958ffa1ad',
+        steps: 1
+      }
+
+      at apply (src/core/logger.ts:30:19)
+
+PASS src/features/sync/workoutSessionChangeApplier.test.ts
+PASS src/features/workout/importedExerciseBridge.test.ts
+PASS src/lib/coachSnapshot.test.ts
+PASS src/state/useSessionFeedbackStore.test.ts
+PASS src/engines/RulesLocalAITrainer.test.ts
+PASS src/engines/estimateWorkoutBurn.test.ts
+PASS src/features/workout/sexPlan.test.ts
+PASS src/features/workout/data/ids.test.ts
+PASS src/features/workout/session/planToSnapshots.test.ts
+PASS src/services/LlamaModelService.test.ts
+PASS src/features/workout/workoutScreenHelpers.test.ts
+PASS src/features/workout/catalog.test.ts
+PASS src/features/workout/data/bootstrapOutboxDrain.test.ts
+PASS src/lib/lastWorkoutFromLogs.test.ts
+PASS src/features/workout/session/clearDayReadModel.test.ts
+PASS src/engines/sessionBurn.test.ts
+PASS src/features/workout/data/personalRecords.test.ts
+PASS src/features/workout/exerciseFavorites.test.ts
+PASS src/engines/RestTimerEngine.test.ts
+PASS src/i18n/strings.test.ts
+PASS src/lib/techniqueCues.test.ts
+PASS src/features/workout/session/dayTemplate.test.ts
+
+Summary of all failing tests
+FAIL src/state/useThemeStore.test.ts
+  ● useThemeStore (issue #160: light/dark/system) › toggleMode переключает и пинует предпочтение
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "light"
+    Received: "dark"
+
+    [0m [90m 48 |[39m     useThemeStore[33m.[39mgetState()[33m.[39mtoggleMode()[33m;[39m
+     [90m 49 |[39m     [36mconst[39m s [33m=[39m useThemeStore[33m.[39mgetState()[33m;[39m
+    [31m[1m>[22m[39m[90m 50 |[39m     expect(s[33m.[39mpreference)[33m.[39mtoBe([32m'light'[39m)[33m;[39m
+     [90m    |[39m                          [31m[1m^[22m[39m
+     [90m 51 |[39m     expect(s[33m.[39mmode)[33m.[39mtoBe([32m'light'[39m)[33m;[39m
+     [90m 52 |[39m   })[33m;[39m
+     [90m 53 |[39m })[33m;[39m[0m
+
+      at Object.toBe (src/state/useThemeStore.test.ts:50:26)
+
+
+Test Suites: 1 failed, 50 passed, 51 total
+Tests:       1 failed, 359 passed, 360 total
+Snapshots:   0 total
+Time:        5.569 s
+Ran all test suites.
+/home/runner/work/forma/forma/apps/mobile:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @forma/mobile@0.1.0 test: `jest "--ci" "--passWithNoTests"`
+Exit status 1
