@@ -45,9 +45,13 @@ describe('useThemeStore (issue #160: light/dark/system)', () => {
 
   test('toggleMode переключает и пинует предпочтение', () => {
     useThemeStore.getState().setPreference('system');
+    // systemMode по умолчанию light => эффективный режим light, toggle уходит в dark
     useThemeStore.getState().toggleMode();
     const s = useThemeStore.getState();
-    expect(s.preference).toBe('light');
-    expect(s.mode).toBe('light');
+    expect(s.preference).toBe('dark');
+    expect(s.mode).toBe('dark');
+    // системные обновления больше не влияют: предпочтение запиновано
+    useThemeStore.getState().setSystemMode('light');
+    expect(useThemeStore.getState().mode).toBe('dark');
   });
 });
