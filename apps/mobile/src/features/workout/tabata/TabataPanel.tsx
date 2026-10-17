@@ -79,8 +79,7 @@ export default function TabataPanel() {
   return (
     <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
       <Text style={[styles.lead, { color: colors.paperDim }]}>
-        Интервалы для похудения и HIIT. Классика — 20 с работа / 10 с отдых × 8. Медиа техники
-        подключите позже (MP4); сейчас — чистый таймер.
+        Интервалы для похудения и HIIT. Классика — 20 с работа / 10 с отдых × 8 раундов.
       </Text>
 
       <View style={styles.presets}>
@@ -178,8 +177,8 @@ export default function TabataPanel() {
       </View>
 
       <Text style={[styles.footnote, { color: colors.paperFaint }]}>
-        Логика как у open-source HIIT-таймеров (OpenHIIT, MIT): wall-clock интервалы, haptic на смене
-        фазы. Видео для Табаты — отдельный манифест MP4, не GIF библиотеки.
+        Интервалы считаются по системным часам — таймер не сбивается при блокировке экрана.
+        Вибрация отмечает смену фазы.
       </Text>
     </ScrollView>
   );
