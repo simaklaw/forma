@@ -27,6 +27,7 @@ import {
   type ReplaceTarget
 } from './replaceTarget';
 import { EXERCISE_VIDEOS } from './exerciseMedia';
+import { realGifForMediaKey } from './exerciseRealMedia';
 import { techniqueCuesFromNote } from '@/lib/techniqueCues';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT, equipmentLabel, muscleLabel } from '@/i18n/strings';
@@ -107,6 +108,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
     item.mediaKey && EXERCISE_VIDEOS[item.mediaKey]
       ? EXERCISE_VIDEOS[item.mediaKey]
       : undefined;
+  const gifAsset = realGifForMediaKey(item.mediaKey);
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -161,7 +163,12 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
             </TouchableOpacity>
           ) : null}
 
-          <ExerciseVideo source={videoSource} posterUri={reference?.imageUrl} cues={cues} />
+          <ExerciseVideo
+            source={videoSource}
+            gifAsset={gifAsset}
+            posterUri={reference?.imageUrl}
+            cues={cues}
+          />
 
           <View style={styles.statsRow}>
             <View style={[styles.stat, { borderColor: colors.line, backgroundColor: colors.panel }]}>
