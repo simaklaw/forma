@@ -72,4 +72,78 @@ describe('filterImportedLibrary', () => {
       expect(ex.instructionsRu.length).toBeGreaterThan(0);
     }
   });
+
+  it('filters by level', () => {
+    const items = [sample(), sample({ id: 'lib-2', nameEn: 'Expert thing', level: 'expert' })];
+    const result = filterImportedLibrary(items, '', null, { level: 'expert' });
+    expect(result).toHaveLength(1);
+    expect(result[0].level).toBe('expert');
+  });
+
+  it('filters by equipment', () => {
+    const items = [sample(), sample({ id: 'lib-2', nameEn: 'Bench press', equipment: 'barbell' })];
+    const result = filterImportedLibrary(items, '', null, { equipment: 'barbell' });
+    expect(result).toHaveLength(1);
+    expect(result[0].equipment).toBe('barbell');
+  });
+
+  it('combines category, level and equipment filters', () => {
+    const items = [
+      sample(),
+      sample({
+        id: 'lib-2',
+        nameEn: 'Press',
+        category: 'chest',
+        equipment: 'dumbbells',
+        level: 'beginner'
+      }),
+      sample({
+        id: 'lib-3',
+        nameEn: 'Row',
+        category: 'back',
+        equipment: 'dumbbells',
+        level: 'beginner'
+      })
+    ];
+    const result = filterImportedLibrary(items, '', 'chest', {
+      level: 'beginner',
+      equipment: 'dumbbells'
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe('lib-2');
+  });
+
+  it('generated library includes gym equipment (phase 4 smoke)', () => {
+    const gymEquipment = new Set([
+      'dumbbells',
+      'barbell',
+      'cable',
+      'machine',
+      'kettlebell',
+      'ez-bar'
+    ]);
+    const gymEntries = IMPORTED_EXERCISE_LIBRARY.filter((ex) => gymEquipment.has(ex.equipment));
+    expect(gymEntries.length).toBeGreaterThanOrEqual(60);
+    for (const ex of gymEntries) {
+      expect(ex.imageKeys).toHaveLength(0);
+      expect(ex.nameRu).toBeTruthy();
+    }
+  });
+
+  it('generated library keeps home entries first (order stability)', () => {
+    const first = IMPORTED_EXERCISE_LIBRARY[0];
+    expect(first.equipment).toBe('bodyweight');
+    const gymEquipment = new Set([
+      'dumbbells',
+      'barbell',
+      'cable',
+      'machine',
+      'kettlebell',
+      'ez-bar'
+    ]);
+    const firstGymIndex = IMPORTED_EXERCISE_LIBRARY.findIndex((ex) =>
+      gymEquipment.has(ex.equipment)
+    );
+    expect(firstGymIndex).toBeGreaterThanOrEqual(90);
+  });
 });
