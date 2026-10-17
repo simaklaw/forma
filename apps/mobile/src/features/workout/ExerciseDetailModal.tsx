@@ -182,14 +182,23 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
             </View>
           </View>
 
-          <Text style={[styles.metaLine, { color: colors.paperDim }]}>
-            {t('metaEquipment', { name: equipmentLabel(equipment, lang) })}
+          <Text style={[styles.sectionLabel, { color: colors.paperFaint }]}>
+            {t('importedModalMuscles')}
           </Text>
-          <Text style={[styles.metaLine, { color: colors.paperDim }]}>
-            {t('metaMuscles', {
-              list: item.targetMuscles.map((key) => muscleLabel(key, lang)).join(' · ')
-            })}
-          </Text>
+          <View style={styles.chipWrapRow}>
+            <View style={[styles.metaChip, { borderColor: colors.lineStrong }]}>
+              <Text style={[styles.metaChipText, { color: colors.paperDim }]}>
+                {equipmentLabel(equipment, lang)}
+              </Text>
+            </View>
+            {item.targetMuscles.map((key) => (
+              <View key={key} style={[styles.metaChip, { borderColor: colors.lineStrong }]}>
+                <Text style={[styles.metaChipText, { color: colors.paperDim }]}>
+                  {muscleLabel(key, lang)}
+                </Text>
+              </View>
+            ))}
+          </View>
 
           {item.note ? (
             <View style={[styles.noteBox, { borderColor: colors.line, backgroundColor: colors.panel }]}>
@@ -249,6 +258,15 @@ const styles = StyleSheet.create({
   statLabel: { fontSize: 11, fontFamily: fonts.body },
   statValue: { fontSize: 18, fontFamily: fonts.mono, marginTop: 2 },
   metaLine: { fontSize: 13, fontFamily: fonts.body },
+  sectionLabel: { fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1 },
+  chipWrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  metaChip: {
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 4
+  },
+  metaChipText: { fontSize: 12, fontFamily: fonts.body },
   noteBox: {
     borderWidth: 1,
     borderRadius: radius.card,

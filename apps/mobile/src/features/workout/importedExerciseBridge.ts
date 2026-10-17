@@ -91,6 +91,11 @@ export function importedToExerciseDef(ex: ImportedExercise, index = 1): Exercise
   };
 }
 
+/** Dataset primary muscles → UI MuscleKey chips (для ImportedLibraryPanel). */
+export function importedMuscleKeys(primary: string[]): MuscleKey[] {
+  return muscleKeyFromPrimary(primary);
+}
+
 export function importedExerciseDefByNumericId(id: number): ExerciseDef | null {
   const ex = exerciseByNumeric.get(id);
   return ex ? importedToExerciseDef(ex) : null;

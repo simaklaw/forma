@@ -29,9 +29,9 @@ import {
   subscribeReplaceTarget,
   type ReplaceTarget
 } from './replaceTarget';
-import { importedToExerciseDef } from './importedExerciseBridge';
+import { importedMuscleKeys, importedToExerciseDef } from './importedExerciseBridge';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
-import { useT, categoryLabel, equipmentLabel, levelLabel } from '@/i18n/strings';
+import { useT, categoryLabel, equipmentLabel, levelLabel, muscleLabel } from '@/i18n/strings';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { TabParamList } from '@/navigation/types';
@@ -40,6 +40,19 @@ function displayName(ex: ImportedExercise): string {
   return ex.nameRu ?? ex.nameEn;
 }
 
+const LEVEL_ORDER = ['beginner', 'intermediate', 'expert'] as const;
+
+const EQUIPMENT_ORDER: ImportedExercise['equipment'][] = [
+  'bodyweight',
+  'bands',
+  'dumbbells',
+  'barbell',
+  'cable',
+  'machine',
+  'kettlebell',
+  'ez-bar'
+];
+
 export default function ImportedLibraryPanel() {
   const colors = useThemeColors();
   const t = useT();
@@ -47,6 +60,8 @@ export default function ImportedLibraryPanel() {
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<ImportedExercise['category'] | null>(null);
+  const [level, setLevel] = useState<string | null>(null);
+  const [equipment, setEquipment] = useState<ImportedExercise['equipment'] | null>(null);
   const [selected, setSelected] = useState<ImportedExercise | null>(null);
   const [resolvedVideo, setResolvedVideo] = useState<{ id: string; source: { uri: string } | number } | null>(null);
   const [gifUri, setGifUri] = useState<string | null>(null);
@@ -100,9 +115,14 @@ export default function ImportedLibraryPanel() {
   }, [selected]);
 
   const filtered = useMemo(
-    () => filterImportedLibrary(IMPORTED_EXERCISE_LIBRARY, query, category),
-    [query, category]
+    () => filterImportedLibrary(IMPORTED_EXERCISE_LIBRARY, query, category, { level, equipment }),
+    [query, category, level, equipment]
   );
+
+  const equipmentOptions = useMemo(() => {
+    const present = new Set(IMPORTED_EXERCISE_LIBRARY.map((ex) => ex.equipment));
+    return EQUIPMENT_ORDER.filter((key) => present.has(key));
+  }, []);
 
   const categories = useMemo(
     () =>
@@ -152,6 +172,84 @@ export default function ImportedLibraryPanel() {
           );
         }}
       />
+      <View style={styles.chips}>
+        <TouchableOpacity
+          onPress={() => setLevel(null)}
+          style={[
+            styles.chip,
+            { borderColor: colors.lineStrong, backgroundColor: colors.panel },
+            level === null && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+          ]}
+          accessibilityRole="button"
+          accessibilityState={{ selected: level === null }}
+          accessibilityLabel={t('catalogLevelAllChip')}
+        >
+          <Text style={[styles.chipText, { color: level === null ? colors.lime : colors.paperDim }]}>
+            {t('catalogLevelAllChip')}
+          </Text>
+        </TouchableOpacity>
+        {LEVEL_ORDER.map((value) => {
+          const active = level === value;
+          return (
+            <TouchableOpacity
+              key={value}
+              onPress={() => setLevel(active ? null : value)}
+              style={[
+                styles.chip,
+                { borderColor: colors.lineStrong, backgroundColor: colors.panel },
+                active && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+              ]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              accessibilityLabel={levelLabel(value, lang)}
+            >
+              <Text style={[styles.chipText, { color: active ? colors.lime : colors.paperDim }]}>
+                {levelLabel(value, lang)}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+      <View style={styles.chips}>
+        <TouchableOpacity
+          onPress={() => setEquipment(null)}
+          style={[
+            styles.chip,
+            { borderColor: colors.lineStrong, backgroundColor: colors.panel },
+            equipment === null && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+          ]}
+          accessibilityRole="button"
+          accessibilityState={{ selected: equipment === null }}
+          accessibilityLabel={t('catalogEquipmentAllChip')}
+        >
+          <Text
+            style={[styles.chipText, { color: equipment === null ? colors.lime : colors.paperDim }]}
+          >
+            {t('catalogEquipmentAllChip')}
+          </Text>
+        </TouchableOpacity>
+        {equipmentOptions.map((value) => {
+          const active = equipment === value;
+          return (
+            <TouchableOpacity
+              key={value}
+              onPress={() => setEquipment(active ? null : value)}
+              style={[
+                styles.chip,
+                { borderColor: colors.lineStrong, backgroundColor: colors.panel },
+                active && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+              ]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              accessibilityLabel={equipmentLabel(value, lang)}
+            >
+              <Text style={[styles.chipText, { color: active ? colors.lime : colors.paperDim }]}>
+                {equipmentLabel(value, lang)}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
       <Text style={[styles.count, { color: colors.paperFaint }]}>
         {t('panelCount', { shown: filtered.length, total: IMPORTED_EXERCISE_LIBRARY.length })}
       </Text>
@@ -244,7 +342,25 @@ export default function ImportedLibraryPanel() {
               <Text style={[styles.meta, { color: colors.paperDim, marginTop: 6 }]}>
                 {categoryLabel(selected.category, lang)} ·{' '}
                 {equipmentLabel(selected.equipment, lang)}
+                {selected.level ? ` · ${levelLabel(selected.level, lang)}` : ''}
               </Text>
+              <View style={styles.section}>
+                <Text style={[styles.sectionLabel, { color: colors.paperFaint }]}>
+                  {t('importedModalMuscles')}
+                </Text>
+                <View style={styles.chipWrapRow}>
+                  {importedMuscleKeys(selected.primaryMuscles).map((key) => (
+                    <View
+                      key={key}
+                      style={[styles.muscleChip, { borderColor: colors.lineStrong }]}
+                    >
+                      <Text style={[styles.muscleChipText, { color: colors.paperDim }]}>
+                        {muscleLabel(key, lang)}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
 
               {(selected.instructionsRu.length > 0 || selected.instructionsEn.length > 0) ? (
                 <View style={styles.section}>
@@ -301,6 +417,14 @@ const styles = StyleSheet.create({
     fontSize: 14
   },
   chips: { paddingHorizontal: spacing.xl, paddingVertical: 10, gap: 8 },
+  chipWrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  muscleChip: {
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 4
+  },
+  muscleChipText: { fontSize: 12, fontFamily: fonts.body },
   chip: {
     paddingHorizontal: 12,
     paddingVertical: 8,
