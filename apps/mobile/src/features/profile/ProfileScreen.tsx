@@ -30,8 +30,8 @@ export default function ProfileScreen() {
   const t = useT();
   const lang = useLanguageStore((s) => s.lang);
   const setLang = useLanguageStore((s) => s.setLang);
-  const themeMode = useThemeStore((s) => s.mode);
-  const setThemeMode = useThemeStore((s) => s.setMode);
+  const themePreference = useThemeStore((s) => s.preference);
+  const setThemePreference = useThemeStore((s) => s.setPreference);
   const voiceCuesEnabled = useVoiceCuesStore((s) => s.enabled);
   const setVoiceCuesEnabled = useVoiceCuesStore((s) => s.setEnabled);
 
@@ -127,10 +127,11 @@ export default function ProfileScreen() {
             {(
               [
                 { id: 'dark' as const, label: t('profileThemeDark') },
-                { id: 'light' as const, label: t('profileThemeLight') }
+                { id: 'light' as const, label: t('profileThemeLight') },
+                { id: 'system' as const, label: t('profileThemeSystem') }
               ] as const
             ).map((opt) => {
-              const on = themeMode === opt.id;
+              const on = themePreference === opt.id;
               return (
                 <TouchableOpacity
                   key={opt.id}
@@ -139,7 +140,7 @@ export default function ProfileScreen() {
                     { borderColor: colors.lineStrong, backgroundColor: colors.ink },
                     on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
                   ]}
-                  onPress={() => setThemeMode(opt.id)}
+                  onPress={() => setThemePreference(opt.id)}
                   accessibilityRole="radio"
                   accessibilityState={{ checked: on }}
                   accessibilityLabel={opt.label}
