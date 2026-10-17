@@ -32,6 +32,8 @@ jobs:
       # Production sync API: https://fitpulse-api.fly.dev (see docs/deploy-fly-r2.md).
       EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID: ${{ inputs.mailru_client_id || vars.EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID || '01a0f7166d967e68a13e38353948a6a5' }}
       EXPO_PUBLIC_SYNC_API_URL: ${{ inputs.sync_api_url || vars.EXPO_PUBLIC_SYNC_API_URL || 'https://fitpulse-api.fly.dev' }}
+      # issue #171: штамп сборки — git-SHA попадает в JS-бандл через Metro (EXPO_PUBLIC_*).
+      EXPO_PUBLIC_GIT_SHA: ${{ github.sha }}
       # Do NOT set NODE_ENV=production at job level — pnpm then skips
       # devDependencies (babel-plugin-module-resolver) and Metro fails.
       GRADLE_OPTS: -Xmx4g -XX:MaxMetaspaceSize=1g -Dorg.gradle.daemon=false

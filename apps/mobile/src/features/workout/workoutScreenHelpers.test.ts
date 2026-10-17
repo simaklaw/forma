@@ -1,4 +1,4 @@
-import { todayPlanDayId } from './workoutScreenHelpers';
+import { dayChipLabel, exerciseInitials, todayPlanDayId } from './workoutScreenHelpers';
 import type { WorkoutDay } from './catalog';
 
 const plan = [
@@ -24,5 +24,37 @@ describe('todayPlanDayId', () => {
 
   it('returns empty for empty plan', () => {
     expect(todayPlanDayId([])).toBe('');
+  });
+});
+
+describe('dayChipLabel', () => {
+  it('takes the head before the dash', () => {
+    expect(dayChipLabel('Жим — грудь, плечи, трицепс')).toBe('Жим');
+  });
+
+  it('keeps short heads as is', () => {
+    expect(dayChipLabel('Всё тело — full body')).toBe('Всё тело');
+  });
+
+  it('falls back to the first word for long heads', () => {
+    expect(dayChipLabel('Ноги и ягодицы — сила')).toBe('Ноги');
+  });
+
+  it('returns the raw name when there is nothing to trim', () => {
+    expect(dayChipLabel('Ноги')).toBe('Ноги');
+  });
+});
+
+describe('exerciseInitials', () => {
+  it('builds two-letter initials from the first two words', () => {
+    expect(exerciseInitials('Жим штанги лёжа')).toBe('ЖШ');
+  });
+
+  it('takes two letters of a single word', () => {
+    expect(exerciseInitials('Приседания')).toBe('ПР');
+  });
+
+  it('returns a dash for empty names', () => {
+    expect(exerciseInitials('   ')).toBe('—');
   });
 });

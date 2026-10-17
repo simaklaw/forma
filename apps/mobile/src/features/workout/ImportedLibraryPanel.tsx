@@ -258,6 +258,11 @@ export default function ImportedLibraryPanel() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         keyboardShouldPersistTaps="handled"
+        ListEmptyComponent={
+          <Text style={[styles.empty, { color: colors.paperFaint }]}>
+            {t('catalogNothingFound')}
+          </Text>
+        }
         renderItem={({ item }) => {
           const thumbKey = item.imageKeys[0];
           const src = thumbKey ? IMPORTED_EXERCISE_IMAGES[thumbKey] : undefined;
@@ -438,6 +443,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontSize: 11,
     fontFamily: fonts.mono
+  },
+  /** issue #171: явное пустое состояние вместо белого экрана списка. */
+  empty: {
+    textAlign: 'center',
+    fontFamily: fonts.body,
+    fontSize: 13,
+    paddingVertical: 40,
+    paddingHorizontal: spacing.xl
   },
   list: { paddingHorizontal: spacing.xl, paddingBottom: 120, gap: 8 },
   row: {

@@ -20,6 +20,7 @@ import { Goal, Sex } from '@/engines/MetabolicEngine';
 import ProtocolBanner from '@/components/ProtocolBanner';
 import HealthConnectCard from '@/features/health/HealthConnectCard';
 import SyncAccountCard from '@/features/auth/SyncAccountCard';
+import { buildStamp } from '@/core/buildInfo';
 
 function numStr(v: number | null | undefined): string {
   return typeof v === 'number' && Number.isFinite(v) ? String(v) : '';
@@ -621,6 +622,8 @@ export default function ProfileScreen() {
           <Text style={[styles.settingName, { color: colors.paper }]}>{t('dataImportName')}</Text>
           <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>{t('dataImportDesc')}</Text>
         </TouchableOpacity>
+
+        <Text style={[styles.buildStamp, { color: colors.paperFaint }]}>{buildStamp()}</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -773,5 +776,7 @@ const styles = StyleSheet.create({
   },
   measureHistoryDate: { flex: 1, fontFamily: fonts.mono, fontSize: 12 },
   measureHistoryVal: { fontFamily: fonts.mono, fontSize: 13 },
-  measureHistoryDel: { width: 20, textAlign: 'center', fontSize: 15 }
+  measureHistoryDel: { width: 20, textAlign: 'center', fontSize: 15 },
+  /** issue #171: штамп сборки в подвале профиля. */
+  buildStamp: { fontFamily: fonts.mono, fontSize: 11, textAlign: 'center', marginTop: spacing.lg }
 });

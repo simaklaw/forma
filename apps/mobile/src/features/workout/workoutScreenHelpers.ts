@@ -74,3 +74,26 @@ export function selectPlanStreakDays(
     return key === todayKey ? 'today-in-progress' : 'missed';
   });
 }
+
+/**
+ * Short day-chip caption: the head before the dash, or the first word when the
+ * head is long. Android ignores adjustsFontSizeToFit, so the caption must be
+ * short by construction (issue #171: empty day chips on the device).
+ */
+export function dayChipLabel(name: string): string {
+  const head = name.split(/\s+[-—–]\s+/)[0]?.trim() || name;
+  if (head.length <= 9) return head;
+  const firstWord = head.split(' ')[0] ?? head;
+  return firstWord.length >= 3 ? firstWord : head.slice(0, 9);
+}
+
+/**
+ * Neutral initials placeholder for exercises without mediaKey (issue #171:
+ * replaces the black square in the day list).
+ */
+export function exerciseInitials(name: string): string {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return '—';
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
