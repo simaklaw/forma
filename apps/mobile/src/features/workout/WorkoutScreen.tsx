@@ -35,6 +35,7 @@ import { clearDayOverride, loadDayOverrideIds, resolveDayExercises } from './day
 import { setReplaceTarget } from './replaceTarget';
 import type { TabParamList } from '@/navigation/types';
 import { EXERCISE_THUMBNAILS } from './exerciseMedia';
+import { useExerciseListThumbs } from './useExerciseListThumbs';
 import { presentEarlyLeave } from './session/earlyLeave';
 import { BusyGuard } from './sessionActionGuard';
 import { workoutScreenStyles as styles } from './workoutScreenStyles';
@@ -131,6 +132,10 @@ export default function WorkoutScreen() {
     const resolved = resolveDayExercises(trainingMode, activeDay.exercises, overrideIds);
     return programInfo ? applyProgramTargets(resolved, programInfo.progression) : resolved;
   }, [activeDay, trainingMode, overrideIds, programInfo]);
+
+  // issue #173: реальные превью для упражнений без бандл-медиа (gym-план) —
+  // общий кэш AsyncStorage с useExerciseReference, оффлайн — заглушка с инициалами.
+  const thumbUris = useExerciseListThumbs(effectiveExercises);
 
   useEffect(() => {
     if (selectedExerciseId != null && !effectiveExercises.some((ex) => ex.id === selectedExerciseId)) {
@@ -751,6 +756,7 @@ export default function WorkoutScreen() {
           const exPr = personalRecords[ex.id];
           const thumbKey = ex.mediaKey;
           const thumb = thumbKey ? EXERCISE_THUMBNAILS[thumbKey] : undefined;
+          const remoteThumbUri = thumb ? undefined : thumbUris[ex.id];
           const matchesFocus =
             profileFocusAreas.length > 0 &&
             ex.targetMuscles.some((m) => profileFocusAreas.includes(m));
@@ -784,6 +790,13 @@ export default function WorkoutScreen() {
             >
               {thumb ? (
                 <Image source={thumb} style={styles.logThumb} />
+              ) : remoteThumbUri ? (
+                <Image
+                  source={{ uri: remoteThumbUri }}
+                  style={[styles.logThumb, { backgroundColor: colors.ink }]}
+                  resizeMode="cover"
+                  accessibilityLabel={ex.name}
+                />
               ) : (
                 <View
                   style={[
