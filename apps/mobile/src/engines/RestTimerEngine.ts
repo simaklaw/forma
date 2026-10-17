@@ -75,6 +75,11 @@ export class RestTimerEngine {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
   }
 
+  /** issue #160: дневной калораж — предупреждение при переходе бюджета. */
+  static hapticCalorieOver() {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+  }
+
   static startTimer(seconds: number, onTick: TimerTickHandler, onComplete: TimerCompleteHandler, beepSource?: AVPlaybackSource) {
     this.stopTimer();
 

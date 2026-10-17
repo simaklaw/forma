@@ -250,6 +250,7 @@ const RU = {
   profileMacrosLine: 'Белки {protein} г · жиры {fat} г · углеводы {carbs} г (ISSN 2.0 / 1.0 г на кг).',
   profileThemeDark: 'Тёмная',
   profileThemeLight: 'Светлая',
+  profileThemeSystem: 'Как на устройстве',
   profileActivityLow: '1.2 низкая',
   profileActivityMid: '1.375 ср.',
   profileActivityHigh: '1.55 выс.',
@@ -269,7 +270,7 @@ const RU = {
   sectionTheme: 'Оформление',
   sectionThemeCount: 'тема',
   themeSchemeName: 'Цветовая схема',
-  themeSchemeDesc: 'Тёмная ink или светлая спортивная — mint-акценты сохраняются',
+  themeSchemeDesc: 'Тёмная «хронограф», светлая «фарфор» — или как на устройстве',
   sectionVoice: 'Тренировка',
   sectionVoiceCount: 'голос',
   voiceCuesName: 'Голосовые подсказки',
@@ -299,6 +300,20 @@ const RU = {
   languageTitle: 'Язык',
   languageRu: 'Русский',
   languageEn: 'English',
+
+  // Онбординг (Фаза 5: локализация формы профиля)
+  onboardingTitle: 'Профиль',
+  onboardingSub:
+    'Обязательно укажите пол — от него зависят планы тренировок (мужской или женский) и расчёт калорий по Миффлину–Сан Жеору. Также нужны вес, рост и возраст. Без этих данных приложение не откроет тренировки. Вес по умолчанию не подставляется.',
+  onboardingSubmit: 'Сохранить и войти',
+  formPlaceholderWeight: 'например 78',
+  formPlaceholderHeight: 'например 178',
+  formPlaceholderAge: 'например 28',
+  formAgeLabel: 'Возраст (13–120)',
+  formAgeA11y: 'Возраст от 13 до 120',
+  formFocusZone: 'Фокус-зона (необязательно)',
+  formFocusHint:
+    'Отметьте, на что хотите упор — такие упражнения будем выделять в тренировке',
 
   // Программа тренировок (Фаза 3)
   myWorkoutTitle: 'Моя тренировка',
@@ -607,6 +622,7 @@ const EN: Record<StringKey, string> = {
   profileMacrosLine: 'Protein {protein} g · fats {fat} g · carbs {carbs} g (ISSN 2.0 / 1.0 g per kg).',
   profileThemeDark: 'Dark',
   profileThemeLight: 'Light',
+  profileThemeSystem: 'System',
   profileActivityLow: '1.2 low',
   profileActivityMid: '1.375 mid',
   profileActivityHigh: '1.55 high',
@@ -625,7 +641,7 @@ const EN: Record<StringKey, string> = {
   sectionTheme: 'Appearance',
   sectionThemeCount: 'theme',
   themeSchemeName: 'Color scheme',
-  themeSchemeDesc: 'Dark ink or light sporty — mint accents stay',
+  themeSchemeDesc: 'Dark chronograph, light porcelain — or follow the device',
   sectionVoice: 'Workout',
   sectionVoiceCount: 'voice',
   voiceCuesName: 'Voice cues',
@@ -655,6 +671,19 @@ const EN: Record<StringKey, string> = {
   languageTitle: 'Language',
   languageRu: 'Русский',
   languageEn: 'English',
+
+  onboardingTitle: 'Profile',
+  onboardingSub:
+    'Sex is required — it determines the workout plans (male or female) and the Mifflin–St Jeor calorie estimate. Weight, height and age are also required. Without this data the app will not unlock workouts. No default weight is pre-filled.',
+  onboardingSubmit: 'Save and continue',
+  formPlaceholderWeight: 'e.g. 78',
+  formPlaceholderHeight: 'e.g. 178',
+  formPlaceholderAge: 'e.g. 28',
+  formAgeLabel: 'Age (13–120)',
+  formAgeA11y: 'Age from 13 to 120',
+  formFocusZone: 'Focus areas (optional)',
+  formFocusHint:
+    'Mark your priorities — those muscles get extra attention in your workouts',
 
   myWorkoutTitle: 'My workout',
   ticketGoal: ' · goal: {goal}',

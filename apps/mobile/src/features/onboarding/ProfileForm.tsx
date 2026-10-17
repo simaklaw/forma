@@ -3,8 +3,10 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-nativ
 import { isProfileComplete } from '@forma/core';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
+import { useLanguageStore } from '@/i18n/useLanguageStore';
+import { muscleLabel, useT } from '@/i18n/strings';
 import type { Sex } from '@/engines/MetabolicEngine';
-import { MUSCLE_LABELS, type MuscleKey } from '@/components/MuscleMap';
+import { MUSCLE_LABELS, type MuscleKey } from '@/domain/muscleKeys';
 
 export type ProfileFormValues = {
   weight: number | null;
@@ -23,6 +25,8 @@ type Props = {
 export function ProfileForm({ initial, submitLabel, onSubmit }: Props) {
   const colors = useThemeColors();
   const styles = createStyles(colors);
+  const t = useT();
+  const lang = useLanguageStore((s) => s.lang);
   const [weight, setWeight] = useState(initial.weight != null ? String(initial.weight) : '');
   const [height, setHeight] = useState(initial.height != null ? String(initial.height) : '');
   const [age, setAge] = useState(initial.age != null ? String(initial.age) : '');
@@ -58,7 +62,7 @@ export function ProfileForm({ initial, submitLabel, onSubmit }: Props) {
 
   return (
     <View style={styles.wrap}>
-      <View style={styles.sexRow} accessibilityRole="radiogroup" accessibilityLabel="Пол">
+      <View style={styles.sexRow} accessibilityRole="radiogroup" accessibilityLabel={t('labelSex')}>
         {(['male', 'female'] as const).map((g) => (
           <TouchableOpacity
             key={g}
@@ -66,40 +70,38 @@ export function ProfileForm({ initial, submitLabel, onSubmit }: Props) {
             onPress={() => setSex(g)}
             accessibilityRole="radio"
             accessibilityState={{ selected: sex === g }}
-            accessibilityLabel={g === 'male' ? 'Мужской' : 'Женский'}
+            accessibilityLabel={g === 'male' ? t('male') : t('female')}
           >
             <Text style={[styles.sexText, sex === g && styles.sexTextOn]}>
-              {g === 'male' ? 'Мужской' : 'Женский'}
+              {g === 'male' ? t('male') : t('female')}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
       <Field
-        label="Вес, кг"
+        label={t('labelWeight')}
         value={weight}
         onChange={setWeight}
-        placeholder="например 78"
-        a11yLabel="Вес в килограммах"
+        placeholder={t('formPlaceholderWeight')}
+        a11yLabel={t('labelWeight')}
       />
       <Field
-        label="Рост, см"
+        label={t('labelHeight')}
         value={height}
         onChange={setHeight}
-        placeholder="например 178"
-        a11yLabel="Рост в сантиметрах"
+        placeholder={t('formPlaceholderHeight')}
+        a11yLabel={t('labelHeight')}
       />
       <Field
-        label="Возраст (13–120)"
+        label={t('formAgeLabel')}
         value={age}
         onChange={setAge}
-        placeholder="например 28"
-        a11yLabel="Возраст от 13 до 120"
+        placeholder={t('formPlaceholderAge')}
+        a11yLabel={t('formAgeA11y')}
       />
       <View style={styles.field}>
-        <Text style={styles.label}>Фокус-зона (необязательно)</Text>
-        <Text style={styles.focusHint}>
-          Отметьте, на что хотите упор — такие упражнения будем выделять в тренировке
-        </Text>
+        <Text style={styles.label}>{t('formFocusZone')}</Text>
+        <Text style={styles.focusHint}>{t('formFocusHint')}</Text>
         <View style={styles.focusGrid}>
           {(Object.keys(MUSCLE_LABELS) as MuscleKey[]).map((key) => {
             const on = focusAreas.includes(key);
@@ -110,10 +112,10 @@ export function ProfileForm({ initial, submitLabel, onSubmit }: Props) {
                 onPress={() => toggleFocusArea(key)}
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked: on }}
-                accessibilityLabel={MUSCLE_LABELS[key]}
+                accessibilityLabel={muscleLabel(key, lang)}
               >
                 <Text style={[styles.focusChipText, on && styles.focusChipTextOn]}>
-                  {MUSCLE_LABELS[key]}
+                  {muscleLabel(key, lang)}
                 </Text>
               </TouchableOpacity>
             );
@@ -208,7 +210,7 @@ function createStyles(colors: ColorTokens) {
       justifyContent: 'center'
     },
     ctaDisabled: { opacity: 0.4 },
-    ctaText: { color: colors.ink, fontFamily: fonts.mono, fontSize: 18 },
+    ctaText: { color: colors.onAccent, fontFamily: fonts.mono, fontSize: 18 },
     focusHint: { color: colors.paperFaint, fontSize: 12, fontFamily: fonts.body, marginTop: -2 },
     focusGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 },
     focusChip: {

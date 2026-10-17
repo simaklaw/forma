@@ -5,7 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BarlowCondensed_600SemiBold, BarlowCondensed_700Bold } from '@expo-google-fonts/barlow-condensed';
 import { Inter_400Regular, Inter_600SemiBold } from '@expo-google-fonts/inter';
 import * as Font from 'expo-font';
-import { Platform, View } from 'react-native';
+import { Platform, useColorScheme, View } from 'react-native';
 import { CoachEngine, isProfileComplete } from '@forma/core';
 import { resolveColors } from '@/core/theme/tokens';
 import { useThemeStore } from '@/state/useThemeStore';
@@ -58,6 +58,13 @@ export default function App() {
   const themeMode = useThemeStore((s) => s.mode);
   const shell = resolveColors(themeMode);
   const voiceCuesEnabled = useVoiceCuesStore((s) => s.enabled);
+  const systemScheme = useColorScheme();
+
+  // issue #160: предпочтение «Как на устройстве» — store получает системную
+  // схему и мгновенно переключает mode (а с ним StatusBar и все экраны).
+  useEffect(() => {
+    useThemeStore.getState().setSystemMode(systemScheme === 'dark' ? 'dark' : 'light');
+  }, [systemScheme]);
 
   useEffect(() => {
     VoiceCuesEngine.setEnabled(voiceCuesEnabled);

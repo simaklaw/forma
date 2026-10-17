@@ -1,6 +1,10 @@
 /**
  * Technique hero: real video when URL given; otherwise animated step cues
  * (copyright-safe, no third-party clips). Optional poster from wger photo.
+ *
+ * issue #160: оверлей видео всегда тёмный (у роликов тёмный леттербоксинг),
+ * поэтому текст на нём — фиксированные светлые цвета, а не theme-lime:
+ * в светлой «фарфоровой» теме лесной акцент на тёмном оверлее нечитаем.
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -218,7 +222,7 @@ function createStyles(colors: ColorTokens) {
     },
     dim: {
       ...StyleSheet.absoluteFillObject,
-      backgroundColor: 'rgba(0,0,0,0.45)'
+      backgroundColor: 'rgba(0,0,0,0.55)'
     },
     guide: {
       position: 'absolute',
@@ -229,7 +233,7 @@ function createStyles(colors: ColorTokens) {
       justifyContent: 'center'
     },
     guideStep: {
-      color: colors.lime,
+      color: '#7DEBD0',
       fontFamily: fonts.mono,
       fontSize: 11,
       letterSpacing: 1,
@@ -248,7 +252,7 @@ function createStyles(colors: ColorTokens) {
       borderRadius: 3,
       backgroundColor: 'rgba(255,255,255,0.25)'
     },
-    dotActive: { backgroundColor: colors.lime, width: 16 },
+    dotActive: { backgroundColor: '#7DEBD0', width: 16 },
     playBadge: {
       position: 'absolute',
       top: '50%',

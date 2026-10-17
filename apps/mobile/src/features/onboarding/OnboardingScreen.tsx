@@ -10,12 +10,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
+import { useT } from '@/i18n/strings';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { ProfileForm } from './ProfileForm';
 
 export default function OnboardingScreen() {
   const colors = useThemeColors();
   const styles = createStyles(colors);
+  const t = useT();
   const profile = useFitPulseStore((s) => s.profile);
   const updateProfile = useFitPulseStore((s) => s.updateProfile);
 
@@ -31,13 +33,8 @@ export default function OnboardingScreen() {
           showsVerticalScrollIndicator={false}
         >
           <Text style={styles.eyebrow}>FITPULSE</Text>
-          <Text style={styles.title}>Профиль</Text>
-          <Text style={styles.sub}>
-            Обязательно укажите пол — от него зависят планы тренировок (мужской или
-            женский) и расчёт калорий по Миффлину–Сан Жеору. Также нужны вес, рост и
-            возраст. Без этих данных приложение не откроет тренировки. Вес по
-            умолчанию не подставляется.
-          </Text>
+          <Text style={styles.title}>{t('onboardingTitle')}</Text>
+          <Text style={styles.sub}>{t('onboardingSub')}</Text>
           <View style={styles.card}>
             <ProfileForm
               initial={{
@@ -47,7 +44,7 @@ export default function OnboardingScreen() {
                 sex: profile.sex,
                 focusAreas: profile.focusAreas ?? []
               }}
-              submitLabel="Сохранить и войти"
+              submitLabel={t('onboardingSubmit')}
               onSubmit={(v) =>
                 updateProfile({
                   weight: v.weight as number,
