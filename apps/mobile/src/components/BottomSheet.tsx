@@ -3,7 +3,7 @@
  * Visual-only FitPulse radius / mint close control.
  */
 
-import React, { forwardRef, useCallback, useMemo } from 'react';
+import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import GorhomBottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
@@ -24,6 +24,15 @@ const AppBottomSheet = forwardRef<GorhomBottomSheet, Props>(
     const styles = createStyles(colors);
     const points = useMemo(() => snapPoints ?? ['60%', '85%'], [snapPoints]);
 
+    // issue #171: «×» раньше вызывал только onClose, который часть вызывающих
+    // не передаёт (ExerciseSheet) — кнопка была мёртвой на устройстве. Теперь
+    // «×» сам закрывает sheet; внешний onClose срабатывает через GorhomBottomSheet.
+    const sheetRef = useRef<GorhomBottomSheet>(null);
+    useImperativeHandle(ref, () => sheetRef.current as GorhomBottomSheet, []);
+    const handleClosePress = useCallback(() => {
+      sheetRef.current?.close();
+    }, []);
+
     const renderBackdrop = useCallback(
       (props: any) => (
         <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} opacity={0.55} />
@@ -33,7 +42,7 @@ const AppBottomSheet = forwardRef<GorhomBottomSheet, Props>(
 
     return (
       <GorhomBottomSheet
-        ref={ref}
+        ref={sheetRef}
         index={-1}
         snapPoints={points}
         enablePanDownToClose
@@ -51,7 +60,8 @@ const AppBottomSheet = forwardRef<GorhomBottomSheet, Props>(
             </View>
             <TouchableOpacity
               style={styles.closeBtn}
-              onPress={onClose}
+              onPress={handleClosePress}
+              hitSlop={12}
               accessibilityLabel="Закрыть"
               accessibilityRole="button"
             >
