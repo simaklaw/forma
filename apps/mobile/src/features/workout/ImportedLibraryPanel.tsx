@@ -172,7 +172,7 @@ export default function ImportedLibraryPanel() {
           );
         }}
       />
-      <View style={styles.chips}>
+      <View style={[styles.chips, styles.chipsRow]}>
         <TouchableOpacity
           onPress={() => setLevel(null)}
           style={[
@@ -210,7 +210,7 @@ export default function ImportedLibraryPanel() {
           );
         })}
       </View>
-      <View style={styles.chips}>
+      <View style={[styles.chips, styles.chipsRow]}>
         <TouchableOpacity
           onPress={() => setEquipment(null)}
           style={[
@@ -256,6 +256,7 @@ export default function ImportedLibraryPanel() {
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
+        style={styles.flex}
         contentContainerStyle={styles.list}
         keyboardShouldPersistTaps="handled"
         ListEmptyComponent={
@@ -422,6 +423,8 @@ const styles = StyleSheet.create({
     fontSize: 14
   },
   chips: { paddingHorizontal: spacing.xl, paddingVertical: 10, gap: 8 },
+  /** issue #175: чипы в ряды, а не вертикальная колонка. */
+  chipsRow: { flexDirection: 'row', flexWrap: 'wrap' },
   chipWrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   muscleChip: {
     borderWidth: 1,

@@ -23,6 +23,8 @@ import { useThemeColors } from '@/core/theme/useThemeColors';
 interface Props {
   /** Remote { uri } or Metro require() asset number. */
   source?: { uri: string } | number;
+  /** Vetted dataset GIF for the exact exercise (issue #175); Android animates GIF natively. */
+  gifAsset?: number;
   /** Optional still from wger when video is missing. */
   posterUri?: string;
   /** Short technique steps (from plan note). */
@@ -45,6 +47,7 @@ function normalizeCues(cues: string[] | undefined): string[] {
 
 export default function ExerciseVideo({
   source,
+  gifAsset,
   posterUri,
   cues,
   label = 'ТЕХНИКА ВЫПОЛНЕНИЯ',
@@ -60,13 +63,13 @@ export default function ExerciseVideo({
   const fullscreenRef = useRef<Video>(null);
 
   useEffect(() => {
-    if (source) return;
+    if (source || gifAsset != null) return;
     setStepIdx(0);
     const id = setInterval(() => {
       setStepIdx((i) => (i + 1) % steps.length);
     }, 2800);
     return () => clearInterval(id);
-  }, [source, steps.length]);
+  }, [source, gifAsset, steps.length]);
 
   useEffect(() => {
     if (!source || !previewRef.current) return;
@@ -124,6 +127,13 @@ export default function ExerciseVideo({
             isLooping
             shouldPlay={shouldPlay}
           />
+        ) : gifAsset != null ? (
+          <Image
+            source={gifAsset}
+            style={StyleSheet.absoluteFill}
+            resizeMode="cover"
+            accessibilityIgnoresInvertColors
+          />
         ) : posterUri ? (
           <Image
             source={{ uri: posterUri }}
@@ -137,7 +147,7 @@ export default function ExerciseVideo({
 
         <View style={styles.dim} />
 
-        {!source ? (
+        {!source && gifAsset == null ? (
           <View style={styles.guide}>
             <Text style={styles.guideStep}>
               Шаг {stepIdx + 1}/{steps.length}
@@ -154,14 +164,14 @@ export default function ExerciseVideo({
               ))}
             </View>
           </View>
-        ) : (
+        ) : source != null ? (
           <View style={styles.playBadge}>
             <Text style={styles.playBadgeText}>▶</Text>
           </View>
-        )}
+        ) : null}
 
         <Text style={styles.heroLabel}>
-          {source ? label : 'ТЕХНИКА · ПО ШАГАМ'}
+          {source != null || gifAsset != null ? label : 'ТЕХНИКА · ПО ШАГАМ'}
         </Text>
       </TouchableOpacity>
 
