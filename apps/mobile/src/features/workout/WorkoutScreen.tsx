@@ -36,6 +36,7 @@ import { setReplaceTarget } from './replaceTarget';
 import type { TabParamList } from '@/navigation/types';
 import { EXERCISE_THUMBNAILS } from './exerciseMedia';
 import { useExerciseListThumbs } from './useExerciseListThumbs';
+import { realThumbForMediaKey } from './exerciseRealMedia';
 import { presentEarlyLeave } from './session/earlyLeave';
 import { BusyGuard } from './sessionActionGuard';
 import { workoutScreenStyles as styles } from './workoutScreenStyles';
@@ -755,7 +756,9 @@ export default function WorkoutScreen() {
           const isCurrent = currentStepExerciseId === ex.id;
           const exPr = personalRecords[ex.id];
           const thumbKey = ex.mediaKey;
-          const thumb = thumbKey ? EXERCISE_THUMBNAILS[thumbKey] : undefined;
+          const thumb =
+            realThumbForMediaKey(thumbKey) ??
+            (thumbKey ? EXERCISE_THUMBNAILS[thumbKey] : undefined);
           const remoteThumbUri = thumb ? undefined : thumbUris[ex.id];
           const matchesFocus =
             profileFocusAreas.length > 0 &&
