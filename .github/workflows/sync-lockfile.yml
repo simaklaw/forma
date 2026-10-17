@@ -1,0 +1,49 @@
+name: Sync lockfile
+
+on:
+  push:
+    branches: [ai/lockfile-sync]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-lockfile-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regen:
+    name: Regenerate pnpm-lock.yaml from workspace
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9.15.0
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      # issue #2: lockfile drift — prettier в корне, apps/api, packages/sync-contract отсутствуют в pnpm-lock.yaml
+      - name: Regenerate lockfile
+        run: pnpm install --lockfile-only
+
+      - name: Commit synced lockfile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml
+          if git diff --cached --quiet; then
+            echo "lockfile already in sync - nothing to commit"
+            exit 0
+          fi
+          git commit -m "chore: sync pnpm-lock.yaml with workspace (issue #2)"
+          git push
