@@ -15,6 +15,7 @@ import {
   DayMeals
 } from '@/state/useFitPulseStore';
 import { estimateWorkoutBurnKcal } from '@/engines/estimateWorkoutBurn';
+import { RestTimerEngine } from '@/engines/RestTimerEngine';
 import CalorieRing from '@/components/CalorieRing';
 import DailyTipCard from '@/components/DailyTipCard';
 import MacroBar from '@/components/MacroBar';
@@ -81,6 +82,16 @@ export default function NutritionScreen() {
       ? t('nutritionRemaining', { kcal: remainingKcal.toLocaleString(locale) })
       : t('nutritionOver', { kcal: Math.abs(remainingKcal).toLocaleString(locale) });
 
+  // issue #160: хаптик при переходе дневного калоража за бюджет (один раз на переход).
+  const overBudget = complete && remainingKcal < 0;
+  const prevOverBudgetRef = React.useRef(overBudget);
+  React.useEffect(() => {
+    if (overBudget && !prevOverBudgetRef.current) {
+      RestTimerEngine.hapticCalorieOver();
+    }
+    prevOverBudgetRef.current = overBudget;
+  }, [overBudget]);
+
   function openAddFood(mealKey: keyof DayMeals) {
     setActiveMeal(mealKey);
     sheetRef.current?.expand();
@@ -89,6 +100,7 @@ export default function NutritionScreen() {
   function toggleWater(idx: number) {
     const next = waterGlasses === idx + 1 ? idx : idx + 1;
     setWater(Math.max(0, Math.min(WATER_MAX, next)));
+    RestTimerEngine.hapticTabSwitch();
   }
 
   return (
@@ -195,9 +207,9 @@ export default function NutritionScreen() {
                   onPress={() => logSavedMeal(activeMeal, m.id)}
                   accessibilityRole="button"
                   accessibilityLabel={t('nutritionAddToMeal', {
-                  name: m.name,
-                  meal: t(MEAL_LABEL_KEYS[activeMeal])
-                })}
+                    name: m.name,
+                    meal: t(MEAL_LABEL_KEYS[activeMeal])
+                  })}
                 >
                   <Text style={styles.savedMealChipText} numberOfLines={1}>
                     {m.name}
@@ -327,7 +339,7 @@ function createStyles(colors: ColorTokens) {
     },
     budgetChipBurn: {
       borderColor: colors.cyan,
-      backgroundColor: 'rgba(45,212,191,0.08)'
+      backgroundColor: colors.cyanDim
     },
     budgetChipTotal: {
       borderColor: colors.lime,
