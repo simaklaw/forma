@@ -7,10 +7,20 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { toDateKey } from '@/engines/WorkoutStats';
 import type { ProgramLengthWeeks, ProgramState } from '@/features/workout/program/programEngine';
+import {
+  isProgramTemplateId,
+  isReadyProgramLevel,
+  type ProgramTemplateId,
+  type ReadyProgramLevel
+} from '@/features/workout/program/readyPrograms';
 
 interface ProgramStore {
   program: ProgramState | null;
-  startProgram: (lengthWeeks: ProgramLengthWeeks) => void;
+  startProgram: (
+    lengthWeeks: ProgramLengthWeeks,
+    templateId?: ProgramTemplateId,
+    templateLevel?: ReadyProgramLevel
+  ) => void;
   skipDay: (dateKey: string) => void;
   unskipDay: (dateKey: string) => void;
   resetProgram: () => void;
@@ -31,7 +41,15 @@ function asProgramState(value: unknown): ProgramState | null {
   const skippedDateKeys = Array.isArray(raw.skippedDateKeys)
     ? raw.skippedDateKeys.filter((k): k is string => typeof k === 'string')
     : [];
-  return { lengthWeeks: raw.lengthWeeks, startDateKey: raw.startDateKey, skippedDateKeys };
+  const templateId = isProgramTemplateId(raw.templateId) ? raw.templateId : undefined;
+  const templateLevel = isReadyProgramLevel(raw.templateLevel) ? raw.templateLevel : undefined;
+  return {
+    lengthWeeks: raw.lengthWeeks,
+    startDateKey: raw.startDateKey,
+    skippedDateKeys,
+    templateId,
+    templateLevel: templateId ? (templateLevel ?? 'intermediate') : undefined
+  };
 }
 
 export const useProgramStore = create<ProgramStore>()(
@@ -39,12 +57,14 @@ export const useProgramStore = create<ProgramStore>()(
     (set) => ({
       program: null,
 
-      startProgram: (lengthWeeks) =>
+      startProgram: (lengthWeeks, templateId, templateLevel) =>
         set({
           program: {
             lengthWeeks,
             startDateKey: toDateKey(new Date()),
-            skippedDateKeys: []
+            skippedDateKeys: [],
+            templateId,
+            templateLevel: templateId ? (templateLevel ?? 'intermediate') : undefined
           }
         }),
 

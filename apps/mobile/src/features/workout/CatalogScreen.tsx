@@ -24,6 +24,7 @@ import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT, equipmentLabel, muscleLabel } from '@/i18n/strings';
 import ExerciseDetailModal from './ExerciseDetailModal';
 import ImportedLibraryPanel from './ImportedLibraryPanel';
+import ProgramsPanel from './ProgramsPanel';
 import TabataPanel from './tabata/TabataPanel';
 import { favoriteKey, loadFavorites, loadRecent, parseFavoriteKey } from './exerciseFavorites';
 import {
@@ -58,7 +59,9 @@ export default function CatalogScreen() {
   const [recentKeys, setRecentKeys] = useState<string[]>([]);
   const [selected, setSelected] = useState<CatalogItem | null>(null);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [catalogScope, setCatalogScope] = useState<'plans' | 'library' | 'tabata'>('plans');
+  const [catalogScope, setCatalogScope] = useState<'plans' | 'library' | 'tabata' | 'programs'>(
+    'plans'
+  );
   const [replaceTarget, setReplaceTargetState] = useState<ReplaceTarget | null>(getReplaceTarget());
 
   useEffect(() => subscribeReplaceTarget(() => setReplaceTargetState(getReplaceTarget())), []);
@@ -138,11 +141,13 @@ export default function CatalogScreen() {
         eyebrow={t('catalogSegmentPlansFull')}
         title={t('catalogHeaderLibrary')}
         subtitle={
-          catalogScope === 'library'
-            ? t('catalogHintLibrary')
-            : catalogScope === 'tabata'
-              ? t('catalogHintTabata')
-              : t('catalogHintOffline', { shown: filtered.length, total: items.length })
+          catalogScope === 'programs'
+            ? t('catalogHintPrograms')
+            : catalogScope === 'library'
+              ? t('catalogHintLibrary')
+              : catalogScope === 'tabata'
+                ? t('catalogHintTabata')
+                : t('catalogHintOffline', { shown: filtered.length, total: items.length })
         }
       />
 
@@ -177,7 +182,8 @@ export default function CatalogScreen() {
           [
             { id: 'plans' as const, label: t('catalogSegmentPlans') },
             { id: 'library' as const, label: t('catalogSegmentLibrary') },
-            { id: 'tabata' as const, label: t('catalogSegmentTabata') }
+            { id: 'tabata' as const, label: t('catalogSegmentTabata') },
+            { id: 'programs' as const, label: t('catalogSegmentPrograms') }
           ] as const
         ).map((item) => {
           const active = catalogScope === item.id;
@@ -206,7 +212,9 @@ export default function CatalogScreen() {
         })}
       </View>
 
-      {catalogScope === 'library' ? (
+      {catalogScope === 'programs' ? (
+        <ProgramsPanel />
+      ) : catalogScope === 'library' ? (
         <ImportedLibraryPanel />
       ) : catalogScope === 'tabata' ? (
         <TabataPanel />

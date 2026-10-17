@@ -8,7 +8,7 @@ import { estimateBurnFromSetLogs, toDateKey as coreToDateKey } from '@forma/core
 import { fonts } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
-import { useT, streakDayWord } from '@/i18n/strings';
+import { levelLabel, programTemplateTitle, streakDayWord, useT } from '@/i18n/strings';
 import ExerciseSheet from './ExerciseSheet';
 import WorkoutPreviewSheet from './WorkoutPreviewSheet';
 import CompletionFeedbackSheet from './CompletionFeedbackSheet';
@@ -30,6 +30,7 @@ import {
   programView as buildProgramView,
   type ProgramLengthWeeks
 } from './program/programEngine';
+import { readyProgramDays } from './program/readyPrograms';
 import { clearDayOverride, loadDayOverrideIds, resolveDayExercises } from './dayPlanOverrides';
 import { setReplaceTarget } from './replaceTarget';
 import type { TabParamList } from '@/navigation/types';
@@ -81,7 +82,17 @@ export default function WorkoutScreen() {
   const skipDay = useProgramStore((s) => s.skipDay);
   const resetProgram = useProgramStore((s) => s.resetProgram);
 
-  const plan = useMemo(() => catalogFor(trainingMode, profileSex), [trainingMode, profileSex]);
+  const templatePlan = useMemo(
+    () =>
+      program?.templateId
+        ? readyProgramDays(program.templateId, program.templateLevel ?? 'intermediate')
+        : null,
+    [program?.templateId, program.templateLevel]
+  );
+  const plan = useMemo(
+    () => templatePlan ?? catalogFor(trainingMode, profileSex),
+    [templatePlan, trainingMode, profileSex]
+  );
   const programInfo = useMemo(
     () => (program ? buildProgramView(plan, program, dayProgress) : null),
     [program, plan, dayProgress]
@@ -444,6 +455,21 @@ export default function WorkoutScreen() {
                 {t('programWeekDays', { done: programInfo.weekDone, total: programInfo.weekTotal })}
               </Text>
             </View>
+            {program?.templateId ? (
+              <View
+                style={[
+                  styles.programChip,
+                  { borderColor: colors.cyan, backgroundColor: colors.panel }
+                ]}
+              >
+                <Text style={[styles.programChipText, { color: colors.cyan }]} numberOfLines={1}>
+                  {t('programTemplateLine', {
+                    name: programTemplateTitle(program.templateId, lang),
+                    level: levelLabel(program.templateLevel ?? 'intermediate', lang)
+                  })}
+                </Text>
+              </View>
+            ) : null}
             <View
               style={[
                 styles.programChip,

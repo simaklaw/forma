@@ -3,6 +3,7 @@ import { toDateKey } from '@/engines/WorkoutStats';
 import type { ExerciseDef } from '../ExerciseSheet';
 import type { WorkoutDay } from '../catalog';
 import { isDayPlanComplete, todayPlanDayId } from '../workoutScreenHelpers';
+import type { ProgramTemplateId, ReadyProgramLevel } from './readyPrograms';
 
 /**
  * Движок многонедельных программ (Фаза 3, issue #158): расписание по дням
@@ -21,6 +22,10 @@ export interface ProgramState {
   startDateKey: string;
   /** Дни, которые пользователь явно пропустил («перенести день»). */
   skippedDateKeys: string[];
+  /** Template of a ready-made program (Phase 4), if started from Programs. */
+  templateId?: ProgramTemplateId;
+  /** Template level (beginner / intermediate / expert). */
+  templateLevel?: ReadyProgramLevel;
 }
 
 export interface WeekProgression {
