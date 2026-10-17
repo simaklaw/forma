@@ -1,5 +1,5 @@
 import React, { forwardRef, useCallback, useEffect, useState } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import type { WorkoutSession } from '@forma/workout-domain';
 import { SetFeedbackCard } from './SetFeedbackCard';
@@ -269,7 +269,86 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       }
     }
 
-    const ctaDisabled = finished || restRemaining !== null || blockedBySequence;
+    function goToExercise(id: number) {
+      onGoToExpected?.(id);
+    }
+
+    function confirmSkipExercise() {
+      Alert.alert(
+        t('skipExerciseTitle'),
+        t('skipExerciseBody'),
+        [
+          { text: t('cancel'), style: 'cancel' },
+          {
+            text: t('skipExerciseConfirm'),
+            onPress: () => {
+              void (async () => {
+                const session = await ActiveSessionController.skipCurrentStep('time');
+                if (!session) return;
+                setSessionSnap(session);
+                RestTimerEngine.stopTimer();
+                setRestRemaining(null);
+                if (nextExercise) goToExercise(nextExercise.id);
+              })();
+            }
+          }
+        ],
+        { cancelable: true }
+      );
+    }
+
+    function togglePause() {
+      void (async () => {
+        const session =
+          sessionSnap?.status === 'paused'
+            ? await ActiveSessionController.resumeSession()
+            : await ActiveSessionController.pauseSession();
+        if (session) setSessionSnap(session);
+      })();
+    }
+
+    function confirmFinish() {
+      Alert.alert(
+        t('playerFinishTitle'),
+        t('playerFinishBody'),
+        [
+          { text: t('cancel'), style: 'cancel' },
+          {
+            text: t('playerFinishConfirm'),
+            onPress: () => {
+              void (async () => {
+                const session = await ActiveSessionController.finishPartialSession();
+                if (!session) return;
+                RestTimerEngine.stopTimer();
+                setRestRemaining(null);
+                const finishedDayId = dayIdFromTemplate(session.templateRevisionId) ?? dayId ?? '';
+                if (session.sessionId && finishedDayId) {
+                  onDayComplete?.({
+                    sessionId: session.sessionId,
+                    dayId: finishedDayId,
+                    session
+                  });
+                }
+              })();
+            }
+          }
+        ],
+        { cancelable: true }
+      );
+    }
+
+    const sessionPaused = sessionSnap?.status === 'paused';
+    const dayList = dayExercises ?? [];
+    const navIndex = dayList.findIndex((e) => e.id === exercise.id);
+    const prevExercise = navIndex > 0 ? dayList[navIndex - 1] : null;
+    const nextExercise =
+      navIndex >= 0 && navIndex + 1 < dayList.length ? dayList[navIndex + 1] : null;
+    const hasActiveSession =
+      Boolean(dayId && dayList.length) &&
+      sessionSnap != null &&
+      sessionSnap.status !== 'completed' &&
+      sessionSnap.status !== 'abandoned';
+    const ctaDisabled = finished || restRemaining !== null || blockedBySequence || sessionPaused;
     const cues = techniqueCuesFromNote(exercise.note);
     const videoSource =
       exercise.mediaKey && EXERCISE_VIDEOS[exercise.mediaKey]
@@ -532,6 +611,81 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           />
         ) : null}
 
+        {dayId && dayList.length > 0 && (
+          <View style={styles.playerRow}>
+            <TouchableOpacity
+              style={[
+                styles.playerBtn,
+                { borderColor: colors.lineStrong },
+                !prevExercise && styles.playerBtnDisabled
+              ]}
+              disabled={!prevExercise}
+              onPress={() => prevExercise && goToExercise(prevExercise.id)}
+              accessibilityRole="button"
+              accessibilityLabel={t('playerPrev')}
+            >
+              <Text style={[styles.playerBtnText, { color: colors.paperDim }]}>
+                {t('playerPrev')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.playerBtn,
+                { borderColor: colors.lineStrong },
+                !hasActiveSession && styles.playerBtnDisabled
+              ]}
+              disabled={!hasActiveSession}
+              onPress={togglePause}
+              accessibilityRole="button"
+              accessibilityLabel={sessionPaused ? t('workoutResumeShort') : t('playerPause')}
+            >
+              <Text
+                style={[
+                  styles.playerBtnText,
+                  { color: sessionPaused ? colors.lime : colors.paperDim }
+                ]}
+              >
+                {sessionPaused ? t('workoutResumeShort') : t('playerPause')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.playerBtn,
+                { borderColor: colors.lineStrong },
+                !hasActiveSession && styles.playerBtnDisabled
+              ]}
+              disabled={!hasActiveSession}
+              onPress={confirmSkipExercise}
+              accessibilityRole="button"
+              accessibilityLabel={t('playerNext')}
+            >
+              <Text style={[styles.playerBtnText, { color: colors.paperDim }]}>
+                {t('playerNext')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.playerBtn,
+                { borderColor: colors.ember },
+                !hasActiveSession && styles.playerBtnDisabled
+              ]}
+              disabled={!hasActiveSession}
+              onPress={confirmFinish}
+              accessibilityRole="button"
+              accessibilityLabel={t('playerFinish')}
+            >
+              <Text style={[styles.playerBtnText, { color: colors.ember }]}>
+                {t('playerFinish')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        {sessionPaused && (
+          <View style={styles.pausedBadge}>
+            <Text style={styles.pausedBadgeText}>{t('sessionPausedBadge')}</Text>
+          </View>
+        )}
+
         <TouchableOpacity
           style={[styles.cta, ctaDisabled && styles.ctaDisabled]}
           disabled={ctaDisabled}
@@ -541,11 +695,13 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           <Text style={styles.ctaText}>
             {finished
               ? t('sheetExerciseDone')
-              : blockedBySequence
-                ? t('sheetDoPrevFirst')
-                : restRemaining !== null
-                  ? t('sheetRestTimer', { time: formatRestClock(restRemaining) })
-                  : t('sheetLogSet', { number: completedSets + 1 })}
+              : sessionPaused
+                ? t('sheetPausedCta')
+                : blockedBySequence
+                  ? t('sheetDoPrevFirst')
+                  : restRemaining !== null
+                    ? t('sheetRestTimer', { time: formatRestClock(restRemaining) })
+                    : t('sheetLogSet', { number: completedSets + 1 })}
           </Text>
         </TouchableOpacity>
       </AppBottomSheet>
@@ -755,6 +911,29 @@ function createStyles(colors: ColorTokens) {
       justifyContent: 'center'
     },
     ctaDisabled: { opacity: 0.45 },
-    ctaText: { color: colors.ink, fontFamily: fonts.bodySemi, fontSize: 15 }
+    ctaText: { color: colors.ink, fontFamily: fonts.bodySemi, fontSize: 15 },
+    playerRow: { flexDirection: 'row', gap: 8, marginTop: spacing.lg },
+    playerBtn: {
+      flex: 1,
+      height: 44,
+      borderWidth: 1,
+      borderRadius: radius.control,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.panel
+    },
+    playerBtnDisabled: { opacity: 0.4 },
+    playerBtnText: { fontFamily: fonts.bodySemi, fontSize: 12 },
+    pausedBadge: {
+      alignSelf: 'flex-start',
+      marginTop: spacing.sm,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: radius.pill,
+      borderWidth: 1,
+      borderColor: colors.ember,
+      backgroundColor: 'rgba(255,107,74,0.1)'
+    },
+    pausedBadgeText: { color: colors.ember, fontFamily: fonts.mono, fontSize: 11 }
   });
 }

@@ -1,5 +1,5 @@
 import { isProfileComplete } from '@forma/core';
-import type { WorkoutSession } from '@forma/workout-domain';
+import type { SkipReason, WorkoutSession } from '@forma/workout-domain';
 import { createLogger } from '@/core/logger';
 import {
   getSessionService,
@@ -249,6 +249,28 @@ class ActiveSessionControllerImpl {
       return result.session;
     } catch (err) {
       log.debug('resumeSession ignored', {
+        err: err instanceof Error ? err.message : String(err)
+      });
+      return null;
+    }
+  }
+
+  /**
+   * Пропустить текущий шаг (упражнение) — плеер «Далее» (Фаза 3).
+   * Разрешено и на паузе — как skip_step в домене.
+   */
+  async skipCurrentStep(reason: SkipReason): Promise<WorkoutSession | null> {
+    if (!this.sessionId) return null;
+    try {
+      const result = await getSessionService().dispatch(this.sessionId, {
+        type: 'skip_step',
+        reason
+      });
+      log.info('skipped current step', { sessionId: this.sessionId, reason });
+      this.emit();
+      return result.session;
+    } catch (err) {
+      log.debug('skipCurrentStep ignored', {
         err: err instanceof Error ? err.message : String(err)
       });
       return null;
