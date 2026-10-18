@@ -48,7 +48,9 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
   const lang = useLanguageStore((s) => s.lang);
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const profileSex = useFitPulseStore((s) => s.profile.sex);
-  const reference = useExerciseReference(item?.wgerSearchTerm ?? null);
+  const reference = useExerciseReference(
+    item?.id != null && isPilotRigExercise(item.id) ? null : item?.wgerSearchTerm ?? null
+  );
   const [favorited, setFavorited] = useState(false);
   const [replaceTarget, setReplaceTargetState] = useState<ReplaceTarget | null>(getReplaceTarget());
   const [replacing, setReplacing] = useState(false);
