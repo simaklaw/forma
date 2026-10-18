@@ -117,7 +117,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       (id: number) => dayExercises?.find((e) => e.id === id)?.name,
       [dayExercises]
     );
-    const dayExerciseIdsKey = dayExercises?.map((entry) => entry.id).join(',') ?? '';
+    const dayExerciseIdentitiesKey = JSON.stringify(
+      (dayExercises ?? []).map((entry) => ({ id: entry.id, name: entry.name }))
+    );
 
     const bodyKg =
       typeof profileWeight === 'number' && Number.isFinite(profileWeight) && profileWeight > 0
@@ -144,10 +146,11 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         }
         // A different day or a frozen exercise list from an older plan must
         // never gate this exercise or show an unrelated "next" exercise.
-        const dayExerciseIds = dayExerciseIdsKey
-          ? dayExerciseIdsKey.split(',').map((id) => Number(id))
-          : [];
-        if (!sessionMatchesDayAndExercises(session, dayId, dayExerciseIds)) {
+        const dayExerciseIdentities = JSON.parse(dayExerciseIdentitiesKey) as {
+          id: number;
+          name: string;
+        }[];
+        if (!sessionMatchesDayAndExercises(session, dayId, dayExerciseIdentities)) {
           setSessionSnap(null);
           return;
         }
@@ -163,7 +166,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       return () => {
         cancelled = true;
       };
-    }, [exercise?.id, dayId, dayExerciseIdsKey, bodyKg, startRestFromDeadline]);
+    }, [exercise?.id, dayId, dayExerciseIdentitiesKey, bodyKg, startRestFromDeadline]);
 
     if (!exercise) return null;
 
