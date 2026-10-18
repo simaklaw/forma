@@ -170,7 +170,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
           ) : null}
 
 {showOriginalRig ? (
-            <ExerciseRigAnimation exerciseId={item.id} sex={rigSex} />
+            <ExerciseRigAnimation exerciseId={item.id} sex={rigSex} shouldPlay={visible} />
           ) : (
             <ExerciseVideo
               source={videoSource}
