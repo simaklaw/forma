@@ -1,11 +1,7 @@
 name: Build Android APK
 
 on:
-  # Temporary one-off rebuild of the device-review fixes on this feature branch only.
-  push:
-    branches:
-      - feat/premium-exercise-animation-library
-  # After the preview run, return to manual-only APK builds.
+  # No push-triggered APK builds. Run manually after CI is green and device review is requested.
   workflow_dispatch:
     inputs:
       sync_api_url:
