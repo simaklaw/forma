@@ -1,6 +1,13 @@
 # FitPulse Premium 2D Exercise Animation Library — Plan
 
-Status: complete inventory, source-specific media-rights notes, and a 225-ID coverage registry are in place; original vector-rig pilot is integrated for three exercise IDs; the refreshed Android APK build completed successfully and was verified to contain its JS bundle; latest Monorepo CI passed with registry synchronization, classification assertions, type-checks and tests. On-device review is pending. This branch remains separate from `main`.
+Status: the first SVG rig attempt was rejected after physical-device testing. Its UI integration has been removed. All 225 IDs are marked not-started for newly authored, exercise-accurate animation. This branch now restores the existing media path, resolves exact local posters where available, removes the fake-player treatment from missing-media cards, and guards against stale sessions from another workout day. These fixes still require a fresh CI run and Android retest; `main` remains unchanged.
+
+
+## Device review — corrective actions (2026-10-19)
+
+The first test APK did not meet the intended visual quality. The SVG sketch looked schematic rather than premium, missing-media states looked like a broken black video player, and the workout sheet could show a stale “next exercise” from another day. The SVG component was removed from the two user-facing exercise screens. A strict local-poster resolver now prefers an imported exercise's own bundled frame, then an exact plan media-key thumbnail, then an exact slug match; it does not fuzzy-match similar names. Missing animation remains honestly labeled as unavailable instead of showing a false play control.
+
+The sheet now ignores a resumable session when its template belongs to a different dayId. This is a targeted safeguard, not proof that the entire session flow is now correct. A fresh CI run and on-device retest are still required. Do not merge the draft until these are green and the animation asset/licensing plan is settled.
 
 ## Goal
 
@@ -42,12 +49,12 @@ Audited `main` at commit `503e7b9a8905e80ff876721a15460db863b5f18c` (2026-10-18)
 3. Confirm how the current UI selects and displays media in `ExerciseSheet`, `ExerciseDetailModal`, `ImportedLibraryPanel`, `useExerciseListThumbs`, and `ExerciseMediaService`.
 4. Produce a coverage matrix and a prioritized list of representative motions. Do not replace any existing assets during this phase.
 
-### Phase 1 — art/rig proof of concept
+### Phase 1 — visual-system gate (previous SVG prototype rejected)
 
-1. Create one original neutral rig with reusable torso, head, upper/lower limbs, hands/feet, and joint pivots; add male/female visual skins sharing the same motion rig where practical.
-2. Produce three representative animations first: bodyweight squat, push-up, and dumbbell shoulder press (or the closest matching catalog exercises).
-3. Deliver each as a small set of clean keyframes plus a looping preview format selected after a React Native/offline compatibility check. Prefer an asset format with reliable native playback and predictable bundle size; do not assume Rive/Lottie/Spine support without verifying current dependencies.
-4. Review anatomy, equipment, timing, visual quality, and dark/light theme contrast on a phone-sized screen before scaling up.
+1. Use the supplied RepDB preview only to define a quality target; do not ship its preview animations as production assets. The uploaded ZIP contains a 22-exercise sample, not a complete library, and its included terms restrict the preview to evaluation/non-commercial use.
+2. Before any full-dataset integration, acquire and verify the commercial licence covering the selected character(s), animation files, app distribution, caching, and offline playback. If not purchased, use original commissioned/generated assets or a dataset with a compatible commercial licence.
+3. Select a format compatible with the current Expo/React Native Android build; keep every approved animation local/offline, transparent, sharp at phone scale, and matched to the exact equipment and movement.
+4. Start with a quality-reviewed set of representative motions, install a test build on a real phone, and only then expand through an explicit per-exercise media manifest. A family label is not permission to reuse an animation when its mechanics differ.
 
 ### Phase 2 — animation taxonomy and reusable motion library
 
@@ -94,12 +101,12 @@ Reuse rigs and motion blocks only where biomechanics genuinely match. Exercise-s
 ## Work completed on the feature branch
 
 - Added a reproducible inventory generator and [full inventory report](./EXERCISE_ANIMATION_INVENTORY.md).
-- Added a per-exercise [coverage registry](./EXERCISE_ANIMATION_COVERAGE.json): 62 workout-plan entries plus 163 imported-library entries (225 total), with separate male/female status and legacy-media-rights status. Only three entries are prototypes; 222 are explicitly marked not started.
+- Added a per-exercise [coverage registry](./EXERCISE_ANIMATION_COVERAGE.json): 62 workout-plan entries plus 163 imported-library entries (225 total), with separate male/female status and legacy-media-rights status. All 225 entries are currently marked not-started for new animation. The previous three SVG prototypes were rejected and are no longer counted as coverage.
 - Added 25 preliminary motion-family candidates for all 225 entries, with classification rule/confidence and review status. Only three records require manual classification because exercise instructions, muscle metadata, or equipment information conflict; those are explicitly blocked from final mapping until corrected.
 - Added heuristic motion-family candidates to all 225 entries: 22 preliminary groups, with classification confidence/rule and manual-review status. Fifteen entries currently fall back to manual classification; all candidates remain unreviewed and do not count as animation coverage.
 - Added CI validation that fails if the committed coverage registry is stale after a catalog change.
 - Added a manual [Android pilot checklist](./EXERCISE_RIG_PILOT_DEVICE_CHECKLIST.md).
-- Added an original SVG-based vector rig with pilot movements: squat (ID 13), push-up (ID 10), and seated dumbbell press (ID 5); includes male/female skins, footwear/apparel details, offline rendering and pause while hidden/backgrounded.
+- The first SVG-based vector rig (squat ID 13, push-up ID 10, seated dumbbell press ID 5) failed visual acceptance and was removed from both exercise-detail surfaces; those three records are no longer counted as prototypes or coverage.
 - Added pose-model unit tests for ID mapping, continuous loops, finite coordinates, ground contact and movement direction.
 - Integrated the pilot into the workout sheet and catalog detail modal only for the three explicitly mapped IDs; all other exercises retain their current media fallback.
 - Added explicit legacy-media rights notes. Existing third-party GIFs are not assumed to be free to redistribute; excluded wrong matches are not considered valid coverage.
