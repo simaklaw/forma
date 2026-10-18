@@ -93,13 +93,15 @@ Reuse rigs and motion blocks only where biomechanics genuinely match. Exercise-s
 
 ## Work completed on the feature branch
 
-- Added `scripts/report-exercise-animation-inventory.mjs` to generate a reproducible inventory from the checked-out repository.
-- Added `docs/EXERCISE_ANIMATION_INVENTORY.md` with the full 62-entry plan list and 163-entry imported catalog.
-- Added `exerciseRigModel.ts` and tests for three original movement families: squat (exercise ID 13), push-up (ID 10), and seated dumbbell press (ID 5).
-- Added `ExerciseRigAnimation.tsx`, an offline SVG-based vector rig with a male/female visual skin selector.
-- Integrated the pilot component into the workout sheet and catalog detail modal only for the three explicitly mapped IDs. All other exercises keep their existing media fallback.
-- No changes have been made to `main`.
-
+- Added a reproducible inventory generator and [full inventory report](./EXERCISE_ANIMATION_INVENTORY.md).
+- Added a per-exercise [coverage registry](./EXERCISE_ANIMATION_COVERAGE.json): 62 workout-plan entries plus 163 imported-library entries (225 total), with separate male/female status and legacy-media-rights status. Only three entries are prototypes; 222 are explicitly marked not started.
+- Added CI validation that fails if the committed coverage registry is stale after a catalog change.
+- Added a manual [Android pilot checklist](./EXERCISE_RIG_PILOT_DEVICE_CHECKLIST.md).
+- Added an original SVG-based vector rig with pilot movements: squat (ID 13), push-up (ID 10), and seated dumbbell press (ID 5); includes male/female skins, footwear/apparel details, offline rendering and pause while hidden/backgrounded.
+- Added pose-model unit tests for ID mapping, continuous loops, finite coordinates, ground contact and movement direction.
+- Integrated the pilot into the workout sheet and catalog detail modal only for the three explicitly mapped IDs; all other exercises retain their current media fallback.
+- Added explicit legacy-media rights notes. Existing third-party GIFs are not assumed to be free to redistribute; excluded wrong matches are not considered valid coverage.
+- No changes have been made to main.
 ## Immediate next implementation task
 
 Run CI and fix any type/test failures. Then review the three animations on an Android-sized screen, correct pose/anatomy and movement timing, and verify both profile variants. Do not generate hundreds of animations before the rig and pilot pass review.
