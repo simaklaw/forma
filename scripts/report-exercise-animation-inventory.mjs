@@ -50,6 +50,47 @@ function parseExportedJsonArray(source, exportName) {
   throw new Error('Unclosed JSON array ' + exportName);
 }
 
+function candidateMotionFamily(name, category = null, equipment = null) {
+  const text = [name, category, equipment].filter(Boolean).join(' ').toLowerCase()
+    .replace(/[–—]/g, '-');
+  const rules = [
+    { family: 'core-anti-rotation', rule: 'anti-rotation-name', pattern: /pallof|паллоф|anti[- ]?rotation|анти.?ротац/ },
+    { family: 'shoulder-isolation', rule: 'shoulder-isolation-name', pattern: /lateral raise|front raise|reverse fly|face pull|external rotation|internal rotation|upright row|shrug|шраг|мах[иа] в стороны|подъ[её]мы? перед собой|разведени[ея].{0,24}(дельт|плеч|гантел|рук)|наружная ротация плеча|внутренняя ротация плеча|тяга к подбородку|face pulls?/ },
+    { family: 'mobility-stretch', rule: 'mobility-stretch-name', pattern: /stretch|mobility|90\/90|wrist circles|hip circles|knee circles|neck exercise|растяж|круги|вращени[ея]|упражнен.*шеи|поворот.*шеи|мобилит/ },
+    { family: 'core-stability-extension', rule: 'core-stability-name', pattern: /plank|side bridge|side plank|dead bug|superman|stomach vacuum|isometric neck|lower back curl|планка|мёртвый жук|мертвый жук|супермен|вакуум|боковой мост|боковая планка|разгибание поясницы/ },
+    { family: 'core-dynamic-flexion-rotation', rule: 'core-dynamic-name', pattern: /crunch|sit[- ]?up|air bike|heel toucher|leg pull[- ]?in|russian twist|scissor kick|tuck crunch|oblique|toe toucher|скручив|велосипед \(пресс\)|подъ[её]м корпуса|локоть к колену|касани[ея] пяток|складк|подтягивание колен|ножниц[ыа]/ },
+    { family: 'cardio-plyometric', rule: 'cardio-plyometric-name', pattern: /jump|lateral bound|skipping|spider crawl|groiners|fast skipping|star jump|rocket jump|standing long jump|plyo push|прыж|бег на месте|альпинист|гроинер|spider crawl/ },
+    { family: 'hip-extension-bridge', rule: 'hip-extension-name', pattern: /glute bridge|hip thrust|butt lift|glute kickback|hip extension|hip raise|single[- ]leg glute bridge|rear leg raise|ягодичн.*мост|мостик с опорой|отведение ноги назад|разгибание бедра|мах ногой назад|подъём таза|подъем таза|отведение бедра/ },
+    { family: 'lower-body-machine-isolation', rule: 'lower-body-machine-name', pattern: /leg press|leg extension|leg curl|calf raise|standing calf|жима? ногами|разгибания ног|сгибания ног|подъ[её]мы? на носки|икр[ыа]/ },
+    { family: 'hip-hinge-deadlift', rule: 'hip-hinge-name', pattern: /deadlift|romanian deadlift|good morning|pull-through|hip hinge|kettlebell swing|stiff-legged|становая тяга|румынская тяга|тяга на прямых ногах|наклоны со штангой|наклоны с резинкой|гуд морнинг|протяжка на блоке между ног/ },
+    { family: 'squat-knee-dominant', rule: 'squat-name', pattern: /squat|приседан|гакк-присед|гоблет-присед/ },
+    { family: 'lunge-step-up', rule: 'lunge-step-name', pattern: /lunge|split squat|step[- ]?up|bulgarian|выпад|болгарские|зашагив/ },
+    { family: 'vertical-push', rule: 'vertical-push-name', pattern: /shoulder press|overhead press|military press|arnold press|handstand push|жим над головой|жим гантелей сидя|армейский жим|жим арнольда|армейск.*жим|жим стоя|жим вверх/ },
+    { family: 'horizontal-push', rule: 'horizontal-push-name', pattern: /bench press|chest press|push[- ]?up|pushups?|dips|flyes|butterfly|crossover|cross-over|isometric chest squeeze|отжиман|жим штанги лёжа|жим штанги лежа|жим гантелей лёжа|жим гантелей лежа|жим в тренажёре|жим в тренажере|жим гантелей на наклонной|разведения гантелей лёжа|разведения гантелей лежа|сведение в тренажёре|сведение в тренажере|кроссовер/ },
+    { family: 'vertical-pull', rule: 'vertical-pull-name', pattern: /pull[- ]?up|pullups?|chin[- ]?up|lat pulldown|wide[- ]grip lat|pulldown|pull down|подтягиван|тяга верхнего блока/ },
+    { family: 'horizontal-pull', rule: 'horizontal-pull-name', pattern: /row|seated cable rows|bent[- ]over barbell row|тяга с резиной|тяга штанги в наклоне|тяга гантели в наклоне|тяга горизонтального блока|тяга к лицу/ },
+    { family: 'arm-elbow-flexion', rule: 'elbow-flexion-name', pattern: /biceps curl|hammer curl|barbell curl|dumbbell curl|concentration curl|preacher curl|curl(?![- ]?up)|сгибания.*(бицепс|рук|гантел|штанг)|молотков|концентрированн.*сгибан/ },
+    { family: 'arm-elbow-extension', rule: 'elbow-extension-name', pattern: /triceps|pushdown|skullcrusher|overhead triceps|french press|elbow extension|разгибани.*трицепс|французский жим|разгибания на блоке|отжимания на трицепс|разгибание гантели из-за головы/ }
+  ];
+  for (const item of rules) {
+    if (item.pattern.test(text)) {
+      return { family: item.family, confidence: 'name-rule-unreviewed', rule: item.rule };
+    }
+  }
+  const fallbackByCategory = {
+    abs: 'core-candidate-review',
+    legs: 'lower-body-candidate-review',
+    glutes: 'hip-extension-candidate-review',
+    chest: 'horizontal-push-candidate-review',
+    back: 'pull-candidate-review',
+    arms: 'arm-isolation-candidate-review'
+  };
+  if (category && fallbackByCategory[category]) {
+    return { family: fallbackByCategory[category], confidence: 'category-only-review', rule: 'catalog-category-fallback' };
+  }
+  return { family: 'manual-classification-required', confidence: 'unclassified', rule: 'no-safe-rule-match' };
+}
+
 function parsePlan(source, mode) {
   const rows = [];
   const pattern = /\{\s*id:\s*(\d+),\s*index:\s*\d+,\s*name:\s*'((?:\\.|[^'])*)'([\s\S]*?)\n\s{6}\}/g;
