@@ -25,6 +25,14 @@ Audited `main` at commit `503e7b9a8905e80ff876721a15460db863b5f18c` (2026-10-18)
 - Background and colors must work with FitPulse dark and light themes. Keep the exercise stage visually calm and avoid embedding important labels into the art.
 - Offline-first: all approved baseline animations should be bundled or available as local assets. Remote media may be an optional update path, never a requirement for viewing core exercise instructions.
 
+
+## Media rights rule
+
+- Treat the imported exercise metadata and third-party illustration/GIF files as separate legal items.
+- The `hasaneyldrm/exercises-dataset` repository's [LICENSE](https://github.com/hasaneyldrm/exercises-dataset/blob/main/LICENSE) explicitly excludes its `images/` and `videos/` media from the MIT license. Its [NOTICE](https://github.com/hasaneyldrm/exercises-dataset/blob/main/NOTICE.md) identifies the media as © Gym visual, restricts it to 180×180, requires `© Gym visual — https://gymvisual.com/` attribution and refers reuse to Gym visual's terms. Do not assume these GIFs can be redistributed in FitPulse APKs without checking/obtaining the required license.
+- The `yuhonas/free-exercise-db` source declares Unlicense/Public Domain in its [license file](https://github.com/yuhonas/free-exercise-db/blob/main/LICENSE.md); keep provenance metadata rather than flattening all inherited asset sources to one license.
+- All newly generated character art, rig pieces, poses and animation curves must be original. Do not trace/reference-copy third-party frames.
+
 ## Proposed technical approach
 
 ### Phase 0 — complete inventory and rights audit
