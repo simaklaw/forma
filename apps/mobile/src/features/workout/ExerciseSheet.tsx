@@ -23,6 +23,7 @@ import { getSessionService } from './data';
 import { formatLoadLabel, isBodyweightExercise, resolveWorkingLoadKg } from './catalog';
 import { EXERCISE_VIDEOS } from './exerciseMedia';
 import { realGifForMediaKey } from './exerciseRealMedia';
+import { exercisePosterAsset } from './exercisePosterMedia';
 import { importedByNumericId, IMPORTED_NUMERIC_ID_BASE } from './importedExerciseBridge';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT } from '@/i18n/strings';
@@ -356,6 +357,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         ? EXERCISE_VIDEOS[exercise.mediaKey]
         : undefined;
     const gifAsset = realGifForMediaKey(exercise.mediaKey);
+    const posterAsset = exercisePosterAsset(exercise.id, exercise.mediaKey, exercise.wgerSearchTerm);
 
     return (
       <AppBottomSheet
@@ -403,6 +405,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         <ExerciseVideo
           source={videoSource}
           gifAsset={gifAsset}
+          posterAsset={posterAsset}
           posterUri={reference?.imageUrl}
           cues={cues}
           shouldPlay={sheetOpen}
