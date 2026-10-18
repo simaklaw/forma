@@ -78,19 +78,20 @@ describe('sessionMatchesDayAndExercises', () => {
   });
 
   it('accepts the same day and exact frozen exercise order', () => {
-    expect(sessionMatchesDayAndExercises(session, 'legs', [1, 2])).toBe(true);
+    expect(sessionMatchesDayAndExercises(session, 'legs', [{ id: 1, name: 'Squat' }, { id: 2, name: 'RDL' }])).toBe(true);
   });
 
   it('rejects a different day even if numeric IDs happen to overlap', () => {
-    expect(sessionMatchesDayAndExercises(session, 'chest', [1, 2])).toBe(false);
+    expect(sessionMatchesDayAndExercises(session, 'chest', [{ id: 1, name: 'Squat' }, { id: 2, name: 'RDL' }])).toBe(false);
   });
 
   it('rejects stale/modified exercise lists from a previous plan revision', () => {
-    expect(sessionMatchesDayAndExercises(session, 'legs', [1, 48])).toBe(false);
-    expect(sessionMatchesDayAndExercises(session, 'legs', [1, 2, 3])).toBe(false);
+    expect(sessionMatchesDayAndExercises(session, 'legs', [{ id: 1, name: 'Squat' }, { id: 48, name: 'Close-grip Push-up' }])).toBe(false);
+    expect(sessionMatchesDayAndExercises(session, 'legs', [{ id: 1, name: 'Squat' }, { id: 2, name: 'RDL' }, { id: 3, name: 'Lunge' }])).toBe(false);
+    expect(sessionMatchesDayAndExercises(session, 'legs', [{ id: 1, name: 'Glute Bridge' }, { id: 2, name: 'RDL' }])).toBe(false);
   });
 
   it('does not treat a missing session as a match', () => {
-    expect(sessionMatchesDayAndExercises(null, 'legs', [1, 2])).toBe(false);
+    expect(sessionMatchesDayAndExercises(null, 'legs', [{ id: 1, name: 'Squat' }, { id: 2, name: 'RDL' }])).toBe(false);
   });
 });
