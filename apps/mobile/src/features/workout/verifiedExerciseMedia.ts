@@ -23,7 +23,13 @@ const CANONICAL_TERM_BY_KEY: Partial<Record<ExerciseMediaKey, string>> = {
 
 function normalizeExerciseTerm(value: string | undefined): string | null {
   if (!value) return null;
-  return value.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim() || null;
+  const normalized = value
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+  return normalized || null;
 }
 
 /** Returns a playable bundled key only for an exact, reviewed movement term. */
@@ -35,9 +41,4 @@ export function verifiedMediaKeyForExercise(
   const canonical = CANONICAL_TERM_BY_KEY[mediaKey];
   if (!canonical) return undefined;
   return normalizeExerciseTerm(wgerSearchTerm) === canonical ? mediaKey : undefined;
-}
-
-/** The key's source media is intentionally not generalized to variants. */
-export function isCanonicalKeyTerm(mediaKey: ExerciseMediaKey, wgerSearchTerm: string | undefined): boolean {
-  return verifiedMediaKeyForExercise(mediaKey, wgerSearchTerm) === mediaKey;
 }
