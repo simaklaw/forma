@@ -14,7 +14,8 @@ const PATHS = {
   gifModules: 'apps/mobile/src/features/workout/exerciseDatasetAssets.generated.ts',
   images: 'apps/mobile/assets/exercise-library',
   gifs: 'apps/mobile/assets/exercises/dataset',
-  report: 'docs/EXERCISE_ANIMATION_INVENTORY.md'
+  report: 'docs/EXERCISE_ANIMATION_INVENTORY.md',
+  coverage: 'docs/EXERCISE_ANIMATION_COVERAGE.json'
 };
 
 function read(relativePath) {
@@ -156,6 +157,85 @@ const reusedKeysMarkdown = [...reusedKeys.entries()].sort((a, b) => a[0].localeC
   .map(([key, rows]) => '| ' + key + ' | ' + rows.length + ' | ' + rows.map((row) => row.name + ' (#' + row.id + ')').join('; ') + ' |')
   .join('\n');
 
+const pilotFamilyByExerciseId = {
+  5: 'seated-dumbbell-press',
+  10: 'push-up',
+  13: 'squat'
+};
+const coverageEntries = [
+  ...planRows.map((row) => {
+    const planMode = row.mode === 'Домашняя программа' ? 'home' : 'gym';
+    const motionFamily = pilotFamilyByExerciseId[row.id] || null;
+    const legacyMediaRights = motionFamily
+      ? 'original-svg-prototype'
+      : row.mediaKey && localVideoKeySet.has(row.mediaKey)
+        ? 'bundled-media-movement-not-reviewed'
+        : 'no-direct-bundled-video';
+    return {
+      key: 'plan:' + planMode + ':' + row.id,
+      source: 'plan',
+      planMode,
+      stableId: String(row.id),
+      numericId: row.id,
+      nameRu: row.name,
+      nameEn: null,
+      motionFamily,
+      status: motionFamily ? 'prototype' : 'not-started',
+      maleVariant: motionFamily ? 'original-svg-prototype' : 'not-created',
+      femaleVariant: motionFamily ? 'original-svg-prototype' : 'not-created',
+      offlineOriginalAnimation: Boolean(motionFamily),
+      legacyImageFolder: false,
+      legacyGifStatus: 'not-used-for-plan-preview',
+      currentMediaKey: row.mediaKey,
+      legacyMediaRights
+    };
+  }),
+  ...imported.map((entry, index) => {
+    const hasManifestGif = gifManifestById.has(entry.id);
+    const hasOrphanGif = gifModuleIds.includes(entry.id) && !hasManifestGif;
+    const hasImageFolder = imageFolderBySlug.has(normalizeId(entry.id));
+    const legacyMediaRights = hasManifestGif
+      ? 'gymvisual-license-review'
+      : hasOrphanGif
+        ? 'excluded-wrong-match-do-not-display'
+        : hasImageFolder
+          ? 'legacy-still-source-review'
+          : 'no-mapped-legacy-media';
+    return {
+      key: 'library:' + entry.id,
+      source: 'imported-library',
+      planMode: null,
+      stableId: entry.id,
+      numericId: 100001 + index,
+      nameRu: entry.nameRu || entry.nameEn,
+      nameEn: entry.nameEn,
+      motionFamily: null,
+      status: 'not-started',
+      maleVariant: 'not-created',
+      femaleVariant: 'not-created',
+      offlineOriginalAnimation: false,
+      legacyImageFolder: Boolean(hasImageFolder),
+      legacyGifStatus: hasManifestGif ? 'manifest-license-review' : hasOrphanGif ? 'excluded-wrong-match' : 'not-mapped',
+      currentMediaKey: null,
+      legacyMediaRights
+    };
+  })
+];
+const coverageJson = JSON.stringify({
+  schemaVersion: 1,
+  summary: {
+    planEntries: planRows.length,
+    uniquePlanIds: uniquePlans.size,
+    importedLibraryEntries: imported.length,
+    totalEntries: coverageEntries.length,
+    originalRigPrototypeEntries: coverageEntries.filter((entry) => entry.status === 'prototype').length,
+    entriesWithoutRig: coverageEntries.filter((entry) => entry.status === 'not-started').length,
+    explicitMaleFemaleVariantStatus: true
+  },
+  rule: 'Only explicitly authored original rig prototypes are counted as animation coverage. Existing media keys and legacy images are tracked separately and do not count as verified exercise-accurate animations.',
+  entries: coverageEntries
+}, null, 2) + '\n';
+
 const report = [
   '# Инвентаризация библиотеки анимаций FitPulse',
   '',
@@ -214,7 +294,9 @@ const report = [
 if (process.argv.includes('--write')) {
   fs.mkdirSync(path.dirname(path.join(ROOT, PATHS.report)), { recursive: true });
   fs.writeFileSync(path.join(ROOT, PATHS.report), report);
+  fs.writeFileSync(path.join(ROOT, PATHS.coverage), coverageJson);
   console.log('Wrote ' + PATHS.report);
+  console.log('Wrote ' + PATHS.coverage);
 } else {
   console.log(report);
 }
