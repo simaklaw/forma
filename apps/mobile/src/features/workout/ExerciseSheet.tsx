@@ -405,7 +405,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           </View>
         )}
 
-{showOriginalRig ? (
+        {showOriginalRig ? (
           <ExerciseRigAnimation exerciseId={exercise.id} sex={rigSex} shouldPlay={sheetOpen} />
         ) : (
           <ExerciseVideo
