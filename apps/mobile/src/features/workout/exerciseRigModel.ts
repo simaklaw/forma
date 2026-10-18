@@ -71,36 +71,36 @@ const POSES: Record<ExerciseRigFamily, { start: RigPose; end: RigPose }> = {
   },
   'push-up': {
     start: {
-      head: { x: 82, y: 73 },
-      neck: { x: 97, y: 82 },
-      shoulder: { x: 111, y: 88 },
-      elbowNear: { x: 121, y: 108 },
-      wristNear: { x: 129, y: 141 },
-      elbowFar: { x: 111, y: 111 },
-      wristFar: { x: 120, y: 141 },
-      hip: { x: 176, y: 101 },
-      kneeNear: { x: 218, y: 113 },
-      ankleNear: { x: 256, y: 123 },
-      toeNear: { x: 278, y: 126 },
-      kneeFar: { x: 216, y: 119 },
-      ankleFar: { x: 253, y: 130 },
-      toeFar: { x: 274, y: 133 }
+      head: { x: 82, y: 90 },
+      neck: { x: 97, y: 99 },
+      shoulder: { x: 111, y: 105 },
+      elbowNear: { x: 122, y: 120 },
+      wristNear: { x: 132, y: 140 },
+      elbowFar: { x: 112, y: 123 },
+      wristFar: { x: 123, y: 141 },
+      hip: { x: 176, y: 110 },
+      kneeNear: { x: 218, y: 122 },
+      ankleNear: { x: 256, y: 135 },
+      toeNear: { x: 278, y: 140 },
+      kneeFar: { x: 216, y: 126 },
+      ankleFar: { x: 253, y: 138 },
+      toeFar: { x: 274, y: 143 }
     },
     end: {
-      head: { x: 82, y: 86 },
-      neck: { x: 96, y: 94 },
-      shoulder: { x: 111, y: 101 },
-      elbowNear: { x: 127, y: 118 },
-      wristNear: { x: 133, y: 141 },
-      elbowFar: { x: 116, y: 119 },
+      head: { x: 82, y: 99 },
+      neck: { x: 96, y: 107 },
+      shoulder: { x: 111, y: 112 },
+      elbowNear: { x: 126, y: 125 },
+      wristNear: { x: 132, y: 140 },
+      elbowFar: { x: 116, y: 127 },
       wristFar: { x: 123, y: 141 },
-      hip: { x: 176, y: 105 },
-      kneeNear: { x: 218, y: 116 },
-      ankleNear: { x: 256, y: 124 },
-      toeNear: { x: 278, y: 127 },
-      kneeFar: { x: 216, y: 122 },
-      ankleFar: { x: 253, y: 131 },
-      toeFar: { x: 274, y: 134 }
+      hip: { x: 176, y: 113 },
+      kneeNear: { x: 218, y: 124 },
+      ankleNear: { x: 256, y: 135 },
+      toeNear: { x: 278, y: 140 },
+      kneeFar: { x: 216, y: 128 },
+      ankleFar: { x: 253, y: 138 },
+      toeFar: { x: 274, y: 143 }
     }
   },
   'seated-dumbbell-press': {
@@ -179,7 +179,7 @@ export function poseAt(family: ExerciseRigFamily, progress: number): RigPose {
 }
 
 export function rigGroundY(family: ExerciseRigFamily): number {
-  return family === 'push-up' ? 151 : 205;
+  return family === 'push-up' ? 145 : 205;
 }
 
 export function isPilotRigExercise(exerciseId: number): boolean {
