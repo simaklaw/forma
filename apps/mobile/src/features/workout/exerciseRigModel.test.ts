@@ -2,6 +2,7 @@ import {
   isPilotRigExercise,
   poseAt,
   rigFamilyForExercise,
+  rigGroundY,
   type ExerciseRigFamily,
   type RigPose
 } from './exerciseRigModel';
@@ -38,6 +39,16 @@ describe('exerciseRigModel', () => {
       expect(end.head.y).toBeCloseTo(start.head.y, 5);
       expect(end.hip.x).toBeCloseTo(start.hip.x, 5);
       expect(end.hip.y).toBeCloseTo(start.hip.y, 5);
+    }
+  );
+
+  it.each<ExerciseRigFamily>(['squat', 'push-up', 'seated-dumbbell-press'])(
+    'keeps the feet close to the ground for %s',
+    (family) => {
+      const pose = poseAt(family, 0.25);
+      const groundY = rigGroundY(family);
+      expect(Math.abs(pose.toeNear.y - groundY)).toBeLessThanOrEqual(12);
+      expect(Math.abs(pose.toeFar.y - groundY)).toBeLessThanOrEqual(12);
     }
   );
 
