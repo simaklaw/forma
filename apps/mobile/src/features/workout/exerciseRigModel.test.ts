@@ -59,7 +59,8 @@ describe('exerciseRigModel', () => {
 
     const pushUp = poseAt('push-up', 0);
     const pushDown = poseAt('push-up', 0.5);
-    expect(pushDown.shoulder.y).toBeGreaterThan(pushUp.shoulder.y);
+    expect(pushDown.shoulder.y - pushUp.shoulder.y).toBeGreaterThanOrEqual(15);
+    expect(pushDown.elbowNear.x).toBeGreaterThan(pushUp.elbowNear.x);
 
     const pressDown = poseAt('seated-dumbbell-press', 0);
     const pressUp = poseAt('seated-dumbbell-press', 0.5);
