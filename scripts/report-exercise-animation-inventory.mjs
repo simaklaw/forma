@@ -219,6 +219,7 @@ const coverageEntries = [
       : row.mediaKey && localVideoKeySet.has(row.mediaKey)
         ? 'bundled-media-movement-not-reviewed'
         : 'no-direct-bundled-video';
+    const familyCandidate = candidateMotionFamily(row.name + ' ' + (row.searchTerm || ''));
     return {
       key: 'plan:' + planMode + ':' + row.id,
       source: 'plan',
@@ -228,6 +229,10 @@ const coverageEntries = [
       nameRu: row.name,
       nameEn: null,
       motionFamily,
+      motionFamilyCandidate: familyCandidate.family,
+      familyClassificationConfidence: familyCandidate.confidence,
+      familyClassificationRule: familyCandidate.rule,
+      familyReviewStatus: motionFamily ? 'pending-device-review' : familyCandidate.confidence === 'unclassified' || familyCandidate.confidence === 'category-only-review' ? 'manual-review-required' : 'candidate-unreviewed',
       status: motionFamily ? 'prototype' : 'not-started',
       maleVariant: motionFamily ? 'original-svg-prototype' : 'not-created',
       femaleVariant: motionFamily ? 'original-svg-prototype' : 'not-created',
@@ -241,6 +246,11 @@ const coverageEntries = [
   ...imported.map((entry, index) => {
     const hasManifestGif = gifManifestById.has(entry.id);
     const hasOrphanGif = gifModuleIds.includes(entry.id) && !hasManifestGif;
+    const familyCandidate = candidateMotionFamily(
+      (entry.nameEn || '') + ' ' + (entry.nameRu || ''),
+      entry.category || null,
+      entry.equipment || null
+    );
     const hasImageFolder = imageFolderBySlug.has(normalizeId(entry.id));
     const legacyMediaRights = hasManifestGif
       ? 'gymvisual-license-review'
@@ -258,6 +268,10 @@ const coverageEntries = [
       nameRu: entry.nameRu || entry.nameEn,
       nameEn: entry.nameEn,
       motionFamily: null,
+      motionFamilyCandidate: familyCandidate.family,
+      familyClassificationConfidence: familyCandidate.confidence,
+      familyClassificationRule: familyCandidate.rule,
+      familyReviewStatus: familyCandidate.confidence === 'unclassified' || familyCandidate.confidence === 'category-only-review' ? 'manual-review-required' : 'candidate-unreviewed',
       status: 'not-started',
       maleVariant: 'not-created',
       femaleVariant: 'not-created',
@@ -269,6 +283,22 @@ const coverageEntries = [
     };
   })
 ];
+const familyCandidateCounts = coverageEntries.reduce((out, entry) => {
+  out[entry.motionFamilyCandidate] = (out[entry.motionFamilyCandidate] || 0) + 1;
+  return out;
+}, {});
+const familyCandidateMarkdown = Object.entries(familyCandidateCounts)
+  .sort((a, b) => a[0].localeCompare(b[0]))
+  .map(([family, count]) => {
+    const examples = coverageEntries
+      .filter((entry) => entry.motionFamilyCandidate === family)
+      .slice(0, 4)
+      .map((entry) => entry.nameRu + ' (' + entry.stableId + ')')
+      .join('; ');
+    return '| ' + family + ' | ' + count + ' | ' + examples + ' |';
+  })
+  .join('\n');
+
 const coverageKeys = new Set(coverageEntries.map((entry) => entry.key));
 if (uniquePlans.size !== planRows.length) {
   throw new Error('Workout plan IDs are not unique; resolve collisions before producing the coverage registry.');
@@ -285,6 +315,9 @@ if (coverageEntries.filter((entry) => entry.status === 'prototype').length !== p
 if (coverageEntries.some((entry) => !entry.maleVariant || !entry.femaleVariant)) {
   throw new Error('Every coverage record must contain explicit male and female variant statuses.');
 }
+if (coverageEntries.some((entry) => !entry.motionFamilyCandidate || !entry.familyReviewStatus)) {
+  throw new Error('Every coverage record must have a candidate motion family and an explicit review status.');
+}
 
 const coverageJson = JSON.stringify({
   schemaVersion: 1,
@@ -295,6 +328,9 @@ const coverageJson = JSON.stringify({
     totalEntries: coverageEntries.length,
     originalRigPrototypeEntries: coverageEntries.filter((entry) => entry.status === 'prototype').length,
     entriesWithoutRig: coverageEntries.filter((entry) => entry.status === 'not-started').length,
+    candidateMotionFamilyGroups: Object.keys(familyCandidateCounts).length,
+    entriesPendingFamilyReview: coverageEntries.filter((entry) => entry.familyReviewStatus !== 'pending-device-review').length,
+    familyCandidateCounts,
     explicitMaleFemaleVariantStatus: true
   },
   rule: 'Only explicitly authored original rig prototypes are counted as animation coverage. Existing media keys and legacy images are tracked separately and do not count as verified exercise-accurate animations.',
@@ -314,6 +350,7 @@ const report = [
   '- Всего: **' + planRows.length + '** записей плана, **' + uniquePlans.size + '** уникальных числовых ID и **' + new Set([...uniquePlans.values()].map((row) => row.name)).size + '** уникальных названий.',
   '- Импортированный каталог: **' + imported.length + '** упражнений; с русским названием — **' + imported.filter((entry) => entry.nameRu).length + '**; с русскими инструкциями — **' + imported.filter((entry) => entry.instructionsRu && entry.instructionsRu.length).length + '**.',
   '- Реестр покрытия: `docs/EXERCISE_ANIMATION_COVERAGE.json` — ' + coverageEntries.length + ' stable IDs (' + planRows.length + ' плановых + ' + imported.length + ' импортированных), из них ' + coverageEntries.filter((entry) => entry.status === 'prototype').length + ' прототипа и ' + coverageEntries.filter((entry) => entry.status === 'not-started').length + ' ещё не выполнено.',
+  '- Предварительное группирование: **' + Object.keys(familyCandidateCounts).length + '** семейств-кандидатов; все назначения помечены как непроверенные и не означают одобрение анимации или эквивалентности техники.',
   '- Распределение импортированного каталога по оборудованию: ' + Object.entries(equipmentCounts).map(([key, value]) => key + ': ' + value).join('; ') + '.',
   '- Старые локальные изображения: **' + imageFolders.length + '** папок и **' + imageFolders.reduce((sum, folder) => sum + folder.frames.length, 0) + '** JPG-кадров. Источник этих кадров — `yuhonas/free-exercise-db`, указанный как Unlicense/Public Domain в коммите импорта и в [LICENSE](https://github.com/yuhonas/free-exercise-db/blob/main/LICENSE.md). Папки, совпавшие с ID импортированного каталога: **' + imported.filter((entry) => imageFolderBySlug.has(normalizeId(entry.id))).length + ' из ' + imported.length + '**.',
   '- GIF-манифест: **' + gifManifest.length + '** записей, с localGifPath — **' + gifManifest.filter((entry) => entry.localGifPath).length + '**; локальных GIF-файлов — **' + gifFiles.length + '**; статических GIF require-записей — **' + gifModuleIds.length + '**.',
@@ -335,6 +372,14 @@ const report = [
   '| Ключ | Назначений | Упражнения плана |',
   '|---|---:|---|',
   reusedKeysMarkdown || '| — | 0 | Нет |',
+  '',
+  '## Предварительные семейства движений (эвристика, нужна ручная проверка)',
+  '',
+  'Кандидатные группы помогают спланировать повторное использование рига, но **не являются утверждённой биомеханической картой** и не считаются анимационным покрытием.',
+  '',
+  '| Семейство-кандидат | Записей | Примеры |',
+  '|---|---:|---|',
+  familyCandidateMarkdown,
   '',
   '## Все упражнения домашних и заловых планов',
   '',
