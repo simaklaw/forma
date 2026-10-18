@@ -318,6 +318,28 @@ if (coverageEntries.some((entry) => !entry.maleVariant || !entry.femaleVariant))
 if (coverageEntries.some((entry) => !entry.motionFamilyCandidate || !entry.familyReviewStatus)) {
   throw new Error('Every coverage record must have a candidate motion family and an explicit review status.');
 }
+const familyRuleExamples = [
+  { mode: 'gym', id: 1, family: 'squat-knee-dominant' },
+  { mode: 'gym', id: 2, family: 'hip-hinge-deadlift' },
+  { mode: 'gym', id: 4, family: 'horizontal-push' },
+  { mode: 'gym', id: 5, family: 'vertical-push' },
+  { mode: 'gym', id: 6, family: 'arm-elbow-extension' },
+  { mode: 'gym', id: 7, family: 'horizontal-pull' },
+  { mode: 'gym', id: 8, family: 'vertical-pull' },
+  { mode: 'gym', id: 9, family: 'arm-elbow-flexion' },
+  { mode: 'home', id: 13, family: 'squat-knee-dominant' },
+  { mode: 'home', id: 14, family: 'lunge-step-up' },
+  { mode: 'home', id: 15, family: 'core-stability-extension' },
+  { mode: 'home', id: 53, family: 'core-dynamic-flexion-rotation' }
+];
+for (const sample of familyRuleExamples) {
+  const entry = coverageEntries.find((candidate) =>
+    candidate.source === 'plan' && candidate.planMode === sample.mode && candidate.numericId === sample.id
+  );
+  if (!entry || entry.motionFamilyCandidate !== sample.family) {
+    throw new Error('Motion-family candidate classification changed unexpectedly for ' + sample.mode + ' exercise ' + sample.id);
+  }
+}
 
 const coverageJson = JSON.stringify({
   schemaVersion: 1,
