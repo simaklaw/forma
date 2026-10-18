@@ -11,6 +11,9 @@ import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import MuscleMap from '@/components/MuscleMap';
 import ExerciseVideo from '@/components/ExerciseVideo';
+import ExerciseRigAnimation from './ExerciseRigAnimation';
+import { isPilotRigExercise } from './exerciseRigModel';
+import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import type { TabParamList } from '@/navigation/types';
@@ -44,6 +47,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
   const t = useT();
   const lang = useLanguageStore((s) => s.lang);
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
+  const profileSex = useFitPulseStore((s) => s.profile.sex);
   const reference = useExerciseReference(item?.wgerSearchTerm ?? null);
   const [favorited, setFavorited] = useState(false);
   const [replaceTarget, setReplaceTargetState] = useState<ReplaceTarget | null>(getReplaceTarget());
@@ -104,6 +108,8 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
     replaceTarget.mode === item.mode &&
     replaceTarget.currentExerciseId !== item.id;
   const cues = techniqueCuesFromNote(item.note);
+  const showOriginalRig = isPilotRigExercise(item.id);
+  const rigSex = profileSex === 'female' ? 'female' : 'male';
   const videoSource =
     item.mediaKey && EXERCISE_VIDEOS[item.mediaKey]
       ? EXERCISE_VIDEOS[item.mediaKey]
@@ -163,12 +169,16 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
             </TouchableOpacity>
           ) : null}
 
-          <ExerciseVideo
-            source={videoSource}
-            gifAsset={gifAsset}
-            posterUri={reference?.imageUrl}
-            cues={cues}
-          />
+{showOriginalRig ? (
+            <ExerciseRigAnimation exerciseId={item.id} sex={rigSex} />
+          ) : (
+            <ExerciseVideo
+              source={videoSource}
+              gifAsset={gifAsset}
+              posterUri={reference?.imageUrl}
+              cues={cues}
+            />
+          )}
 
           <View style={styles.statsRow}>
             <View style={[styles.stat, { borderColor: colors.line, backgroundColor: colors.panel }]}>
