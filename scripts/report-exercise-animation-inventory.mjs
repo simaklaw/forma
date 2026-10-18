@@ -34,7 +34,7 @@ function parseExportedJsonArray(source, exportName) {
     const ch = source[i];
     if (inString) {
       if (escaped) escaped = false;
-      else if (ch === '\\\\') escaped = true;
+      else if (ch === '\\') escaped = true;
       else if (ch === '"') inString = false;
       continue;
     }
@@ -50,7 +50,7 @@ function parseExportedJsonArray(source, exportName) {
 
 function parsePlan(source, mode) {
   const rows = [];
-  const pattern = /\\{\\s*id:\\s*(\\d+),\\s*index:\\s*\\d+,\\s*name:\\s*'((?:\\\\.|[^'])*)'([\\s\\S]*?)\\n\\s{6}\\}/g;
+  const pattern = /\\{\\s*id:\\s*(\\d+),\\s*index:\\s*\\d+,\\s*name:\\s*'((?:\\.|[^'])*)'([\\s\\S]*?)\\n\\s{6}\\}/g;
   let match;
   while ((match = pattern.exec(source)) !== null) {
     const extra = match[3];
@@ -59,7 +59,7 @@ function parsePlan(source, mode) {
     rows.push({
       mode,
       id: Number(match[1]),
-      name: match[2].replace(/\\\\'/g, "'"),
+      name: match[2].replace(/\\'/g, "'"),
       mediaKey: mediaKey ? mediaKey[1] : null,
       searchTerm: searchTerm ? searchTerm[1] : null
     });
