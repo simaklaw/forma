@@ -23,11 +23,16 @@ describe('exercisePosterAsset', () => {
   });
 
   it('uses a bundled poster for a known plan media key', () => {
-    expect(exercisePosterAsset(13, 'squat', 'Barbell Squat')).toBe(11);
+    expect(exercisePosterAsset(13, 'squat', 'Squat')).toBe(11);
   });
 
   it('uses an exact slug match when no media key is provided', () => {
     expect(exercisePosterAsset(27, undefined, 'Romanian Deadlift')).toBe(22);
+  });
+
+  it('does not reuse a generic push-up poster for close-grip or decline variants', () => {
+    expect(exercisePosterAsset(48, 'pushup', 'Close-grip Press-ups')).toBeUndefined();
+    expect(exercisePosterAsset(49, 'pushup', 'Decline Push-Ups')).toBeUndefined();
   });
 
   it('does not fuzzy-match a related exercise', () => {
