@@ -1,6 +1,6 @@
 # FitPulse Premium 2D Exercise Animation Library — Plan
 
-Status: complete inventory, source-specific media-rights notes, and a 225-ID coverage registry are in place; original vector-rig pilot is integrated for three exercise IDs; the refreshed Android APK build completed successfully and was verified to contain its JS bundle; on-device review is pending. The latest CI is rechecking the refined registry's generated-file synchronization. This branch remains separate from `main`.
+Status: complete inventory, source-specific media-rights notes, and a 225-ID coverage registry are in place; original vector-rig pilot is integrated for three exercise IDs; the refreshed Android APK build completed successfully and was verified to contain its JS bundle; latest Monorepo CI passed with registry synchronization, classification assertions, type-checks and tests. On-device review is pending. This branch remains separate from `main`.
 
 ## Goal
 
@@ -106,7 +106,7 @@ Reuse rigs and motion blocks only where biomechanics genuinely match. Exercise-s
 - No changes have been made to main.
 ## Immediate next implementation task
 
-- The generator creates the full inventory and coverage registry; CI checks that the committed 225-ID registry stays byte-for-byte synchronized.
+- The generator creates the full inventory and coverage registry; CI checks that the committed 225-ID registry stays byte-for-byte synchronized and asserts the key candidate assignments plus the three manual-review blockers. Latest full CI passed at `f764dda60300193ba47d86b817b2e867e81a32a3` ([run](https://github.com/simaklaw/forma/actions/runs/39133500416)).
 - Android preview succeeded at [run 39131576137](https://github.com/simaklaw/forma/actions/runs/39131576137), artifact ID `12138536352`, from app-source SHA `434ab909908768338e903bf704727f291e658ceb`. GitHub verified the JS bundle inside the APK. The SHA is shown in the profile footer as `434ab90`; APK SHA-256 is documented in the device checklist.
 - Complete [the device checklist](./EXERCISE_RIG_PILOT_DEVICE_CHECKLIST.md) before expanding beyond the three pilot IDs. Record visual defects and fix any issue with anatomy, timing, display, gender choice or offline playback.
 - Do not generate hundreds of animations before the rig and pilot pass review.
