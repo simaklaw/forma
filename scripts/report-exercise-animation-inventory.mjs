@@ -7,7 +7,6 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PATHS = {
   home: 'apps/mobile/src/features/workout/bodyweightPlan.ts',
   gym: 'apps/mobile/src/features/workout/gymPlan.ts',
-  rigModel: 'apps/mobile/src/features/workout/exerciseRigModel.ts',
   imported: 'apps/mobile/src/features/workout/importedExerciseLibrary.generated.ts',
   gifManifest: 'apps/mobile/src/features/workout/exerciseGifManifest.generated.ts',
   videoManifest: 'apps/mobile/src/features/workout/exerciseVideoManifest.generated.ts',
@@ -180,7 +179,6 @@ const videoManifest = parseExportedJsonArray(read(PATHS.videoManifest), 'EXERCIS
 const gifModuleSource = read(PATHS.gifModules);
 const gifModuleIds = [...gifModuleSource.matchAll(/'([^']+)':\s*require\([^)]*\.gif'\)/g)].map((match) => match[1]);
 const mediaSource = read(PATHS.media);
-const rigModelSource = read(PATHS.rigModel);
 const bundledVideoKeys = [...mediaSource.matchAll(/^\s*(['a-z][^']*'|[a-z][a-z0-9-]*):\s*require\([^)]*\.mp4'\)/gm)]
   .map((match) => match[1].replace(/'/g, ''));
 const imageFolders = scanImageFolders();
@@ -228,16 +226,9 @@ const reusedKeysMarkdown = [...reusedKeys.entries()].sort((a, b) => a[0].localeC
   .map(([key, rows]) => '| ' + key + ' | ' + rows.length + ' | ' + rows.map((row) => row.name + ' (#' + row.id + ')').join('; ') + ' |')
   .join('\n');
 
-const pilotRegistryMatch = /const PILOT_RIGS: Record<number, ExerciseRigFamily> = \{([\s\S]*?)\n\};/.exec(rigModelSource);
-if (!pilotRegistryMatch) throw new Error('Cannot read PILOT_RIGS from ' + PATHS.rigModel);
-const pilotRegistryRows = [...pilotRegistryMatch[1].matchAll(/(\d+):\s*'([^']+)'/g)];
-const pilotIds = pilotRegistryRows.map((match) => Number(match[1]));
-if (new Set(pilotIds).size !== pilotIds.length) {
-  throw new Error('PILOT_RIGS contains duplicate exercise IDs.');
-}
-const pilotFamilyByExerciseId = new Map(
-  pilotRegistryRows.map((match) => [Number(match[1]), match[2]])
-);
+// The previous hand-drawn SVG pilot was rejected after physical-device review.
+ // Do not count it as exercise-media coverage or let numeric ID collisions select it.
+ const pilotFamilyByExerciseId = new Map();
 const coverageEntries = [
   ...planRows.map((row) => {
     const planMode = row.mode === 'Домашняя программа' ? 'home' : 'gym';
@@ -424,7 +415,7 @@ const coverageJson = JSON.stringify({
     familyCandidateCounts,
     explicitMaleFemaleVariantStatus: true
   },
-  rule: 'Only explicitly authored original rig prototypes are counted as animation coverage. Existing media keys and legacy images are tracked separately and do not count as verified exercise-accurate animations.',
+  rule: 'No new animation is currently approved as exercise-accurate coverage. Existing videos, GIFs and legacy images are tracked separately and do not count as newly verified animation coverage.',
   entries: coverageEntries
 }, null, 2) + '\n';
 
