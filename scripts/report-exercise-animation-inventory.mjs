@@ -50,12 +50,12 @@ function parseExportedJsonArray(source, exportName) {
 
 function parsePlan(source, mode) {
   const rows = [];
-  const pattern = /\\{\\s*id:\\s*(\\d+),\\s*index:\\s*\\d+,\\s*name:\\s*'((?:\\.|[^'])*)'([\\s\\S]*?)\\n\\s{6}\\}/g;
+  const pattern = /\{\s*id:\s*(\d+),\s*index:\s*\d+,\s*name:\s*'((?:\\.|[^'])*)'([\s\S]*?)\n\s{6}\}/g;
   let match;
   while ((match = pattern.exec(source)) !== null) {
     const extra = match[3];
-    const mediaKey = /mediaKey:\\s*'([^']+)'/.exec(extra);
-    const searchTerm = /wgerSearchTerm:\\s*'([^']+)'/.exec(extra);
+    const mediaKey = /mediaKey:\s*'([^']+)'/.exec(extra);
+    const searchTerm = /wgerSearchTerm:\s*'([^']+)'/.exec(extra);
     rows.push({
       mode,
       id: Number(match[1]),
@@ -107,9 +107,9 @@ const imported = parseExportedJsonArray(read(PATHS.imported), 'IMPORTED_EXERCISE
 const gifManifest = parseExportedJsonArray(read(PATHS.gifManifest), 'EXERCISE_GIF_MANIFEST');
 const videoManifest = parseExportedJsonArray(read(PATHS.videoManifest), 'EXERCISE_VIDEO_MANIFEST');
 const gifModuleSource = read(PATHS.gifModules);
-const gifModuleIds = [...gifModuleSource.matchAll(/'([^']+)':\\s*require\\([^)]*\\.gif'\\)/g)].map((match) => match[1]);
+const gifModuleIds = [...gifModuleSource.matchAll(/'([^']+)':\s*require\([^)]*\.gif'\)/g)].map((match) => match[1]);
 const mediaSource = read(PATHS.media);
-const bundledVideoKeys = [...mediaSource.matchAll(/^\\s*(['a-z][^']*'|[a-z][a-z0-9-]*):\\s*require\\([^)]*\\.mp4'\\)/gm)]
+const bundledVideoKeys = [...mediaSource.matchAll(/^\s*(['a-z][^']*'|[a-z][a-z0-9-]*):\s*require\([^)]*\.mp4'\)/gm)]
   .map((match) => match[1].replace(/'/g, ''));
 const imageFolders = scanImageFolders();
 const imageFolderBySlug = new Map(imageFolders.map((item) => [item.slug, item]));
@@ -138,7 +138,7 @@ const planRowsMarkdown = planRows.map((row) => {
   const hasKey = row.mediaKey && localVideoKeySet.has(row.mediaKey);
   return '| ' + row.mode + ' | ' + row.id + ' | ' + row.name + ' | ' + (row.mediaKey || '—') + ' | ' +
     (hasKey ? 'Есть ключ; соответствие движению требует проверки' : 'Нет прямого встроенного видео-ключа') + ' |';
-}).join('\\n');
+}).join('\n');
 const importedRowsMarkdown = imported.map((entry) => {
   const image = imageFolderBySlug.get(normalizeId(entry.id));
   const gif = gifManifestById.get(entry.id);
@@ -147,10 +147,10 @@ const importedRowsMarkdown = imported.map((entry) => {
   return '| ' + entry.id + ' | ' + (entry.nameRu || entry.nameEn) + ' | ' + entry.nameEn + ' | ' +
     entry.equipment + ' | ' + (image ? String(image.frames.length) + ' JPG' : 'нет JPG-папки') + ' | ' +
     (localGif ? 'локальный GIF' : gif ? 'есть в манифесте, локальный файл не найден' : 'нет GIF в манифесте') + ' |';
-}).join('\\n');
+}).join('\n');
 const reusedKeysMarkdown = [...reusedKeys.entries()].sort((a, b) => a[0].localeCompare(b[0]))
   .map(([key, rows]) => '| ' + key + ' | ' + rows.length + ' | ' + rows.map((row) => row.name + ' (#' + row.id + ')').join('; ') + ' |')
-  .join('\\n');
+  .join('\n');
 
 const report = [
   '# Инвентаризация библиотеки анимаций FitPulse',
@@ -204,7 +204,7 @@ const report = [
   '- Повторное использование одного ключа явно видно; оно не считается доказательством правильной демонстрации.',
   '- Полное покрытие утверждается только после сверки всех ID, файлов, мужского/женского варианта и офлайн-проигрывания на Android.',
   ''
-].join('\\n');
+].join('\n');
 
 if (process.argv.includes('--write')) {
   fs.mkdirSync(path.dirname(path.join(ROOT, PATHS.report)), { recursive: true });
