@@ -383,6 +383,7 @@ const coverageJson = JSON.stringify({
     entriesWithoutRig: coverageEntries.filter((entry) => entry.status === 'not-started').length,
     candidateMotionFamilyGroups: Object.keys(familyCandidateCounts).length,
     entriesPendingFamilyReview: coverageEntries.filter((entry) => entry.familyReviewStatus !== 'pending-device-review').length,
+    entriesRequiringManualClassification: coverageEntries.filter((entry) => entry.familyReviewStatus === 'manual-review-required').length,
     familyCandidateCounts,
     explicitMaleFemaleVariantStatus: true
   },
@@ -403,7 +404,7 @@ const report = [
   '- Всего: **' + planRows.length + '** записей плана, **' + uniquePlans.size + '** уникальных числовых ID и **' + new Set([...uniquePlans.values()].map((row) => row.name)).size + '** уникальных названий.',
   '- Импортированный каталог: **' + imported.length + '** упражнений; с русским названием — **' + imported.filter((entry) => entry.nameRu).length + '**; с русскими инструкциями — **' + imported.filter((entry) => entry.instructionsRu && entry.instructionsRu.length).length + '**.',
   '- Реестр покрытия: `docs/EXERCISE_ANIMATION_COVERAGE.json` — ' + coverageEntries.length + ' stable IDs (' + planRows.length + ' плановых + ' + imported.length + ' импортированных), из них ' + coverageEntries.filter((entry) => entry.status === 'prototype').length + ' прототипа и ' + coverageEntries.filter((entry) => entry.status === 'not-started').length + ' ещё не выполнено.',
-  '- Предварительное группирование: **' + Object.keys(familyCandidateCounts).length + '** семейств-кандидатов; все назначения помечены как непроверенные и не означают одобрение анимации или эквивалентности техники.',
+  '- Предварительное группирование: **' + Object.keys(familyCandidateCounts).length + '** семейств-кандидатов; **' + coverageEntries.filter((entry) => entry.familyReviewStatus === 'manual-review-required').length + '** записей требуют ручной классификации из-за недостатка данных или конфликтов в источнике. Все остальные назначения также непроверенные и не означают одобрение анимации или эквивалентности техники.',
   '- Распределение импортированного каталога по оборудованию: ' + Object.entries(equipmentCounts).map(([key, value]) => key + ': ' + value).join('; ') + '.',
   '- Старые локальные изображения: **' + imageFolders.length + '** папок и **' + imageFolders.reduce((sum, folder) => sum + folder.frames.length, 0) + '** JPG-кадров. Источник этих кадров — `yuhonas/free-exercise-db`, указанный как Unlicense/Public Domain в коммите импорта и в [LICENSE](https://github.com/yuhonas/free-exercise-db/blob/main/LICENSE.md). Папки, совпавшие с ID импортированного каталога: **' + imported.filter((entry) => imageFolderBySlug.has(normalizeId(entry.id))).length + ' из ' + imported.length + '**.',
   '- GIF-манифест: **' + gifManifest.length + '** записей, с localGifPath — **' + gifManifest.filter((entry) => entry.localGifPath).length + '**; локальных GIF-файлов — **' + gifFiles.length + '**; статических GIF require-записей — **' + gifModuleIds.length + '**.',
