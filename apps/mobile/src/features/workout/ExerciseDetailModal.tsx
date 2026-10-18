@@ -28,6 +28,7 @@ import {
 } from './replaceTarget';
 import { EXERCISE_VIDEOS } from './exerciseMedia';
 import { realGifForMediaKey } from './exerciseRealMedia';
+import { exercisePosterAsset } from './exercisePosterMedia';
 import { techniqueCuesFromNote } from '@/lib/techniqueCues';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT, equipmentLabel, muscleLabel } from '@/i18n/strings';
@@ -109,6 +110,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
       ? EXERCISE_VIDEOS[item.mediaKey]
       : undefined;
   const gifAsset = realGifForMediaKey(item.mediaKey);
+  const posterAsset = exercisePosterAsset(item.id, item.mediaKey, item.wgerSearchTerm);
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -166,6 +168,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
           <ExerciseVideo
             source={videoSource}
             gifAsset={gifAsset}
+            posterAsset={posterAsset}
             posterUri={reference?.imageUrl}
             cues={cues}
           />
