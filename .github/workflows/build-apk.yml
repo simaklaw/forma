@@ -1,8 +1,11 @@
 name: Build Android APK
 
 on:
-  # Мерж в main больше не собирает APK автоматически — только вручную:
-  # Actions → Build Android APK → Run workflow (пока не пройдена приёмка на устройстве, #170).
+  # Temporary one-off rebuild of the device-review fixes on this feature branch only.
+  push:
+    branches:
+      - feat/premium-exercise-animation-library
+  # After the preview run, return to manual-only APK builds.
   workflow_dispatch:
     inputs:
       sync_api_url:
