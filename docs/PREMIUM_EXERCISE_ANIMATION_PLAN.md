@@ -107,13 +107,13 @@ Reuse rigs and motion blocks only where biomechanics genuinely match. Exercise-s
 - Added CI validation that fails if the committed coverage registry is stale after a catalog change.
 - Added a manual [Android pilot checklist](./EXERCISE_RIG_PILOT_DEVICE_CHECKLIST.md).
 - The first SVG-based vector rig (squat ID 13, push-up ID 10, seated dumbbell press ID 5) failed visual acceptance and was removed from both exercise-detail surfaces; those three records are no longer counted as prototypes or coverage.
-- Added pose-model unit tests for ID mapping, continuous loops, finite coordinates, ground contact and movement direction.
-- Integrated the pilot into the workout sheet and catalog detail modal only for the three explicitly mapped IDs; all other exercises retain their current media fallback.
+- Removed the rejected SVG rig and the tests that only validated its schematic pose model.
+- Added a local poster resolver for stable imported IDs, explicit bundled media keys and exact exercise-slug matches; similar names are never fuzzy-matched.
 - Added explicit legacy-media rights notes. Existing third-party GIFs are not assumed to be free to redistribute; excluded wrong matches are not considered valid coverage.
 - No changes have been made to main.
 ## Immediate next implementation task
 
-- The generator creates the full inventory and coverage registry; CI checks that the committed 225-ID registry stays byte-for-byte synchronized and asserts the key candidate assignments plus the three manual-review blockers. Latest full CI passed at `f764dda60300193ba47d86b817b2e867e81a32a3` ([run](https://github.com/simaklaw/forma/actions/runs/39133500416)).
-- Android preview succeeded at [run 39131576137](https://github.com/simaklaw/forma/actions/runs/39131576137), artifact ID `12138536352`, from app-source SHA `434ab909908768338e903bf704727f291e658ceb`. GitHub verified the JS bundle inside the APK. The SHA is shown in the profile footer as `434ab90`; APK SHA-256 is documented in the device checklist.
-- Complete [the device checklist](./EXERCISE_RIG_PILOT_DEVICE_CHECKLIST.md) before expanding beyond the three pilot IDs. Record visual defects and fix any issue with anatomy, timing, display, gender choice or offline playback.
+- The generator creates the full inventory and coverage registry; CI checks that the committed 225-ID registry stays byte-for-byte synchronized and asserts key candidate assignments plus the three manual-review blockers. The updated coverage now records zero approved new animations; a fresh CI run is pending.
+- A previous Android APK was successfully packaged, but the user rejected its on-device visual result. Do not reuse that APK as a quality sign-off; the fixes on this branch must be included in a new build.
+- Run the newly queued CI on the updated branch. If green, produce a fresh Android APK and retest the media fallback plus the different-day session guard on the phone. Do not expand into full animation production until the user approves a licensed dataset or original-asset route.
 - Do not generate hundreds of animations before the rig and pilot pass review.
