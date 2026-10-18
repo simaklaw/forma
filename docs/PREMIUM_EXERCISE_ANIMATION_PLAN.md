@@ -1,6 +1,6 @@
 # FitPulse Premium 2D Exercise Animation Library — Plan
 
-Status: inventory report/generator added; reusable vector-rig pilot integrated for three exercise IDs; CI and on-device review are still pending. This branch is intentionally separate from `main`.
+Status: complete inventory and coverage registry are in place; original vector-rig pilot is integrated for three exercise IDs; latest Monorepo CI is green; refreshed Android APK build is running; on-device review is pending. This branch remains separate from `main`.
 
 ## Goal
 
@@ -104,4 +104,7 @@ Reuse rigs and motion blocks only where biomechanics genuinely match. Exercise-s
 - No changes have been made to main.
 ## Immediate next implementation task
 
-Run CI and fix any type/test failures. Then review the three animations on an Android-sized screen, correct pose/anatomy and movement timing, and verify both profile variants. Do not generate hundreds of animations before the rig and pilot pass review.
+- CI passed at commit `7bdeaeab4a3ab725a6dc415642bebdecb7f38264` after coverage-registry/asset-provenance changes.
+- The first Android APK preview built successfully, but a later push-up pose refinement means it is not the final pilot build. The refreshed build is in progress at [run 39131576137](https://github.com/simaklaw/forma/actions/runs/39131576137), from application-source commit `434ab909908768338e903bf704727f291e658ceb`.
+- Once the refreshed artifact is available, install it and complete [the device checklist](./EXERCISE_RIG_PILOT_DEVICE_CHECKLIST.md). Record visual defects before expanding beyond the three pilot IDs.
+- Do not generate hundreds of animations before the rig and pilot pass review.
