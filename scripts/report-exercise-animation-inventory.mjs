@@ -7,6 +7,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PATHS = {
   home: 'apps/mobile/src/features/workout/bodyweightPlan.ts',
   gym: 'apps/mobile/src/features/workout/gymPlan.ts',
+  rigModel: 'apps/mobile/src/features/workout/exerciseRigModel.ts',
   imported: 'apps/mobile/src/features/workout/importedExerciseLibrary.generated.ts',
   gifManifest: 'apps/mobile/src/features/workout/exerciseGifManifest.generated.ts',
   videoManifest: 'apps/mobile/src/features/workout/exerciseVideoManifest.generated.ts',
@@ -110,6 +111,7 @@ const videoManifest = parseExportedJsonArray(read(PATHS.videoManifest), 'EXERCIS
 const gifModuleSource = read(PATHS.gifModules);
 const gifModuleIds = [...gifModuleSource.matchAll(/'([^']+)':\s*require\([^)]*\.gif'\)/g)].map((match) => match[1]);
 const mediaSource = read(PATHS.media);
+const rigModelSource = read(PATHS.rigModel);
 const bundledVideoKeys = [...mediaSource.matchAll(/^\s*(['a-z][^']*'|[a-z][a-z0-9-]*):\s*require\([^)]*\.mp4'\)/gm)]
   .map((match) => match[1].replace(/'/g, ''));
 const imageFolders = scanImageFolders();
@@ -157,15 +159,20 @@ const reusedKeysMarkdown = [...reusedKeys.entries()].sort((a, b) => a[0].localeC
   .map(([key, rows]) => '| ' + key + ' | ' + rows.length + ' | ' + rows.map((row) => row.name + ' (#' + row.id + ')').join('; ') + ' |')
   .join('\n');
 
-const pilotFamilyByExerciseId = {
-  5: 'seated-dumbbell-press',
-  10: 'push-up',
-  13: 'squat'
-};
+const pilotRegistryMatch = /const PILOT_RIGS: Record<number, ExerciseRigFamily> = \\{([\\s\\S]*?)\\n\\};/.exec(rigModelSource);
+if (!pilotRegistryMatch) throw new Error('Cannot read PILOT_RIGS from ' + PATHS.rigModel);
+const pilotRegistryRows = [...pilotRegistryMatch[1].matchAll(/(\\d+):\\s*'([^']+)'/g)];
+const pilotIds = pilotRegistryRows.map((match) => Number(match[1]));
+if (new Set(pilotIds).size !== pilotIds.length) {
+  throw new Error('PILOT_RIGS contains duplicate exercise IDs.');
+}
+const pilotFamilyByExerciseId = new Map(
+  pilotRegistryRows.map((match) => [Number(match[1]), match[2]])
+);
 const coverageEntries = [
   ...planRows.map((row) => {
     const planMode = row.mode === 'Домашняя программа' ? 'home' : 'gym';
-    const motionFamily = pilotFamilyByExerciseId[row.id] || null;
+    const motionFamily = pilotFamilyByExerciseId.get(row.id) || null;
     const legacyMediaRights = motionFamily
       ? 'original-svg-prototype'
       : row.mediaKey && localVideoKeySet.has(row.mediaKey)
@@ -231,8 +238,8 @@ if (coverageEntries.length !== planRows.length + imported.length) {
 if (coverageKeys.size !== coverageEntries.length) {
   throw new Error('Coverage registry contains duplicate stable keys.');
 }
-if (coverageEntries.filter((entry) => entry.status === 'prototype').length !== 3) {
-  throw new Error('Only the three explicitly mapped pilot exercises should be marked as prototypes.');
+if (coverageEntries.filter((entry) => entry.status === 'prototype').length !== pilotFamilyByExerciseId.size) {
+  throw new Error('Coverage registry prototype count does not match PILOT_RIGS.');
 }
 if (coverageEntries.some((entry) => !entry.maleVariant || !entry.femaleVariant)) {
   throw new Error('Every coverage record must contain explicit male and female variant statuses.');
