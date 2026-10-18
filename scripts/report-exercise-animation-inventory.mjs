@@ -115,6 +115,10 @@ const imageFolders = scanImageFolders();
 const imageFolderBySlug = new Map(imageFolders.map((item) => [item.slug, item]));
 const gifFiles = listFiles(PATHS.gifs, (name) => name.toLowerCase().endsWith('.gif'));
 const gifManifestById = new Map(gifManifest.map((entry) => [entry.id, entry]));
+const extraGifModuleIds = gifModuleIds.filter((id) => !gifManifestById.has(id));
+const manifestWithoutLocalAsset = gifManifest.filter((entry) =>
+  !entry.localGifPath || !fs.existsSync(path.join(ROOT, PATHS.gifs, entry.id + '.gif'))
+);
 const normalizeId = (id) => id.replace(/^lib-/, '').toLowerCase();
 const localVideoKeySet = new Set(bundledVideoKeys);
 const uniquePlans = new Map();
@@ -167,6 +171,7 @@ const report = [
   '- Распределение импортированного каталога по оборудованию: ' + Object.entries(equipmentCounts).map(([key, value]) => key + ': ' + value).join('; ') + '.',
   '- Старые локальные изображения: **' + imageFolders.length + '** папок и **' + imageFolders.reduce((sum, folder) => sum + folder.frames.length, 0) + '** JPG-кадров. Папки, совпавшие с ID импортированного каталога: **' + imported.filter((entry) => imageFolderBySlug.has(normalizeId(entry.id))).length + ' из ' + imported.length + '**.',
   '- GIF-манифест: **' + gifManifest.length + '** записей, с localGifPath — **' + gifManifest.filter((entry) => entry.localGifPath).length + '**; локальных GIF-файлов — **' + gifFiles.length + '**; статических GIF require-записей — **' + gifModuleIds.length + '**.',
+  '- GIF-реестр: **' + extraGifModuleIds.length + '** локальных файлов есть в Metro require, но нет в манифесте (' + (extraGifModuleIds.join(', ') || 'нет') + '); **' + manifestWithoutLocalAsset.length + '** записей манифеста не имеют соответствующего локального GIF-файла.',
   '- MP4-манифест: **' + videoManifest.length + '** записей; встроенных MP4-ключей — **' + bundledVideoKeys.length + '**.',
   '- В домашних упражнениях **' + home.filter((row) => row.mediaKey).length + ' из ' + home.length + '** имеют mediaKey, но ключи повторно используются между вариантами движений; соответствие ролика каждому упражнению нужно проверить. Для упражнений зала mediaKey в плане не задан.',
   '',
@@ -175,7 +180,7 @@ const report = [
   '1. Наличие JPG-кадров не означает наличие непрерывной анимации.',
   '2. Разные упражнения используют одни и те же видео-ключи. Каждый файл нужно сверить с техникой конкретного упражнения, прежде чем считать покрытие подтверждённым.',
   '3. Библиотека содержит ' + imported.length + ' упражнения, GIF-манифест — ' + gifManifest.length + ' записи, а папки JPG покрывают только часть импортированного каталога.',
-  '4. Сверять нужно три источника GIF: физические файлы, манифест и статические Metro require. Несовпадения должны быть устранены до заявления об офлайн-покрытии.',
+  '4. Есть конкретное расхождение реестров: файлы `lib-band-hip-adductions.gif`, `lib-glute-kickback.gif` и `lib-side-bridge.gif` остаются среди физических assets/Metro require, но отсутствуют в GIF-манифесте (были исключены как неверные автосопоставления). Кроме того, 2 записи манифеста не имеют локального GIF пути. Перед заявлением об офлайн-покрытии сверить физические файлы, манифест и Metro require; не возвращать исключённые упражнения как корректное медиа без ручной проверки.',
   '5. Заголовок импортированного каталога указывает Unlicense/Public Domain. GIF-манифест не содержит отдельного поля лицензии. Условия каждого источника надо подтвердить отдельно; новые персонажи и риг должны быть оригинальными.',
   '6. В текущих манифестах не найден явный выбор male/female-варианта анимации. Его нужно добавить явно и протестировать.',
   '',
