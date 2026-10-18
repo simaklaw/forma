@@ -5,6 +5,8 @@ import type { WorkoutSession } from '@forma/workout-domain';
 import { SetFeedbackCard } from './SetFeedbackCard';
 import AppBottomSheet from '@/components/BottomSheet';
 import ExerciseVideo from '@/components/ExerciseVideo';
+import ExerciseRigAnimation from './ExerciseRigAnimation';
+import { isPilotRigExercise } from './exerciseRigModel';
 import MuscleMap, { type MuscleKey } from '@/components/MuscleMap';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
@@ -82,6 +84,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const completedSetsToday = useFitPulseStore((s) => s.completedSetsToday);
     const setLogs = useFitPulseStore((s) => s.setLogs);
     const profileWeight = useFitPulseStore((s) => s.profile.weight);
+    const profileSex = useFitPulseStore((s) => s.profile.sex);
     const reference = useExerciseReference(exercise?.wgerSearchTerm ?? null);
 
     const [completedSets, setCompletedSets] = useState(0);
@@ -351,6 +354,8 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       sessionSnap.status !== 'abandoned';
     const ctaDisabled = finished || restRemaining !== null || blockedBySequence || sessionPaused;
     const cues = techniqueCuesFromNote(exercise.note);
+    const showOriginalRig = isPilotRigExercise(exercise.id);
+    const rigSex = profileSex === 'female' ? 'female' : 'male';
     const videoSource =
       exercise.mediaKey && EXERCISE_VIDEOS[exercise.mediaKey]
         ? EXERCISE_VIDEOS[exercise.mediaKey]
@@ -400,15 +405,19 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           </View>
         )}
 
-        <ExerciseVideo
-          source={videoSource}
-          gifAsset={gifAsset}
-          posterUri={reference?.imageUrl}
-          cues={cues}
-          shouldPlay={sheetOpen}
-        />
+{showOriginalRig ? (
+          <ExerciseRigAnimation exerciseId={exercise.id} sex={rigSex} />
+        ) : (
+          <ExerciseVideo
+            source={videoSource}
+            gifAsset={gifAsset}
+            posterUri={reference?.imageUrl}
+            cues={cues}
+            shouldPlay={sheetOpen}
+          />
+        )}
 
-        {reference && (
+        {!showOriginalRig && reference && (
           <View style={styles.refPhotoWrap}>
             <Image
               source={{ uri: reference.imageUrl }}
