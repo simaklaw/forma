@@ -159,9 +159,9 @@ const reusedKeysMarkdown = [...reusedKeys.entries()].sort((a, b) => a[0].localeC
   .map(([key, rows]) => '| ' + key + ' | ' + rows.length + ' | ' + rows.map((row) => row.name + ' (#' + row.id + ')').join('; ') + ' |')
   .join('\n');
 
-const pilotRegistryMatch = /const PILOT_RIGS: Record<number, ExerciseRigFamily> = \\{([\\s\\S]*?)\\n\\};/.exec(rigModelSource);
+const pilotRegistryMatch = /const PILOT_RIGS: Record<number, ExerciseRigFamily> = \{([\s\S]*?)\n\};/.exec(rigModelSource);
 if (!pilotRegistryMatch) throw new Error('Cannot read PILOT_RIGS from ' + PATHS.rigModel);
-const pilotRegistryRows = [...pilotRegistryMatch[1].matchAll(/(\\d+):\\s*'([^']+)'/g)];
+const pilotRegistryRows = [...pilotRegistryMatch[1].matchAll(/(\d+):\s*'([^']+)'/g)];
 const pilotIds = pilotRegistryRows.map((match) => Number(match[1]));
 if (new Set(pilotIds).size !== pilotIds.length) {
   throw new Error('PILOT_RIGS contains duplicate exercise IDs.');
