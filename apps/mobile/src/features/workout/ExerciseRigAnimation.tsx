@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useId, useState } from 'react';
+import { AppState, StyleSheet, Text, View } from 'react-native';
 import Svg, {
   Circle,
   Defs,
@@ -114,10 +114,19 @@ function sneaker(ankle: RigPoint, toe: RigPoint, key: string, opacity = 1) {
 export default function ExerciseRigAnimation({ exerciseId, sex, shouldPlay = true }: Props) {
   const colors = useThemeColors();
   const family = rigFamilyForExercise(exerciseId);
+  const idSeed = useId().replace(/[^a-zA-Z0-9_-]/g, '');
   const [progress, setProgress] = useState(0);
+  const [appActive, setAppActive] = useState(AppState.currentState === 'active');
 
   useEffect(() => {
-    if (!family || !shouldPlay) {
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      setAppActive(nextState === 'active');
+    });
+    return () => subscription.remove();
+  }, []);
+
+  useEffect(() => {
+    if (!family || !shouldPlay || !appActive) {
       setProgress(0);
       return undefined;
     }
@@ -126,13 +135,13 @@ export default function ExerciseRigAnimation({ exerciseId, sex, shouldPlay = tru
       setProgress(((Date.now() - started) % 2600) / 2600);
     }, 42);
     return () => clearInterval(timer);
-  }, [family, shouldPlay]);
+  }, [family, shouldPlay, appActive]);
 
   if (!family) return null;
 
   const pose = poseAt(family, progress);
   const groundY = rigGroundY(family);
-  const prefix = 'rig-' + exerciseId;
+  const prefix = 'rig-' + exerciseId + '-' + idSeed;
   const skin = 'url(#' + prefix + '-skin)';
   const shirt = 'url(#' + prefix + '-shirt)';
   const pants = 'url(#' + prefix + '-pants)';
