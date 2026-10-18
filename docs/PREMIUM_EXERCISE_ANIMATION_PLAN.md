@@ -1,6 +1,6 @@
 # FitPulse Premium 2D Exercise Animation Library — Plan
 
-Status: complete inventory and coverage registry are in place; original vector-rig pilot is integrated for three exercise IDs; latest Monorepo CI is green; refreshed Android APK build is running; on-device review is pending. This branch remains separate from `main`.
+Status: complete inventory, source-specific media-rights notes, and a 225-ID coverage registry are in place; original vector-rig pilot is integrated for three exercise IDs; Monorepo CI has passed with the generated-registry checks; refreshed Android APK build is still running; on-device review is pending. This branch remains separate from `main`.
 
 ## Goal
 
@@ -95,6 +95,7 @@ Reuse rigs and motion blocks only where biomechanics genuinely match. Exercise-s
 
 - Added a reproducible inventory generator and [full inventory report](./EXERCISE_ANIMATION_INVENTORY.md).
 - Added a per-exercise [coverage registry](./EXERCISE_ANIMATION_COVERAGE.json): 62 workout-plan entries plus 163 imported-library entries (225 total), with separate male/female status and legacy-media-rights status. Only three entries are prototypes; 222 are explicitly marked not started.
+- Added heuristic motion-family candidates to all 225 entries: 22 preliminary groups, with classification confidence/rule and manual-review status. Fifteen entries currently fall back to manual classification; all candidates remain unreviewed and do not count as animation coverage.
 - Added CI validation that fails if the committed coverage registry is stale after a catalog change.
 - Added a manual [Android pilot checklist](./EXERCISE_RIG_PILOT_DEVICE_CHECKLIST.md).
 - Added an original SVG-based vector rig with pilot movements: squat (ID 13), push-up (ID 10), and seated dumbbell press (ID 5); includes male/female skins, footwear/apparel details, offline rendering and pause while hidden/backgrounded.
@@ -104,7 +105,7 @@ Reuse rigs and motion blocks only where biomechanics genuinely match. Exercise-s
 - No changes have been made to main.
 ## Immediate next implementation task
 
-- CI passed at commit `7bdeaeab4a3ab725a6dc415642bebdecb7f38264` after coverage-registry/asset-provenance changes.
-- The first Android APK preview built successfully, but a later push-up pose refinement means it is not the final pilot build. The refreshed build is in progress at [run 39131576137](https://github.com/simaklaw/forma/actions/runs/39131576137), from application-source commit `434ab909908768338e903bf704727f291e658ceb`.
-- Once the refreshed artifact is available, install it and complete [the device checklist](./EXERCISE_RIG_PILOT_DEVICE_CHECKLIST.md). Record visual defects before expanding beyond the three pilot IDs.
+- The generator now creates the coverage and candidate-family registry; CI validates that the committed 225-ID registry matches it.
+- A refreshed Android APK is building at [run 39131576137](https://github.com/simaklaw/forma/actions/runs/39131576137), from app-source commit `434ab909908768338e903bf704727f291e658ceb`. This includes the latest push-up geometry.
+- Once the artifact is available, install it and complete [the device checklist](./EXERCISE_RIG_PILOT_DEVICE_CHECKLIST.md). Record visual defects before expanding beyond the three pilot IDs.
 - Do not generate hundreds of animations before the rig and pilot pass review.
