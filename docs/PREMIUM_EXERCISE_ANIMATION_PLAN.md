@@ -1,6 +1,6 @@
 # FitPulse Premium 2D Exercise Animation Library — Plan
 
-Status: complete inventory, source-specific media-rights notes, and a 225-ID coverage registry are in place; original vector-rig pilot is integrated for three exercise IDs; Monorepo CI has passed with the generated-registry checks; refreshed Android APK build is still running; on-device review is pending. This branch remains separate from `main`.
+Status: complete inventory, source-specific media-rights notes, and a 225-ID coverage registry are in place; original vector-rig pilot is integrated for three exercise IDs; the refreshed Android APK build completed successfully and was verified to contain its JS bundle; on-device review is pending. The latest CI is rechecking the refined registry's generated-file synchronization. This branch remains separate from `main`.
 
 ## Goal
 
@@ -95,6 +95,7 @@ Reuse rigs and motion blocks only where biomechanics genuinely match. Exercise-s
 
 - Added a reproducible inventory generator and [full inventory report](./EXERCISE_ANIMATION_INVENTORY.md).
 - Added a per-exercise [coverage registry](./EXERCISE_ANIMATION_COVERAGE.json): 62 workout-plan entries plus 163 imported-library entries (225 total), with separate male/female status and legacy-media-rights status. Only three entries are prototypes; 222 are explicitly marked not started.
+- Added 25 preliminary motion-family candidates for all 225 entries, with classification rule/confidence and review status. Only three records require manual classification because exercise instructions, muscle metadata, or equipment information conflict; those are explicitly blocked from final mapping until corrected.
 - Added heuristic motion-family candidates to all 225 entries: 22 preliminary groups, with classification confidence/rule and manual-review status. Fifteen entries currently fall back to manual classification; all candidates remain unreviewed and do not count as animation coverage.
 - Added CI validation that fails if the committed coverage registry is stale after a catalog change.
 - Added a manual [Android pilot checklist](./EXERCISE_RIG_PILOT_DEVICE_CHECKLIST.md).
@@ -105,7 +106,7 @@ Reuse rigs and motion blocks only where biomechanics genuinely match. Exercise-s
 - No changes have been made to main.
 ## Immediate next implementation task
 
-- The generator now creates the coverage and candidate-family registry; CI validates that the committed 225-ID registry matches it.
-- A refreshed Android APK is building at [run 39131576137](https://github.com/simaklaw/forma/actions/runs/39131576137), from app-source commit `434ab909908768338e903bf704727f291e658ceb`. This includes the latest push-up geometry.
-- Once the artifact is available, install it and complete [the device checklist](./EXERCISE_RIG_PILOT_DEVICE_CHECKLIST.md). Record visual defects before expanding beyond the three pilot IDs.
+- The generator creates the full inventory and coverage registry; CI checks that the committed 225-ID registry stays byte-for-byte synchronized.
+- Android preview succeeded at [run 39131576137](https://github.com/simaklaw/forma/actions/runs/39131576137), artifact ID `12138536352`, from app-source SHA `434ab909908768338e903bf704727f291e658ceb`. GitHub verified the JS bundle inside the APK. The SHA is shown in the profile footer as `434ab90`; APK SHA-256 is documented in the device checklist.
+- Complete [the device checklist](./EXERCISE_RIG_PILOT_DEVICE_CHECKLIST.md) before expanding beyond the three pilot IDs. Record visual defects and fix any issue with anatomy, timing, display, gender choice or offline playback.
 - Do not generate hundreds of animations before the rig and pilot pass review.
