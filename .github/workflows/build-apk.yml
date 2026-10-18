@@ -1,6 +1,9 @@
 name: Build Android APK
 
 on:
+  # Temporary single preview trigger for the current animation pilot source; reverted immediately after queuing.
+  push:
+    branches: [feat/premium-exercise-animation-library]
   # Мерж в main больше не собирает APK автоматически — только вручную:
   # Actions → Build Android APK → Run workflow (пока не пройдена приёмка на устройстве, #170).
   workflow_dispatch:
