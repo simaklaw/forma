@@ -11,6 +11,7 @@
 - Реестр покрытия: [EXERCISE_ANIMATION_COVERAGE.json](./EXERCISE_ANIMATION_COVERAGE.json) — **225 stable ID** (62 плановых + 163 импортированных), из них **3 прототипа** и **222 ещё не выполнено**.
 - Оборудование импортированного каталога: bodyweight: 80; bands: 16; machine: 10; dumbbells: 19; barbell: 21; cable: 13; ez-bar: 1; kettlebell: 3.
 - Старые локальные изображения: **96** папок и **192** JPG-кадров; соответствие ID импортированного каталога найдено для **96 из 163** упражнений.
+- Происхождение старых JPG подтверждено историей импорта: `yuhonas/free-exercise-db`, который заявляет Unlicense/Public Domain ([LICENSE](https://github.com/yuhonas/free-exercise-db/blob/main/LICENSE.md)). Этот статус относится к JPG-набору, не к GIF из другого источника.
 - GIF-манифест: **58** записей, из них с localGifPath — **56**; локальных GIF-файлов — **61**; статических Metro require — **61**.
 - Конкретное расхождение: `lib-band-hip-adductions.gif`, `lib-glute-kickback.gif` и `lib-side-bridge.gif` остаются среди локальных assets/Metro require, но отсутствуют в GIF-манифесте (исключены из-за неверных автосопоставлений); ещё 2 записи манифеста не имеют локального GIF-файла.
 - MP4-манифест: **0** записей; статических встроенных MP4-ключей — **13**.
