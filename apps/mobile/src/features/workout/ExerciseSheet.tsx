@@ -16,8 +16,8 @@ import { toDateKey, roundToStep } from '@/engines/WorkoutStats';
 import { formatRestClock, techniqueCuesFromNote } from '@/lib/techniqueCues';
 import { EXERCISE_GIF_MANIFEST } from './exerciseGifManifest.generated';
 import { useExerciseReference } from './useExerciseReference';
-import { ActiveSessionController, dayIdFromTemplate } from './session/ActiveSessionController';
-import { sequentialStepInfo } from './session/sequentialStep';
+import { ActiveSessionController } from './session/ActiveSessionController';
+import { sequentialStepInfo, sessionMatchesDayAndExercises } from './session/sequentialStep';
 import { applySessionProjection } from './data/applySessionProjection';
 import { getSessionService } from './data';
 import { formatLoadLabel, isBodyweightExercise, resolveWorkingLoadKg } from './catalog';
@@ -117,6 +117,8 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       (id: number) => dayExercises?.find((e) => e.id === id)?.name,
       [dayExercises]
     );
+    const dayExerciseIds = dayExercises?.map((entry) => entry.id) ?? [];
+    const dayExerciseIdsKey = dayExerciseIds.join(',');
 
     const bodyKg =
       typeof profileWeight === 'number' && Number.isFinite(profileWeight) && profileWeight > 0
@@ -141,9 +143,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           setSessionSnap(null);
           return;
         }
-        // A resumable session from a different training day must never gate
-        // this exercise or show its unrelated "next" exercise.
-        if (dayId && dayIdFromTemplate(session.templateRevisionId) !== dayId) {
+        // A different day or a frozen exercise list from an older plan must
+        // never gate this exercise or show an unrelated "next" exercise.
+        if (!sessionMatchesDayAndExercises(session, dayId, dayExerciseIds)) {
           setSessionSnap(null);
           return;
         }
@@ -159,7 +161,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       return () => {
         cancelled = true;
       };
-    }, [exercise?.id, dayId, bodyKg, startRestFromDeadline]);
+    }, [exercise?.id, dayId, dayExerciseIdsKey, bodyKg, startRestFromDeadline]);
 
     if (!exercise) return null;
 
