@@ -29,6 +29,7 @@ import {
 import { EXERCISE_VIDEOS } from './exerciseMedia';
 import { realGifForMediaKey } from './exerciseRealMedia';
 import { exercisePosterAsset } from './exercisePosterMedia';
+import { verifiedMediaKeyForExercise } from './verifiedExerciseMedia';
 import { techniqueCuesFromNote } from '@/lib/techniqueCues';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT, equipmentLabel, muscleLabel } from '@/i18n/strings';
@@ -105,11 +106,12 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
     replaceTarget.mode === item.mode &&
     replaceTarget.currentExerciseId !== item.id;
   const cues = techniqueCuesFromNote(item.note);
+  const verifiedMediaKey = verifiedMediaKeyForExercise(item.mediaKey, item.wgerSearchTerm);
   const videoSource =
-    item.mediaKey && EXERCISE_VIDEOS[item.mediaKey]
-      ? EXERCISE_VIDEOS[item.mediaKey]
+    verifiedMediaKey && EXERCISE_VIDEOS[verifiedMediaKey]
+      ? EXERCISE_VIDEOS[verifiedMediaKey]
       : undefined;
-  const gifAsset = realGifForMediaKey(item.mediaKey);
+  const gifAsset = realGifForMediaKey(verifiedMediaKey);
   const posterAsset = exercisePosterAsset(item.id, item.mediaKey, item.wgerSearchTerm);
 
   return (
