@@ -92,6 +92,25 @@ function dumbbell(point: RigPoint, key: string) {
   );
 }
 
+function sneaker(ankle: RigPoint, toe: RigPoint, key: string, opacity = 1) {
+  const angle = Math.atan2(toe.y - ankle.y, toe.x - ankle.x) * (180 / Math.PI);
+  return (
+    <G key={key} opacity={opacity} transform={'translate(' + ankle.x + ' ' + ankle.y + ') rotate(' + angle + ')'}>
+      <Path
+        d="M -3 -4 Q 2 -7 7 -4 L 16 -1 Q 22 1 22 5 L -3 5 Q -8 3 -3 -4 Z"
+        fill="#E1ECE7"
+        stroke="#122C31"
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+      <Path d="M -5 5 L 22 5 L 20 8 L -3 8 Z" fill="#91AA9F" stroke="#122C31" strokeWidth={1.5} strokeLinejoin="round" />
+      <Path d="M 1 -2 L 8 1 M 0 0 L 7 3" fill="none" stroke="#6E887D" strokeWidth={1.1} strokeLinecap="round" />
+      <Path d="M 10 -2 L 17 0" fill="none" stroke="#A9C7B9" strokeWidth={1.2} strokeLinecap="round" />
+      <Circle cx={-1} cy={-2} r={1.2} fill="#D6E9E0" />
+    </G>
+  );
+}
+
 export default function ExerciseRigAnimation({ exerciseId, sex, shouldPlay = true }: Props) {
   const colors = useThemeColors();
   const family = rigFamilyForExercise(exerciseId);
@@ -180,10 +199,33 @@ export default function ExerciseRigAnimation({ exerciseId, sex, shouldPlay = tru
         {segment('far-thigh', pose.hip, pose.kneeFar, pants, 17, 0.62)}
         {segment('far-shin', pose.kneeFar, pose.ankleFar, pants, 14, 0.62)}
         {segment('far-foot', pose.ankleFar, pose.toeFar, '#142A30', 8, 0.62)}
+        {sneaker(pose.ankleFar, pose.toeFar, 'far-sneaker', 0.7)}
         {segment('far-upper-arm', pose.shoulder, pose.elbowFar, skin, 13, 0.55)}
         {segment('far-forearm', pose.elbowFar, pose.wristFar, skin, 11, 0.55)}
 
         <Path d={torso} fill={shirt} stroke="#112D31" strokeWidth={4} strokeLinejoin="round" />
+        <Path
+          d={'M ' + (pose.shoulder.x - 10) + ' ' + (pose.shoulder.y + 4) +
+            ' Q ' + (pose.shoulder.x - 4) + ' ' + (pose.shoulder.y + 11) +
+            ' ' + (pose.shoulder.x + 2) + ' ' + (pose.shoulder.y + 8)}
+          fill="none"
+          stroke="#9BCDB8"
+          strokeWidth={2}
+          opacity={0.62}
+          strokeLinecap="round"
+        />
+        <Path
+          d={'M ' + (pose.hip.x - 8) + ' ' + (pose.hip.y - 3) +
+            ' Q ' + pose.hip.x + ' ' + (pose.hip.y + 2) +
+            ' ' + (pose.hip.x + 8) + ' ' + (pose.hip.y - 3)}
+          fill="none"
+          stroke="#0C2C2B"
+          strokeWidth={2}
+          opacity={0.7}
+          strokeLinecap="round"
+        />
+        <Circle cx={pose.shoulder.x + 2} cy={pose.shoulder.y + 15} r={2.6} fill={colors.lime} opacity={0.95} />
+        <Circle cx={pose.shoulder.x + 2} cy={pose.shoulder.y + 15} r={5.5} fill="none" stroke="#BCE6D1" strokeWidth={0.7} opacity={0.7} />
         <Path
           d={'M ' + (pose.shoulder.x - 3) + ' ' + (pose.shoulder.y + 9) +
             ' Q ' + (pose.hip.x - 9) + ' ' + ((pose.shoulder.y + pose.hip.y) / 2) +
@@ -208,6 +250,7 @@ export default function ExerciseRigAnimation({ exerciseId, sex, shouldPlay = tru
         {segment('near-thigh', pose.hip, pose.kneeNear, pants, 19)}
         {segment('near-shin', pose.kneeNear, pose.ankleNear, pants, 15)}
         {segment('near-foot', pose.ankleNear, pose.toeNear, '#0E252D', 9)}
+        {sneaker(pose.ankleNear, pose.toeNear, 'near-sneaker')}
         {segment('near-upper-arm', pose.shoulder, pose.elbowNear, skin, 15)}
         {segment('near-forearm', pose.elbowNear, pose.wristNear, skin, 12)}
 
