@@ -16,7 +16,7 @@ import { toDateKey, roundToStep } from '@/engines/WorkoutStats';
 import { formatRestClock, techniqueCuesFromNote } from '@/lib/techniqueCues';
 import { EXERCISE_GIF_MANIFEST } from './exerciseGifManifest.generated';
 import { useExerciseReference } from './useExerciseReference';
-import { ActiveSessionController } from './session/ActiveSessionController';
+import { ActiveSessionController, dayIdFromTemplate } from './session/ActiveSessionController';
 import { sequentialStepInfo, sessionMatchesDayAndExercises } from './session/sequentialStep';
 import { applySessionProjection } from './data/applySessionProjection';
 import { getSessionService } from './data';
