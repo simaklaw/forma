@@ -85,7 +85,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const setLogs = useFitPulseStore((s) => s.setLogs);
     const profileWeight = useFitPulseStore((s) => s.profile.weight);
     const profileSex = useFitPulseStore((s) => s.profile.sex);
-    const reference = useExerciseReference(exercise?.wgerSearchTerm ?? null);
+    const reference = useExerciseReference(
+      exercise?.id != null && isPilotRigExercise(exercise.id) ? null : exercise?.wgerSearchTerm ?? null
+    );
 
     const [completedSets, setCompletedSets] = useState(0);
     const [weight, setWeight] = useState(() => exercise?.workingWeight ?? 0);
