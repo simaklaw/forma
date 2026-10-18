@@ -23,9 +23,11 @@ import { useThemeColors } from '@/core/theme/useThemeColors';
 interface Props {
   /** Remote { uri } or Metro require() asset number. */
   source?: { uri: string } | number;
-  /** Vetted dataset GIF for the exact exercise (issue #175); Android animates GIF natively. */
+  /** Vetted animated asset for the exact exercise; Android animates GIF natively. */
   gifAsset?: number;
-  /** Optional still from wger when video is missing. */
+  /** Bundled, exact local illustration. Preferred over network-dependent posters. */
+  posterAsset?: number;
+  /** Optional still from wger when no local poster is available. */
   posterUri?: string;
   /** Short technique steps (from plan note). */
   cues?: string[];
@@ -48,6 +50,7 @@ function normalizeCues(cues: string[] | undefined): string[] {
 export default function ExerciseVideo({
   source,
   gifAsset,
+  posterAsset,
   posterUri,
   cues,
   label = 'ТЕХНИКА ВЫПОЛНЕНИЯ',
@@ -63,13 +66,13 @@ export default function ExerciseVideo({
   const fullscreenRef = useRef<Video>(null);
 
   useEffect(() => {
-    if (source || gifAsset != null) return;
+    if (source || gifAsset != null || posterAsset != null || posterUri) return;
     setStepIdx(0);
     const id = setInterval(() => {
       setStepIdx((i) => (i + 1) % steps.length);
     }, 2800);
     return () => clearInterval(id);
-  }, [source, gifAsset, steps.length]);
+  }, [source, gifAsset, posterAsset, posterUri, steps.length]);
 
   useEffect(() => {
     if (!source || !previewRef.current) return;
@@ -134,20 +137,27 @@ export default function ExerciseVideo({
             resizeMode="cover"
             accessibilityIgnoresInvertColors
           />
+        ) : posterAsset != null ? (
+          <Image
+            source={posterAsset}
+            style={StyleSheet.absoluteFill}
+            resizeMode="contain"
+            accessibilityIgnoresInvertColors
+          />
         ) : posterUri ? (
           <Image
             source={{ uri: posterUri }}
             style={StyleSheet.absoluteFill}
-            resizeMode="cover"
+            resizeMode="contain"
             accessibilityIgnoresInvertColors
           />
         ) : (
           <View style={styles.placeholderBg} />
         )}
 
-        <View style={styles.dim} />
+        {source != null && <View style={styles.dim} />}
 
-        {!source && gifAsset == null ? (
+        {!source && gifAsset == null && posterAsset == null && !posterUri ? (
           <View style={styles.guide}>
             <Text style={styles.guideStep}>
               Шаг {stepIdx + 1}/{steps.length}
@@ -171,7 +181,11 @@ export default function ExerciseVideo({
         ) : null}
 
         <Text style={styles.heroLabel}>
-          {source != null || gifAsset != null ? label : 'ТЕХНИКА · ПО ШАГАМ'}
+          {source != null || gifAsset != null
+            ? label
+            : posterAsset != null || posterUri
+              ? 'ИЛЛЮСТРАЦИЯ УПРАЖНЕНИЯ'
+              : 'ВИДЕО НЕТ · ТЕХНИКА ПО ШАГАМ'}
         </Text>
       </TouchableOpacity>
 
