@@ -1,5 +1,26 @@
 import type { WorkoutSession } from '@forma/workout-domain';
 
+/**
+ * Reject a resumable session that belongs to another selected day or whose
+ * frozen exercise order no longer matches the visible plan. This prevents a
+ * stale snapshot from displaying an unrelated "next exercise" in the sheet.
+ */
+export function sessionMatchesDayAndExercises(
+  session: WorkoutSession | null,
+  dayId: string | undefined,
+  exerciseIds: readonly number[] | undefined
+): boolean {
+  if (!session) return false;
+
+  const match = /^day-([^@]+)(?:@.*)?$/.exec(session.templateRevisionId);
+  if (dayId && (!match || match[1] !== dayId)) return false;
+
+  if (!exerciseIds?.length) return true;
+  const steps = session.steps ?? [];
+  return steps.length === exerciseIds.length &&
+    steps.every((step, index) => step.snapshot.exerciseId === String(exerciseIds[index]));
+}
+
 export interface SequentialStepInfo {
   /** True when this exercise is the session's currentStepIndex target. */
   isCurrent: boolean;
