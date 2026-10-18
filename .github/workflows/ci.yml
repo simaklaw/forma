@@ -39,6 +39,9 @@ jobs:
       - name: Generate exercise animation inventory
         run: node scripts/report-exercise-animation-inventory.mjs --write
 
+      - name: Verify committed animation coverage registry
+        run: git diff --exit-code -- docs/EXERCISE_ANIMATION_COVERAGE.json
+
       - name: Check diff whitespace
         run: git diff --check
 
