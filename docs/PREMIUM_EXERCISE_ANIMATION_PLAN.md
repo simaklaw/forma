@@ -1,6 +1,6 @@
 # FitPulse Premium 2D Exercise Animation Library — Plan
 
-Status: discovery complete; implementation not yet started. This branch is intentionally separate from `main`.
+Status: inventory report/generator added; reusable vector-rig pilot integrated for three exercise IDs; CI and on-device review are still pending. This branch is intentionally separate from `main`.
 
 ## Goal
 
@@ -83,6 +83,15 @@ Reuse rigs and motion blocks only where biomechanics genuinely match. Exercise-s
 - CI passes and the APK is verified before any release.
 - `main` is not changed without explicit user approval. Work proceeds on `feat/premium-exercise-animation-library` and should be proposed as a PR for review.
 
+## Work completed on the feature branch
+
+- Added `scripts/report-exercise-animation-inventory.mjs` to generate a reproducible inventory from the checked-out repository.
+- Added `docs/EXERCISE_ANIMATION_INVENTORY.md` with the full 62-entry plan list and 163-entry imported catalog.
+- Added `exerciseRigModel.ts` and tests for three original movement families: squat (exercise ID 13), push-up (ID 10), and seated dumbbell press (ID 5).
+- Added `ExerciseRigAnimation.tsx`, an offline SVG-based vector rig with a male/female visual skin selector.
+- Integrated the pilot component into the workout sheet and catalog detail modal only for the three explicitly mapped IDs. All other exercises keep their existing media fallback.
+- No changes have been made to `main`.
+
 ## Immediate next implementation task
 
-Build a read-only inventory script/report that joins the canonical workout catalogs and imported-library IDs with all existing media manifests and asset paths. Use its output to quantify actual coverage and choose the first three proof-of-concept exercises. Do not generate hundreds of animations before the rig and pilot pass review.
+Run CI and fix any type/test failures. Then review the three animations on an Android-sized screen, correct pose/anatomy and movement timing, and verify both profile variants. Do not generate hundreds of animations before the rig and pilot pass review.
