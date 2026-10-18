@@ -58,19 +58,19 @@ function candidateMotionFamily(name, category = null, equipment = null, stableKe
       family: 'hip-frontal-plane-control',
       confidence: 'manual-review-required',
       rule: 'source-conflict-name-adduction-vs-instruction-abduction',
-      note: 'The label/primary-muscle metadata says adduction, but the supplied instructions describe moving the leg outward. Verify the intended movement before drawing.'
+      note: 'Название и основные мышцы указывают на приведение, но инструкции описывают отведение ноги наружу. Перед созданием анимации сверить исходную технику.'
     },
     'library:lib-side-leg-raises': {
       family: 'hip-abduction-balance',
       confidence: 'manual-review-required',
       rule: 'source-conflict-primary-muscle-vs-instructions',
-      note: 'The instructions describe standing lateral leg raises, while primary-muscle metadata says adductors. Check the intended side and correct the source metadata before final animation mapping.'
+      note: 'Инструкция описывает махи ногой в сторону стоя, но поле основных мышц указывает приводящие мышцы. Уточнить направление движения и исправить метаданные.'
     },
     'library:lib-vertical-swing': {
       family: 'hip-hinge-swing',
       confidence: 'manual-review-required',
       rule: 'source-conflict-equipment-description',
-      note: 'The English entry says dumbbell and the Russian instruction says kettlebell. Confirm the intended implement and correct equipment metadata before final animation mapping.'
+      note: 'Английская запись указывает гантель, русская инструкция — гирю. Подтвердить оборудование и исправить метаданные до привязки анимации.'
     }
   };
   if (stableKey && manualReviewOverrides[stableKey]) return manualReviewOverrides[stableKey];
@@ -457,6 +457,7 @@ const report = [
   '4. Есть конкретное расхождение реестров: файлы `lib-band-hip-adductions.gif`, `lib-glute-kickback.gif` и `lib-side-bridge.gif` остаются среди физических assets/Metro require, но отсутствуют в GIF-манифесте (были исключены как неверные автосопоставления). Кроме того, 2 записи манифеста не имеют локального GIF пути. Перед заявлением об офлайн-покрытии сверить физические файлы, манифест и Metro require; не возвращать исключённые упражнения как корректное медиа без ручной проверки.',
   '5. Источники нужно разделять по лицензии. Старые JPG-кадры в `assets/exercise-library/` происходят из `yuhonas/free-exercise-db` и отмечены Unlicense/Public Domain в коммите импорта и [LICENSE](https://github.com/yuhonas/free-exercise-db/blob/main/LICENSE.md). Для `hasaneyldrm/exercises-dataset` MIT не распространяется на `images/` и `videos/`: эти медиа принадлежат Gym visual, NOTICE устанавливает атрибуцию `© Gym visual — https://gymvisual.com/` и ссылается на условия повторного использования ([LICENSE](https://github.com/hasaneyldrm/exercises-dataset/blob/main/LICENSE), [NOTICE](https://github.com/hasaneyldrm/exercises-dataset/blob/main/NOTICE.md)). Не считать GIF доступными для повторного распространения в APK без отдельной проверки/разрешения; вся новая графика и риг должны быть оригинальными.',
   '6. Старые медиа-манифесты не задают male/female-вариант для оригинального рига. Новый реестр покрытия добавляет явный статус обоих вариантов для всех ' + coverageEntries.length + ' stable ID; однако реальные оригинальные варианты существуют пока только у трёх прототипов, остальные 222 отмечены not-created.',
+  '7. Записи, заблокированные на ручную проверку: ' + coverageEntries.filter((entry) => entry.familyReviewStatus === 'manual-review-required').map((entry) => '**' + entry.nameRu + '** (' + entry.stableId + '): ' + entry.familyReviewNote).join(' ') + '.',
   '',
   '## Ключи видео, назначенные упражнениям повторно',
   '',
