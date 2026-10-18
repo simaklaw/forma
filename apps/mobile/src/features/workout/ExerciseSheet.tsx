@@ -117,8 +117,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       (id: number) => dayExercises?.find((e) => e.id === id)?.name,
       [dayExercises]
     );
-    const dayExerciseIds = dayExercises?.map((entry) => entry.id) ?? [];
-    const dayExerciseIdsKey = dayExerciseIds.join(',');
+    const dayExerciseIdsKey = dayExercises?.map((entry) => entry.id).join(',') ?? '';
 
     const bodyKg =
       typeof profileWeight === 'number' && Number.isFinite(profileWeight) && profileWeight > 0
@@ -145,6 +144,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         }
         // A different day or a frozen exercise list from an older plan must
         // never gate this exercise or show an unrelated "next" exercise.
+        const dayExerciseIds = dayExerciseIdsKey
+          ? dayExerciseIdsKey.split(',').map((id) => Number(id))
+          : [];
         if (!sessionMatchesDayAndExercises(session, dayId, dayExerciseIds)) {
           setSessionSnap(null);
           return;
