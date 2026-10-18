@@ -50,16 +50,44 @@ function parseExportedJsonArray(source, exportName) {
   throw new Error('Unclosed JSON array ' + exportName);
 }
 
-function candidateMotionFamily(name, category = null, equipment = null) {
+function candidateMotionFamily(name, category = null, equipment = null, stableKey = null) {
   const text = [name, category, equipment].filter(Boolean).join(' ').toLowerCase()
     .replace(/[–—]/g, '-');
+  const manualReviewOverrides = {
+    'library:lib-band-hip-adductions': {
+      family: 'hip-frontal-plane-control',
+      confidence: 'manual-review-required',
+      rule: 'source-conflict-name-adduction-vs-instruction-abduction',
+      note: 'The label/primary-muscle metadata says adduction, but the supplied instructions describe moving the leg outward. Verify the intended movement before drawing.'
+    },
+    'library:lib-side-leg-raises': {
+      family: 'hip-abduction-balance',
+      confidence: 'manual-review-required',
+      rule: 'source-conflict-primary-muscle-vs-instructions',
+      note: 'The instructions describe standing lateral leg raises, while primary-muscle metadata says adductors. Check the intended side and correct the source metadata before final animation mapping.'
+    },
+    'library:lib-vertical-swing': {
+      family: 'hip-hinge-swing',
+      confidence: 'manual-review-required',
+      rule: 'source-conflict-equipment-description',
+      note: 'The English entry says dumbbell and the Russian instruction says kettlebell. Confirm the intended implement and correct equipment metadata before final animation mapping.'
+    }
+  };
+  if (stableKey && manualReviewOverrides[stableKey]) return manualReviewOverrides[stableKey];
   const rules = [
+    { family: 'partner-resisted-isometric-stretch', rule: 'partner-resisted-isometric-name', pattern: /lying glute|seated glute|seated biceps|seated front deltoid|ягодичные лёжа|ягодичные сидя|сгибание рук на бицепс сидя|передняя дельта сидя/ },
+    { family: 'core-pike-hip-flexion', rule: 'core-pike-name', pattern: /butt[- ]?ups|butt ups/ },
+    { family: 'lateral-band-walk', rule: 'lateral-band-walk-name', pattern: /monster[- ]?walk|banded lateral walk|lateral band walk|ходьба с резинкой/ },
+    { family: 'hip-flexion-knee-drive', rule: 'hip-flexion-name', pattern: /hip flexion with band|band hip flexion|сгибание бедра с резинкой/ },
+    { family: 'hip-hinge-swing', rule: 'hip-hinge-swing-name', pattern: /kettlebell swing|dumbbell swing|vertical swing|махи? гирей|мах гирей|swing.*hip/ },
+    { family: 'horizontal-push-lateral-shift', rule: 'horizontal-push-lateral-shift-name', pattern: /isometric wipers|изометрические.{0,16}дворники/ },
+    { family: 'hip-frontal-plane-control', rule: 'hip-frontal-plane-name', pattern: /hip adduction|hip abduction|band hip adductions|side leg raises|side leg raise|мах ногой в сторону|приведение бедра/ },
     { family: 'core-anti-rotation', rule: 'anti-rotation-name', pattern: /pallof|паллоф|anti[- ]?rotation|анти.?ротац/ },
-    { family: 'shoulder-isolation', rule: 'shoulder-isolation-name', pattern: /lateral raise|front raise|reverse fly|face pull|external rotation|internal rotation|upright row|shrug|шраг|мах[иа] в стороны|подъ[её]мы? перед собой|разведени[ея].{0,24}(дельт|плеч|гантел|рук)|наружная ротация плеча|внутренняя ротация плеча|тяга к подбородку|face pulls?/ },
+    { family: 'shoulder-isolation', rule: 'shoulder-isolation-name', pattern: /lateral raise|front raise|front.{0,18}(raise|deltoid)|reverse fly|band pull[- ]?apart|face pull|external rotation|internal rotation|upright row|shrug|шраг|мах[иа] в стороны|подъ[её]мы? перед собой|разведени[ея].{0,24}(дельт|плеч|гантел|рук)|наружная ротация плеча|внутренняя ротация плеча|тяга к подбородку|face pulls?/ },
     { family: 'mobility-stretch', rule: 'mobility-stretch-name', pattern: /stretch|mobility|90\/90|wrist circles|hip circles|knee circles|neck exercise|растяж|круги|вращени[ея]|упражнен.*шеи|поворот.*шеи|мобилит/ },
     { family: 'core-stability-extension', rule: 'core-stability-name', pattern: /plank|side bridge|side plank|dead bug|superman|stomach vacuum|isometric neck|lower back curl|планка|мёртвый жук|мертвый жук|супермен|вакуум|боковой мост|боковая планка|разгибание поясницы/ },
     { family: 'core-dynamic-flexion-rotation', rule: 'core-dynamic-name', pattern: /crunch|sit[- ]?up|air bike|heel toucher|leg pull[- ]?in|russian twist|scissor kick|tuck crunch|oblique|toe toucher|скручив|велосипед \(пресс\)|подъ[её]м корпуса|локоть к колену|касани[ея] пяток|складк|подтягивание колен|ножниц[ыа]/ },
-    { family: 'cardio-plyometric', rule: 'cardio-plyometric-name', pattern: /jump|lateral bound|skipping|spider crawl|groiners|fast skipping|star jump|rocket jump|standing long jump|plyo push|прыж|бег на месте|альпинист|гроинер|spider crawl/ },
+    { family: 'cardio-plyometric', rule: 'cardio-plyometric-name', pattern: /jump|butt kick|lateral bound|skipping|spider crawl|groiners|fast skipping|star jump|rocket jump|standing long jump|plyo push|прыж|бег на месте|альпинист|гроинер|spider crawl/ },
     { family: 'hip-extension-bridge', rule: 'hip-extension-name', pattern: /glute bridge|hip thrust|butt lift|glute kickback|hip extension|hip raise|single[- ]leg glute bridge|rear leg raise|ягодичн.*мост|мостик с опорой|отведение ноги назад|разгибание бедра|мах ногой назад|подъём таза|подъем таза|отведение бедра/ },
     { family: 'lower-body-machine-isolation', rule: 'lower-body-machine-name', pattern: /leg press|leg extension|leg curl|calf raise|standing calf|жима? ногами|разгибания ног|сгибания ног|подъ[её]мы? на носки|икр[ыа]/ },
     { family: 'hip-hinge-deadlift', rule: 'hip-hinge-name', pattern: /deadlift|romanian deadlift|good morning|pull-through|hip hinge|kettlebell swing|stiff-legged|становая тяга|румынская тяга|тяга на прямых ногах|наклоны со штангой|наклоны с резинкой|гуд морнинг|протяжка на блоке между ног/ },
@@ -219,7 +247,7 @@ const coverageEntries = [
       : row.mediaKey && localVideoKeySet.has(row.mediaKey)
         ? 'bundled-media-movement-not-reviewed'
         : 'no-direct-bundled-video';
-    const familyCandidate = candidateMotionFamily(row.name + ' ' + (row.searchTerm || ''));
+    const familyCandidate = candidateMotionFamily(row.name + ' ' + (row.searchTerm || ''), null, null, 'plan:' + planMode + ':' + row.id);
     return {
       key: 'plan:' + planMode + ':' + row.id,
       source: 'plan',
@@ -232,7 +260,8 @@ const coverageEntries = [
       motionFamilyCandidate: familyCandidate.family,
       familyClassificationConfidence: familyCandidate.confidence,
       familyClassificationRule: familyCandidate.rule,
-      familyReviewStatus: motionFamily ? 'pending-device-review' : familyCandidate.confidence === 'unclassified' || familyCandidate.confidence === 'category-only-review' ? 'manual-review-required' : 'candidate-unreviewed',
+      familyReviewNote: familyCandidate.note || null,
+      familyReviewStatus: motionFamily ? 'pending-device-review' : familyCandidate.confidence === 'unclassified' || familyCandidate.confidence === 'category-only-review' || familyCandidate.confidence === 'manual-review-required' ? 'manual-review-required' : 'candidate-unreviewed',
       status: motionFamily ? 'prototype' : 'not-started',
       maleVariant: motionFamily ? 'original-svg-prototype' : 'not-created',
       femaleVariant: motionFamily ? 'original-svg-prototype' : 'not-created',
@@ -249,7 +278,8 @@ const coverageEntries = [
     const familyCandidate = candidateMotionFamily(
       (entry.nameEn || '') + ' ' + (entry.nameRu || ''),
       entry.category || null,
-      entry.equipment || null
+      entry.equipment || null,
+      'library:' + entry.id
     );
     const hasImageFolder = imageFolderBySlug.has(normalizeId(entry.id));
     const legacyMediaRights = hasManifestGif
@@ -271,7 +301,8 @@ const coverageEntries = [
       motionFamilyCandidate: familyCandidate.family,
       familyClassificationConfidence: familyCandidate.confidence,
       familyClassificationRule: familyCandidate.rule,
-      familyReviewStatus: familyCandidate.confidence === 'unclassified' || familyCandidate.confidence === 'category-only-review' ? 'manual-review-required' : 'candidate-unreviewed',
+      familyReviewNote: familyCandidate.note || null,
+      familyReviewStatus: familyCandidate.confidence === 'unclassified' || familyCandidate.confidence === 'category-only-review' || familyCandidate.confidence === 'manual-review-required' ? 'manual-review-required' : 'candidate-unreviewed',
       status: 'not-started',
       maleVariant: 'not-created',
       femaleVariant: 'not-created',
