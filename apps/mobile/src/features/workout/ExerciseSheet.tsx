@@ -137,8 +137,17 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       void (async () => {
         const session = await ActiveSessionController.load();
         if (cancelled) return;
+        if (!session) {
+          setSessionSnap(null);
+          return;
+        }
+        // A resumable session from a different training day must never gate
+        // this exercise or show its unrelated "next" exercise.
+        if (dayId && dayIdFromTemplate(session.templateRevisionId) !== dayId) {
+          setSessionSnap(null);
+          return;
+        }
         setSessionSnap(session);
-        if (!session) return;
         const steps = session.steps ?? [];
         const step = steps[session.currentStepIndex];
         if (!step || step.snapshot.exerciseId !== String(exercise.id)) return;
@@ -150,7 +159,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       return () => {
         cancelled = true;
       };
-    }, [exercise?.id, bodyKg, startRestFromDeadline]);
+    }, [exercise?.id, dayId, bodyKg, startRestFromDeadline]);
 
     if (!exercise) return null;
 
