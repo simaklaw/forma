@@ -114,11 +114,11 @@ const POSES: Record<ExerciseRigFamily, { start: RigPose; end: RigPose }> = {
       wristFar: { x: 180, y: 84 },
       hip: { x: 175, y: 132 },
       kneeNear: { x: 211, y: 146 },
-      ankleNear: { x: 225, y: 180 },
-      toeNear: { x: 248, y: 183 },
+      ankleNear: { x: 225, y: 195 },
+      toeNear: { x: 248, y: 198 },
       kneeFar: { x: 192, y: 147 },
-      ankleFar: { x: 205, y: 180 },
-      toeFar: { x: 226, y: 183 }
+      ankleFar: { x: 205, y: 194 },
+      toeFar: { x: 226, y: 197 }
     },
     end: {
       head: { x: 145, y: 55 },
@@ -130,11 +130,11 @@ const POSES: Record<ExerciseRigFamily, { start: RigPose; end: RigPose }> = {
       wristFar: { x: 178, y: 36 },
       hip: { x: 175, y: 132 },
       kneeNear: { x: 211, y: 146 },
-      ankleNear: { x: 225, y: 180 },
-      toeNear: { x: 248, y: 183 },
+      ankleNear: { x: 225, y: 195 },
+      toeNear: { x: 248, y: 198 },
       kneeFar: { x: 192, y: 147 },
-      ankleFar: { x: 205, y: 180 },
-      toeFar: { x: 226, y: 183 }
+      ankleFar: { x: 205, y: 194 },
+      toeFar: { x: 226, y: 197 }
     }
   }
 };
