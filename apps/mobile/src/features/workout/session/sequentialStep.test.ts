@@ -1,5 +1,5 @@
 import type { WorkoutSession } from '@forma/workout-domain';
-import { sequentialStepInfo } from './sequentialStep';
+import { sequentialStepInfo, sessionMatchesDayAndExercises } from './sequentialStep';
 
 function fakeSession(partial: {
   currentStepIndex: number;
@@ -65,5 +65,32 @@ describe('sequentialStepInfo', () => {
 
   it('treats null session as unlocked (no active sequential plan)', () => {
     expect(sequentialStepInfo(null, 2, names).isCurrent).toBe(true);
+  });
+});
+
+describe('sessionMatchesDayAndExercises', () => {
+  const session = fakeSession({
+    currentStepIndex: 0,
+    steps: [
+      { exerciseId: '1', name: 'Squat' },
+      { exerciseId: '2', name: 'RDL' }
+    ]
+  });
+
+  it('accepts the same day and exact frozen exercise order', () => {
+    expect(sessionMatchesDayAndExercises(session, 'legs', [1, 2])).toBe(true);
+  });
+
+  it('rejects a different day even if numeric IDs happen to overlap', () => {
+    expect(sessionMatchesDayAndExercises(session, 'chest', [1, 2])).toBe(false);
+  });
+
+  it('rejects stale/modified exercise lists from a previous plan revision', () => {
+    expect(sessionMatchesDayAndExercises(session, 'legs', [1, 48])).toBe(false);
+    expect(sessionMatchesDayAndExercises(session, 'legs', [1, 2, 3])).toBe(false);
+  });
+
+  it('does not treat a missing session as a match', () => {
+    expect(sessionMatchesDayAndExercises(null, 'legs', [1, 2])).toBe(false);
   });
 });
