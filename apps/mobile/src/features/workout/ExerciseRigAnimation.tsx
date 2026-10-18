@@ -24,6 +24,7 @@ import {
 interface Props {
   exerciseId: number;
   sex: ExerciseRigSex;
+  shouldPlay?: boolean;
 }
 
 function segment(
@@ -91,19 +92,22 @@ function dumbbell(point: RigPoint, key: string) {
   );
 }
 
-export default function ExerciseRigAnimation({ exerciseId, sex }: Props) {
+export default function ExerciseRigAnimation({ exerciseId, sex, shouldPlay = true }: Props) {
   const colors = useThemeColors();
   const family = rigFamilyForExercise(exerciseId);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    if (!family) return undefined;
+    if (!family || !shouldPlay) {
+      setProgress(0);
+      return undefined;
+    }
     const started = Date.now();
     const timer = setInterval(() => {
       setProgress(((Date.now() - started) % 2600) / 2600);
     }, 42);
     return () => clearInterval(timer);
-  }, [family]);
+  }, [family, shouldPlay]);
 
   if (!family) return null;
 
