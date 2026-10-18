@@ -3,14 +3,15 @@
  *
  * Priority:
  * 1. stable imported-library ID -> its own legacy public-domain image;
- * 2. exact plan media key -> bundled thumbnail;
- * 3. exact English slug in the bundled legacy image registry.
+ * 2. exact English slug in the bundled legacy image registry;
+ * 3. a canonical media-key thumbnail only when the term matches exactly.
  *
  * No substring/fuzzy matching: a similar exercise is not necessarily the
  * same movement or equipment setup.
  */
 import { EXERCISE_THUMBNAILS, type ExerciseMediaKey } from './exerciseMedia';
 import { realThumbForMediaKey } from './exerciseRealMedia';
+import { verifiedMediaKeyForExercise } from './verifiedExerciseMedia';
 import { IMPORTED_EXERCISE_IMAGES } from './importedExerciseImages.generated';
 import { libIdForNumericId, IMPORTED_NUMERIC_ID_BASE } from './importedExerciseBridge';
 
@@ -39,13 +40,16 @@ export function exercisePosterAsset(
     }
   }
 
-  if (mediaKey) {
-    const exactKeyPoster = EXERCISE_THUMBNAILS[mediaKey] ?? realThumbForMediaKey(mediaKey);
-    if (exactKeyPoster !== undefined) return exactKeyPoster;
+  const slug = strictSlug(wgerSearchTerm);
+  if (slug) {
+    // Exact slug only. Never reuse a related exercise as a technique illustration.
+    const exactExercisePoster = IMPORTED_EXERCISE_IMAGES[slug + '-0'];
+    if (exactExercisePoster !== undefined) return exactExercisePoster;
   }
 
-  const slug = strictSlug(wgerSearchTerm);
-  if (!slug) return undefined;
-  // Exact key only. Never reuse a related exercise as a technique illustration.
-  return IMPORTED_EXERCISE_IMAGES[slug + '-0'];
+  const verifiedKey = verifiedMediaKeyForExercise(mediaKey, wgerSearchTerm);
+  if (verifiedKey) {
+    return EXERCISE_THUMBNAILS[verifiedKey] ?? realThumbForMediaKey(verifiedKey);
+  }
+  return undefined;
 }
