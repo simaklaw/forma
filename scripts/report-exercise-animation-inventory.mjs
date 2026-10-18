@@ -314,6 +314,43 @@ const coverageEntries = [
     };
   })
 ];
+const expectedFamilyAssignments = {
+  'plan:home:10': 'horizontal-push',
+  'plan:home:13': 'squat-knee-dominant',
+  'plan:gym:5': 'vertical-push',
+  'library:lib-band-pull-apart': 'shoulder-isolation',
+  'library:lib-butt-ups': 'core-pike-hip-flexion',
+  'library:lib-double-leg-butt-kick': 'cardio-plyometric',
+  'library:lib-hip-flexion-with-band': 'hip-flexion-knee-drive',
+  'library:lib-isometric-wipers': 'horizontal-push-lateral-shift',
+  'library:lib-monster-walk': 'lateral-band-walk',
+  'library:lib-seated-biceps': 'partner-resisted-isometric-stretch',
+  'library:lib-seated-front-deltoid': 'partner-resisted-isometric-stretch',
+  'library:lib-seated-glute': 'partner-resisted-isometric-stretch',
+  'library:lib-single-leg-butt-kick': 'cardio-plyometric',
+  'library:lib-front-dumbbell-raise': 'shoulder-isolation'
+};
+for (const [key, expectedFamily] of Object.entries(expectedFamilyAssignments)) {
+  const entry = coverageEntries.find((row) => row.key === key);
+  if (!entry || entry.motionFamilyCandidate !== expectedFamily) {
+    throw new Error('Exercise family classification mismatch for ' + key + ': expected ' +
+      expectedFamily + ', got ' + (entry ? entry.motionFamilyCandidate : 'missing'));
+  }
+}
+const expectedManualReview = {
+  'library:lib-band-hip-adductions': 'source-conflict-name-adduction-vs-instruction-abduction',
+  'library:lib-side-leg-raises': 'source-conflict-primary-muscle-vs-instructions',
+  'library:lib-vertical-swing': 'source-conflict-equipment-description'
+};
+for (const [key, expectedRule] of Object.entries(expectedManualReview)) {
+  const entry = coverageEntries.find((row) => row.key === key);
+  if (!entry || entry.familyClassificationConfidence !== 'manual-review-required' ||
+      entry.familyReviewStatus !== 'manual-review-required' ||
+      entry.familyClassificationRule !== expectedRule || !entry.familyReviewNote) {
+    throw new Error('Ambiguous exercise must remain explicitly blocked for manual review: ' + key);
+  }
+}
+
 const familyCandidateCounts = coverageEntries.reduce((out, entry) => {
   out[entry.motionFamilyCandidate] = (out[entry.motionFamilyCandidate] || 0) + 1;
   return out;
