@@ -7,7 +7,7 @@ Status: the first SVG rig attempt was rejected after physical-device testing. It
 
 The first test APK did not meet the intended visual quality. The SVG sketch looked schematic rather than premium, missing-media states looked like a broken black video player, and the workout sheet could show a stale “next exercise” from another day. The SVG component was removed from the two user-facing exercise screens. A strict local-poster resolver now prefers an imported exercise's own bundled frame, then an exact plan media-key thumbnail, then an exact slug match; it does not fuzzy-match similar names. Missing animation remains honestly labeled as unavailable instead of showing a false play control.
 
-The sheet now ignores a resumable session when its template belongs to a different dayId. This is a targeted safeguard, not proof that the entire session flow is now correct. A fresh CI run and on-device retest are still required. Do not merge the draft until these are green and the animation asset/licensing plan is settled.
+The sheet and ActiveSessionController now reject a resumable session when its day, ordered exercise IDs, or frozen exercise names differ from the visible plan; `ensureDaySession` abandons and rebuilds mismatched snapshots. This is a targeted safeguard, not proof that the entire session flow is now correct. A fresh CI run and on-device retest are still required. Do not merge the draft until these are green and the animation asset/licensing plan is settled.
 
 ## Goal
 
