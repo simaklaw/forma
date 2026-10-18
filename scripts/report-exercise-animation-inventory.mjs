@@ -221,6 +221,23 @@ const coverageEntries = [
     };
   })
 ];
+const coverageKeys = new Set(coverageEntries.map((entry) => entry.key));
+if (uniquePlans.size !== planRows.length) {
+  throw new Error('Workout plan IDs are not unique; resolve collisions before producing the coverage registry.');
+}
+if (coverageEntries.length !== planRows.length + imported.length) {
+  throw new Error('Coverage registry does not include every plan/library entry.');
+}
+if (coverageKeys.size !== coverageEntries.length) {
+  throw new Error('Coverage registry contains duplicate stable keys.');
+}
+if (coverageEntries.filter((entry) => entry.status === 'prototype').length !== 3) {
+  throw new Error('Only the three explicitly mapped pilot exercises should be marked as prototypes.');
+}
+if (coverageEntries.some((entry) => !entry.maleVariant || !entry.femaleVariant)) {
+  throw new Error('Every coverage record must contain explicit male and female variant statuses.');
+}
+
 const coverageJson = JSON.stringify({
   schemaVersion: 1,
   summary: {
