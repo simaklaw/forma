@@ -1,11 +1,7 @@
 name: Build Android APK
 
 on:
-  # Temporary one-off preview build for the latest device-review fixes on this branch.
-  push:
-    branches:
-      - feat/premium-exercise-animation-library
-  # Keep future APK builds manual-only.
+  # APK builds stay manual-only after this one-off device-review preview.
   workflow_dispatch:
     inputs:
       sync_api_url:
