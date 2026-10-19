@@ -101,6 +101,11 @@ describe('sessionMatchesDayAndExercises', () => {
     expect(sessionMatchesDayAndExercises(session, 'legs', [{ id: 1, name: 'Glute Bridge' }, { id: 2, name: 'RDL' }])).toBe(false);
   });
 
+  it('rejects an explicitly empty exercise list when the session still has steps', () => {
+    expect(sessionMatchesDayAndExercises(session, 'legs', [])).toBe(false);
+    expect(sessionMatchesDayAndExercises(session, 'legs', undefined)).toBe(true);
+  });
+
   it('does not treat a missing session as a match', () => {
     expect(sessionMatchesDayAndExercises(null, 'legs', [{ id: 1, name: 'Squat' }, { id: 2, name: 'RDL' }])).toBe(false);
   });
