@@ -118,9 +118,8 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       (id: number) => dayExercises?.find((e) => e.id === id)?.name,
       [dayExercises]
     );
-    const dayExerciseIdentitiesKey = JSON.stringify(
-      (dayExercises ?? []).map((entry) => ({ id: entry.id, name: entry.name }))
-    );
+    const dayExerciseIdentities = (dayExercises ?? []).map(({ id, name }) => ({ id, name }));
+    const dayExerciseIdentitiesKey = JSON.stringify(dayExerciseIdentities);
 
     const bodyKg =
       typeof profileWeight === 'number' && Number.isFinite(profileWeight) && profileWeight > 0
@@ -147,10 +146,6 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           return;
         }
         // Validate both the viewed day and exact ordered exercise identities.
-        const dayExerciseIdentities = JSON.parse(dayExerciseIdentitiesKey) as {
-          id: number;
-          name: string;
-        }[];
         if (!sessionMatchesDayAndExercises(session, dayId, dayExerciseIdentities)) {
           setSessionSnap(null);
           return;
@@ -171,7 +166,14 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
     if (!exercise) return null;
 
-    const sessionForDay = sessionForViewedDay(sessionSnap, dayId);
+    const sessionCandidateForDay = sessionForViewedDay(sessionSnap, dayId);
+    const sessionForDay = sessionMatchesDayAndExercises(
+      sessionCandidateForDay,
+      dayId,
+      dayExerciseIdentities
+    )
+      ? sessionCandidateForDay
+      : null;
     const seq =
       dayId && dayExercises?.length
         ? sequentialStepInfo(sessionForDay, exercise.id, nameById)
@@ -357,7 +359,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       );
     }
 
-    const sessionPaused = sessionSnap?.status === 'paused';
+    const sessionPaused = sessionForDay?.status === 'paused';
     const dayList = dayExercises ?? [];
     const navIndex = dayList.findIndex((e) => e.id === exercise.id);
     const prevExercise = navIndex > 0 ? dayList[navIndex - 1] : null;
@@ -365,9 +367,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       navIndex >= 0 && navIndex + 1 < dayList.length ? dayList[navIndex + 1] : null;
     const hasActiveSession =
       Boolean(dayId && dayList.length) &&
-      sessionSnap != null &&
-      sessionSnap.status !== 'completed' &&
-      sessionSnap.status !== 'abandoned';
+      sessionForDay != null &&
+      sessionForDay.status !== 'completed' &&
+      sessionForDay.status !== 'abandoned';
     const ctaDisabled = finished || restRemaining !== null || blockedBySequence || sessionPaused;
     const cues = techniqueCuesFromNote(exercise.note);
     const verifiedMediaKey = verifiedMediaKeyForExercise(exercise.mediaKey, exercise.wgerSearchTerm);
