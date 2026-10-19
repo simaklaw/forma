@@ -1,7 +1,14 @@
 name: Build Android APK
 
 on:
-  # APK builds stay manual-only after this one-off device-review preview.
+  # Build APKs for mobile PRs to main so the reviewer can install the exact change.
+  # This does not enable automatic builds on pushes or merges to main.
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - ".github/workflows/build-apk.yml"
+      - "scripts/prepare-premium-exercise-pilot.py"
   workflow_dispatch:
     inputs:
       sync_api_url:
