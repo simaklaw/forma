@@ -37,7 +37,17 @@
       "core-anti-rotation": 1,
       "hip-hinge-swing": 1
     },
-    "explicitMaleFemaleVariantStatus": true
+    "explicitMaleFemaleVariantStatus": true,
+    "legacyImageFolders": 96,
+    "legacyImageFrames": 192,
+    "localGifFiles": 61,
+    "gifManifestEntries": 58,
+    "gifManifestEntriesWithLocalPath": 56,
+    "metroGifRequireEntries": 61,
+    "extraMetroGifRequireEntries": 3,
+    "manifestEntriesWithoutLocalGif": 2,
+    "videoManifestEntries": 0,
+    "bundledVideoKeys": 13
   },
   "rule": "No new animation is currently approved as exercise-accurate coverage. Existing videos, GIFs and legacy images are tracked separately and do not count as newly verified animation coverage.",
   "entries": [
@@ -1511,7 +1521,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-air-bike",
@@ -1833,7 +1843,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-clock-push-up",
@@ -1925,7 +1935,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-crunch-hands-overhead",
@@ -2040,7 +2050,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-elbow-to-knee",
@@ -2086,7 +2096,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-fast-skipping",
@@ -2109,7 +2119,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-flat-bench-leg-pull-in",
@@ -2224,7 +2234,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-handstand-push-ups",
@@ -2270,7 +2280,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-hip-extension-with-bands",
@@ -2408,7 +2418,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-isometric-neck-exercise-sides",
@@ -2431,7 +2441,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-isometric-wipers",
@@ -2546,7 +2556,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-lateral-bound",
@@ -2569,7 +2579,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-lateral-raise-with-bands",
@@ -2661,7 +2671,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-lying-glute",
@@ -2684,7 +2694,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-lying-prone-quadriceps",
@@ -2707,7 +2717,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-monster-walk",
@@ -2822,7 +2832,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-plyo-push-up",
@@ -2960,7 +2970,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-rear-leg-raises",
@@ -2983,7 +2993,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-reverse-crunch",
@@ -3029,7 +3039,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-russian-twist",
@@ -3075,7 +3085,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-scissors-jump",
@@ -3098,7 +3108,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-seated-biceps",
@@ -3121,7 +3131,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-seated-front-deltoid",
@@ -3144,7 +3154,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-seated-glute",
@@ -3236,7 +3246,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-side-leg-raises",
@@ -3259,7 +3269,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-single-arm-push-up",
@@ -3305,7 +3315,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-single-leg-glute-bridge",
@@ -3374,7 +3384,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-spider-crawl",
@@ -3397,7 +3407,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-split-jump",
@@ -3420,7 +3430,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-squats-with-bands",
@@ -3443,7 +3453,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-standing-hip-circles",
@@ -3466,7 +3476,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-standing-long-jump",
@@ -3489,7 +3499,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-standing-towel-triceps-extension",
@@ -3558,7 +3568,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-superman",
@@ -3581,7 +3591,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-toe-touchers",
@@ -3604,7 +3614,7 @@
       "legacyImageFolder": true,
       "legacyGifStatus": "not-mapped",
       "currentMediaKey": null,
-      "legacyMediaRights": "yuhonas-unlicense-declared"
+      "legacyMediaRights": "yuhonas-attribution-preserved-rights-unverified"
     },
     {
       "key": "library:lib-tuck-crunch",
