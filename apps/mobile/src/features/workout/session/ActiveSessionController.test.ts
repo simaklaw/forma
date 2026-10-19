@@ -1,12 +1,14 @@
 import {
   configureSessionPersistence,
   getSessionService,
+  newSessionId,
   resetSessionServiceForTests
 } from '@/features/workout/data';
 import { mergeSessionProjection } from '@/features/workout/data/sessionProjections';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import type { ExerciseDef } from '../ExerciseSheet';
 import { ActiveSessionController } from './ActiveSessionController';
+import { contentHashForExercises, exercisesToSnapshots } from './planToSnapshots';
 
 /** Complete biometrics so isProfileComplete / ensureDaySession gate passes in unit tests. */
 const TEST_PROFILE = {
@@ -126,6 +128,41 @@ describe('ActiveSessionController', () => {
 
     const stored = await getSessionService().getSession(first!.sessionId);
     expect(stored?.status).not.toBe('abandoned');
+  });
+
+  it('does not resume a same-day session from an older template revision', async () => {
+    const first = await ActiveSessionController.ensureDaySession('legs', exercises);
+    expect(first).not.toBeNull();
+
+    ActiveSessionController.resetForTests();
+    const svc = getSessionService();
+    await svc.dispatch(first!.sessionId, {
+      type: 'abandon_session',
+      reason: 'replaced_by_new_session'
+    });
+
+    const staleSessionId = newSessionId();
+    const bodyKg = 78;
+    await svc.dispatch(null, {
+      type: 'prepare_session',
+      sessionId: staleSessionId,
+      userId: 'local-user',
+      templateRevisionId: 'day-legs@older-revision',
+      contentHash: contentHashForExercises(exercises, bodyKg),
+      steps: exercisesToSnapshots(exercises, bodyKg),
+      localStartDate: new Date().toISOString().slice(0, 10),
+      timezone: 'UTC',
+      weightKgSnapshot: bodyKg
+    });
+    await svc.dispatch(staleSessionId, { type: 'start_session' });
+
+    ActiveSessionController.resetForTests();
+    const replacement = await ActiveSessionController.ensureDaySession('legs', exercises);
+
+    expect(replacement).not.toBeNull();
+    expect(replacement!.sessionId).not.toBe(staleSessionId);
+    expect(replacement!.templateRevisionId).not.toBe('day-legs@older-revision');
+    expect((await svc.getSession(staleSessionId))?.status).toBe('abandoned');
   });
 
   it('switching day abandons previous session (single-active)', async () => {
