@@ -120,19 +120,27 @@ function candidateMotionFamily(name, category = null, equipment = null, stableKe
 
 function parsePlan(source, mode) {
   const rows = [];
-  const pattern = /\{\s*id:\s*(\d+),\s*index:\s*\d+,\s*name:\s*'((?:\\.|[^'])*)'([\s\S]*?)\n\s{6}\}/g;
+  const pattern = /\{\s*id:\s*(\d+),\s*index:\s*\d+,\s*name:\s*(?:'((?:\\.|[^'])*)'|"((?:\\.|[^"])*)")([\s\S]*?)\n\s{6}\}/g;
+  const exerciseObjectCount = [...source.matchAll(/\{\s*id:\s*\d+,\s*index:\s*\d+,\s*name\s*:/g)].length;
   let match;
   while ((match = pattern.exec(source)) !== null) {
-    const extra = match[3];
-    const mediaKey = /mediaKey:\s*'([^']+)'/.exec(extra);
-    const searchTerm = /wgerSearchTerm:\s*'([^']+)'/.exec(extra);
+    const extra = match[4];
+    const mediaKey = /mediaKey:\s*(?:'([^']+)'|"([^"]+)")/.exec(extra);
+    const searchTerm = /wgerSearchTerm:\s*(?:'([^']+)'|"([^"]+)")/.exec(extra);
+    const rawName = match[2] ?? match[3];
     rows.push({
       mode,
       id: Number(match[1]),
-      name: match[2].replace(/\\'/g, "'"),
-      mediaKey: mediaKey ? mediaKey[1] : null,
-      searchTerm: searchTerm ? searchTerm[1] : null
+      name: rawName.replace(/\\(['"\\])/g, '$1'),
+      mediaKey: mediaKey ? mediaKey[1] ?? mediaKey[2] : null,
+      searchTerm: searchTerm ? searchTerm[1] ?? searchTerm[2] : null
     });
+  }
+  if (rows.length !== exerciseObjectCount) {
+    throw new Error(
+      'Parsed ' + rows.length + ' exercises but found ' + exerciseObjectCount +
+      ' plan exercise IDs for ' + mode + '; fix parsePlan instead of publishing an incomplete inventory'
+    );
   }
   if (!rows.length) throw new Error('No workout exercises parsed for ' + mode);
   return rows;
@@ -278,7 +286,7 @@ const coverageEntries = [
       : hasOrphanGif
         ? 'excluded-wrong-match-do-not-display'
         : hasImageFolder
-          ? 'yuhonas-unlicense-declared'
+          ? 'yuhonas-attribution-preserved-rights-unverified'
           : 'no-mapped-legacy-media';
     return {
       key: 'library:' + entry.id,
@@ -413,6 +421,16 @@ const coverageJson = JSON.stringify({
     entriesPendingFamilyReview: coverageEntries.filter((entry) => entry.familyReviewStatus !== 'pending-device-review').length,
     entriesRequiringManualClassification: coverageEntries.filter((entry) => entry.familyReviewStatus === 'manual-review-required').length,
     familyCandidateCounts,
+    legacyImageFolders: imageFolders.length,
+    legacyImageFrames: imageFolders.reduce((sum, folder) => sum + folder.frames.length, 0),
+    localGifFiles: gifFiles.length,
+    gifManifestEntries: gifManifest.length,
+    gifManifestEntriesWithLocalPath: gifManifest.filter((entry) => entry.localGifPath).length,
+    metroGifRequireEntries: gifModuleIds.length,
+    extraMetroGifRequireEntries: extraGifModuleIds.length,
+    manifestEntriesWithoutLocalGif: manifestWithoutLocalAsset.length,
+    videoManifestEntries: videoManifest.length,
+    bundledVideoKeys: bundledVideoKeys.length,
     explicitMaleFemaleVariantStatus: true
   },
   rule: 'No new animation is currently approved as exercise-accurate coverage. Existing videos, GIFs and legacy images are tracked separately and do not count as newly verified animation coverage.',
@@ -434,7 +452,7 @@ const report = [
   '- Реестр покрытия: `docs/EXERCISE_ANIMATION_COVERAGE.json` — ' + coverageEntries.length + ' stable IDs (' + planRows.length + ' плановых + ' + imported.length + ' импортированных), из них ' + coverageEntries.filter((entry) => entry.status === 'prototype').length + ' одобренных новых анимаций и ' + coverageEntries.filter((entry) => entry.status === 'not-started').length + ' ещё не выполнено.',
   '- Предварительное группирование: **' + Object.keys(familyCandidateCounts).length + '** семейств-кандидатов; **' + coverageEntries.filter((entry) => entry.familyReviewStatus === 'manual-review-required').length + '** записей требуют ручной классификации из-за недостатка данных или конфликтов в источнике. Все остальные назначения также непроверенные и не означают одобрение анимации или эквивалентности техники.',
   '- Распределение импортированного каталога по оборудованию: ' + Object.entries(equipmentCounts).map(([key, value]) => key + ': ' + value).join('; ') + '.',
-  '- Старые локальные изображения: **' + imageFolders.length + '** папок и **' + imageFolders.reduce((sum, folder) => sum + folder.frames.length, 0) + '** JPG-кадров. Источник этих кадров — `yuhonas/free-exercise-db`, указанный как Unlicense/Public Domain в коммите импорта и в [LICENSE](https://github.com/yuhonas/free-exercise-db/blob/main/LICENSE.md). Папки, совпавшие с ID импортированного каталога: **' + imported.filter((entry) => imageFolderBySlug.has(normalizeId(entry.id))).length + ' из ' + imported.length + '**.',
+   '- Старые локальные изображения: **' + imageFolders.length + '** папок и **' + imageFolders.reduce((sum, folder) => sum + folder.frames.length, 0) + '** JPG-кадров. Происхождение по истории импорта — \`yuhonas/free-exercise-db\`; репозиторий заявляет Unlicense/Public Domain ([LICENSE](https://github.com/yuhonas/free-exercise-db/blob/main/LICENSE.md)), однако права на конкретные JPG, включённые в текущий проект, отдельно не подтверждены. Атрибуция источника сохраняется; права отмечены как непроверенные. Папки, совпавшие с ID импортированного каталога: **' + imported.filter((entry) => imageFolderBySlug.has(normalizeId(entry.id))).length + ' из ' + imported.length + '**.',
   '- GIF-манифест: **' + gifManifest.length + '** записей, с localGifPath — **' + gifManifest.filter((entry) => entry.localGifPath).length + '**; локальных GIF-файлов — **' + gifFiles.length + '**; статических GIF require-записей — **' + gifModuleIds.length + '**.',
   '- GIF-реестр: **' + extraGifModuleIds.length + '** локальных файлов есть в Metro require, но нет в манифесте (' + (extraGifModuleIds.join(', ') || 'нет') + '); **' + manifestWithoutLocalAsset.length + '** записей манифеста не имеют соответствующего локального GIF-файла.',
   '- MP4-манифест: **' + videoManifest.length + '** записей; встроенных MP4-ключей — **' + bundledVideoKeys.length + '**.',
@@ -453,7 +471,7 @@ const report = [
   '2. Разные упражнения могут наследовать один legacy mediaKey, но приложение больше не использует его как достаточное основание для воспроизведения: требуется точное каноническое совпадение термина.',
   '3. Библиотека содержит ' + imported.length + ' упражнения, GIF-манифест — ' + gifManifest.length + ' записи, а папки JPG покрывают только часть импортированного каталога.',
   '4. Есть конкретное расхождение реестров: файлы `lib-band-hip-adductions.gif`, `lib-glute-kickback.gif` и `lib-side-bridge.gif` остаются среди физических assets/Metro require, но отсутствуют в GIF-манифесте (были исключены как неверные автосопоставления). Кроме того, 2 записи манифеста не имеют локального GIF пути. Перед заявлением об офлайн-покрытии сверить физические файлы, манифест и Metro require; не возвращать исключённые упражнения как корректное медиа без ручной проверки.',
-  '5. Источники нужно разделять по лицензии. Старые JPG-кадры в `assets/exercise-library/` происходят из `yuhonas/free-exercise-db` и отмечены Unlicense/Public Domain в коммите импорта и [LICENSE](https://github.com/yuhonas/free-exercise-db/blob/main/LICENSE.md). Для `hasaneyldrm/exercises-dataset` MIT не распространяется на `images/` и `videos/`: эти медиа принадлежат Gym visual, NOTICE устанавливает атрибуцию `© Gym visual — https://gymvisual.com/` и ссылается на условия повторного использования ([LICENSE](https://github.com/hasaneyldrm/exercises-dataset/blob/main/LICENSE), [NOTICE](https://github.com/hasaneyldrm/exercises-dataset/blob/main/NOTICE.md)). Не считать GIF доступными для повторного распространения в APK без отдельной проверки/разрешения; вся новая графика и риг должны быть оригинальными.',
+   '5. Источники нужно разделять по лицензии. История импорта связывает JPG-кадры в \`assets/exercise-library/\` с \`yuhonas/free-exercise-db\`, чей репозиторий заявляет Unlicense/Public Domain ([LICENSE](https://github.com/yuhonas/free-exercise-db/blob/main/LICENSE.md)); права на конкретные JPG в текущем проекте остаются непроверенными, атрибуция источника сохранена. Для \`hasaneyldrm/exercises-dataset\` MIT не распространяется на \`images/\` и \`videos/\`: эти медиа принадлежат Gym visual, NOTICE устанавливает атрибуцию \`© Gym visual — https://gymvisual.com/\` и ссылается на условия повторного использования ([LICENSE](https://github.com/hasaneyldrm/exercises-dataset/blob/main/LICENSE), [NOTICE](https://github.com/hasaneyldrm/exercises-dataset/blob/main/NOTICE.md)). Не считать GIF доступными для повторного распространения в APK без отдельной проверки/разрешения; вся новая графика и риг должны быть оригинальными.',
   '6. Текущие MP4/GIF не имеют систематически проверенной мужской/женской пары для каждого упражнения. Реестр явно отмечает половые варианты для всех ' + coverageEntries.length + ' stable ID, но все 225 записей остаются not-created для новой одобренной анимации.',
   '7. Записи, заблокированные на ручную проверку: ' + coverageEntries.filter((entry) => entry.familyReviewStatus === 'manual-review-required').map((entry) => '**' + entry.nameRu + '** (' + entry.stableId + '): ' + entry.familyReviewNote).join(' ') + '.',
   '',
