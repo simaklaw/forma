@@ -1,5 +1,5 @@
 import type { WorkoutSession } from '@forma/workout-domain';
-import { sequentialStepInfo } from './sequentialStep';
+import { sequentialStepInfo, sessionForViewedDay } from './sequentialStep';
 
 function fakeSession(partial: {
   currentStepIndex: number;
@@ -65,5 +65,15 @@ describe('sequentialStepInfo', () => {
 
   it('treats null session as unlocked (no active sequential plan)', () => {
     expect(sequentialStepInfo(null, 2, names).isCurrent).toBe(true);
+  });
+
+  it('ignores a session that belongs to another day', () => {
+    const session = fakeSession({
+      currentStepIndex: 0,
+      steps: [{ exerciseId: '19', name: 'Ягодичный мостик' }]
+    });
+    expect(sessionForViewedDay(session, 'chest')).toBeNull();
+    expect(sessionForViewedDay(session, 'legs')).toBe(session);
+    expect(sessionForViewedDay(null, 'chest')).toBeNull();
   });
 });

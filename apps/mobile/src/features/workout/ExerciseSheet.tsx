@@ -17,7 +17,7 @@ import { formatRestClock, techniqueCuesFromNote } from '@/lib/techniqueCues';
 import { EXERCISE_GIF_MANIFEST } from './exerciseGifManifest.generated';
 import { useExerciseReference } from './useExerciseReference';
 import { ActiveSessionController, dayIdFromTemplate } from './session/ActiveSessionController';
-import { sequentialStepInfo } from './session/sequentialStep';
+import { sequentialStepInfo, sessionForViewedDay } from './session/sequentialStep';
 import { applySessionProjection } from './data/applySessionProjection';
 import { getSessionService } from './data';
 import { formatLoadLabel, isBodyweightExercise, resolveWorkingLoadKg } from './catalog';
@@ -134,7 +134,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
       let cancelled = false;
       void (async () => {
-        const session = await ActiveSessionController.load();
+        const session = sessionForViewedDay(await ActiveSessionController.load(), dayId);
         if (cancelled) return;
         setSessionSnap(session);
         if (!session) return;
@@ -149,13 +149,14 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       return () => {
         cancelled = true;
       };
-    }, [exercise?.id, bodyKg, startRestFromDeadline]);
+    }, [exercise?.id, bodyKg, startRestFromDeadline, dayId]);
 
     if (!exercise) return null;
 
+    const sessionForDay = sessionForViewedDay(sessionSnap, dayId);
     const seq =
       dayId && dayExercises?.length
-        ? sequentialStepInfo(sessionSnap, exercise.id, nameById)
+        ? sequentialStepInfo(sessionForDay, exercise.id, nameById)
         : {
             isCurrent: true,
             expectedName: null,

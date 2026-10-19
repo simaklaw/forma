@@ -63,6 +63,7 @@ export default function CatalogScreen() {
   const [catalogScope, setCatalogScope] = useState<'plans' | 'library' | 'tabata' | 'programs'>(
     'plans'
   );
+  const [planDayId, setPlanDayId] = useState<string | null>(null);
   const [replaceTarget, setReplaceTargetState] = useState<ReplaceTarget | null>(getReplaceTarget());
 
   useEffect(() => subscribeReplaceTarget(() => setReplaceTargetState(getReplaceTarget())), []);
@@ -134,7 +135,26 @@ export default function CatalogScreen() {
     setMuscle(null);
     setEquipment(null);
     setShowFavoritesOnly(false);
+    setPlanDayId(null);
   }
+
+  const planDays = useMemo(() => {
+    const seen = new Map<string, { id: string; name: string; count: number }>();
+    for (const item of items) {
+      const row = seen.get(item.dayId) ?? { id: item.dayId, name: item.dayName, count: 0 };
+      row.count += 1;
+      seen.set(item.dayId, row);
+    }
+    return [...seen.values()];
+  }, [items]);
+
+  const narrowing = Boolean(query || muscle || equipment || showFavoritesOnly);
+  const browsingDays = !narrowing && planDayId == null;
+  const listed = useMemo(() => {
+    if (browsingDays) return [];
+    if (!narrowing && planDayId) return filtered.filter((item) => item.dayId === planDayId);
+    return filtered;
+  }, [browsingDays, narrowing, planDayId, filtered]);
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]}>
@@ -148,7 +168,10 @@ export default function CatalogScreen() {
               ? t('catalogHintLibrary')
               : catalogScope === 'tabata'
                 ? t('catalogHintTabata')
-                : t('catalogHintOffline', { shown: filtered.length, total: items.length })
+                : t('catalogHintOffline', {
+                    shown: browsingDays ? planDays.length : listed.length,
+                    total: browsingDays ? planDays.length : items.length
+                  })
         }
       />
 
@@ -181,7 +204,8 @@ export default function CatalogScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.modeTabs}
+        contentContainerStyle={[styles.modeTabs, styles.segmentTabs]}
+        style={styles.segmentScroll}
         accessibilityRole="tablist"
       >
         {(
@@ -303,14 +327,15 @@ export default function CatalogScreen() {
           {recentItems.length > 0 && !showFavoritesOnly && !query && !muscle && !equipment ? (
             <View style={styles.recentBlock}>
               <Text style={[styles.recentLabel, { color: colors.paperFaint }]}>{t('recentLabel')}</Text>
-              <FlatList
-                data={recentItems}
+              <ScrollView
                 horizontal
-                keyExtractor={(item) => `recent-${item.mode}-${item.id}`}
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.chips}
-                renderItem={({ item }) => (
+                style={styles.chipScroll}
+              >
+                {recentItems.map((item) => (
                   <TouchableOpacity
+                    key={`recent-${item.mode}-${item.id}`}
                     onPress={() => setSelected(item)}
                     style={[
                       styles.recentChip,
@@ -323,46 +348,45 @@ export default function CatalogScreen() {
                       {item.name}
                     </Text>
                   </TouchableOpacity>
-                )}
-              />
+                ))}
+              </ScrollView>
             </View>
           ) : null}
 
-          <FlatList
-            data={equipmentOptions}
+          <ScrollView
             horizontal
-            keyExtractor={(item) => item}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.chips}
-            ListHeaderComponent={
-              <TouchableOpacity
-                onPress={() => setEquipment(null)}
+            style={styles.chipScroll}
+          >
+            <TouchableOpacity
+              onPress={() => setEquipment(null)}
+              style={[
+                styles.chip,
+                { borderColor: colors.lineStrong, backgroundColor: colors.panel },
+                equipment === null && {
+                  borderColor: colors.lime,
+                  backgroundColor: colors.limeDim
+                }
+              ]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: equipment === null }}
+              accessibilityLabel={t('catalogEquipmentAll')}
+            >
+              <Text
                 style={[
-                  styles.chip,
-                  { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                  equipment === null && {
-                    borderColor: colors.lime,
-                    backgroundColor: colors.limeDim
-                  }
+                  styles.chipText,
+                  { color: equipment === null ? colors.lime : colors.paperDim }
                 ]}
-                accessibilityRole="button"
-                accessibilityState={{ selected: equipment === null }}
-                accessibilityLabel={t('catalogEquipmentAll')}
               >
-                <Text
-                  style={[
-                    styles.chipText,
-                    { color: equipment === null ? colors.lime : colors.paperDim }
-                  ]}
-                >
-                  {t('catalogEquipmentAllChip')}
-                </Text>
-              </TouchableOpacity>
-            }
-            renderItem={({ item }) => {
+                {t('catalogEquipmentAllChip')}
+              </Text>
+            </TouchableOpacity>
+            {equipmentOptions.map((item) => {
               const active = equipment === item;
               return (
                 <TouchableOpacity
+                  key={item}
                   onPress={() => setEquipment(active ? null : item)}
                   style={[
                     styles.chip,
@@ -373,25 +397,24 @@ export default function CatalogScreen() {
                   accessibilityState={{ selected: active }}
                   accessibilityLabel={equipmentLabel(item, lang)}
                 >
-                  <Text
-                    style={[styles.chipText, { color: active ? colors.lime : colors.paperDim }]}
-                  >
+                  <Text style={[styles.chipText, { color: active ? colors.lime : colors.paperDim }]}>
                     {equipmentLabel(item, lang)}
                   </Text>
                 </TouchableOpacity>
               );
-            }}
-          />
-          <FlatList
-            data={muscles}
+            })}
+          </ScrollView>
+          <ScrollView
             horizontal
-            keyExtractor={(item) => item}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.chips}
-            renderItem={({ item }) => {
+            style={styles.chipScroll}
+          >
+            {muscles.map((item) => {
               const active = muscle === item;
               return (
                 <TouchableOpacity
+                  key={item}
                   onPress={() => setMuscle(active ? null : item)}
                   style={[
                     styles.chip,
@@ -401,60 +424,109 @@ export default function CatalogScreen() {
                   accessibilityRole="button"
                   accessibilityState={{ selected: active }}
                 >
-                  <Text
-                    style={[styles.chipText, { color: active ? colors.cyan : colors.paperDim }]}
-                  >
+                  <Text style={[styles.chipText, { color: active ? colors.cyan : colors.paperDim }]}>
                     {muscleLabel(item, lang)}
                   </Text>
                 </TouchableOpacity>
               );
-            }}
-          />
-          <FlatList
-            data={filtered}
-            keyExtractor={(item) => `${item.mode}-${item.id}-${item.dayName}`}
-            contentContainerStyle={styles.list}
-            renderItem={({ item, index }) => {
-              const isFav = favoriteKeys.includes(favoriteKey(item.mode, item.id));
-              return (
+            })}
+          </ScrollView>
+          {browsingDays ? (
+            <FlatList
+              data={planDays}
+              keyExtractor={(day) => `day-${day.id}`}
+              style={styles.exerciseList}
+              contentContainerStyle={styles.list}
+              renderItem={({ item: day, index }) => (
                 <TouchableOpacity
-                  onPress={() => setSelected(item)}
+                  onPress={() => setPlanDayId(day.id)}
                   style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}
                   accessibilityRole="button"
-                  accessibilityLabel={t('catalogOpenDetailsA11y', { name: item.name })}
+                  accessibilityLabel={day.name}
                 >
                   <View style={styles.cardTop}>
                     <Text style={[styles.index, { color: colors.lime }]}>
                       {String(index + 1).padStart(2, '0')}
                     </Text>
                     <View style={styles.cardCopy}>
-                      <Text style={[styles.name, { color: colors.paper }]}>
-                        {isFav ? '★ ' : ''}
-                        {item.name}
-                      </Text>
-                      <Text style={[styles.meta, { color: colors.paperFaint }]}>
-                        {item.dayName} · {equipmentLabel(inferEquipment(item), lang)}
-                      </Text>
+                      <Text style={[styles.name, { color: colors.paper }]}>{day.name}</Text>
+                      <Text style={[styles.meta, { color: colors.paperFaint }]}>{day.count}</Text>
                     </View>
-                    <Text style={[styles.load, { color: colors.paperDim }]}>
-                      {item.workingWeight > 0
-                        ? `${item.workingWeight} ${t('kg')}`
-                        : t('bodyweightLabel')}
-                    </Text>
                   </View>
-                  <Text style={[styles.muscles, { color: colors.paperDim }]}>
-                    {item.targetMuscles.map((key) => muscleLabel(key, lang)).join(' · ')}
+                </TouchableOpacity>
+              )}
+              ListEmptyComponent={
+                <Text style={[styles.empty, { color: colors.paperFaint }]}>
+                  {t('catalogNothingFound')}
+                </Text>
+              }
+              keyboardShouldPersistTaps="handled"
+            />
+          ) : (
+            <>
+              {planDayId && !narrowing ? (
+                <TouchableOpacity
+                  onPress={() => setPlanDayId(null)}
+                  style={styles.backToDays}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('catalogSegmentPlans')}
+                >
+                  <Text style={[styles.chipText, { color: colors.lime }]}>
+                    ← {t('catalogSegmentPlans')}
                   </Text>
                 </TouchableOpacity>
-              );
-            }}
-            ListEmptyComponent={
-              <Text style={[styles.empty, { color: colors.paperFaint }]}>
-                {showFavoritesOnly ? t('catalogFavoritesEmpty') : t('catalogNothingFound')}
-              </Text>
-            }
-            keyboardShouldPersistTaps="handled"
-          />
+              ) : null}
+              <FlatList
+                data={listed}
+                keyExtractor={(item) => `${item.mode}-${item.id}-${item.dayName}`}
+                style={styles.exerciseList}
+                contentContainerStyle={styles.list}
+                renderItem={({ item, index }) => {
+                  const isFav = favoriteKeys.includes(favoriteKey(item.mode, item.id));
+                  return (
+                    <TouchableOpacity
+                      onPress={() => setSelected(item)}
+                      style={[
+                        styles.card,
+                        { backgroundColor: colors.panel, borderColor: colors.line }
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('catalogOpenDetailsA11y', { name: item.name })}
+                    >
+                      <View style={styles.cardTop}>
+                        <Text style={[styles.index, { color: colors.lime }]}>
+                          {String(index + 1).padStart(2, '0')}
+                        </Text>
+                        <View style={styles.cardCopy}>
+                          <Text style={[styles.name, { color: colors.paper }]}>
+                            {isFav ? '★ ' : ''}
+                            {item.name}
+                          </Text>
+                          <Text style={[styles.meta, { color: colors.paperFaint }]}>
+                            {item.dayName} · {equipmentLabel(inferEquipment(item), lang)}
+                          </Text>
+                        </View>
+                        <Text style={[styles.load, { color: colors.paperDim }]}>
+                          {item.workingWeight > 0
+                            ? `${item.workingWeight} ${t('kg')}`
+                            : t('bodyweightLabel')}
+                        </Text>
+                      </View>
+                      <Text style={[styles.muscles, { color: colors.paperDim }]}>
+                        {item.targetMuscles.map((key) => muscleLabel(key, lang)).join(' · ')}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                }}
+                ListEmptyComponent={
+                  <Text style={[styles.empty, { color: colors.paperFaint }]}>
+                    {showFavoritesOnly ? t('catalogFavoritesEmpty') : t('catalogNothingFound')}
+                  </Text>
+                }
+                keyboardShouldPersistTaps="handled"
+              />
+            </>
+          )}
         </>
       )}
       <ExerciseDetailModal
@@ -477,94 +549,105 @@ const styles = StyleSheet.create({
   replaceBanner: {
     marginHorizontal: spacing.lg,
     marginTop: spacing.sm,
+    marginBottom: spacing.xs,
     borderWidth: 1,
     borderRadius: radius.card,
     padding: spacing.md,
     gap: 4
   },
-  replaceBannerTitle: { fontFamily: fonts.bodySemi, fontSize: 13 },
-  replaceBannerBody: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17 },
-  replaceBannerCancel: {
-    fontFamily: fonts.bodySemi,
-    fontSize: 12,
-    marginTop: 6,
-    textDecorationLine: 'underline'
-  },
+  replaceBannerTitle: { fontFamily: fonts.bodySemi, fontSize: 14, letterSpacing: 0.4 },
+  replaceBannerBody: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18 },
+  replaceBannerCancel: { fontFamily: fonts.bodySemi, fontSize: 12, marginTop: 6 },
   modeTabs: {
     flexDirection: 'row',
     gap: 8,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm
   },
+  segmentScroll: { flexGrow: 0 },
+  segmentTabs: { paddingRight: spacing.xxl },
+  chipScroll: { flexGrow: 0, maxHeight: 52 },
+  exerciseList: { flex: 1 },
+  backToDays: { paddingHorizontal: spacing.lg, paddingBottom: 4 },
   modeTab: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: radius.pill,
+    borderRadius: radius.control,
+    paddingVertical: 10,
     alignItems: 'center',
-    paddingVertical: 10
+    gap: 2
   },
-  /** issue #171: сегменты каталога — контентная ширина в горизонтальном скролле. */
   segmentTab: {
     borderWidth: 1,
-    borderRadius: radius.pill,
-    alignItems: 'center',
+    borderRadius: radius.control,
     paddingVertical: 10,
-    paddingHorizontal: 14
+    paddingHorizontal: 14,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
-  modeText: { fontFamily: fonts.bodySemi, fontSize: 14 },
-  modeCount: { fontFamily: fonts.mono, fontSize: 11, marginTop: 2 },
+  modeText: { fontFamily: fonts.bodySemi, fontSize: 13 },
+  modeCount: { fontFamily: fonts.body, fontSize: 11 },
   search: {
     marginHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
     borderWidth: 1,
     borderRadius: radius.control,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 11,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     fontFamily: fonts.body,
     fontSize: 14
   },
-  favRow: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
-  recentBlock: { marginTop: 4 },
-  recentLabel: {
-    fontSize: 11,
-    fontFamily: fonts.bodySemi,
-    letterSpacing: 1,
+  favRow: {
     paddingHorizontal: spacing.lg,
     marginBottom: 4
+  },
+  chips: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 6,
+    gap: 8,
+    alignItems: 'center'
+  },
+  chip: {
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 7
+  },
+  chipText: { fontFamily: fonts.bodySemi, fontSize: 12 },
+  recentBlock: { marginBottom: 2 },
+  recentLabel: {
+    fontFamily: fonts.bodySemi,
+    fontSize: 11,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    paddingHorizontal: spacing.lg,
+    marginBottom: 2
   },
   recentChip: {
     borderWidth: 1,
     borderRadius: radius.pill,
     paddingHorizontal: 12,
-    paddingVertical: 8,
-    maxWidth: 200
+    paddingVertical: 7,
+    maxWidth: 180
   },
-  chips: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, gap: 8 },
-  chip: {
-    borderWidth: 1,
-    borderRadius: radius.pill,
-    paddingHorizontal: 12,
-    paddingVertical: 8
-  },
-  chipText: { fontFamily: fonts.bodySemi, fontSize: 12 },
-  list: { paddingHorizontal: spacing.lg, paddingBottom: 40, gap: 10 },
+  list: { paddingHorizontal: spacing.lg, paddingBottom: 32, gap: 10 },
   card: {
     borderWidth: 1,
     borderRadius: radius.card,
     padding: spacing.md,
-    marginBottom: 8
+    gap: 8
   },
-  cardTop: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  index: { fontFamily: fonts.mono, fontSize: 14, width: 28 },
+  cardTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  index: { fontFamily: fonts.mono, fontSize: 18, width: 28 },
   cardCopy: { flex: 1, gap: 2 },
   name: { fontFamily: fonts.bodySemi, fontSize: 15 },
   meta: { fontFamily: fonts.body, fontSize: 12 },
-  load: { fontFamily: fonts.mono, fontSize: 12 },
-  muscles: { fontFamily: fonts.body, fontSize: 12, marginTop: 8 },
+  load: { fontFamily: fonts.bodySemi, fontSize: 12 },
+  muscles: { fontFamily: fonts.body, fontSize: 12 },
   empty: {
-    textAlign: 'center',
     fontFamily: fonts.body,
-    fontSize: 13,
-    paddingVertical: 40,
-    paddingHorizontal: spacing.lg
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: spacing.xl
   }
 });
