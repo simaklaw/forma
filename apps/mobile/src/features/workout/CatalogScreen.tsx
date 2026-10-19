@@ -431,92 +431,102 @@ export default function CatalogScreen() {
               );
             })}
           </ScrollView>
-          {!browsingDays && planDayId && !narrowing ? (
-            <TouchableOpacity
-              onPress={() => setPlanDayId(null)}
-              style={styles.backToDays}
-              accessibilityRole="button"
-              accessibilityLabel={t('catalogSegmentPlans')}
-            >
-              <Text style={[styles.chipText, { color: colors.lime }]}>
-                ← {t('catalogSegmentPlans')}
-              </Text>
-            </TouchableOpacity>
-          ) : null}
-          <FlatList
-            data={browsingDays ? planDays : listed}
-            keyExtractor={(item) =>
-              browsingDays
-                ? `day-${(item as { id: string }).id}`
-                : `${(item as CatalogItem).mode}-${(item as CatalogItem).id}-${(item as CatalogItem).dayName}`
-            }
-            style={styles.exerciseList}
-            contentContainerStyle={styles.list}
-            renderItem={({ item, index }) => {
-              if (browsingDays) {
-                const day = item as { id: string; name: string; count: number };
-                return (
-                  <TouchableOpacity
-                    onPress={() => setPlanDayId(day.id)}
-                    style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}
-                    accessibilityRole="button"
-                    accessibilityLabel={day.name}
-                  >
-                    <View style={styles.cardTop}>
-                      <Text style={[styles.index, { color: colors.lime }]}>
-                        {String(index + 1).padStart(2, '0')}
-                      </Text>
-                      <View style={styles.cardCopy}>
-                        <Text style={[styles.name, { color: colors.paper }]}>{day.name}</Text>
-                        <Text style={[styles.meta, { color: colors.paperFaint }]}>
-                          {day.count}
-                        </Text>
-                      </View>
-                    </View>
-                  </TouchableOpacity>
-                );
-              }
-              const exercise = item as CatalogItem;
-              const isFav = favoriteKeys.includes(favoriteKey(exercise.mode, exercise.id));
-              return (
+          {browsingDays ? (
+            <FlatList
+              data={planDays}
+              keyExtractor={(day) => `day-${day.id}`}
+              style={styles.exerciseList}
+              contentContainerStyle={styles.list}
+              renderItem={({ item: day, index }) => (
                 <TouchableOpacity
-                  onPress={() => setSelected(exercise)}
+                  onPress={() => setPlanDayId(day.id)}
                   style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}
                   accessibilityRole="button"
-                  accessibilityLabel={t('catalogOpenDetailsA11y', { name: exercise.name })}
+                  accessibilityLabel={day.name}
                 >
                   <View style={styles.cardTop}>
                     <Text style={[styles.index, { color: colors.lime }]}>
                       {String(index + 1).padStart(2, '0')}
                     </Text>
                     <View style={styles.cardCopy}>
-                      <Text style={[styles.name, { color: colors.paper }]}>
-                        {isFav ? '★ ' : ''}
-                        {exercise.name}
-                      </Text>
-                      <Text style={[styles.meta, { color: colors.paperFaint }]}>
-                        {exercise.dayName} · {equipmentLabel(inferEquipment(exercise), lang)}
-                      </Text>
+                      <Text style={[styles.name, { color: colors.paper }]}>{day.name}</Text>
+                      <Text style={[styles.meta, { color: colors.paperFaint }]}>{day.count}</Text>
                     </View>
-                    <Text style={[styles.load, { color: colors.paperDim }]}>
-                      {exercise.workingWeight > 0
-                        ? `${exercise.workingWeight} ${t('kg')}`
-                        : t('bodyweightLabel')}
-                    </Text>
                   </View>
-                  <Text style={[styles.muscles, { color: colors.paperDim }]}>
-                    {exercise.targetMuscles.map((key) => muscleLabel(key, lang)).join(' · ')}
+                </TouchableOpacity>
+              )}
+              ListEmptyComponent={
+                <Text style={[styles.empty, { color: colors.paperFaint }]}>
+                  {t('catalogNothingFound')}
+                </Text>
+              }
+              keyboardShouldPersistTaps="handled"
+            />
+          ) : (
+            <>
+              {planDayId && !narrowing ? (
+                <TouchableOpacity
+                  onPress={() => setPlanDayId(null)}
+                  style={styles.backToDays}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('catalogSegmentPlans')}
+                >
+                  <Text style={[styles.chipText, { color: colors.lime }]}>
+                    ← {t('catalogSegmentPlans')}
                   </Text>
                 </TouchableOpacity>
-              );
-            }}
-            ListEmptyComponent={
-              <Text style={[styles.empty, { color: colors.paperFaint }]}>
-                {showFavoritesOnly ? t('catalogFavoritesEmpty') : t('catalogNothingFound')}
-              </Text>
-            }
-            keyboardShouldPersistTaps="handled"
-          />
+              ) : null}
+              <FlatList
+                data={listed}
+                keyExtractor={(item) => `${item.mode}-${item.id}-${item.dayName}`}
+                style={styles.exerciseList}
+                contentContainerStyle={styles.list}
+                renderItem={({ item, index }) => {
+                  const isFav = favoriteKeys.includes(favoriteKey(item.mode, item.id));
+                  return (
+                    <TouchableOpacity
+                      onPress={() => setSelected(item)}
+                      style={[
+                        styles.card,
+                        { backgroundColor: colors.panel, borderColor: colors.line }
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('catalogOpenDetailsA11y', { name: item.name })}
+                    >
+                      <View style={styles.cardTop}>
+                        <Text style={[styles.index, { color: colors.lime }]}>
+                          {String(index + 1).padStart(2, '0')}
+                        </Text>
+                        <View style={styles.cardCopy}>
+                          <Text style={[styles.name, { color: colors.paper }]}>
+                            {isFav ? '★ ' : ''}
+                            {item.name}
+                          </Text>
+                          <Text style={[styles.meta, { color: colors.paperFaint }]}>
+                            {item.dayName} · {equipmentLabel(inferEquipment(item), lang)}
+                          </Text>
+                        </View>
+                        <Text style={[styles.load, { color: colors.paperDim }]}>
+                          {item.workingWeight > 0
+                            ? `${item.workingWeight} ${t('kg')}`
+                            : t('bodyweightLabel')}
+                        </Text>
+                      </View>
+                      <Text style={[styles.muscles, { color: colors.paperDim }]}>
+                        {item.targetMuscles.map((key) => muscleLabel(key, lang)).join(' · ')}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                }}
+                ListEmptyComponent={
+                  <Text style={[styles.empty, { color: colors.paperFaint }]}>
+                    {showFavoritesOnly ? t('catalogFavoritesEmpty') : t('catalogNothingFound')}
+                  </Text>
+                }
+                keyboardShouldPersistTaps="handled"
+              />
+            </>
+          )}
         </>
       )}
       <ExerciseDetailModal
@@ -539,19 +549,15 @@ const styles = StyleSheet.create({
   replaceBanner: {
     marginHorizontal: spacing.lg,
     marginTop: spacing.sm,
+    marginBottom: spacing.xs,
     borderWidth: 1,
-    borderRadius: radius.card,
+    borderRadius: radius.md,
     padding: spacing.md,
     gap: 4
   },
-  replaceBannerTitle: { fontFamily: fonts.bodySemi, fontSize: 13 },
-  replaceBannerBody: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17 },
-  replaceBannerCancel: {
-    fontFamily: fonts.bodySemi,
-    fontSize: 12,
-    marginTop: 6,
-    textDecorationLine: 'underline'
-  },
+  replaceBannerTitle: { fontFamily: fonts.display, fontSize: 14, letterSpacing: 0.4 },
+  replaceBannerBody: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18 },
+  replaceBannerCancel: { fontFamily: fonts.bodySemi, fontSize: 12, marginTop: 6 },
   modeTabs: {
     flexDirection: 'row',
     gap: 8,
@@ -566,72 +572,82 @@ const styles = StyleSheet.create({
   modeTab: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: radius.pill,
+    borderRadius: radius.md,
+    paddingVertical: 10,
     alignItems: 'center',
-    paddingVertical: 10
+    gap: 2
   },
-  /** issue #171: сегменты каталога — контентная ширина в горизонтальном скролле. */
   segmentTab: {
     borderWidth: 1,
-    borderRadius: radius.pill,
-    alignItems: 'center',
+    borderRadius: radius.md,
     paddingVertical: 10,
-    paddingHorizontal: 14
+    paddingHorizontal: 14,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
-  modeText: { fontFamily: fonts.bodySemi, fontSize: 14 },
-  modeCount: { fontFamily: fonts.mono, fontSize: 11, marginTop: 2 },
+  modeText: { fontFamily: fonts.bodySemi, fontSize: 13 },
+  modeCount: { fontFamily: fonts.body, fontSize: 11 },
   search: {
     marginHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
     borderWidth: 1,
-    borderRadius: radius.control,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 11,
+    borderRadius: radius.md,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     fontFamily: fonts.body,
     fontSize: 14
   },
-  favRow: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
-  recentBlock: { marginTop: 4 },
-  recentLabel: {
-    fontSize: 11,
-    fontFamily: fonts.bodySemi,
-    letterSpacing: 1,
+  favRow: {
     paddingHorizontal: spacing.lg,
     marginBottom: 4
   },
-  recentChip: {
-    borderWidth: 1,
-    borderRadius: radius.pill,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    maxWidth: 200
+  chips: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 6,
+    gap: 8,
+    alignItems: 'center'
   },
-  chips: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, gap: 8 },
   chip: {
     borderWidth: 1,
-    borderRadius: radius.pill,
+    borderRadius: 999,
     paddingHorizontal: 12,
-    paddingVertical: 8
+    paddingVertical: 7
   },
   chipText: { fontFamily: fonts.bodySemi, fontSize: 12 },
-  list: { paddingHorizontal: spacing.lg, paddingBottom: 40, gap: 10 },
+  recentBlock: { marginBottom: 2 },
+  recentLabel: {
+    fontFamily: fonts.bodySemi,
+    fontSize: 11,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    paddingHorizontal: spacing.lg,
+    marginBottom: 2
+  },
+  recentChip: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    maxWidth: 180
+  },
+  list: { paddingHorizontal: spacing.lg, paddingBottom: 32, gap: 10 },
   card: {
     borderWidth: 1,
-    borderRadius: radius.card,
+    borderRadius: radius.lg,
     padding: spacing.md,
-    marginBottom: 8
+    gap: 8
   },
-  cardTop: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  index: { fontFamily: fonts.mono, fontSize: 14, width: 28 },
+  cardTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  index: { fontFamily: fonts.display, fontSize: 18, width: 28 },
   cardCopy: { flex: 1, gap: 2 },
   name: { fontFamily: fonts.bodySemi, fontSize: 15 },
   meta: { fontFamily: fonts.body, fontSize: 12 },
-  load: { fontFamily: fonts.mono, fontSize: 12 },
-  muscles: { fontFamily: fonts.body, fontSize: 12, marginTop: 8 },
+  load: { fontFamily: fonts.bodySemi, fontSize: 12 },
+  muscles: { fontFamily: fonts.body, fontSize: 12 },
   empty: {
-    textAlign: 'center',
     fontFamily: fonts.body,
-    fontSize: 13,
-    paddingVertical: 40,
-    paddingHorizontal: spacing.lg
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: spacing.xl
   }
 });
