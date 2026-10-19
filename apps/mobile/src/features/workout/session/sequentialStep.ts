@@ -20,7 +20,7 @@ export function sessionMatchesDayAndExercises(
   const match = /^day-([^@]+)(?:@.*)?$/.exec(session.templateRevisionId);
   if (dayId && (!match || match[1] !== dayId)) return false;
 
-  if (!exercises?.length) return true;
+  if (exercises === undefined) return true;
   const steps = session.steps ?? [];
   return steps.length === exercises.length &&
     steps.every((step, index) =>
