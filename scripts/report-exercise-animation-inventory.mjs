@@ -307,6 +307,10 @@ const coverageEntries = [
       femaleVariant: 'not-created',
       offlineOriginalAnimation: false,
       legacyImageFolder: Boolean(hasImageFolder),
+       legacyImageSource: hasImageFolder ? 'yuhonas/free-exercise-db' : null,
+       legacyImageRights: hasImageFolder
+         ? 'yuhonas-attribution-preserved-rights-unverified'
+         : 'no-mapped-legacy-image',
       legacyGifStatus: hasManifestGif ? 'manifest-license-review' : hasOrphanGif ? 'excluded-wrong-match' : 'not-mapped',
       currentMediaKey: null,
       legacyMediaRights
