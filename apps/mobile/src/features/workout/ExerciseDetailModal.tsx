@@ -15,6 +15,7 @@ import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import type { TabParamList } from '@/navigation/types';
 import type { CatalogItem } from './catalogBrowser';
+import { inferEquipment } from './catalogBrowser';
 import { useExerciseReference } from './useExerciseReference';
 import { isFavorite, pushRecent, toggleFavorite } from './exerciseFavorites';
 import { catalogFor } from './catalog';
@@ -27,9 +28,11 @@ import {
 } from './replaceTarget';
 import { EXERCISE_VIDEOS } from './exerciseMedia';
 import { realGifForMediaKey } from './exerciseRealMedia';
+import { exercisePosterAsset } from './exercisePosterMedia';
+import { verifiedMediaKeyForExercise } from './verifiedExerciseMedia';
 import { techniqueCuesFromNote } from '@/lib/techniqueCues';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
-import { useT, muscleLabel } from '@/i18n/strings';
+import { useT, equipmentLabel, muscleLabel } from '@/i18n/strings';
 
 interface Props {
   item: CatalogItem | null;
@@ -93,6 +96,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
 
   if (!item) return null;
 
+  const equipment = inferEquipment(item);
   const loadLabel =
     item.workingWeight > 0
       ? `${item.workingWeight} ${t('kg')}`
@@ -102,11 +106,13 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
     replaceTarget.mode === item.mode &&
     replaceTarget.currentExerciseId !== item.id;
   const cues = techniqueCuesFromNote(item.note);
+  const verifiedMediaKey = verifiedMediaKeyForExercise(item.mediaKey, item.wgerSearchTerm);
   const videoSource =
-    item.mediaKey && EXERCISE_VIDEOS[item.mediaKey]
-      ? EXERCISE_VIDEOS[item.mediaKey]
+    verifiedMediaKey && EXERCISE_VIDEOS[verifiedMediaKey]
+      ? EXERCISE_VIDEOS[verifiedMediaKey]
       : undefined;
-  const gifAsset = realGifForMediaKey(item.mediaKey);
+  const gifAsset = realGifForMediaKey(verifiedMediaKey);
+  const posterAsset = exercisePosterAsset(item.id, item.mediaKey, item.wgerSearchTerm);
 
   return (
     <Modal
@@ -170,6 +176,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
           <ExerciseVideo
             source={videoSource}
             gifAsset={gifAsset}
+            posterAsset={posterAsset}
             posterUri={reference?.imageUrl}
             cues={cues}
           />
@@ -197,6 +204,11 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
             {t('importedModalMuscles')}
           </Text>
           <View style={styles.chipWrapRow}>
+            <View style={[styles.metaChip, { borderColor: colors.lineStrong }]}>
+              <Text style={[styles.metaChipText, { color: colors.paperDim }]}>
+                {equipmentLabel(equipment, lang)}
+              </Text>
+            </View>
             {item.targetMuscles.map((key) => (
               <View key={key} style={[styles.metaChip, { borderColor: colors.lineStrong }]}>
                 <Text style={[styles.metaChipText, { color: colors.paperDim }]}>
