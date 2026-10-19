@@ -17,12 +17,14 @@ import { formatRestClock, techniqueCuesFromNote } from '@/lib/techniqueCues';
 import { EXERCISE_GIF_MANIFEST } from './exerciseGifManifest.generated';
 import { useExerciseReference } from './useExerciseReference';
 import { ActiveSessionController, dayIdFromTemplate } from './session/ActiveSessionController';
-import { sequentialStepInfo, sessionForViewedDay } from './session/sequentialStep';
+import { sequentialStepInfo, sessionForViewedDay, sessionMatchesDayAndExercises } from './session/sequentialStep';
 import { applySessionProjection } from './data/applySessionProjection';
 import { getSessionService } from './data';
 import { formatLoadLabel, isBodyweightExercise, resolveWorkingLoadKg } from './catalog';
 import { EXERCISE_VIDEOS } from './exerciseMedia';
 import { realGifForMediaKey } from './exerciseRealMedia';
+import { exercisePosterAsset } from './exercisePosterMedia';
+import { verifiedMediaKeyForExercise } from './verifiedExerciseMedia';
 import { importedByNumericId, IMPORTED_NUMERIC_ID_BASE } from './importedExerciseBridge';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT } from '@/i18n/strings';
@@ -116,6 +118,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       (id: number) => dayExercises?.find((e) => e.id === id)?.name,
       [dayExercises]
     );
+    const dayExerciseIdentitiesKey = JSON.stringify(
+      (dayExercises ?? []).map((entry) => ({ id: entry.id, name: entry.name }))
+    );
 
     const bodyKg =
       typeof profileWeight === 'number' && Number.isFinite(profileWeight) && profileWeight > 0
@@ -134,10 +139,23 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
       let cancelled = false;
       void (async () => {
-        const session = sessionForViewedDay(await ActiveSessionController.load(), dayId);
+        const loadedSession = await ActiveSessionController.load();
         if (cancelled) return;
+        const session = sessionForViewedDay(loadedSession, dayId);
+        if (!session) {
+          setSessionSnap(null);
+          return;
+        }
+        // Validate both the viewed day and exact ordered exercise identities.
+        const dayExerciseIdentities = JSON.parse(dayExerciseIdentitiesKey) as {
+          id: number;
+          name: string;
+        }[];
+        if (!sessionMatchesDayAndExercises(session, dayId, dayExerciseIdentities)) {
+          setSessionSnap(null);
+          return;
+        }
         setSessionSnap(session);
-        if (!session) return;
         const steps = session.steps ?? [];
         const step = steps[session.currentStepIndex];
         if (!step || step.snapshot.exerciseId !== String(exercise.id)) return;
@@ -149,7 +167,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       return () => {
         cancelled = true;
       };
-    }, [exercise?.id, bodyKg, startRestFromDeadline, dayId]);
+    }, [exercise?.id, bodyKg, startRestFromDeadline, dayId, dayExerciseIdentitiesKey]);
 
     if (!exercise) return null;
 
@@ -352,11 +370,13 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       sessionSnap.status !== 'abandoned';
     const ctaDisabled = finished || restRemaining !== null || blockedBySequence || sessionPaused;
     const cues = techniqueCuesFromNote(exercise.note);
+    const verifiedMediaKey = verifiedMediaKeyForExercise(exercise.mediaKey, exercise.wgerSearchTerm);
     const videoSource =
-      exercise.mediaKey && EXERCISE_VIDEOS[exercise.mediaKey]
-        ? EXERCISE_VIDEOS[exercise.mediaKey]
+      verifiedMediaKey && EXERCISE_VIDEOS[verifiedMediaKey]
+        ? EXERCISE_VIDEOS[verifiedMediaKey]
         : undefined;
-    const gifAsset = realGifForMediaKey(exercise.mediaKey);
+    const gifAsset = realGifForMediaKey(verifiedMediaKey);
+    const posterAsset = exercisePosterAsset(exercise.id, exercise.mediaKey, exercise.wgerSearchTerm);
 
     return (
       <AppBottomSheet
@@ -404,6 +424,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         <ExerciseVideo
           source={videoSource}
           gifAsset={gifAsset}
+          posterAsset={posterAsset}
           posterUri={reference?.imageUrl}
           cues={cues}
           shouldPlay={sheetOpen}
