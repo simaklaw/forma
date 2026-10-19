@@ -84,6 +84,27 @@ describe('ActiveSessionController', () => {
     expect(b!.sessionId).toBe(a!.sessionId);
   });
 
+  it('replaces a same-day session when its frozen exercise identities no longer match the plan', async () => {
+    const first = await ActiveSessionController.ensureDaySession('legs', exercises);
+    expect(first).not.toBeNull();
+
+    // Deliberately preserve numeric IDs but change movement names, as can happen
+    // when a stale session is paired with a different catalog/mode.
+    const conflictingPlan: ExerciseDef[] = [
+      { ...exercises[0]!, name: 'Glute Bridge' },
+      { ...exercises[1]!, name: 'Hip Thrust' }
+    ];
+    const second = await ActiveSessionController.ensureDaySession('legs', conflictingPlan);
+
+    expect(second).not.toBeNull();
+    expect(second!.sessionId).not.toBe(first!.sessionId);
+    expect(second!.steps.map((step) => step.snapshot.name)).toEqual(['Glute Bridge', 'Hip Thrust']);
+
+    const previous = await getSessionService().getSession(first!.sessionId);
+    expect(previous?.status).toBe('abandoned');
+    expect(previous?.terminalReason).toBe('replaced_by_new_session');
+  });
+
   it('cold start resumes same day without abandon (simulates process restart)', async () => {
     const first = await ActiveSessionController.ensureDaySession('legs', exercises);
     expect(first).not.toBeNull();
