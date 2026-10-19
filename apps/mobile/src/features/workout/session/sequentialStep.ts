@@ -53,3 +53,14 @@ export function sequentialStepInfo(
     totalSteps: steps.length
   };
 }
+
+/** Active session only counts when it was started for the day on screen. */
+export function sessionForViewedDay(
+  session: WorkoutSession | null,
+  dayId: string | undefined
+): WorkoutSession | null {
+  if (!session || !dayId) return null;
+  const match = /^day-([^@]+)(?:@.*)?$/.exec(session.templateRevisionId);
+  if (!match || match[1] !== dayId) return null;
+  return session;
+}

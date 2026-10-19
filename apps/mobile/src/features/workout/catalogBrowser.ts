@@ -3,7 +3,11 @@ import type { Sex } from '@/engines/MetabolicEngine';
 import type { ExerciseDef } from './ExerciseSheet';
 import { catalogFor, type TrainingMode } from './catalog';
 
-export type CatalogItem = ExerciseDef & { mode: TrainingMode; dayName: string };
+export type CatalogItem = ExerciseDef & {
+  mode: TrainingMode;
+  dayName: string;
+  dayId: string;
+};
 
 export type Equipment =
   'none' | 'bands' | 'dumbbells' | 'barbell' | 'machine' | 'pullup-bar' | 'bench';
@@ -41,7 +45,12 @@ export function inferEquipment(
 
 export function buildCatalogItems(mode: TrainingMode, sex: Sex | null = 'male'): CatalogItem[] {
   return catalogFor(mode, sex).flatMap((day) =>
-    day.exercises.map((exercise) => ({ ...exercise, mode, dayName: day.name }))
+    day.exercises.map((exercise) => ({
+      ...exercise,
+      mode,
+      dayName: day.name,
+      dayId: day.id
+    }))
   );
 }
 

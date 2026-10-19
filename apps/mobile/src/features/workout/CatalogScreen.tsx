@@ -63,6 +63,7 @@ export default function CatalogScreen() {
   const [catalogScope, setCatalogScope] = useState<'plans' | 'library' | 'tabata' | 'programs'>(
     'plans'
   );
+  const [planDayId, setPlanDayId] = useState<string | null>(null);
   const [replaceTarget, setReplaceTargetState] = useState<ReplaceTarget | null>(getReplaceTarget());
 
   useEffect(() => subscribeReplaceTarget(() => setReplaceTargetState(getReplaceTarget())), []);
@@ -134,7 +135,26 @@ export default function CatalogScreen() {
     setMuscle(null);
     setEquipment(null);
     setShowFavoritesOnly(false);
+    setPlanDayId(null);
   }
+
+  const planDays = useMemo(() => {
+    const seen = new Map<string, { id: string; name: string; count: number }>();
+    for (const item of items) {
+      const row = seen.get(item.dayId) ?? { id: item.dayId, name: item.dayName, count: 0 };
+      row.count += 1;
+      seen.set(item.dayId, row);
+    }
+    return [...seen.values()];
+  }, [items]);
+
+  const narrowing = Boolean(query || muscle || equipment || showFavoritesOnly);
+  const browsingDays = !narrowing && planDayId == null;
+  const listed = useMemo(() => {
+    if (browsingDays) return [];
+    if (!narrowing && planDayId) return filtered.filter((item) => item.dayId === planDayId);
+    return filtered;
+  }, [browsingDays, narrowing, planDayId, filtered]);
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]}>
@@ -148,7 +168,10 @@ export default function CatalogScreen() {
               ? t('catalogHintLibrary')
               : catalogScope === 'tabata'
                 ? t('catalogHintTabata')
-                : t('catalogHintOffline', { shown: filtered.length, total: items.length })
+                : t('catalogHintOffline', {
+                    shown: browsingDays ? planDays.length : listed.length,
+                    total: browsingDays ? planDays.length : items.length
+                  })
         }
       />
 
@@ -181,7 +204,8 @@ export default function CatalogScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.modeTabs}
+        contentContainerStyle={[styles.modeTabs, styles.segmentTabs]}
+        style={styles.segmentScroll}
         accessibilityRole="tablist"
       >
         {(
@@ -303,14 +327,15 @@ export default function CatalogScreen() {
           {recentItems.length > 0 && !showFavoritesOnly && !query && !muscle && !equipment ? (
             <View style={styles.recentBlock}>
               <Text style={[styles.recentLabel, { color: colors.paperFaint }]}>{t('recentLabel')}</Text>
-              <FlatList
-                data={recentItems}
+              <ScrollView
                 horizontal
-                keyExtractor={(item) => `recent-${item.mode}-${item.id}`}
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.chips}
-                renderItem={({ item }) => (
+                style={styles.chipScroll}
+              >
+                {recentItems.map((item) => (
                   <TouchableOpacity
+                    key={`recent-${item.mode}-${item.id}`}
                     onPress={() => setSelected(item)}
                     style={[
                       styles.recentChip,
@@ -323,46 +348,45 @@ export default function CatalogScreen() {
                       {item.name}
                     </Text>
                   </TouchableOpacity>
-                )}
-              />
+                ))}
+              </ScrollView>
             </View>
           ) : null}
 
-          <FlatList
-            data={equipmentOptions}
+          <ScrollView
             horizontal
-            keyExtractor={(item) => item}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.chips}
-            ListHeaderComponent={
-              <TouchableOpacity
-                onPress={() => setEquipment(null)}
+            style={styles.chipScroll}
+          >
+            <TouchableOpacity
+              onPress={() => setEquipment(null)}
+              style={[
+                styles.chip,
+                { borderColor: colors.lineStrong, backgroundColor: colors.panel },
+                equipment === null && {
+                  borderColor: colors.lime,
+                  backgroundColor: colors.limeDim
+                }
+              ]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: equipment === null }}
+              accessibilityLabel={t('catalogEquipmentAll')}
+            >
+              <Text
                 style={[
-                  styles.chip,
-                  { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                  equipment === null && {
-                    borderColor: colors.lime,
-                    backgroundColor: colors.limeDim
-                  }
+                  styles.chipText,
+                  { color: equipment === null ? colors.lime : colors.paperDim }
                 ]}
-                accessibilityRole="button"
-                accessibilityState={{ selected: equipment === null }}
-                accessibilityLabel={t('catalogEquipmentAll')}
               >
-                <Text
-                  style={[
-                    styles.chipText,
-                    { color: equipment === null ? colors.lime : colors.paperDim }
-                  ]}
-                >
-                  {t('catalogEquipmentAllChip')}
-                </Text>
-              </TouchableOpacity>
-            }
-            renderItem={({ item }) => {
+                {t('catalogEquipmentAllChip')}
+              </Text>
+            </TouchableOpacity>
+            {equipmentOptions.map((item) => {
               const active = equipment === item;
               return (
                 <TouchableOpacity
+                  key={item}
                   onPress={() => setEquipment(active ? null : item)}
                   style={[
                     styles.chip,
@@ -373,25 +397,24 @@ export default function CatalogScreen() {
                   accessibilityState={{ selected: active }}
                   accessibilityLabel={equipmentLabel(item, lang)}
                 >
-                  <Text
-                    style={[styles.chipText, { color: active ? colors.lime : colors.paperDim }]}
-                  >
+                  <Text style={[styles.chipText, { color: active ? colors.lime : colors.paperDim }]}>
                     {equipmentLabel(item, lang)}
                   </Text>
                 </TouchableOpacity>
               );
-            }}
-          />
-          <FlatList
-            data={muscles}
+            })}
+          </ScrollView>
+          <ScrollView
             horizontal
-            keyExtractor={(item) => item}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.chips}
-            renderItem={({ item }) => {
+            style={styles.chipScroll}
+          >
+            {muscles.map((item) => {
               const active = muscle === item;
               return (
                 <TouchableOpacity
+                  key={item}
                   onPress={() => setMuscle(active ? null : item)}
                   style={[
                     styles.chip,
@@ -401,27 +424,66 @@ export default function CatalogScreen() {
                   accessibilityRole="button"
                   accessibilityState={{ selected: active }}
                 >
-                  <Text
-                    style={[styles.chipText, { color: active ? colors.cyan : colors.paperDim }]}
-                  >
+                  <Text style={[styles.chipText, { color: active ? colors.cyan : colors.paperDim }]}>
                     {muscleLabel(item, lang)}
                   </Text>
                 </TouchableOpacity>
               );
-            }}
-          />
+            })}
+          </ScrollView>
+          {!browsingDays && planDayId && !narrowing ? (
+            <TouchableOpacity
+              onPress={() => setPlanDayId(null)}
+              style={styles.backToDays}
+              accessibilityRole="button"
+              accessibilityLabel={t('catalogSegmentPlans')}
+            >
+              <Text style={[styles.chipText, { color: colors.lime }]}>
+                ← {t('catalogSegmentPlans')}
+              </Text>
+            </TouchableOpacity>
+          ) : null}
           <FlatList
-            data={filtered}
-            keyExtractor={(item) => `${item.mode}-${item.id}-${item.dayName}`}
+            data={browsingDays ? planDays : listed}
+            keyExtractor={(item) =>
+              browsingDays
+                ? `day-${(item as { id: string }).id}`
+                : `${(item as CatalogItem).mode}-${(item as CatalogItem).id}-${(item as CatalogItem).dayName}`
+            }
+            style={styles.exerciseList}
             contentContainerStyle={styles.list}
             renderItem={({ item, index }) => {
-              const isFav = favoriteKeys.includes(favoriteKey(item.mode, item.id));
+              if (browsingDays) {
+                const day = item as { id: string; name: string; count: number };
+                return (
+                  <TouchableOpacity
+                    onPress={() => setPlanDayId(day.id)}
+                    style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}
+                    accessibilityRole="button"
+                    accessibilityLabel={day.name}
+                  >
+                    <View style={styles.cardTop}>
+                      <Text style={[styles.index, { color: colors.lime }]}>
+                        {String(index + 1).padStart(2, '0')}
+                      </Text>
+                      <View style={styles.cardCopy}>
+                        <Text style={[styles.name, { color: colors.paper }]}>{day.name}</Text>
+                        <Text style={[styles.meta, { color: colors.paperFaint }]}>
+                          {day.count}
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              }
+              const exercise = item as CatalogItem;
+              const isFav = favoriteKeys.includes(favoriteKey(exercise.mode, exercise.id));
               return (
                 <TouchableOpacity
-                  onPress={() => setSelected(item)}
+                  onPress={() => setSelected(exercise)}
                   style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}
                   accessibilityRole="button"
-                  accessibilityLabel={t('catalogOpenDetailsA11y', { name: item.name })}
+                  accessibilityLabel={t('catalogOpenDetailsA11y', { name: exercise.name })}
                 >
                   <View style={styles.cardTop}>
                     <Text style={[styles.index, { color: colors.lime }]}>
@@ -430,20 +492,20 @@ export default function CatalogScreen() {
                     <View style={styles.cardCopy}>
                       <Text style={[styles.name, { color: colors.paper }]}>
                         {isFav ? '★ ' : ''}
-                        {item.name}
+                        {exercise.name}
                       </Text>
                       <Text style={[styles.meta, { color: colors.paperFaint }]}>
-                        {item.dayName} · {equipmentLabel(inferEquipment(item), lang)}
+                        {exercise.dayName} · {equipmentLabel(inferEquipment(exercise), lang)}
                       </Text>
                     </View>
                     <Text style={[styles.load, { color: colors.paperDim }]}>
-                      {item.workingWeight > 0
-                        ? `${item.workingWeight} ${t('kg')}`
+                      {exercise.workingWeight > 0
+                        ? `${exercise.workingWeight} ${t('kg')}`
                         : t('bodyweightLabel')}
                     </Text>
                   </View>
                   <Text style={[styles.muscles, { color: colors.paperDim }]}>
-                    {item.targetMuscles.map((key) => muscleLabel(key, lang)).join(' · ')}
+                    {exercise.targetMuscles.map((key) => muscleLabel(key, lang)).join(' · ')}
                   </Text>
                 </TouchableOpacity>
               );
@@ -496,6 +558,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm
   },
+  segmentScroll: { flexGrow: 0 },
+  segmentTabs: { paddingRight: spacing.xxl },
+  chipScroll: { flexGrow: 0, maxHeight: 52 },
+  exerciseList: { flex: 1 },
+  backToDays: { paddingHorizontal: spacing.lg, paddingBottom: 4 },
   modeTab: {
     flex: 1,
     borderWidth: 1,
