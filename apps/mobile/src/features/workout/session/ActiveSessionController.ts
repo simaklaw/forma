@@ -131,6 +131,7 @@ class ActiveSessionControllerImpl {
     if (!previous || !isResumable(previous)) return null;
 
     if (
+      previous.templateRevisionId === dayTemplateId(nextDayId) &&
       sessionMatchesDayAndExercises(
         previous,
         nextDayId,
