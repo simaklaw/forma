@@ -37,7 +37,7 @@ Audited `main` at commit `503e7b9a8905e80ff876721a15460db863b5f18c` (2026-10-18)
 
 - Treat the imported exercise metadata and third-party illustration/GIF files as separate legal items.
 - The `hasaneyldrm/exercises-dataset` repository's [LICENSE](https://github.com/hasaneyldrm/exercises-dataset/blob/main/LICENSE) explicitly excludes its `images/` and `videos/` media from the MIT license. Its [NOTICE](https://github.com/hasaneyldrm/exercises-dataset/blob/main/NOTICE.md) identifies the media as © Gym visual, restricts it to 180×180, requires `© Gym visual — https://gymvisual.com/` attribution and refers reuse to Gym visual's terms. Do not assume these GIFs can be redistributed in FitPulse APKs without checking/obtaining the required license.
-- The `yuhonas/free-exercise-db` source declares Unlicense/Public Domain in its [license file](https://github.com/yuhonas/free-exercise-db/blob/main/LICENSE.md); keep provenance metadata rather than flattening all inherited asset sources to one license.
+- The `yuhonas/free-exercise-db` repository declares Unlicense/Public Domain in its [license file](https://github.com/yuhonas/free-exercise-db/blob/main/LICENSE.md), but the rights status of the specific JPGs copied into this repository has not been independently verified. Preserve source attribution and keep those JPG rights marked unverified until the imported assets are checked; do not convert a repository-level declaration into proof for every file.
 - All newly generated character art, rig pieces, poses and animation curves must be original. Do not trace/reference-copy third-party frames.
 
 ## Proposed technical approach
@@ -102,8 +102,7 @@ Reuse rigs and motion blocks only where biomechanics genuinely match. Exercise-s
 
 - Added a reproducible inventory generator and [full inventory report](./EXERCISE_ANIMATION_INVENTORY.md).
 - Added a per-exercise [coverage registry](./EXERCISE_ANIMATION_COVERAGE.json): 62 workout-plan entries plus 163 imported-library entries (225 total), with separate male/female status and legacy-media-rights status. All 225 entries are currently marked not-started for new animation. The previous three SVG prototypes were rejected and are no longer counted as coverage.
-- Added 25 preliminary motion-family candidates for all 225 entries, with classification rule/confidence and review status. Only three records require manual classification because exercise instructions, muscle metadata, or equipment information conflict; those are explicitly blocked from final mapping until corrected.
-- Added heuristic motion-family candidates to all 225 entries: 22 preliminary groups, with classification confidence/rule and manual-review status. Fifteen entries currently fall back to manual classification; all candidates remain unreviewed and do not count as animation coverage.
+- Added **25 preliminary motion-family candidate groups** across all 225 entries. Exactly **3 entries require manual classification**; all candidates remain unreviewed and do not count as animation coverage.
 - Added CI validation that fails if the committed coverage registry is stale after a catalog change.
 - Added a manual [Android pilot checklist](./EXERCISE_RIG_PILOT_DEVICE_CHECKLIST.md).
 - The first SVG-based vector rig (squat ID 13, push-up ID 10, seated dumbbell press ID 5) failed visual acceptance and was removed from both exercise-detail surfaces; those three records are no longer counted as prototypes or coverage.
