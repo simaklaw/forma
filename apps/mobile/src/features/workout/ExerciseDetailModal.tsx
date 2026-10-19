@@ -30,8 +30,10 @@ import { EXERCISE_VIDEOS } from './exerciseMedia';
 import { realGifForMediaKey } from './exerciseRealMedia';
 import { exercisePosterAsset } from './exercisePosterMedia';
 import { verifiedMediaKeyForExercise } from './verifiedExerciseMedia';
+import { premiumExerciseGifFor } from './exercisePremiumMedia';
 import { techniqueCuesFromNote } from '@/lib/techniqueCues';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
+import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { useT, equipmentLabel, muscleLabel } from '@/i18n/strings';
 
 interface Props {
@@ -45,6 +47,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
   const colors = useThemeColors();
   const t = useT();
   const lang = useLanguageStore((s) => s.lang);
+  const profileSex = useFitPulseStore((s) => s.profile.sex);
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const reference = useExerciseReference(item?.wgerSearchTerm ?? null);
   const [favorited, setFavorited] = useState(false);
@@ -113,6 +116,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
       : undefined;
   const gifAsset = realGifForMediaKey(verifiedMediaKey);
   const posterAsset = exercisePosterAsset(item.id, item.mediaKey, item.wgerSearchTerm);
+  const premiumGifAsset = premiumExerciseGifFor(item, profileSex);
 
   return (
     <Modal
@@ -175,6 +179,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
 
           <ExerciseVideo
             source={videoSource}
+            premiumGifAsset={premiumGifAsset}
             gifAsset={gifAsset}
             posterAsset={posterAsset}
             posterUri={reference?.imageUrl}

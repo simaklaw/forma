@@ -25,6 +25,8 @@ interface Props {
   source?: { uri: string } | number;
   /** Vetted animated asset for the exact exercise; Android animates GIF natively. */
   gifAsset?: number;
+  /** Reviewed premium animation selected for the exact exercise and profile sex. */
+  premiumGifAsset?: number;
   /** Bundled, exact local illustration. Preferred over network-dependent posters. */
   posterAsset?: number;
   /** Optional still from wger when no local poster is available. */
@@ -50,6 +52,7 @@ function normalizeCues(cues: string[] | undefined): string[] {
 export default function ExerciseVideo({
   source,
   gifAsset,
+  premiumGifAsset,
   posterAsset,
   posterUri,
   cues,
@@ -66,13 +69,13 @@ export default function ExerciseVideo({
   const fullscreenRef = useRef<Video>(null);
 
   useEffect(() => {
-    if (source || gifAsset != null || posterAsset != null || posterUri) return;
+    if (source || gifAsset != null || premiumGifAsset != null || posterAsset != null || posterUri) return;
     setStepIdx(0);
     const id = setInterval(() => {
       setStepIdx((i) => (i + 1) % steps.length);
     }, 2800);
     return () => clearInterval(id);
-  }, [source, gifAsset, posterAsset, posterUri, steps.length]);
+  }, [source, gifAsset, premiumGifAsset, posterAsset, posterUri, steps.length]);
 
   useEffect(() => {
     if (!source || !previewRef.current) return;
@@ -120,7 +123,14 @@ export default function ExerciseVideo({
             : 'Пошаговая техника выполнения'
         }
       >
-        {source ? (
+        {premiumGifAsset != null ? (
+          <Image
+            source={premiumGifAsset}
+            style={StyleSheet.absoluteFill}
+            resizeMode="contain"
+            accessibilityIgnoresInvertColors
+          />
+        ) : source ? (
           <Video
             ref={previewRef}
             source={source as any}
@@ -157,7 +167,7 @@ export default function ExerciseVideo({
 
         {source != null && <View style={styles.dim} />}
 
-        {!source && gifAsset == null && posterAsset == null && !posterUri ? (
+        {!source && gifAsset == null && premiumGifAsset == null && posterAsset == null && !posterUri ? (
           <View style={styles.guide}>
             <Text style={styles.guideStep}>
               Шаг {stepIdx + 1}/{steps.length}
@@ -181,7 +191,7 @@ export default function ExerciseVideo({
         ) : null}
 
         <Text style={styles.heroLabel}>
-          {source != null || gifAsset != null
+          {source != null || gifAsset != null || premiumGifAsset != null
             ? label
             : posterAsset != null || posterUri
               ? 'ИЛЛЮСТРАЦИЯ УПРАЖНЕНИЯ'

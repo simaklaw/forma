@@ -24,6 +24,7 @@ import { formatLoadLabel, isBodyweightExercise, resolveWorkingLoadKg } from './c
 import { EXERCISE_VIDEOS } from './exerciseMedia';
 import { realGifForMediaKey } from './exerciseRealMedia';
 import { exercisePosterAsset } from './exercisePosterMedia';
+import { premiumExerciseGifFor } from './exercisePremiumMedia';
 import { verifiedMediaKeyForExercise } from './verifiedExerciseMedia';
 import { importedByNumericId, IMPORTED_NUMERIC_ID_BASE } from './importedExerciseBridge';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
@@ -84,6 +85,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const completedSetsToday = useFitPulseStore((s) => s.completedSetsToday);
     const setLogs = useFitPulseStore((s) => s.setLogs);
     const profileWeight = useFitPulseStore((s) => s.profile.weight);
+    const profileSex = useFitPulseStore((s) => s.profile.sex);
     const reference = useExerciseReference(exercise?.wgerSearchTerm ?? null);
 
     const [completedSets, setCompletedSets] = useState(0);
@@ -378,6 +380,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         ? EXERCISE_VIDEOS[verifiedMediaKey]
         : undefined;
     const gifAsset = realGifForMediaKey(verifiedMediaKey);
+    const premiumGifAsset = premiumExerciseGifFor(exercise, profileSex);
     const posterAsset = exercisePosterAsset(exercise.id, exercise.mediaKey, exercise.wgerSearchTerm);
 
     return (
@@ -426,6 +429,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         <ExerciseVideo
           source={videoSource}
           gifAsset={gifAsset}
+          premiumGifAsset={premiumGifAsset}
           posterAsset={posterAsset}
           posterUri={reference?.imageUrl}
           cues={cues}

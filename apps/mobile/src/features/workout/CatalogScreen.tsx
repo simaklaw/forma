@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
+  Image,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -23,6 +24,8 @@ import {
 } from './catalogBrowser';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT, equipmentLabel, muscleLabel } from '@/i18n/strings';
+import { useFitPulseStore } from '@/state/useFitPulseStore';
+import { premiumExerciseGifFor } from './exercisePremiumMedia';
 import ExerciseDetailModal from './ExerciseDetailModal';
 import ImportedLibraryPanel from './ImportedLibraryPanel';
 import ProgramsPanel from './ProgramsPanel';
@@ -52,6 +55,7 @@ export default function CatalogScreen() {
   const colors = useThemeColors();
   const t = useT();
   const lang = useLanguageStore((s) => s.lang);
+  const profileSex = useFitPulseStore((s) => s.profile.sex);
   const [mode, setMode] = useState<TrainingMode>('home');
   const [query, setQuery] = useState('');
   const [muscle, setMuscle] = useState<MuscleKey | null>(null);
@@ -448,6 +452,9 @@ export default function CatalogScreen() {
                     <Text style={[styles.index, { color: colors.lime }]}>
                       {String(index + 1).padStart(2, '0')}
                     </Text>
+                    {premiumThumb != null ? (
+                      <Image source={premiumThumb} style={styles.premiumThumb} resizeMode="contain" accessibilityLabel={item.name} />
+                    ) : null}
                     <View style={styles.cardCopy}>
                       <Text style={[styles.name, { color: colors.paper }]}>{day.name}</Text>
                       <Text style={[styles.meta, { color: colors.paperFaint }]}>{day.count}</Text>
@@ -482,6 +489,7 @@ export default function CatalogScreen() {
                 style={styles.exerciseList}
                 contentContainerStyle={styles.list}
                 renderItem={({ item, index }) => {
+                  const premiumThumb = premiumExerciseGifFor(item, profileSex);
                   const isFav = favoriteKeys.includes(favoriteKey(item.mode, item.id));
                   return (
                     <TouchableOpacity
@@ -639,6 +647,7 @@ const styles = StyleSheet.create({
   },
   cardTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   index: { fontFamily: fonts.mono, fontSize: 18, width: 28 },
+  premiumThumb: { width: 60, height: 60, borderRadius: radius.control },
   cardCopy: { flex: 1, gap: 2 },
   name: { fontFamily: fonts.bodySemi, fontSize: 15 },
   meta: { fontFamily: fonts.body, fontSize: 12 },

@@ -188,6 +188,24 @@ jobs:
           done
           ls -la "$DEST" 2>/dev/null || echo "::warning::SQLite prefetch failed"
 
+      - name: Prepare premium RepDB exercise pilot animations
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARCHIVE="$RUNNER_TEMP/repdb-preview.zip"
+          VENV="$RUNNER_TEMP/premium-assets-venv"
+
+          # RepDB's public evaluation bundle includes matching male and female transparent WebP loops.
+          # Only the five reviewed movements are extracted and packaged into this APK build.
+          curl --fail --location --retry 5 --retry-delay 3 --retry-all-errors \
+            --output "$ARCHIVE" "https://repdb.co/download/preview?locale=en"
+          unzip -t "$ARCHIVE" >/dev/null
+
+          python3 -m venv "$VENV"
+          "$VENV/bin/pip" install --disable-pip-version-check --quiet "Pillow==11.3.0"
+          "$VENV/bin/python" scripts/prepare-premium-exercise-pilot.py \
+            "$ARCHIVE" apps/mobile/assets/premium-exercises
+
       - name: Build release APK (JS bundle embedded, debug-signed)
         working-directory: apps/mobile/android
         shell: bash
