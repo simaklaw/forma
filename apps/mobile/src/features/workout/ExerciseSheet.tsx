@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useEffect, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import type { WorkoutSession } from '@forma/workout-domain';
@@ -96,6 +96,8 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const [restRemaining, setRestRemaining] = useState<number | null>(null);
     const [sessionSnap, setSessionSnap] = useState<WorkoutSession | null>(null);
     const [sheetOpen, setSheetOpen] = useState(true);
+    const [recordingSet, setRecordingSet] = useState(false);
+    const recordingSetRef = useRef(false);
 
     const startRestFromDeadline = useCallback((restEndsAtMs: number) => {
       const sec = remainingRestSeconds(restEndsAtMs);
@@ -205,8 +207,25 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       restRemaining != null ? Math.min(100, Math.round((restRemaining / restTotal) * 100)) : 0;
 
     function recordNextSet() {
-      if (!exercise || completedSets >= exercise.totalSets || blockedBySequence) return;
+      if (
+        !exercise ||
+        recordingSetRef.current ||
+        completedSets >= exercise.totalSets ||
+        blockedBySequence ||
+        restRemaining !== null ||
+        sessionPaused
+      ) return;
       if (!(Number.isFinite(weight) && weight > 0)) return;
+
+      // Lock synchronously before starting async persistence. A React state update alone
+      // is not fast enough to stop two taps from logging the same set twice.
+      recordingSetRef.current = true;
+      setRecordingSet(true);
+      const releaseRecordingLock = () => {
+        recordingSetRef.current = false;
+        setRecordingSet(false);
+      };
+
       if (dayId && dayExercises?.length) {
         void ActiveSessionController.recordSetForExercise({
           dayId,
@@ -215,69 +234,79 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           weightKg: weight,
           reps,
           rir
-        }).then(async (session) => {
-          if (!session) {
-            setSessionSnap(await ActiveSessionController.load());
-            return;
-          }
-          setSessionSnap(session);
-          const projection = await ActiveSessionController.getLegacyProjection(session.sessionId);
-          if (!projection) return;
-          applySessionProjection(projection);
-          const next =
-            useFitPulseStore.getState().dayProgress[toDateKey(new Date())]?.[exercise.id] ?? 0;
-          setCompletedSets(next);
-          const sessionIdForFeedback = session.sessionId;
-          const dayIdForFeedback =
-            dayIdFromTemplate(session.templateRevisionId) ?? dayId ?? '';
-          await ActiveSessionController.completeDayIfDone();
-          if (next >= exercise.totalSets) {
-            const dayComplete = ActiveSessionController.getSessionId() == null;
-            if (dayComplete) {
-              RestTimerEngine.hapticDayComplete();
-              VoiceCuesEngine.announceDayComplete();
-              if (sessionIdForFeedback && dayIdForFeedback) {
-                onDayComplete?.({ sessionId: sessionIdForFeedback, dayId: dayIdForFeedback, session });
-              }
-            } else {
-              RestTimerEngine.hapticSetComplete();
-              VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
+        })
+          .then(async (session) => {
+            if (!session) {
+              setSessionSnap(await ActiveSessionController.load());
+              return;
             }
-            onFinished?.(exercise.id);
-            return;
-          }
+            setSessionSnap(session);
+            const projection = await ActiveSessionController.getLegacyProjection(session.sessionId);
+            if (!projection) return;
+            applySessionProjection(projection);
+            const next =
+              useFitPulseStore.getState().dayProgress[toDateKey(new Date())]?.[exercise.id] ?? 0;
+            setCompletedSets(next);
+            const sessionIdForFeedback = session.sessionId;
+            const dayIdForFeedback =
+              dayIdFromTemplate(session.templateRevisionId) ?? dayId ?? '';
+            await ActiveSessionController.completeDayIfDone();
+            if (next >= exercise.totalSets) {
+              const dayComplete = ActiveSessionController.getSessionId() == null;
+              if (dayComplete) {
+                RestTimerEngine.hapticDayComplete();
+                VoiceCuesEngine.announceDayComplete();
+                if (sessionIdForFeedback && dayIdForFeedback) {
+                  onDayComplete?.({ sessionId: sessionIdForFeedback, dayId: dayIdForFeedback, session });
+                }
+              } else {
+                RestTimerEngine.hapticSetComplete();
+                VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
+              }
+              onFinished?.(exercise.id);
+              return;
+            }
+            RestTimerEngine.hapticSetComplete();
+            VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
+            if (session.restEndsAtMs != null) startRestFromDeadline(session.restEndsAtMs);
+          })
+          .catch((error) => {
+            console.warn('ExerciseSheet: failed to record set', error);
+            void ActiveSessionController.load().then(setSessionSnap).catch(() => {});
+          })
+          .finally(releaseRecordingLock);
+        return;
+      }
+
+      try {
+        const current = useFitPulseStore.getState();
+        const next = current.recordSet(exercise.id, weight, reps, rir);
+        setCompletedSets(next);
+
+        if (next >= exercise.totalSets) {
           RestTimerEngine.hapticSetComplete();
           VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
-          if (session.restEndsAtMs != null) startRestFromDeadline(session.restEndsAtMs);
-        });
-        return;
-      }
+          onFinished?.(exercise.id);
+          return;
+        }
 
-      const current = useFitPulseStore.getState();
-      const next = current.recordSet(exercise.id, weight, reps, rir);
-      setCompletedSets(next);
-
-      if (next >= exercise.totalSets) {
         RestTimerEngine.hapticSetComplete();
         VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
-        onFinished?.(exercise.id);
-        return;
+        RestTimerEngine.startTimer(
+          exercise.restSeconds,
+          (remaining) => {
+            setRestRemaining(remaining);
+            VoiceCuesEngine.announceRestCountdown(remaining);
+          },
+          () => {
+            setRestRemaining(null);
+            VoiceCuesEngine.announceRestOver();
+          },
+          beepSource
+        );
+      } finally {
+        releaseRecordingLock();
       }
-
-      RestTimerEngine.hapticSetComplete();
-      VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
-      RestTimerEngine.startTimer(
-        exercise.restSeconds,
-        (remaining) => {
-          setRestRemaining(remaining);
-          VoiceCuesEngine.announceRestCountdown(remaining);
-        },
-        () => {
-          setRestRemaining(null);
-          VoiceCuesEngine.announceRestOver();
-        },
-        beepSource
-      );
     }
 
     function skipRest() {
@@ -373,7 +402,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       sessionForDay != null &&
       sessionForDay.status !== 'completed' &&
       sessionForDay.status !== 'abandoned';
-    const ctaDisabled = finished || restRemaining !== null || blockedBySequence || sessionPaused;
+    const ctaDisabled = finished || recordingSet || restRemaining !== null || blockedBySequence || sessionPaused;
     const cues = techniqueCuesFromNote(exercise.note);
     const verifiedMediaKey = verifiedMediaKeyForExercise(exercise.mediaKey, exercise.wgerSearchTerm);
     const videoSource =
@@ -450,7 +479,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           key={exercise.id}
           initialSeconds={exerciseTimerSeconds}
           active={sheetOpen}
-          disabled={finished || blockedBySequence || sessionPaused}
+          disabled={finished || blockedBySequence || sessionPaused || restRemaining !== null}
         />
 
         {reference && (
