@@ -452,9 +452,6 @@ export default function CatalogScreen() {
                     <Text style={[styles.index, { color: colors.lime }]}>
                       {String(index + 1).padStart(2, '0')}
                     </Text>
-                    {premiumThumb != null ? (
-                      <Image source={premiumThumb} style={styles.premiumThumb} resizeMode="contain" accessibilityLabel={item.name} />
-                    ) : null}
                     <View style={styles.cardCopy}>
                       <Text style={[styles.name, { color: colors.paper }]}>{day.name}</Text>
                       <Text style={[styles.meta, { color: colors.paperFaint }]}>{day.count}</Text>
@@ -505,6 +502,14 @@ export default function CatalogScreen() {
                         <Text style={[styles.index, { color: colors.lime }]}>
                           {String(index + 1).padStart(2, '0')}
                         </Text>
+                        {premiumThumb != null ? (
+                          <Image
+                            source={premiumThumb}
+                            style={styles.premiumThumb}
+                            resizeMode="contain"
+                            accessibilityLabel={item.name}
+                          />
+                        ) : null}
                         <View style={styles.cardCopy}>
                           <Text style={[styles.name, { color: colors.paper }]}>
                             {isFav ? '★ ' : ''}
