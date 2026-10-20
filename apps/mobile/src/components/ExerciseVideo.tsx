@@ -23,9 +23,13 @@ import { useThemeColors } from '@/core/theme/useThemeColors';
 interface Props {
   /** Remote { uri } or Metro require() asset number. */
   source?: { uri: string } | number;
-  /** Vetted dataset GIF for the exact exercise (issue #175); Android animates GIF natively. */
+  /** Vetted animated asset for the exact exercise; Android animates GIF natively. */
   gifAsset?: number;
-  /** Optional still from wger when video is missing. */
+  /** Reviewed premium animation selected for the exact exercise and profile sex. */
+  premiumGifAsset?: number;
+  /** Bundled, exact local illustration. Preferred over network-dependent posters. */
+  posterAsset?: number;
+  /** Optional still from wger when no local poster is available. */
   posterUri?: string;
   /** Short technique steps (from plan note). */
   cues?: string[];
@@ -48,6 +52,8 @@ function normalizeCues(cues: string[] | undefined): string[] {
 export default function ExerciseVideo({
   source,
   gifAsset,
+  premiumGifAsset,
+  posterAsset,
   posterUri,
   cues,
   label = 'ТЕХНИКА ВЫПОЛНЕНИЯ',
@@ -63,32 +69,38 @@ export default function ExerciseVideo({
   const fullscreenRef = useRef<Video>(null);
 
   useEffect(() => {
-    if (source || gifAsset != null) return;
+    if (source || gifAsset != null || premiumGifAsset != null || posterAsset != null || posterUri) return;
     setStepIdx(0);
     const id = setInterval(() => {
       setStepIdx((i) => (i + 1) % steps.length);
     }, 2800);
     return () => clearInterval(id);
-  }, [source, gifAsset, steps.length]);
+  }, [source, gifAsset, premiumGifAsset, posterAsset, posterUri, steps.length]);
 
   useEffect(() => {
-    if (!source || !previewRef.current) return;
+    if (!source || premiumGifAsset != null || !previewRef.current) return;
     if (shouldPlay) {
       previewRef.current.playAsync().catch(() => {});
     } else {
       previewRef.current.pauseAsync().catch(() => {});
     }
-  }, [shouldPlay, source]);
+  }, [shouldPlay, source, premiumGifAsset]);
 
   function openFullscreen() {
+    if (premiumGifAsset != null || gifAsset != null || posterAsset != null || posterUri) {
+      setFullscreen(true);
+      return;
+    }
     if (!source) return;
     previewRef.current?.pauseAsync().catch(() => {});
+    setIsPlaying(true);
     setFullscreen(true);
   }
 
   function closeFullscreen() {
     fullscreenRef.current?.pauseAsync().catch(() => {});
     setFullscreen(false);
+    setIsPlaying(false);
   }
 
   async function toggleFullscreenPlayback() {
@@ -109,15 +121,22 @@ export default function ExerciseVideo({
       <TouchableOpacity
         style={styles.hero}
         onPress={openFullscreen}
-        disabled={!source}
+        disabled={!source && gifAsset == null && premiumGifAsset == null && posterAsset == null && !posterUri}
         accessibilityRole="button"
         accessibilityLabel={
-          source
+          source && premiumGifAsset == null
             ? 'Открыть видео техники на весь экран'
-            : 'Пошаговая техника выполнения'
+            : 'Анимированная иллюстрация упражнения'
         }
       >
-        {source ? (
+        {premiumGifAsset != null ? (
+          <Image
+            source={premiumGifAsset}
+            style={StyleSheet.absoluteFill}
+            resizeMode="contain"
+            accessibilityIgnoresInvertColors
+          />
+        ) : source ? (
           <Video
             ref={previewRef}
             source={source as any}
@@ -134,20 +153,27 @@ export default function ExerciseVideo({
             resizeMode="cover"
             accessibilityIgnoresInvertColors
           />
+        ) : posterAsset != null ? (
+          <Image
+            source={posterAsset}
+            style={StyleSheet.absoluteFill}
+            resizeMode="contain"
+            accessibilityIgnoresInvertColors
+          />
         ) : posterUri ? (
           <Image
             source={{ uri: posterUri }}
             style={StyleSheet.absoluteFill}
-            resizeMode="cover"
+            resizeMode="contain"
             accessibilityIgnoresInvertColors
           />
         ) : (
           <View style={styles.placeholderBg} />
         )}
 
-        <View style={styles.dim} />
+        {source != null && premiumGifAsset == null && <View style={styles.dim} />}
 
-        {!source && gifAsset == null ? (
+        {!source && gifAsset == null && premiumGifAsset == null && posterAsset == null && !posterUri ? (
           <View style={styles.guide}>
             <Text style={styles.guideStep}>
               Шаг {stepIdx + 1}/{steps.length}
@@ -164,20 +190,24 @@ export default function ExerciseVideo({
               ))}
             </View>
           </View>
-        ) : source != null ? (
+        ) : source != null && premiumGifAsset == null ? (
           <View style={styles.playBadge}>
             <Text style={styles.playBadgeText}>▶</Text>
           </View>
         ) : null}
 
         <Text style={styles.heroLabel}>
-          {source != null || gifAsset != null ? label : 'ТЕХНИКА · ПО ШАГАМ'}
+          {source != null || gifAsset != null || premiumGifAsset != null
+            ? label
+            : posterAsset != null || posterUri
+              ? 'ИЛЛЮСТРАЦИЯ УПРАЖНЕНИЯ'
+              : 'ВИДЕО НЕТ · ТЕХНИКА ПО ШАГАМ'}
         </Text>
       </TouchableOpacity>
 
       <Modal visible={fullscreen} animationType="fade" onRequestClose={closeFullscreen}>
         <View style={styles.fullscreenRoot}>
-          {source && (
+          {source && premiumGifAsset == null ? (
             <TouchableOpacity
               style={StyleSheet.absoluteFill}
               activeOpacity={1}
@@ -189,6 +219,7 @@ export default function ExerciseVideo({
                 style={StyleSheet.absoluteFill}
                 resizeMode={ResizeMode.CONTAIN}
                 shouldPlay
+                isLooping
                 useNativeControls={false}
                 onPlaybackStatusUpdate={(status) => {
                   if ('isPlaying' in status) setIsPlaying(!!status.isPlaying);
@@ -200,7 +231,15 @@ export default function ExerciseVideo({
                 </View>
               )}
             </TouchableOpacity>
-          )}
+          ) : premiumGifAsset != null ? (
+            <Image source={premiumGifAsset} style={styles.fullscreenMedia} resizeMode="contain" />
+          ) : gifAsset != null ? (
+            <Image source={gifAsset} style={styles.fullscreenMedia} resizeMode="contain" />
+          ) : posterAsset != null ? (
+            <Image source={posterAsset} style={styles.fullscreenMedia} resizeMode="contain" />
+          ) : posterUri ? (
+            <Image source={{ uri: posterUri }} style={styles.fullscreenMedia} resizeMode="contain" />
+          ) : null}
           <TouchableOpacity
             style={styles.closeBtn}
             onPress={closeFullscreen}
@@ -218,7 +257,7 @@ export default function ExerciseVideo({
 function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
     hero: {
-      height: 180,
+      height: 286,
       borderWidth: 1,
       borderColor: colors.lineStrong,
       backgroundColor: colors.panel,
@@ -287,7 +326,8 @@ function createStyles(colors: ColorTokens) {
       padding: 12,
       backgroundColor: 'rgba(0,0,0,0.35)'
     },
-    fullscreenRoot: { flex: 1, backgroundColor: '#000' },
+    fullscreenRoot: { flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center' },
+    fullscreenMedia: { width: '100%', height: '100%' },
     pauseOverlay: {
       ...StyleSheet.absoluteFillObject,
       alignItems: 'center',

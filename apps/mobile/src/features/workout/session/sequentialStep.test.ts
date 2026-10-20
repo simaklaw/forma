@@ -1,5 +1,5 @@
 import type { WorkoutSession } from '@forma/workout-domain';
-import { sequentialStepInfo, sessionForViewedDay } from './sequentialStep';
+import { sequentialStepInfo, sessionForViewedDay, sessionMatchesDayAndExercises } from './sequentialStep';
 
 function fakeSession(partial: {
   currentStepIndex: number;
@@ -75,5 +75,38 @@ describe('sequentialStepInfo', () => {
     expect(sessionForViewedDay(session, 'chest')).toBeNull();
     expect(sessionForViewedDay(session, 'legs')).toBe(session);
     expect(sessionForViewedDay(null, 'chest')).toBeNull();
+  });
+});
+
+describe('sessionMatchesDayAndExercises', () => {
+  const session = fakeSession({
+    currentStepIndex: 0,
+    steps: [
+      { exerciseId: '1', name: 'Squat' },
+      { exerciseId: '2', name: 'RDL' }
+    ]
+  });
+
+  it('accepts the same day and exact frozen exercise order', () => {
+    expect(sessionMatchesDayAndExercises(session, 'legs', [{ id: 1, name: 'Squat' }, { id: 2, name: 'RDL' }])).toBe(true);
+  });
+
+  it('rejects a different day even if numeric IDs happen to overlap', () => {
+    expect(sessionMatchesDayAndExercises(session, 'chest', [{ id: 1, name: 'Squat' }, { id: 2, name: 'RDL' }])).toBe(false);
+  });
+
+  it('rejects stale/modified exercise lists from a previous plan revision', () => {
+    expect(sessionMatchesDayAndExercises(session, 'legs', [{ id: 1, name: 'Squat' }, { id: 48, name: 'Close-grip Push-up' }])).toBe(false);
+    expect(sessionMatchesDayAndExercises(session, 'legs', [{ id: 1, name: 'Squat' }, { id: 2, name: 'RDL' }, { id: 3, name: 'Lunge' }])).toBe(false);
+    expect(sessionMatchesDayAndExercises(session, 'legs', [{ id: 1, name: 'Glute Bridge' }, { id: 2, name: 'RDL' }])).toBe(false);
+  });
+
+  it('rejects an explicitly empty exercise list when the session still has steps', () => {
+    expect(sessionMatchesDayAndExercises(session, 'legs', [])).toBe(false);
+    expect(sessionMatchesDayAndExercises(session, 'legs', undefined)).toBe(true);
+  });
+
+  it('does not treat a missing session as a match', () => {
+    expect(sessionMatchesDayAndExercises(null, 'legs', [{ id: 1, name: 'Squat' }, { id: 2, name: 'RDL' }])).toBe(false);
   });
 });

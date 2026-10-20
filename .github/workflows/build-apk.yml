@@ -1,8 +1,14 @@
 name: Build Android APK
 
 on:
-  # Мерж в main больше не собирает APK автоматически — только вручную:
-  # Actions → Build Android APK → Run workflow (пока не пройдена приёмка на устройстве, #170).
+  # Build APKs for mobile PRs to main so the reviewer can install the exact change.
+  # This does not enable automatic builds on pushes or merges to main.
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - ".github/workflows/build-apk.yml"
+      - "scripts/prepare-premium-exercise-pilot.py"
   workflow_dispatch:
     inputs:
       sync_api_url:
@@ -138,6 +144,8 @@ jobs:
               echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError"
               echo "org.gradle.parallel=true"
               echo "android.enableJetifier=false"
+              # Enable native animated GIF decoding for React Native Image on Android.
+              echo "expo.gif.enabled=true"
             } >> android/gradle.properties
           fi
 
@@ -188,6 +196,24 @@ jobs:
             sleep 3
           done
           ls -la "$DEST" 2>/dev/null || echo "::warning::SQLite prefetch failed"
+
+      - name: Prepare premium RepDB exercise pilot animations
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARCHIVE="$RUNNER_TEMP/repdb-preview.zip"
+          VENV="$RUNNER_TEMP/premium-assets-venv"
+
+          # RepDB's public evaluation bundle includes matching male and female transparent WebP loops.
+          # Only the five reviewed movements are extracted and packaged into this APK build.
+          curl --fail --location --retry 5 --retry-delay 3 --retry-all-errors \
+            --output "$ARCHIVE" "https://repdb.co/download/preview?locale=en"
+          unzip -t "$ARCHIVE" >/dev/null
+
+          python3 -m venv "$VENV"
+          "$VENV/bin/pip" install --disable-pip-version-check --quiet "Pillow==11.3.0"
+          "$VENV/bin/python" scripts/prepare-premium-exercise-pilot.py \
+            "$ARCHIVE" apps/mobile/assets/premium-exercises
 
       - name: Build release APK (JS bundle embedded, debug-signed)
         working-directory: apps/mobile/android

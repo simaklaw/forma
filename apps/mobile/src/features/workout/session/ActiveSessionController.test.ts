@@ -1,12 +1,14 @@
 import {
   configureSessionPersistence,
   getSessionService,
+  newSessionId,
   resetSessionServiceForTests
 } from '@/features/workout/data';
 import { mergeSessionProjection } from '@/features/workout/data/sessionProjections';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import type { ExerciseDef } from '../ExerciseSheet';
 import { ActiveSessionController } from './ActiveSessionController';
+import { contentHashForExercises, exercisesToSnapshots } from './planToSnapshots';
 
 /** Complete biometrics so isProfileComplete / ensureDaySession gate passes in unit tests. */
 const TEST_PROFILE = {
@@ -84,6 +86,27 @@ describe('ActiveSessionController', () => {
     expect(b!.sessionId).toBe(a!.sessionId);
   });
 
+  it('replaces a same-day session when its frozen exercise identities no longer match the plan', async () => {
+    const first = await ActiveSessionController.ensureDaySession('legs', exercises);
+    expect(first).not.toBeNull();
+
+    // Deliberately preserve numeric IDs but change movement names, as can happen
+    // when a stale session is paired with a different catalog/mode.
+    const conflictingPlan: ExerciseDef[] = [
+      { ...exercises[0]!, name: 'Glute Bridge' },
+      { ...exercises[1]!, name: 'Hip Thrust' }
+    ];
+    const second = await ActiveSessionController.ensureDaySession('legs', conflictingPlan);
+
+    expect(second).not.toBeNull();
+    expect(second!.sessionId).not.toBe(first!.sessionId);
+    expect(second!.steps.map((step) => step.snapshot.name)).toEqual(['Glute Bridge', 'Hip Thrust']);
+
+    const previous = await getSessionService().getSession(first!.sessionId);
+    expect(previous?.status).toBe('abandoned');
+    expect(previous?.terminalReason).toBe('replaced_by_new_session');
+  });
+
   it('cold start resumes same day without abandon (simulates process restart)', async () => {
     const first = await ActiveSessionController.ensureDaySession('legs', exercises);
     expect(first).not.toBeNull();
@@ -105,6 +128,41 @@ describe('ActiveSessionController', () => {
 
     const stored = await getSessionService().getSession(first!.sessionId);
     expect(stored?.status).not.toBe('abandoned');
+  });
+
+  it('does not resume a same-day session from an older template revision', async () => {
+    const first = await ActiveSessionController.ensureDaySession('legs', exercises);
+    expect(first).not.toBeNull();
+
+    ActiveSessionController.resetForTests();
+    const svc = getSessionService();
+    await svc.dispatch(first!.sessionId, {
+      type: 'abandon_session',
+      reason: 'replaced_by_new_session'
+    });
+
+    const staleSessionId = newSessionId();
+    const bodyKg = 78;
+    await svc.dispatch(null, {
+      type: 'prepare_session',
+      sessionId: staleSessionId,
+      userId: 'local-user',
+      templateRevisionId: 'day-legs@older-revision',
+      contentHash: contentHashForExercises(exercises, bodyKg),
+      steps: exercisesToSnapshots(exercises, bodyKg),
+      localStartDate: new Date().toISOString().slice(0, 10),
+      timezone: 'UTC',
+      weightKgSnapshot: bodyKg
+    });
+    await svc.dispatch(staleSessionId, { type: 'start_session' });
+
+    ActiveSessionController.resetForTests();
+    const replacement = await ActiveSessionController.ensureDaySession('legs', exercises);
+
+    expect(replacement).not.toBeNull();
+    expect(replacement!.sessionId).not.toBe(staleSessionId);
+    expect(replacement!.templateRevisionId).not.toBe('day-legs@older-revision');
+    expect((await svc.getSession(staleSessionId))?.status).toBe('abandoned');
   });
 
   it('switching day abandons previous session (single-active)', async () => {

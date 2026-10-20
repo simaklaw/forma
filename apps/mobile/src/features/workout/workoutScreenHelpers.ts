@@ -4,8 +4,8 @@ import type { WorkoutDay } from './catalog';
 
 export const WEEKDAY_RU_FULL = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 
-/** Home-only for now; set true to show gym/home toggle. */
-export const SHOW_GYM_MODE_TOGGLE = false;
+/** Show gym/home selector so the exact premium pilot movements are reachable from workouts. */
+export const SHOW_GYM_MODE_TOGGLE = true;
 
 /**
  * Pick today's day in the weekly cycle from the plan list.

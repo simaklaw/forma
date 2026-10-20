@@ -37,6 +37,7 @@ import type { TabParamList } from '@/navigation/types';
 import { EXERCISE_THUMBNAILS } from './exerciseMedia';
 import { useExerciseListThumbs } from './useExerciseListThumbs';
 import { realThumbForMediaKey } from './exerciseRealMedia';
+import { premiumExerciseGifFor } from './exercisePremiumMedia';
 import { presentEarlyLeave } from './session/earlyLeave';
 import { BusyGuard } from './sessionActionGuard';
 import { workoutScreenStyles as styles } from './workoutScreenStyles';
@@ -755,6 +756,7 @@ export default function WorkoutScreen() {
           const finished = doneSets >= ex.totalSets;
           const isCurrent = currentStepExerciseId === ex.id;
           const exPr = personalRecords[ex.id];
+          const premiumThumb = premiumExerciseGifFor(ex, profileSex);
           const thumbKey = ex.mediaKey;
           const thumb =
             realThumbForMediaKey(thumbKey) ??
@@ -791,7 +793,9 @@ export default function WorkoutScreen() {
                 total: ex.totalSets
               })}
             >
-              {thumb ? (
+              {premiumThumb != null ? (
+                <Image source={premiumThumb} style={styles.logThumb} resizeMode="contain" accessibilityLabel={ex.name} />
+              ) : thumb ? (
                 <Image source={thumb} style={styles.logThumb} />
               ) : remoteThumbUri ? (
                 <Image

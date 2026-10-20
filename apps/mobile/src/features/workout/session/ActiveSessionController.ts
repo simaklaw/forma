@@ -10,6 +10,7 @@ import { contentHashForExercises, exercisesToSnapshots, PLAN_REVISION } from './
 import { LOCAL_USER_ID } from './currentUser';
 import { projectSessionEvents } from '@/features/workout/data/sessionProjections';
 import { clearDayReadModel } from './clearDayReadModel';
+import { sessionMatchesDayAndExercises } from './sequentialStep';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 
 const log = createLogger('session');
@@ -124,12 +125,19 @@ class ActiveSessionControllerImpl {
     this.emit();
   }
 
-  private async abandonIfDifferentDay(nextDayId: string): Promise<WorkoutSession | null> {
+  private async abandonIfDifferentDay(nextDayId: string, exercises: ExerciseDef[]): Promise<WorkoutSession | null> {
     const svc = getSessionService();
     const previous = await svc.getResumable(LOCAL_USER_ID);
     if (!previous || !isResumable(previous)) return null;
 
-    if (previous.templateRevisionId === dayTemplateId(nextDayId)) {
+    if (
+      previous.templateRevisionId === dayTemplateId(nextDayId) &&
+      sessionMatchesDayAndExercises(
+        previous,
+        nextDayId,
+        exercises.map(({ id, name }) => ({ id, name }))
+      )
+    ) {
       return previous;
     }
 
@@ -162,12 +170,21 @@ class ActiveSessionControllerImpl {
 
     if (this.sessionId && this.dayId === dayId) {
       const existing = await svc.getSession(this.sessionId);
-      if (existing && isResumable(existing) && existing.templateRevisionId === templateId) {
+      if (
+        existing &&
+        isResumable(existing) &&
+        existing.templateRevisionId === templateId &&
+        sessionMatchesDayAndExercises(
+          existing,
+          dayId,
+          exercises.map(({ id, name }) => ({ id, name }))
+        )
+      ) {
         return existing;
       }
     }
 
-    const sameDayOrNull = await this.abandonIfDifferentDay(dayId);
+    const sameDayOrNull = await this.abandonIfDifferentDay(dayId, exercises);
     if (sameDayOrNull) {
       log.debug('resumed same-day session', { dayId, sessionId: sameDayOrNull.sessionId });
       return this.bind(sameDayOrNull, dayId);
