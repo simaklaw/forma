@@ -87,14 +87,20 @@ export default function ExerciseVideo({
   }, [shouldPlay, source, premiumGifAsset]);
 
   function openFullscreen() {
-    if (!source || premiumGifAsset != null) return;
+    if (premiumGifAsset != null || gifAsset != null || posterAsset != null || posterUri) {
+      setFullscreen(true);
+      return;
+    }
+    if (!source) return;
     previewRef.current?.pauseAsync().catch(() => {});
+    setIsPlaying(true);
     setFullscreen(true);
   }
 
   function closeFullscreen() {
     fullscreenRef.current?.pauseAsync().catch(() => {});
     setFullscreen(false);
+    setIsPlaying(false);
   }
 
   async function toggleFullscreenPlayback() {
@@ -115,7 +121,7 @@ export default function ExerciseVideo({
       <TouchableOpacity
         style={styles.hero}
         onPress={openFullscreen}
-        disabled={!source || premiumGifAsset != null}
+        disabled={!source && gifAsset == null && premiumGifAsset == null && posterAsset == null && !posterUri}
         accessibilityRole="button"
         accessibilityLabel={
           source && premiumGifAsset == null
@@ -201,7 +207,7 @@ export default function ExerciseVideo({
 
       <Modal visible={fullscreen} animationType="fade" onRequestClose={closeFullscreen}>
         <View style={styles.fullscreenRoot}>
-          {source && (
+          {source && premiumGifAsset == null ? (
             <TouchableOpacity
               style={StyleSheet.absoluteFill}
               activeOpacity={1}
@@ -213,6 +219,7 @@ export default function ExerciseVideo({
                 style={StyleSheet.absoluteFill}
                 resizeMode={ResizeMode.CONTAIN}
                 shouldPlay
+                isLooping
                 useNativeControls={false}
                 onPlaybackStatusUpdate={(status) => {
                   if ('isPlaying' in status) setIsPlaying(!!status.isPlaying);
@@ -224,7 +231,15 @@ export default function ExerciseVideo({
                 </View>
               )}
             </TouchableOpacity>
-          )}
+          ) : premiumGifAsset != null ? (
+            <Image source={premiumGifAsset} style={styles.fullscreenMedia} resizeMode="contain" />
+          ) : gifAsset != null ? (
+            <Image source={gifAsset} style={styles.fullscreenMedia} resizeMode="contain" />
+          ) : posterAsset != null ? (
+            <Image source={posterAsset} style={styles.fullscreenMedia} resizeMode="contain" />
+          ) : posterUri ? (
+            <Image source={{ uri: posterUri }} style={styles.fullscreenMedia} resizeMode="contain" />
+          ) : null}
           <TouchableOpacity
             style={styles.closeBtn}
             onPress={closeFullscreen}
@@ -242,7 +257,7 @@ export default function ExerciseVideo({
 function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
     hero: {
-      height: 180,
+      height: 286,
       borderWidth: 1,
       borderColor: colors.lineStrong,
       backgroundColor: colors.panel,
@@ -311,7 +326,8 @@ function createStyles(colors: ColorTokens) {
       padding: 12,
       backgroundColor: 'rgba(0,0,0,0.35)'
     },
-    fullscreenRoot: { flex: 1, backgroundColor: '#000' },
+    fullscreenRoot: { flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center' },
+    fullscreenMedia: { width: '100%', height: '100%' },
     pauseOverlay: {
       ...StyleSheet.absoluteFillObject,
       alignItems: 'center',

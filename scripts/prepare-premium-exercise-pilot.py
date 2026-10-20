@@ -16,6 +16,7 @@ from PIL import Image
 
 SIZE = (160, 160)
 FRAME_COUNT = 20
+SLOWDOWN_FACTOR = 1.12  # slightly slower loop after device review
 MOTIONS = (
     "pull-up",
     "bench-leg-pull-in",
@@ -81,7 +82,7 @@ def make_gif(webp_bytes: bytes, target: Path) -> None:
     indices = sampled_indices(count)
 
     # GIF stores delays in 10 ms ticks. 20 sampled poses span one complete source loop.
-    duration_ms = max(20, round(source_duration_ms / FRAME_COUNT / 10) * 10)
+    duration_ms = max(20, round(source_duration_ms / FRAME_COUNT * SLOWDOWN_FACTOR / 10) * 10)
 
     frames_rgba: list[Image.Image] = []
     for index in indices:
@@ -145,11 +146,12 @@ def make_gif(webp_bytes: bytes, target: Path) -> None:
     for i in range(check.n_frames):
         check.seek(i)
         output_duration_ms += int(check.info.get("duration", 0) or 0)
-    allowed_drift_ms = max(120, round(source_duration_ms * 0.08))
-    if abs(output_duration_ms - source_duration_ms) > allowed_drift_ms:
+    target_duration_ms = round(source_duration_ms * SLOWDOWN_FACTOR)
+    allowed_drift_ms = max(120, round(target_duration_ms * 0.08))
+    if abs(output_duration_ms - target_duration_ms) > allowed_drift_ms:
         raise ValueError(
-            f"{target}: animation duration drifted from {source_duration_ms} ms "
-            f"to {output_duration_ms} ms"
+            f"{target}: animation duration drifted from slowed target {target_duration_ms} ms "
+            f"to {output_duration_ms} ms (source {source_duration_ms} ms)"
         )
 
 
@@ -176,7 +178,7 @@ def main() -> None:
                 source_name = f"{prefix}images/animations/{motion}.webp"
                 target = output_dir / sex / f"{motion}.gif"
                 make_gif(archive.read(source_name), target)
-                print(f"Prepared {sex}/{motion}.gif ({target.stat().st_size} bytes, {FRAME_COUNT} frames; source cadence preserved)")
+                print(f"Prepared {sex}/{motion}.gif ({target.stat().st_size} bytes, {FRAME_COUNT} frames; loop +{(SLOWDOWN_FACTOR - 1) * 100:.0f}% slower than source)")
 
     print(f"Prepared {len(VARIANTS) * len(MOTIONS)} offline pilot animations at {output_dir}")
 

@@ -5,6 +5,7 @@ import type { WorkoutSession } from '@forma/workout-domain';
 import { SetFeedbackCard } from './SetFeedbackCard';
 import AppBottomSheet from '@/components/BottomSheet';
 import ExerciseVideo from '@/components/ExerciseVideo';
+import ExerciseTimer from '@/components/ExerciseTimer';
 import MuscleMap, { type MuscleKey } from '@/components/MuscleMap';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
@@ -382,10 +383,19 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const gifAsset = realGifForMediaKey(verifiedMediaKey);
     const premiumGifAsset = premiumExerciseGifFor(exercise, profileSex);
     const posterAsset = exercisePosterAsset(exercise.id, exercise.mediaKey, exercise.wgerSearchTerm);
+    const timerIsSecondsBased =
+      /секунд|seconds/i.test(exercise.note) ||
+      exercise.mediaKey === 'plank' ||
+      exercise.mediaKey === 'side-plank';
+    const exerciseTimerSeconds = timerIsSecondsBased
+      ? Math.max(5, Math.min(600, exercise.workingReps))
+      : 45;
 
     return (
       <AppBottomSheet
         ref={ref}
+        scrollable
+        snapPoints={['82%', '94%']}
         eyebrow={
           seq.totalSteps > 0
             ? t('sheetExerciseShort', {
@@ -434,6 +444,13 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           posterUri={reference?.imageUrl}
           cues={cues}
           shouldPlay={sheetOpen}
+        />
+
+        <ExerciseTimer
+          key={exercise.id}
+          initialSeconds={exerciseTimerSeconds}
+          active={sheetOpen}
+          disabled={finished || blockedBySequence || sessionPaused}
         />
 
         {reference && (
