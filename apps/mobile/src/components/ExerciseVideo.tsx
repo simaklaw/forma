@@ -78,16 +78,16 @@ export default function ExerciseVideo({
   }, [source, gifAsset, premiumGifAsset, posterAsset, posterUri, steps.length]);
 
   useEffect(() => {
-    if (!source || premiumGifAsset != null || gifAsset != null || !previewRef.current) return;
+    if (!source || premiumGifAsset != null || !previewRef.current) return;
     if (shouldPlay) {
       previewRef.current.playAsync().catch(() => {});
     } else {
       previewRef.current.pauseAsync().catch(() => {});
     }
-  }, [shouldPlay, source, premiumGifAsset, gifAsset]);
+  }, [shouldPlay, source, premiumGifAsset]);
 
   function openFullscreen() {
-    if (!source || premiumGifAsset != null || gifAsset != null) return;
+    if (!source || premiumGifAsset != null) return;
     previewRef.current?.pauseAsync().catch(() => {});
     setFullscreen(true);
   }
@@ -115,10 +115,10 @@ export default function ExerciseVideo({
       <TouchableOpacity
         style={styles.hero}
         onPress={openFullscreen}
-        disabled={!source || premiumGifAsset != null || gifAsset != null}
+        disabled={!source || premiumGifAsset != null}
         accessibilityRole="button"
         accessibilityLabel={
-          source && premiumGifAsset == null && gifAsset == null
+          source && premiumGifAsset == null
             ? 'Открыть видео техники на весь экран'
             : 'Анимированная иллюстрация упражнения'
         }
@@ -165,9 +165,7 @@ export default function ExerciseVideo({
           <View style={styles.placeholderBg} />
         )}
 
-        {source != null && premiumGifAsset == null && gifAsset == null && (
-          <View style={styles.dim} />
-        )}
+        {source != null && premiumGifAsset == null && <View style={styles.dim} />}
 
         {!source && gifAsset == null && premiumGifAsset == null && posterAsset == null && !posterUri ? (
           <View style={styles.guide}>
@@ -186,7 +184,7 @@ export default function ExerciseVideo({
               ))}
             </View>
           </View>
-        ) : source != null && premiumGifAsset == null && gifAsset == null ? (
+        ) : source != null && premiumGifAsset == null ? (
           <View style={styles.playBadge}>
             <Text style={styles.playBadgeText}>▶</Text>
           </View>
