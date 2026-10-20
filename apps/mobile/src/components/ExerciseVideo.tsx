@@ -78,16 +78,16 @@ export default function ExerciseVideo({
   }, [source, gifAsset, premiumGifAsset, posterAsset, posterUri, steps.length]);
 
   useEffect(() => {
-    if (!source || !previewRef.current) return;
+    if (!source || premiumGifAsset != null || gifAsset != null || !previewRef.current) return;
     if (shouldPlay) {
       previewRef.current.playAsync().catch(() => {});
     } else {
       previewRef.current.pauseAsync().catch(() => {});
     }
-  }, [shouldPlay, source]);
+  }, [shouldPlay, source, premiumGifAsset, gifAsset]);
 
   function openFullscreen() {
-    if (!source) return;
+    if (!source || premiumGifAsset != null || gifAsset != null) return;
     previewRef.current?.pauseAsync().catch(() => {});
     setFullscreen(true);
   }
@@ -115,12 +115,12 @@ export default function ExerciseVideo({
       <TouchableOpacity
         style={styles.hero}
         onPress={openFullscreen}
-        disabled={!source}
+        disabled={!source || premiumGifAsset != null || gifAsset != null}
         accessibilityRole="button"
         accessibilityLabel={
-          source
+          source && premiumGifAsset == null && gifAsset == null
             ? 'Открыть видео техники на весь экран'
-            : 'Пошаговая техника выполнения'
+            : 'Анимированная иллюстрация упражнения'
         }
       >
         {premiumGifAsset != null ? (
@@ -165,7 +165,9 @@ export default function ExerciseVideo({
           <View style={styles.placeholderBg} />
         )}
 
-        {source != null && <View style={styles.dim} />}
+        {source != null && premiumGifAsset == null && gifAsset == null && (
+          <View style={styles.dim} />
+        )}
 
         {!source && gifAsset == null && premiumGifAsset == null && posterAsset == null && !posterUri ? (
           <View style={styles.guide}>
@@ -184,7 +186,7 @@ export default function ExerciseVideo({
               ))}
             </View>
           </View>
-        ) : source != null ? (
+        ) : source != null && premiumGifAsset == null && gifAsset == null ? (
           <View style={styles.playBadge}>
             <Text style={styles.playBadgeText}>▶</Text>
           </View>
