@@ -43,7 +43,7 @@ export default function ExerciseTimer({
 
   useEffect(() => {
     if (!running) return;
-    if (!active) {
+    if (!active || disabled) {
       const left = endAt == null ? remaining : Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
       setRemaining(left);
       setRunning(false);
@@ -64,7 +64,7 @@ export default function ExerciseTimer({
     tick();
     const interval = setInterval(tick, 250);
     return () => clearInterval(interval);
-  }, [active, running, endAt]);
+  }, [active, disabled, running, endAt]);
 
   function startOrResume() {
     if (disabled || !active) return;
