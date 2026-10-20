@@ -23,6 +23,13 @@ describe('premiumMotionForExercise', () => {
     expect(premiumMotionForExercise(100139)).toBe('one-arm-kettlebell-row');
   });
 
+  it('maps the four added gym-plan exercises by exact reviewed source term', () => {
+    expect(premiumMotionForExercise(63, 'Flat Bench Leg Pull-In')).toBe('bench-leg-pull-in');
+    expect(premiumMotionForExercise(64, 'Dumbbell Bicep Curl')).toBe('bicep-curl');
+    expect(premiumMotionForExercise(65, 'Front Squat Clean Grip')).toBe('front-squat');
+    expect(premiumMotionForExercise(66, 'One Arm Kettlebell Row')).toBe('one-arm-kettlebell-row');
+  });
+
   it('rejects similar exercises and unknown IDs instead of guessing', () => {
     expect(premiumMotionForExercise(11, 'Inverted Rows')).toBeUndefined();
     expect(premiumMotionForExercise(11, 'Pull-Up To Side Plank')).toBeUndefined();

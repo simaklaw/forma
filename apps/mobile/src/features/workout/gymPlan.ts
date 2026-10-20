@@ -137,6 +137,18 @@ export const GYM_PLAN: WorkoutDay[] = [
         targetMuscles: ['biceps'],
         note: 'Нейтральный хват, контроль негатива.',
         wgerSearchTerm: 'Hammer Curls'
+      },
+      {
+        id: 66,
+        index: 6,
+        name: 'Тяга гири одной рукой',
+        workingWeight: 16,
+        workingReps: 10,
+        totalSets: 3,
+        restSeconds: 75,
+        targetMuscles: ['back', 'biceps'],
+        note: 'С опорой на скамью веди гирю локтем к тазу, без разворота корпуса.',
+        wgerSearchTerm: 'One Arm Kettlebell Row'
       }
     ]
   },
@@ -204,6 +216,18 @@ export const GYM_PLAN: WorkoutDay[] = [
         targetMuscles: ['quads', 'calves'],
         note: 'Полная амплитуда, пауза вверху. (икры — отдельный акцент внизу подхода)',
         wgerSearchTerm: 'Standing Calf Raises'
+      },
+      {
+        id: 65,
+        index: 6,
+        name: 'Фронтальные приседания',
+        workingWeight: 45,
+        workingReps: 8,
+        totalSets: 3,
+        restSeconds: 90,
+        targetMuscles: ['quads', 'glutes', 'core'],
+        note: 'Держи локти поднятыми, корпус вертикальным, колени по носкам.',
+        wgerSearchTerm: 'Front Squat Clean Grip'
       }
     ]
   },
@@ -259,6 +283,18 @@ export const GYM_PLAN: WorkoutDay[] = [
         targetMuscles: ['hamstrings', 'glutes', 'back'],
         note: 'Таз назад, лёгкий сгиб в коленях.',
         wgerSearchTerm: 'Romanian Deadlift'
+      },
+      {
+        id: 63,
+        index: 5,
+        name: 'Подтягивание коленей на скамье',
+        workingWeight: 0,
+        workingReps: 12,
+        totalSets: 3,
+        restSeconds: 45,
+        targetMuscles: ['core'],
+        note: 'Подтягивай колени к корпусу плавно, без раскачки.',
+        wgerSearchTerm: 'Flat Bench Leg Pull-In'
       }
     ]
   },
@@ -479,6 +515,18 @@ export const GYM_PLAN: WorkoutDay[] = [
         targetMuscles: ['triceps'],
         note: 'Локти прижаты к корпусу.',
         wgerSearchTerm: 'Tricep Pushdown'
+      },
+      {
+        id: 64,
+        index: 5,
+        name: 'Сгибания рук с гантелями',
+        workingWeight: 12,
+        workingReps: 10,
+        totalSets: 3,
+        restSeconds: 60,
+        targetMuscles: ['biceps'],
+        note: 'Локти у корпуса, опускай гантели подконтрольно.',
+        wgerSearchTerm: 'Dumbbell Bicep Curl'
       }
     ]
   }

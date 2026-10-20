@@ -14,6 +14,13 @@ const MOTION_BY_LIBRARY_ID: Record<string, PremiumExerciseMotion> = {
   'lib-one-arm-kettlebell-row': 'one-arm-kettlebell-row'
 };
 
+const MOTION_BY_EXACT_TERM: Record<string, PremiumExerciseMotion> = {
+  'flat bench leg pull in': 'bench-leg-pull-in',
+  'dumbbell bicep curl': 'bicep-curl',
+  'front squat clean grip': 'front-squat',
+  'one arm kettlebell row': 'one-arm-kettlebell-row'
+};
+
 function normalizeTerm(value: string | undefined): string {
   return (value ?? '')
     .normalize('NFKD')
@@ -31,6 +38,9 @@ export function premiumMotionForExercise(
   if (id === 11 && ['pull up', 'pull ups'].includes(normalizeTerm(wgerSearchTerm))) {
     return 'pull-up';
   }
+
+  const exactMotion = MOTION_BY_EXACT_TERM[normalizeTerm(wgerSearchTerm)];
+  if (exactMotion) return exactMotion;
 
   const libraryId = libIdForNumericId(id);
   return libraryId ? MOTION_BY_LIBRARY_ID[libraryId] : undefined;
