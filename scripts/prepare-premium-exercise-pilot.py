@@ -12,10 +12,10 @@ import sys
 import zipfile
 from pathlib import Path
 
-from PIL import Image, ImageSequence
+from PIL import Image
 
 SIZE = (160, 160)
-FRAME_COUNT = 5
+FRAME_COUNT = 20
 MOTIONS = (
     "pull-up",
     "bench-leg-pull-in",
@@ -35,15 +35,53 @@ def sampled_indices(frame_count: int) -> list[int]:
     return [round(i * (frame_count - 1) / (FRAME_COUNT - 1)) for i in range(FRAME_COUNT)]
 
 
+def animated_webp_duration_ms(data: bytes) -> tuple[int, int]:
+    """Read true per-frame durations from animated WebP ANMF chunks.
+
+    Pillow may expose frame count but omit duration in Image.info on some
+    runners. The ANMF chunk stores each frame duration as a 24-bit
+    little-endian millisecond value at byte offsets 12–14 of its payload.
+    """
+    if len(data) < 12 or data[:4] != b"RIFF" or data[8:12] != b"WEBP":
+        raise ValueError("Source is not a RIFF/WEBP file")
+
+    offset = 12
+    total_ms = 0
+    frame_count = 0
+    while offset + 8 <= len(data):
+        fourcc = data[offset : offset + 4]
+        chunk_size = int.from_bytes(data[offset + 4 : offset + 8], "little")
+        payload_start = offset + 8
+        payload_end = payload_start + chunk_size
+        if payload_end > len(data):
+            raise ValueError("Malformed WebP chunk exceeds archive entry")
+        if fourcc == b"ANMF":
+            if chunk_size < 16:
+                raise ValueError("Animated WebP frame chunk is truncated")
+            duration_ms = int.from_bytes(data[payload_start + 12 : payload_start + 15], "little")
+            if duration_ms <= 0:
+                raise ValueError("Animated WebP has a zero-duration frame")
+            total_ms += duration_ms
+            frame_count += 1
+        offset = payload_end + (chunk_size & 1)
+
+    if frame_count < FRAME_COUNT or total_ms <= 0:
+        raise ValueError(f"Expected an animated WebP with at least {FRAME_COUNT} timed frames")
+    return total_ms, frame_count
+
+
 def make_gif(webp_bytes: bytes, target: Path) -> None:
     source = Image.open(io.BytesIO(webp_bytes))
     count = int(getattr(source, "n_frames", 1))
+    source_duration_ms, encoded_count = animated_webp_duration_ms(webp_bytes)
+    if count != encoded_count:
+        raise ValueError(
+            f"WebP frame count mismatch: decoder={count}, ANMF chunks={encoded_count}"
+        )
     indices = sampled_indices(count)
 
-    total_ms = 0
-    for frame in ImageSequence.Iterator(source):
-        total_ms += int(frame.info.get("duration", 100) or 100)
-    duration_ms = max(100, min(240, round(total_ms / FRAME_COUNT)))
+    # GIF stores delays in 10 ms ticks. 20 sampled poses span one complete source loop.
+    duration_ms = max(20, round(source_duration_ms / FRAME_COUNT / 10) * 10)
 
     frames_rgba: list[Image.Image] = []
     for index in indices:
@@ -103,6 +141,16 @@ def make_gif(webp_bytes: bytes, target: Path) -> None:
     alpha_min, _ = check.convert("RGBA").getchannel("A").getextrema()
     if alpha_min != 0:
         raise ValueError(f"{target}: output has no transparent pixels")
+    output_duration_ms = 0
+    for i in range(check.n_frames):
+        check.seek(i)
+        output_duration_ms += int(check.info.get("duration", 0) or 0)
+    allowed_drift_ms = max(120, round(source_duration_ms * 0.08))
+    if abs(output_duration_ms - source_duration_ms) > allowed_drift_ms:
+        raise ValueError(
+            f"{target}: animation duration drifted from {source_duration_ms} ms "
+            f"to {output_duration_ms} ms"
+        )
 
 
 def main() -> None:
@@ -128,7 +176,7 @@ def main() -> None:
                 source_name = f"{prefix}images/animations/{motion}.webp"
                 target = output_dir / sex / f"{motion}.gif"
                 make_gif(archive.read(source_name), target)
-                print(f"Prepared {sex}/{motion}.gif ({target.stat().st_size} bytes, {FRAME_COUNT} frames)")
+                print(f"Prepared {sex}/{motion}.gif ({target.stat().st_size} bytes, {FRAME_COUNT} frames; source cadence preserved)")
 
     print(f"Prepared {len(VARIANTS) * len(MOTIONS)} offline pilot animations at {output_dir}")
 
