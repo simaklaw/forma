@@ -1,5 +1,5 @@
 import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import type { WorkoutSession } from '@forma/workout-domain';
 import { SetFeedbackCard } from './SetFeedbackCard';
@@ -482,17 +482,6 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           disabled={finished || blockedBySequence || sessionPaused || restRemaining !== null}
         />
 
-        {reference && (
-          <View style={styles.refPhotoWrap}>
-            <Image
-              source={{ uri: reference.imageUrl }}
-              style={styles.refPhoto}
-              resizeMode="cover"
-              accessibilityLabel={reference.name}
-            />
-          </View>
-        )}
-
         <View style={[styles.grid, { marginTop: spacing.md }]}>
           <View style={styles.gridCell}>
             <Text style={styles.gridVal}>
@@ -843,14 +832,6 @@ function createStyles(colors: ColorTokens) {
       paddingHorizontal: 8,
       borderRightWidth: 1,
       borderColor: colors.line
-    },
-    refPhotoWrap: { marginTop: spacing.md },
-    refPhoto: { width: '100%', height: 160, borderRadius: radius.control },
-    refPhotoCaption: {
-      color: colors.paperFaint,
-      fontSize: 11,
-      fontFamily: fonts.body,
-      marginTop: 4
     },
     gridVal: { color: colors.paper, fontFamily: fonts.mono, fontSize: 16 },
     gridLbl: { color: colors.paperFaint, fontFamily: fonts.body, fontSize: 11, marginTop: 2 },
