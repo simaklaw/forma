@@ -361,20 +361,40 @@ const RU = {
   tplFatlossDesc:
     'Интервальные круги с коротким отдыхом и кардио-движениями — максимум расхода.',
   tplEnduranceDesc:
-    'Многоповторные серии и короткие паузы — выносливость мышц дома.',
-
-  // Skip exercise / player
-  skipExerciseTitle: 'Пропустить упражнение?',
-  skipExerciseBody: 'Перейдём к следующему шагу сессии.',
-  skipExerciseConfirm: 'Пропустить',
+    'Многоповторная работа и короткий отдых — тонус мышц и выносливость.',
+  programsPanelActiveBadge: 'Активна',
+  programsPanelLevelLabel: 'Уровень',
+  programsPanelReplaceTitle: 'Заменить программу?',
+  programsPanelReplaceBody:
+    'Текущая программа будет сброшена. История тренировок сохранится.',
+  programsPanelReplaceConfirm: 'Заменить',
+  programTemplateLine: '{name} · {level}',
+  catalogLevelAllChip: 'Любой уровень',
+  importedModalMuscles: 'Целевые мышцы',
+  equipmentDumbbellsLabel: 'гантели',
+  equipmentBarbellLabel: 'штанга',
+  equipmentMachineLabel: 'тренажёр',
+  equipmentCableLabel: 'блок',
+  equipmentKettlebellLabel: 'гиря',
+  equipmentEzBarLabel: 'EZ-гриф',
+  equipmentPullupBarLabel: 'турник',
+  equipmentBenchLabel: 'скамья',
+  playerPrev: 'Назад',
+  playerNext: 'Далее',
+  playerPause: 'Пауза',
+  playerFinish: 'Завершить',
   playerFinishTitle: 'Завершить тренировку?',
-  playerFinishBody: 'Сессия сохранится как частично выполненная.',
+  playerFinishBody: 'Выполненный объём сохранится в истории и прогрессе.',
   playerFinishConfirm: 'Завершить',
-
-  // Catch-all remaining keys restored from main - critical exports below
-  // NOTE: This file must include EN dictionary and all exports.
-  // If incomplete, restore from main.
-};
+  skipExerciseTitle: 'Пропустить упражнение?',
+  skipExerciseBody: 'Перейдём к следующему упражнению дня.',
+  skipExerciseConfirm: 'Пропустить',
+  sessionPausedBadge: 'Сессия на паузе',
+  sheetPausedCta: 'Пауза — нажмите «Продолжить»',
+  streakTickDone: '{date} — тренировка выполнена',
+  streakTickToday: '{date} — сегодня, тренировка в процессе',
+  streakTickMissed: '{date} — тренировки не было'
+} as const;
 
 export type StringKey = keyof typeof RU;
 
@@ -384,6 +404,7 @@ const EN: Record<StringKey, string> = {
   tabNutrition: 'Nutrition',
   tabProgress: 'Progress',
   tabProfile: 'Profile',
+
   close: 'Close',
   cancel: 'Cancel',
   save: 'Save',
@@ -391,7 +412,7 @@ const EN: Record<StringKey, string> = {
   favoriteAdd: 'Add to favorites',
   favoriteRemove: 'Remove from favorites',
   favoriteOn: '★ Favorited',
-  favoriteOff: '☆ Favorite',
+  favoriteOff: '☆ Add to favorites',
   favoritesOnly: 'Show favorites only',
   favoritesChip: '★ Favorites',
   recentLabel: 'RECENT',
@@ -419,6 +440,7 @@ const EN: Record<StringKey, string> = {
   today: 'Today',
   done: 'done',
   search: 'Search',
+
   catalogSegmentPlans: 'Plans',
   catalogSegmentLibrary: 'Library',
   catalogSegmentTabata: 'Tabata',
@@ -427,28 +449,30 @@ const EN: Record<StringKey, string> = {
   catalogHintLibrary: 'Library · bodyweight / bands',
   catalogHintTabata: 'Tabata · HIIT intervals',
   catalogHintOffline: 'Offline · home · {shown} of {total}',
-  catalogReplaceBanner: 'Cancel replace',
-  catalogSearchPlaceholder: 'Find exercise or muscle group',
-  catalogSearchA11y: 'Search exercises',
+  catalogReplaceBanner: 'Undo replacement',
+  catalogSearchPlaceholder: 'Find an exercise or muscle group',
+  catalogSearchA11y: 'Exercise search',
   catalogRecentA11y: '{name}. Recent exercise',
   catalogOpenDetailsA11y: '{name}. Open details',
   catalogEquipmentAll: 'All equipment',
   catalogEquipmentAllChip: 'All equipment',
-  catalogReplaceTitle: 'Replace in plan: {day}',
-  catalogReplaceBody: 'Pick an exercise instead of «{name}» (slot {slot})',
-  catalogFavoritesEmpty: 'No favorites yet. Open an exercise and tap Favorite.',
-  catalogNothingFound: 'Nothing found. Change query or filter.',
-  panelSearchPlaceholder: 'Search library (EN / RU)',
-  panelSearchA11y: 'Search exercise library',
+  catalogReplaceTitle: 'Plan substitution: {day}',
+  catalogReplaceBody: 'Pick an exercise instead of "{name}" (slot {slot})',
+  catalogFavoritesEmpty: 'No favorites yet. Open an exercise and tap "Add to favorites".',
+  catalogNothingFound: 'Nothing found. Change the query or filter.',
+
+  panelSearchPlaceholder: 'Search the library (EN / RU)',
+  panelSearchA11y: 'Exercise library search',
   panelAnimationOf: 'Animation: {name}',
   panelSubstituting: 'Substituting…',
-  panelSubstituteFor: 'Substitute for «{name}»',
+  panelSubstituteFor: 'Substitute for "{name}"',
   panelSubstituteIntoDay: 'Add to day plan',
   panelSaving: 'Saving…',
   panelCount: '{shown} of {total} · bodyweight / bands',
-  panelReplaceHint: 'To add to plan: on Workout tap Replace on an exercise, then pick here.',
-  modalOnlyView: 'View only. Start a workout on the Workouts tab to perform. Long-press a day exercise to replace.',
-  modalReplaceNote: 'Replacement is only for this plan day (reset on Workouts).',
+  panelReplaceHint: 'To add to a plan: on the workout screen tap "Replace" on an exercise, then pick a movement here.',
+
+  modalOnlyView: 'View only. To perform the exercise, start a workout in the "Workouts" tab. Long-press a day exercise opens the substitution.',
+  modalReplaceNote: 'The substitution is saved for this plan day only (you can reset it on the Workouts screen).',
   modalWorkoutsTab: 'Workouts',
   statSets: 'Sets',
   statReps: 'Reps',
@@ -456,6 +480,7 @@ const EN: Record<StringKey, string> = {
   statLoad: 'Load',
   metaEquipment: 'Equipment: {name}',
   metaMuscles: 'Muscles: {list}',
+
   sheetExerciseShort: 'Ex. {index} · step {step}/{total}',
   sheetExerciseFull: 'Exercise {index}',
   sheetPrevExercise: 'previous',
@@ -473,14 +498,14 @@ const EN: Record<StringKey, string> = {
   sheetStatusNext: 'next',
   sheetStatusNotStarted: 'not started',
   sheetExerciseDone: 'Exercise complete',
-  sheetDoPrevFirst: 'Do previous first',
+  sheetDoPrevFirst: 'Previous exercise first',
   sheetLogSet: 'Log set {number}',
   sheetCurrentStep: 'Current session step',
   sheetSeqBlockedTitle: 'Another exercise first',
-  sheetSeqBannerBody: 'Plan now: {name} · step {step}/{total}',
+  sheetSeqBannerBody: 'Per plan now: {name} · step {step}/{total}',
   sheetGoToIt: 'Go to it',
-  sheetRirLabel: 'Weight and reps for next set',
-  sheetRirQuestion: 'Reps in reserve (RIR)?',
+  sheetRirLabel: 'Weight and reps for the next set',
+  sheetRirQuestion: 'How many reps in reserve (RIR)?',
   sheetOneRmLabel: '1RM estimate, kg',
   sheetRestHeader: 'REST · REMAINING',
   sheetRestSkipLower: 'skip',
@@ -495,26 +520,27 @@ const EN: Record<StringKey, string> = {
   gridSets: 'sets',
   gridWeight: 'working weight',
   gridRest: 'rest',
+
   workoutResume: 'Resume workout',
   workoutRestart: 'Start over',
   workoutExit: 'Exit workout',
   workoutViewWorkout: 'View workout',
-  workoutOpenCatalog: 'Open exercise catalog',
+  workoutOpenCatalog: 'Open the exercise catalog',
   workoutCatalogShort: 'Catalog',
   workoutProgressSession: 'Session progress {done} of {total} sets',
   workoutBurnedToday: ' · ~{kcal} kcal',
   workoutDayToday: '{day}, today',
-  workoutStreakActive: 'Streak {count} {days} in a row',
+  workoutStreakActive: '{count}-day streak',
   workoutStreakNone: 'No streak yet',
   workoutStreakSuffix: ' · streak',
-  workoutStreakHint: 'Streak: complete a full day',
-  workoutResetReplacements: 'Reset day replacements',
+  workoutStreakHint: 'Streak: start with a full day',
+  workoutResetReplacements: 'Reset day substitutions',
   workoutExerciseProgress: '{name}, {done} of {total}',
   workoutDoneSuffix: ' · done',
   workoutTitle: 'Workout',
   workoutNoPlan: 'No plan',
-  sexShortFemale: 'f',
-  sexShortMale: 'm',
+  sexShortFemale: 'F',
+  sexShortMale: 'M',
   modeGymLower: 'gym',
   modeHomeLower: 'home',
   workoutExerciseCount: '{count} exercises',
@@ -529,57 +555,60 @@ const EN: Record<StringKey, string> = {
   sectionExercises: 'EXERCISES',
   nowBadge: 'now',
   kgPr: 'kg PR',
+
   mealBreakfast: 'Breakfast',
   mealLunch: 'Lunch',
   mealSnack: 'Snack',
   mealDinner: 'Dinner',
   nutritionTitle: 'Nutrition',
-  nutritionFillProfile: 'Fill profile for macro targets',
+  nutritionFillProfile: 'Fill in your profile for macro targets',
   nutritionRemaining: '{kcal} kcal left',
   nutritionOver: '{kcal} kcal over',
-  nutritionGoalHint: 'Calorie and macro targets come from weight, height, age and sex.',
+  nutritionGoalHint: 'Calorie and macro targets are computed from weight, height, age and sex. Without them the ring and macros will not show made-up numbers.',
   nutritionProtein: 'Protein',
   nutritionFats: 'Fats',
   nutritionCarbs: 'Carbs',
   nutritionGlass: 'Glass {number}',
-  nutritionAddToMeal: 'Add «{name}» to {meal}',
+  nutritionAddToMeal: 'Add "{name}" to {meal}',
   nutritionAddToMealShort: 'Add to {meal}',
-  nutritionRepeatYesterday: 'Repeat yesterday {meal}',
+  nutritionRepeatYesterday: 'Repeat yesterday\u2019s {meal}',
   nutritionMeals: 'Meals',
   nutritionMyDishes: 'My dishes',
   nutritionAdd: '+ Add',
   nutritionRepeatYesterdayShort: 'Repeat yesterday',
-  nutritionNoEntries: 'No entries · tap Add',
+  nutritionNoEntries: 'No entries · tap "Add"',
   budgetLabel: 'Budget',
-  nutritionTargetsAfterProfile: 'Targets appear after profile',
+  nutritionTargetsAfterProfile: 'Targets appear after you fill in your profile',
   glassesWord: 'glasses',
   foodMacroLine: 'P{protein} F{fat} C{carbs}',
+
   foodDiary: 'Food diary',
   foodLocalBase: 'Local database',
-  foodLocalBaseAll: 'No exact matches — full local database',
+  foodLocalBaseAll: 'No exact matches — the whole local database',
   foodBarcode: 'Barcode · Open Food Facts',
   foodLocalAndOff: 'Local + Open Food Facts',
-  foodOffEmpty: 'OFF empty — local database',
+  foodOffEmpty: 'OFF is empty — local database',
   foodOffUnavailable: 'OFF unavailable — local database',
   foodCustomProduct: 'Custom product',
   foodFromBase: 'From database',
   foodSearchPlaceholder: 'Search or barcode: rice, 4601234567890…',
   foodSearchingOff: '{source} · searching Open Food Facts…',
   foodAddToMealLower: 'Add to {meal}',
-  foodSaveAsDish: 'Save as dish',
+  foodSaveAsDish: 'Save as a dish',
   foodMyDish: 'My breakfast',
   foodSaveDish: 'Save dish',
   foodPortion: 'Portion: {portion} g',
-  foodNothingFound: 'Nothing found — try Custom product',
+  foodNothingFound: 'Nothing found — try "Custom product"',
   foodKcalPer100: '{kcal} kcal/100g',
   foodName: 'Name',
-  foodKcal100Label: 'Kcal/100g',
+  foodKcal100Label: 'kcal/100g',
   foodProtein: 'Protein',
   foodFats: 'Fats',
   foodCarbs: 'Carbs, g/100g',
   foodSaveAndAdd: 'Save and add',
   foodItemsWord: 'items',
   foodDishName: 'Dish name',
+
   progressRecoveryA11y: 'Recovery {score} percent, {status}',
   progressMuscles: 'Muscles',
   progressEnergy: 'Energy',
@@ -593,17 +622,18 @@ const EN: Record<StringKey, string> = {
   progressImportSection: 'FROM WATCH / GPS',
   progressAchievements: 'ACHIEVEMENTS',
   progressBurnWeek: 'BURN · 7 DAYS',
+
   profileExport: 'Export',
   profileExportDone: 'File saved: {path}',
   profileExportError: 'Export error',
   profileImport: 'Import',
   profileImportDone: 'Data restored from file',
   profileImportError: 'Import error',
-  profileImportBadFile: 'File damaged or not JSON',
+  profileImportBadFile: 'The file is damaged or not in JSON format',
   profileTargetLine: 'Target {target} kcal · BMR {bmr}',
-  profileFillForTargets: 'Fill profile for macro targets',
-  profileFillBody: 'Fill weight, height, age and sex for calorie targets.',
-  profileMacrosLine: 'Protein {protein} g · fat {fat} g · carbs {carbs} g (ISSN 2.0 / 1.0 g per kg).',
+  profileFillForTargets: 'Fill in your profile to compute macro targets',
+  profileFillBody: 'Fill in weight, height, age and sex — macro targets will appear.',
+  profileMacrosLine: 'Protein {protein} g · fats {fat} g · carbs {carbs} g (ISSN 2.0 / 1.0 g per kg).',
   profileThemeDark: 'Dark',
   profileThemeLight: 'Light',
   profileThemeSystem: 'System',
@@ -617,19 +647,20 @@ const EN: Record<StringKey, string> = {
   profileMeasureDelete: 'Delete measurement',
   profileMeasureCm: 'cm',
   profileMeasureA11y: '{name}, cm',
+
   profileHeaderEyebrow: 'FITPULSE · Account',
-  profileGateTitle: 'Fill biometrics',
-  profileGateBody: 'Sex, weight, height and age are required for BMR/TDEE and macro targets.',
+  profileGateTitle: 'Fill in your biometrics',
+  profileGateBody: 'Sex, weight, height and age are needed for BMR/TDEE and macro targets. Without them no default weight is pre-filled — the nutrition ring and coach tips wait for your profile.',
   profileStatsLine: '{sex} · {age} y · {height} cm · {weight} kg',
   sectionTheme: 'Appearance',
   sectionThemeCount: 'theme',
   themeSchemeName: 'Color scheme',
-  themeSchemeDesc: 'Dark chronograph, light porcelain — or system',
+  themeSchemeDesc: 'Dark chronograph, light porcelain — or follow the device',
   sectionVoice: 'Workout',
   sectionVoiceCount: 'voice',
   voiceCuesName: 'Voice cues',
-  voiceCuesDesc: 'Exercise name, set number and rest countdown spoken aloud',
-  sectionParams: 'Params and macros',
+  voiceCuesDesc: 'Exercise name, set number and rest countdown spoken aloud — handy when you are not looking at the screen',
+  sectionParams: 'Body & macros',
   sectionParamsCount: 'Mifflin-St Jeor',
   labelSex: 'Sex',
   labelAge: 'Age',
@@ -648,28 +679,31 @@ const EN: Record<StringKey, string> = {
   sectionSyncCount: 'Account',
   sectionData: 'Data',
   dataExportName: 'Export data',
-  dataExportDesc: 'Download backup (JSON)',
+  dataExportDesc: 'Download a backup (JSON)',
   dataImportName: 'Import data',
-  dataImportDesc: 'Restore from backup file',
+  dataImportDesc: 'Restore from a backup file',
   languageTitle: 'Language',
   languageRu: 'Русский',
   languageEn: 'English',
+
   onboardingTitle: 'Profile',
   onboardingSub:
-    'Sex is required for training plans and Mifflin–St Jeor calories. Also need weight, height and age.',
-  onboardingSubmit: 'Save and enter',
+    'Sex is required — it determines the workout plans (male or female) and the Mifflin–St Jeor calorie estimate. Weight, height and age are also required. Without this data the app will not unlock workouts. No default weight is pre-filled.',
+  onboardingSubmit: 'Save and continue',
   formPlaceholderWeight: 'e.g. 78',
   formPlaceholderHeight: 'e.g. 178',
   formPlaceholderAge: 'e.g. 28',
   formAgeLabel: 'Age (13–120)',
   formAgeA11y: 'Age from 13 to 120',
-  formFocusZone: 'Focus zone (optional)',
-  formFocusHint: 'Mark what to emphasize — those exercises will be highlighted',
+  formFocusZone: 'Focus areas (optional)',
+  formFocusHint:
+    'Mark your priorities — those muscles get extra attention in your workouts',
+
   myWorkoutTitle: 'My workout',
   ticketGoal: ' · goal: {goal}',
   programSectionTitle: 'PROGRAM',
   programChooseLength:
-    'Multi-week program: rep progression, deload week and autoregulation from performance.',
+    'A multi-week program: rep progression, a deload week and autoregulation by actual completion.',
   programWeeks4: '4 weeks',
   programWeeks6: '6 weeks',
   programWeeks8: '8 weeks',
@@ -680,88 +714,162 @@ const EN: Record<StringKey, string> = {
   programProgressBadge: '+{reps} reps',
   programDeloadBadge: 'DELOAD',
   programSkipDay: 'Skip day',
-  programSkipDayTitle: 'Skip day?',
-  programSkipDayBody: 'Plan shifts: today we offer the next program day.',
+  programSkipDayTitle: 'Skip this day?',
+  programSkipDayBody: 'The plan shifts: today we suggest the next program day.',
   programSkipDayConfirm: 'Skip',
-  programUnskipDay: 'Restore day',
+  programUnskipDay: 'Undo skip',
   programDoneBadge: 'Program complete 🎉',
-  programDoneStats: 'Days done: {done} of {total}',
+  programDoneStats: 'Days completed: {done} of {total}',
   programNewCta: 'New program',
   programResetCta: 'Reset program',
   programResetTitle: 'Reset program?',
-  programResetBody: 'Weeks and skips will clear. Workout history stays.',
+  programResetBody: 'Weeks and skips will be cleared. Workout history stays.',
   programResetConfirm: 'Reset',
+
   catalogSegmentPrograms: 'Programs',
-  catalogHintPrograms: 'Ready programs · strength, fat loss, endurance',
+  catalogHintPrograms: 'Ready-made programs · strength, fat loss, endurance',
   goalStrength: 'Strength',
   goalFatloss: 'Fat loss',
   goalEndurance: 'Endurance',
-  tplStrengthDesc: 'Base sets and gradual rep progression — strength at home.',
-  tplFatlossDesc: 'Interval circuits with short rest — max burn.',
-  tplEnduranceDesc: 'High-rep series and short pauses — muscular endurance at home.',
-  skipExerciseTitle: 'Skip exercise?',
-  skipExerciseBody: 'We move to the next session step.',
-  skipExerciseConfirm: 'Skip',
+  tplStrengthDesc:
+    'Base sets with gradual rep progression — strength without iron, at home.',
+  tplFatlossDesc: 'Interval circuits with short rests and cardio moves — maximum burn.',
+  tplEnduranceDesc: 'High-rep work and short rests — muscle tone and endurance.',
+  programsPanelActiveBadge: 'Active',
+  programsPanelLevelLabel: 'Level',
+  programsPanelReplaceTitle: 'Replace program?',
+  programsPanelReplaceBody: 'The current program will be reset. Workout history stays.',
+  programsPanelReplaceConfirm: 'Replace',
+  programTemplateLine: '{name} · {level}',
+  catalogLevelAllChip: 'Any level',
+  importedModalMuscles: 'Target muscles',
+  equipmentDumbbellsLabel: 'dumbbells',
+  equipmentBarbellLabel: 'barbell',
+  equipmentMachineLabel: 'machine',
+  equipmentCableLabel: 'cable',
+  equipmentKettlebellLabel: 'kettlebell',
+  equipmentEzBarLabel: 'EZ bar',
+  equipmentPullupBarLabel: 'pull-up bar',
+  equipmentBenchLabel: 'bench',
+  playerPrev: 'Back',
+  playerNext: 'Next',
+  playerPause: 'Pause',
+  playerFinish: 'Finish',
   playerFinishTitle: 'Finish workout?',
-  playerFinishBody: 'Session will be saved as partially complete.',
+  playerFinishBody: 'Completed volume is saved to history and progress.',
   playerFinishConfirm: 'Finish',
+  skipExerciseTitle: 'Skip this exercise?',
+  skipExerciseBody: 'We will move to the next exercise of the day.',
+  skipExerciseConfirm: 'Skip',
+  sessionPausedBadge: 'Session paused',
+  sheetPausedCta: 'Paused — tap Resume',
+  streakTickDone: '{date} — workout done',
+  streakTickToday: '{date} — today, workout in progress',
+  streakTickMissed: '{date} — no workout'
 };
 
 export const STRINGS: Record<Language, Record<StringKey, string>> = { ru: RU, en: EN };
 
 export type Translate = (key: StringKey, vars?: Record<string, string | number>) => string;
 
-export function useT(): Translate {
-  const lang = useLanguageStore((s) => s.lang);
-  return useMemo(() => {
-    const dict = STRINGS[lang];
-    return (key, vars) => {
-      let s = dict[key] ?? STRINGS.ru[key] ?? String(key);
-      if (vars) {
-        for (const [k, v] of Object.entries(vars)) {
-          s = s.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
-        }
-      }
-      return s;
-    };
-  }, [lang]);
+function interpolate(template: string, vars?: Record<string, string | number>): string {
+  if (!vars) return template;
+  return template.replace(/\{([a-zA-Z]+)\}/g, (all, name: string) =>
+    name in vars ? String(vars[name]) : all
+  );
 }
 
+export function tFor(lang: Language): Translate {
+  return (key, vars) => interpolate(STRINGS[lang][key], vars);
+}
+
+export function useT(): Translate {
+  const lang = useLanguageStore((s) => s.lang);
+  return useMemo(() => tFor(lang), [lang]);
+}
+
+const MUSCLE_LABELS_EN: Record<MuscleKey, string> = {
+  chest: 'chest',
+  shoulders: 'shoulders',
+  biceps: 'biceps',
+  triceps: 'triceps',
+  core: 'core',
+  quads: 'quads',
+  hamstrings: 'hamstrings',
+  glutes: 'glutes',
+  lowerback: 'lower back',
+  back: 'back',
+  calves: 'calves'
+};
+
 export function muscleLabel(key: MuscleKey, lang: Language): string {
-  return MUSCLE_LABELS[lang]?.[key] ?? key;
+  return lang === 'en' ? MUSCLE_LABELS_EN[key] : MUSCLE_LABELS[key];
 }
 
 export type EquipmentKey =
-  | 'body weight'
-  | 'dumbbell'
+  | 'bodyweight'
+  | 'none'
+  | 'bands'
+  | 'dumbbells'
   | 'barbell'
-  | 'cable'
   | 'machine'
-  | 'band'
+  | 'cable'
   | 'kettlebell'
-  | 'other';
+  | 'ez-bar'
+  | 'pullup-bar'
+  | 'bench';
+
+const EQUIPMENT_LABELS_EN: Record<EquipmentKey, string> = {
+  bodyweight: 'bodyweight',
+  none: 'bodyweight',
+  bands: 'bands',
+  dumbbells: 'dumbbells',
+  barbell: 'barbell',
+  machine: 'machine',
+  cable: 'cable',
+  kettlebell: 'kettlebell',
+  'ez-bar': 'EZ bar',
+  'pullup-bar': 'pull-up bar',
+  bench: 'bench'
+};
+
+const EQUIPMENT_LABELS_RU: Record<EquipmentKey, string> = {
+  bodyweight: RU.bodyweightLabel,
+  none: RU.bodyweightLabel,
+  bands: RU.bandsLabel,
+  dumbbells: RU.equipmentDumbbellsLabel,
+  barbell: RU.equipmentBarbellLabel,
+  machine: RU.equipmentMachineLabel,
+  cable: RU.equipmentCableLabel,
+  kettlebell: RU.equipmentKettlebellLabel,
+  'ez-bar': RU.equipmentEzBarLabel,
+  'pullup-bar': RU.equipmentPullupBarLabel,
+  bench: RU.equipmentBenchLabel
+};
 
 export function equipmentLabel(key: EquipmentKey, lang: Language): string {
-  return key;
+  return lang === 'en' ? EQUIPMENT_LABELS_EN[key] : EQUIPMENT_LABELS_RU[key];
 }
 
 export type ExerciseCategory = 'chest' | 'back' | 'legs' | 'abs' | 'arms' | 'glutes';
 
+const CATEGORY_LABELS: Record<Language, Record<ExerciseCategory, string>> = {
+  ru: { chest: 'Грудь', back: 'Спина', legs: 'Ноги', abs: 'Кор', arms: 'Руки', glutes: 'Ягодицы' },
+  en: { chest: 'Chest', back: 'Back', legs: 'Legs', abs: 'Core', arms: 'Arms', glutes: 'Glutes' }
+};
+
 export function categoryLabel(cat: ExerciseCategory, lang: Language): string {
-  const map = {
-    ru: { chest: 'Грудь', back: 'Спина', legs: 'Ноги', abs: 'Кор', arms: 'Руки', glutes: 'Ягодицы' },
-    en: { chest: 'Chest', back: 'Back', legs: 'Legs', abs: 'Core', arms: 'Arms', glutes: 'Glutes' }
-  } as const;
-  return map[lang][cat];
+  return CATEGORY_LABELS[lang][cat];
 }
+
+const LEVEL_LABELS: Record<Language, Record<string, string>> = {
+  ru: { beginner: 'начальный', intermediate: 'средний', expert: 'продвинутый' },
+  en: { beginner: 'beginner', intermediate: 'intermediate', expert: 'advanced' }
+};
 
 export function levelLabel(level: string | null, lang: Language): string {
   if (!level) return '';
-  const map = {
-    ru: { beginner: 'начальный', intermediate: 'средний', expert: 'продвинутый' },
-    en: { beginner: 'beginner', intermediate: 'intermediate', expert: 'advanced' }
-  } as const;
-  return (map[lang] as Record<string, string>)[level] ?? level;
+  return LEVEL_LABELS[lang][level] ?? level;
 }
 
 const PROGRAM_TEMPLATE_TITLES: Record<ProgramTemplateId, Record<Language, string>> = {
