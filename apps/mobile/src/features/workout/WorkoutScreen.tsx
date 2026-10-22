@@ -19,6 +19,7 @@ import { useSessionFeedbackStore } from '@/state/useSessionFeedbackStore';
 import { useTrainingModeStore } from '@/state/useTrainingModeStore';
 import { useProgramStore } from '@/state/useProgramStore';
 import { lastNDays, toDateKey } from '@/engines/WorkoutStats';
+import { RestTimerEngine } from '@/engines/RestTimerEngine';
 import type { WorkoutSession } from '@forma/workout-domain';
 import { ActiveSessionController, dayIdFromTemplate } from './session/ActiveSessionController';
 import { applySessionProjection } from './data/applySessionProjection';
@@ -230,6 +231,7 @@ export default function WorkoutScreen() {
     sheetRef.current?.expand();
   }
   function selectDay(id: string) {
+    RestTimerEngine.hapticTabSwitch();
     setUserPickedDay(true);
     setSelectedDayId(id);
     setSelectedExerciseId(null);
@@ -359,6 +361,7 @@ export default function WorkoutScreen() {
                   disabled={sessionActionBusy}
                   onPress={() => {
                     if (sessionActionBusy || !acquireSessionAction()) return;
+                    RestTimerEngine.hapticTabSwitch();
                     void ActiveSessionController.ensureDaySession(activeDay.id, effectiveExercises)
                       .then((session) => {
                         if (!session) return;
@@ -433,7 +436,10 @@ export default function WorkoutScreen() {
               ]}
               accessibilityRole="button"
               accessibilityLabel={t('workoutViewWorkout')}
-              onPress={() => previewSheetRef.current?.expand()}
+              onPress={() => {
+                RestTimerEngine.hapticTabSwitch();
+                previewSheetRef.current?.expand();
+              }}
             >
               <Text style={[styles.startPillText, { color: colors.onAccent }]}>▶  {t('workoutStart')}</Text>
             </Pressable>
@@ -618,7 +624,10 @@ export default function WorkoutScreen() {
                 },
                 pressed && { backgroundColor: colors.surfacePressed }
               ]}
-              onPress={() => startProgram(selectedProgramLength)}
+              onPress={() => {
+                RestTimerEngine.hapticTabSwitch();
+                startProgram(selectedProgramLength);
+              }}
               accessibilityRole="button"
               accessibilityLabel={t('programStartCta')}
             >
@@ -776,7 +785,10 @@ export default function WorkoutScreen() {
                 isCurrent && { borderColor: colors.lime },
                 matchesFocus && !isCurrent && { borderColor: colors.cyan }
               ]}
-              onPress={() => openExercise(ex.id)}
+              onPress={() => {
+                RestTimerEngine.hapticTabSwitch();
+                openExercise(ex.id);
+              }}
               onLongPress={() => {
                 setReplaceTarget({
                   mode: trainingMode,
@@ -859,6 +871,7 @@ export default function WorkoutScreen() {
         onClose={() => previewSheetRef.current?.close()}
         onStart={() => {
           if (sessionActionBusy || !acquireSessionAction()) return;
+          RestTimerEngine.hapticTabSwitch();
           previewSheetRef.current?.close();
           void ActiveSessionController.ensureDaySession(activeDay.id, effectiveExercises)
             .then((session) => {
