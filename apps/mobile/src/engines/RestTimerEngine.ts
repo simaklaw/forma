@@ -130,6 +130,23 @@ export class RestTimerEngine {
     }
   }
 
+  /**
+   * Add wall-clock time to an active rest (Fud AI pattern: +15 s).
+   * No-op if the timer is not running. Does not restart a finished rest.
+   */
+  static extend(seconds: number) {
+    if (!this.onTick || !this.onComplete || seconds <= 0) return;
+    const elapsedMs = Date.now() - this.startedAt;
+    if (elapsedMs >= this.durationMs) return;
+    this.durationMs += seconds * 1000;
+    this.lastEmitted = -1;
+    this.tick();
+  }
+
+  static isRunning(): boolean {
+    return this.intervalId != null && this.onTick != null;
+  }
+
   static stopTimer() {
     if (this.intervalId) {
       clearInterval(this.intervalId);
