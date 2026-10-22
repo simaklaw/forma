@@ -221,10 +221,15 @@ export function applyCommand(
         next = { ...next, currentStepIndex: stepIndex + 1 };
       }
 
+      const restSeconds =
+        command.restSecondsOverride !== undefined
+          ? command.restSecondsOverride
+          : step.snapshot.restSeconds;
       const stillWorkOnStep = completedSets.length < step.snapshot.targetSets;
       const shouldRest =
         command.autoStartRest !== false &&
-        step.snapshot.restSeconds > 0 &&
+        restSeconds != null &&
+        restSeconds > 0 &&
         (stillWorkOnStep || moreSteps) &&
         !allRequiredDone({ ...next, steps: next.steps });
 
@@ -236,7 +241,7 @@ export function applyCommand(
             'complete_set with rest requires CommandContext.eventId2 (UUIDv7)'
           );
         }
-        const endsAtMs = ctx.nowMs + step.snapshot.restSeconds * 1000;
+        const endsAtMs = ctx.nowMs + restSeconds! * 1000;
         const restEvent: SessionEvent = {
           eventId: ctx.eventId2,
           sessionId: session.sessionId,
@@ -248,7 +253,7 @@ export function applyCommand(
           payload: {
             stepIndex,
             endsAtMs,
-            durationSeconds: step.snapshot.restSeconds
+            durationSeconds: restSeconds!
           }
         };
         events.push(restEvent);

@@ -16,6 +16,11 @@ import { useThemeStore } from '@/state/useThemeStore';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT, measurementLabel } from '@/i18n/strings';
 import { useVoiceCuesStore } from '@/state/useVoiceCuesStore';
+import {
+  REST_PRESET_OPTIONS,
+  useRestTimerStore,
+  type RestPresetSeconds
+} from '@/state/useRestTimerStore';
 import { Goal, Sex } from '@/engines/MetabolicEngine';
 import ProtocolBanner from '@/components/ProtocolBanner';
 import HealthConnectCard from '@/features/health/HealthConnectCard';
@@ -35,6 +40,8 @@ export default function ProfileScreen() {
   const setThemePreference = useThemeStore((s) => s.setPreference);
   const voiceCuesEnabled = useVoiceCuesStore((s) => s.enabled);
   const setVoiceCuesEnabled = useVoiceCuesStore((s) => s.setEnabled);
+  const restOverride = useRestTimerStore((s) => s.overrideSeconds);
+  const setRestOverride = useRestTimerStore((s) => s.setOverrideSeconds);
 
   const profile = useFitPulseStore((s) => s.profile);
   const updateProfile = useFitPulseStore((s) => s.updateProfile);
@@ -283,6 +290,46 @@ export default function ProfileScreen() {
                     ]}
                   >
                     {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        <View style={[styles.themeCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <Text style={[styles.settingName, { color: colors.paper }]}>{t('restPresetName')}</Text>
+          <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>{t('restPresetDesc')}</Text>
+          <View style={styles.segmentRow}>
+            {REST_PRESET_OPTIONS.map((opt: RestPresetSeconds) => {
+              const on = restOverride === opt;
+              const label =
+                opt === null
+                  ? t('restPresetPlan')
+                  : opt === 0
+                    ? t('restPresetOff')
+                    : `${opt} ${t('secShort')}`;
+              return (
+                <TouchableOpacity
+                  key={String(opt)}
+                  style={[
+                    styles.segmentBtn,
+                    { borderColor: colors.lineStrong, backgroundColor: colors.ink },
+                    on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                  ]}
+                  onPress={() => setRestOverride(opt)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: on }}
+                  accessibilityLabel={label}
+                >
+                  <Text
+                    style={[
+                      styles.segmentText,
+                      { color: colors.paperDim },
+                      on && { color: colors.lime }
+                    ]}
+                  >
+                    {label}
                   </Text>
                 </TouchableOpacity>
               );

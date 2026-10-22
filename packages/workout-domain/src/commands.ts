@@ -26,6 +26,11 @@ export type WorkoutCommand =
       rir?: number;
       /** If true, auto-start rest from step.restSeconds when more sets remain. */
       autoStartRest?: boolean;
+      /**
+       * Rest duration override (Fud AI presets): number = fixed seconds,
+       * null = rest off, undefined = use step.restSeconds from the plan.
+       */
+      restSecondsOverride?: number | null;
     }
   | { type: 'skip_rest' }
   | { type: 'skip_step'; reason: SkipReason }

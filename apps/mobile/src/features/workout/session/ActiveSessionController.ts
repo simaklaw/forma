@@ -326,6 +326,8 @@ class ActiveSessionControllerImpl {
     weightKg: number;
     reps: number;
     rir?: number;
+    /** Rest preset override: number = fixed seconds, null = off, undefined = plan. */
+    restSecondsOverride?: number | null;
   }): Promise<WorkoutSession | null> {
     if (!Number.isFinite(input.weightKg) || input.weightKg <= 0) {
       return null;
@@ -357,7 +359,8 @@ class ActiveSessionControllerImpl {
       weightKg: input.weightKg,
       reps: input.reps,
       rir: input.rir,
-      autoStartRest: true
+      autoStartRest: true,
+      restSecondsOverride: input.restSecondsOverride
     });
 
     this.emit();

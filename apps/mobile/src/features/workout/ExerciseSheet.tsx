@@ -12,6 +12,7 @@ import { estimateOneRepMax, rpeFromRir } from '@/engines/MetabolicEngine';
 import { RestTimerEngine } from '@/engines/RestTimerEngine';
 import { VoiceCuesEngine } from '@/engines/VoiceCuesEngine';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
+import { resolveRestSeconds, useRestTimerStore } from '@/state/useRestTimerStore';
 import { toDateKey, roundToStep } from '@/engines/WorkoutStats';
 import { formatRestClock, techniqueCuesFromNote } from '@/lib/techniqueCues';
 import { EXERCISE_GIF_MANIFEST } from './exerciseGifManifest.generated';
@@ -83,6 +84,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const setLogs = useFitPulseStore((s) => s.setLogs);
     const profileWeight = useFitPulseStore((s) => s.profile.weight);
     const reference = useExerciseReference(exercise?.wgerSearchTerm ?? null);
+    const restOverride = useRestTimerStore((s) => s.overrideSeconds);
 
     const [completedSets, setCompletedSets] = useState(0);
     const [weight, setWeight] = useState(() => exercise?.workingWeight ?? 0);
@@ -126,9 +128,24 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       if (!exercise) return;
       VoiceCuesEngine.announceExercise(exercise.name);
       setCompletedSets(completedSetsToday(exercise.id));
+      // Autofill: последний залогированный подход этого упражнения важнее расчётного seed.
+      // setLogs сознательно НЕ в deps — иначе эффект перезапустится и убьёт активный отдых.
+      const logsForExercise = setLogs.filter((e) => e.exerciseId === exercise.id);
+      const lastLog = logsForExercise[logsForExercise.length - 1];
+      const lastWeight =
+        typeof lastLog?.weight === 'number' && lastLog.weight > 0 ? lastLog.weight : 0;
+      const lastReps = typeof lastLog?.reps === 'number' && lastLog.reps > 0 ? lastLog.reps : 0;
       const seed = resolveWorkingLoadKg(exercise, bodyKg);
-      setWeight(seed > 0 ? seed : exercise.workingWeight > 0 ? exercise.workingWeight : bodyKg);
-      setReps(exercise.workingReps);
+      setWeight(
+        lastWeight > 0
+          ? lastWeight
+          : seed > 0
+            ? seed
+            : exercise.workingWeight > 0
+              ? exercise.workingWeight
+              : bodyKg
+      );
+      setReps(lastReps > 0 ? lastReps : exercise.workingReps);
       setRestRemaining(null);
       RestTimerEngine.stopTimer();
 
@@ -177,7 +194,8 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const todayKey = toDateKey(new Date());
     const loggedToday = setLogs.filter((e) => e.exerciseId === exercise.id && e.dateKey === todayKey);
 
-    const restTotal = Math.max(1, exercise.restSeconds);
+    const resolvedRestSeconds = resolveRestSeconds(exercise.restSeconds, restOverride);
+    const restTotal = Math.max(1, resolvedRestSeconds ?? exercise.restSeconds);
     const restPct =
       restRemaining != null ? Math.min(100, Math.round((restRemaining / restTotal) * 100)) : 0;
 
@@ -191,7 +209,8 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           exerciseId: exercise.id,
           weightKg: weight,
           reps,
-          rir
+          rir,
+          restSecondsOverride: resolvedRestSeconds
         }).then(async (session) => {
           if (!session) {
             setSessionSnap(await ActiveSessionController.load());
@@ -243,18 +262,25 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
       RestTimerEngine.hapticSetComplete();
       VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
-      RestTimerEngine.startTimer(
-        exercise.restSeconds,
-        (remaining) => {
-          setRestRemaining(remaining);
-          VoiceCuesEngine.announceRestCountdown(remaining);
-        },
-        () => {
-          setRestRemaining(null);
-          VoiceCuesEngine.announceRestOver();
-        },
-        beepSource
-      );
+      if (resolvedRestSeconds != null) {
+        RestTimerEngine.startTimer(
+          resolvedRestSeconds,
+          (remaining) => {
+            setRestRemaining(remaining);
+            VoiceCuesEngine.announceRestCountdown(remaining);
+          },
+          () => {
+            setRestRemaining(null);
+            VoiceCuesEngine.announceRestOver();
+          },
+          beepSource
+        );
+      }
+    }
+
+    // +15 с: продлевает только UI-таймер; доменный restEndsAtMs не меняется (осознанный скоуп).
+    function extendRest() {
+      RestTimerEngine.extend(15);
     }
 
     function skipRest() {
@@ -436,7 +462,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
             <Text style={styles.gridLbl}>{t('gridWeight')}</Text>
           </View>
           <View style={[styles.gridCell, { borderRightWidth: 0 }]}>
-            <Text style={styles.gridVal}>{exercise.restSeconds}{t('secShort')}</Text>
+            <Text style={styles.gridVal}>{resolvedRestSeconds != null ? `${resolvedRestSeconds}${t('secShort')}` : t('restOffShort')}</Text>
             <Text style={styles.gridLbl}>{t('gridRest')}</Text>
           </View>
         </View>
@@ -563,14 +589,24 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
             <View style={styles.restBarTrack}>
               <View style={[styles.restBarFill, { width: `${restPct}%` }]} />
             </View>
-            <TouchableOpacity
-              onPress={skipRest}
-              accessibilityRole="button"
-              accessibilityLabel={t('sheetSkipRest')}
-              hitSlop={{ top: 8, bottom: 8, left: 12, right: 12 }}
-            >
-              <Text style={styles.restSkip}>{t('sheetRestSkipLower')}</Text>
-            </TouchableOpacity>
+            <View style={styles.restActions}>
+              <TouchableOpacity
+                onPress={extendRest}
+                accessibilityRole="button"
+                accessibilityLabel={t('sheetRestExtendA11y')}
+                hitSlop={{ top: 8, bottom: 8, left: 12, right: 12 }}
+              >
+                <Text style={styles.restExtend}>{t('sheetRestExtend')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={skipRest}
+                accessibilityRole="button"
+                accessibilityLabel={t('sheetSkipRest')}
+                hitSlop={{ top: 8, bottom: 8, left: 12, right: 12 }}
+              >
+                <Text style={styles.restSkip}>{t('sheetRestSkipLower')}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
@@ -889,6 +925,13 @@ function createStyles(colors: ColorTokens) {
     restBarFill: { height: 6, borderRadius: 3, backgroundColor: colors.lime },
     restSkip: {
       color: colors.paperDim,
+      fontSize: 13,
+      fontFamily: fonts.bodySemi,
+      textDecorationLine: 'underline'
+    },
+    restActions: { flexDirection: 'row', alignItems: 'center', gap: 18 },
+    restExtend: {
+      color: colors.lime,
       fontSize: 13,
       fontFamily: fonts.bodySemi,
       textDecorationLine: 'underline'
