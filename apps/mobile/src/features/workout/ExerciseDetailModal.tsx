@@ -28,6 +28,7 @@ import {
 import { EXERCISE_VIDEOS } from './exerciseMedia';
 import { realGifForMediaKey } from './exerciseRealMedia';
 import { useGenderedExerciseVideo } from './useGenderedExerciseVideo';
+import { genderedPosterUrlForMediaKey } from './exerciseGenderedMedia';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { techniqueCuesFromNote } from '@/lib/techniqueCues';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
@@ -175,7 +176,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
           <ExerciseVideo
             source={videoSource}
             gifAsset={gifAsset}
-            posterUri={reference?.imageUrl}
+            posterUri={genderedPosterUrlForMediaKey(item.mediaKey, profileSex) ?? reference?.imageUrl}
             cues={cues}
           />
 
