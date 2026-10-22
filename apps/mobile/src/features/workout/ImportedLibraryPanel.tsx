@@ -29,8 +29,10 @@ import {
   subscribeReplaceTarget,
   type ReplaceTarget
 } from './replaceTarget';
-import { importedMuscleKeys, importedToExerciseDef } from './importedExerciseBridge';
+import { importedMuscleKeys, importedToExerciseDef, numericIdForImportedLibId } from './importedExerciseBridge';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
+import { useFitPulseStore } from '@/state/useFitPulseStore';
+import { premiumExerciseGifFor } from './exercisePremiumMedia';
 import { useT, categoryLabel, equipmentLabel, levelLabel, muscleLabel } from '@/i18n/strings';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -57,6 +59,7 @@ export default function ImportedLibraryPanel() {
   const colors = useThemeColors();
   const t = useT();
   const lang = useLanguageStore((s) => s.lang);
+  const profileSex = useFitPulseStore((s) => s.profile.sex);
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<ImportedExercise['category'] | null>(null);
@@ -265,6 +268,10 @@ export default function ImportedLibraryPanel() {
           </Text>
         }
         renderItem={({ item }) => {
+          const premiumThumb = premiumExerciseGifFor(
+            { id: numericIdForImportedLibId(item.id) ?? -1, wgerSearchTerm: item.nameEn },
+            profileSex
+          );
           const thumbKey = item.imageKeys[0];
           const src = thumbKey ? IMPORTED_EXERCISE_IMAGES[thumbKey] : undefined;
           return (
@@ -274,7 +281,9 @@ export default function ImportedLibraryPanel() {
               accessibilityRole="button"
               accessibilityLabel={displayName(item)}
             >
-              {src ? (
+              {premiumThumb != null ? (
+                <Image source={premiumThumb} style={styles.thumb} resizeMode="contain" accessibilityLabel={displayName(item)} />
+              ) : src ? (
                 <Image source={src} style={styles.thumb} resizeMode="cover" />
               ) : (
                 <View style={[styles.thumb, { backgroundColor: colors.ink }]} />
@@ -314,7 +323,18 @@ export default function ImportedLibraryPanel() {
               </TouchableOpacity>
             </View>
             <ScrollView contentContainerStyle={styles.modalBody}>
-              {videoSource ? (
+              {premiumExerciseGifFor(
+                { id: numericIdForImportedLibId(selected.id) ?? -1, wgerSearchTerm: selected.nameEn },
+                profileSex
+              ) != null ? (
+                <ExerciseVideo
+                  premiumGifAsset={premiumExerciseGifFor(
+                    { id: numericIdForImportedLibId(selected.id) ?? -1, wgerSearchTerm: selected.nameEn },
+                    profileSex
+                  )}
+                  label={displayName(selected)}
+                />
+              ) : videoSource ? (
                 <ExerciseVideo source={videoSource} label={displayName(selected)} />
               ) : gifUri ? (
                 <Image
@@ -324,7 +344,10 @@ export default function ImportedLibraryPanel() {
                   accessibilityLabel={t('panelAnimationOf', { name: displayName(selected) })}
                 />
               ) : null}
-              {!videoSource && !gifUri
+              {!premiumExerciseGifFor(
+                { id: numericIdForImportedLibId(selected.id) ?? -1, wgerSearchTerm: selected.nameEn },
+                profileSex
+              ) && !videoSource && !gifUri
                 ? selected.imageKeys.map((imageKey) => {
                     const source = IMPORTED_EXERCISE_IMAGES[imageKey];
                     return source ? (
