@@ -611,15 +611,19 @@ export default function WorkoutScreen() {
             <Pressable
               style={({ pressed }) => [
                 styles.programStartBtn,
-                { backgroundColor: colors.lime },
-                pressed && { backgroundColor: colors.accentPressed }
+                {
+                  backgroundColor: 'transparent',
+                  borderWidth: 1,
+                  borderColor: colors.lime
+                },
+                pressed && { backgroundColor: colors.surfacePressed }
               ]}
               onPress={() => startProgram(selectedProgramLength)}
               accessibilityRole="button"
               accessibilityLabel={t('programStartCta')}
             >
-              <Text style={[styles.programStartText, { color: colors.onAccent }]}>
-                ▶  {t('programStartCta')}
+              <Text style={[styles.programStartText, { color: colors.lime }]}>
+                {t('programStartCta')}
               </Text>
             </Pressable>
           </View>
@@ -729,7 +733,7 @@ export default function WorkoutScreen() {
           <Text style={[styles.streakDetail, { color: colors.paperDim }]}>{streakDetail}</Text>
         )}
 
-        <WorkoutCoachCard dayName={activeDay.name} anyDoneToday={anyDoneToday} exerciseNames={exerciseMetKeys} exerciseMeta={exerciseBurnMeta} />
+        <WorkoutCoachCard dayName={activeDay.name} anyDoneToday={anyDoneToday} />
 
         <View style={styles.sectionHead}>
           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionExercises')}</Text>
