@@ -23,6 +23,7 @@ import { getSessionService } from './data';
 import { formatLoadLabel, isBodyweightExercise, resolveWorkingLoadKg } from './catalog';
 import { EXERCISE_VIDEOS } from './exerciseMedia';
 import { realGifForMediaKey } from './exerciseRealMedia';
+import { useGenderedExerciseVideo } from './useGenderedExerciseVideo';
 import { importedByNumericId, IMPORTED_NUMERIC_ID_BASE } from './importedExerciseBridge';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT } from '@/i18n/strings';
@@ -82,7 +83,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const completedSetsToday = useFitPulseStore((s) => s.completedSetsToday);
     const setLogs = useFitPulseStore((s) => s.setLogs);
     const profileWeight = useFitPulseStore((s) => s.profile.weight);
+    const profileSex = useFitPulseStore((s) => s.profile.sex);
     const reference = useExerciseReference(exercise?.wgerSearchTerm ?? null);
+    const genderedVideo = useGenderedExerciseVideo(exercise?.mediaKey, profileSex);
 
     const [completedSets, setCompletedSets] = useState(0);
     const [weight, setWeight] = useState(() => exercise?.workingWeight ?? 0);
@@ -352,8 +355,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       sessionSnap.status !== 'abandoned';
     const ctaDisabled = finished || restRemaining !== null || blockedBySequence || sessionPaused;
     const cues = techniqueCuesFromNote(exercise.note);
-    const videoSource =
-      exercise.mediaKey && EXERCISE_VIDEOS[exercise.mediaKey]
+    const videoSource = genderedVideo.available
+      ? genderedVideo.source
+      : exercise.mediaKey && EXERCISE_VIDEOS[exercise.mediaKey]
         ? EXERCISE_VIDEOS[exercise.mediaKey]
         : undefined;
     const gifAsset = realGifForMediaKey(exercise.mediaKey);
