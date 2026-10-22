@@ -2,6 +2,7 @@ import type { MuscleKey } from '@/domain/muscleKeys';
 import type { Sex } from '@/engines/MetabolicEngine';
 import type { ExerciseDef } from './ExerciseSheet';
 import { catalogFor, type TrainingMode } from './catalog';
+import { matchesAllTokens, normalizeSearchText } from '@/lib/normalizeSearch';
 
 export type CatalogItem = ExerciseDef & {
   mode: TrainingMode;
@@ -22,8 +23,12 @@ export const EQUIPMENT_LABELS: Record<Equipment, string> = {
   bench: 'Скамья'
 };
 
+/**
+ * Diacritics-insensitive normalization (workout-guide pattern — see
+ * src/lib/normalizeSearch). Exported so callers can mirror filter rules.
+ */
 export function normalizeCatalogQuery(value: string): string {
-  return value.trim().toLocaleLowerCase('ru-RU');
+  return normalizeSearchText(value);
 }
 
 export function inferEquipment(
@@ -60,10 +65,8 @@ export function filterCatalogItems(
   muscle: MuscleKey | null,
   equipment: Equipment | null = null
 ): CatalogItem[] {
-  const q = normalizeCatalogQuery(query);
   return items.filter((item) => {
-    const haystack = normalizeCatalogQuery(`${item.name} ${item.dayName} ${item.note}`);
-    const matchesQuery = !q || haystack.includes(q);
+    const matchesQuery = matchesAllTokens(`${item.name} ${item.dayName} ${item.note}`, query);
     const matchesMuscle = !muscle || item.targetMuscles.includes(muscle);
     const matchesEquipment = !equipment || inferEquipment(item) === equipment;
     return matchesQuery && matchesMuscle && matchesEquipment;

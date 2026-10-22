@@ -146,4 +146,27 @@ describe('filterImportedLibrary', () => {
     );
     expect(firstGymIndex).toBeGreaterThanOrEqual(90);
   });
+
+  it('finds multi-word exercises regardless of separators', () => {
+    const items = [
+      sample({ nameEn: 'Push-Up', nameRu: 'Отжимания' }),
+      sample({ id: 'lib-plank', nameEn: 'Plank', nameRu: 'Планка', category: 'abs' })
+    ];
+    expect(filterImportedLibrary(items, 'push up', null)).toHaveLength(1);
+  });
+
+  it('ignores diacritics and ё/е when matching', () => {
+    const items = [sample({ nameEn: 'Barbell Overhead Press', nameRu: 'Подъём штанги' })];
+    expect(filterImportedLibrary(items, 'подъем', null)).toHaveLength(1);
+  });
+
+  it('requires all tokens to match (AND search)', () => {
+    const items = [sample({ nameEn: 'Push-Up', nameRu: 'Отжимания' })];
+    expect(filterImportedLibrary(items, 'push планка', null)).toHaveLength(0);
+  });
+
+  it('searches across English and Russian fields with one query', () => {
+    const items = [sample({ nameEn: 'Push-Up', nameRu: 'Отжимания' })];
+    expect(filterImportedLibrary(items, 'отжимания', null)).toHaveLength(1);
+  });
 });
