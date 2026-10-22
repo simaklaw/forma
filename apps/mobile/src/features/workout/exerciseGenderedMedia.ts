@@ -2,6 +2,9 @@ import type { ExerciseMediaKey } from './exerciseMedia';
 
 export type ExercisePresentationSex = 'male' | 'female';
 
+/** Bump when the published MP4/poster files change so stale cached clips are ignored. */
+export const GENDERED_MEDIA_REVISION = 'pull-up-prototype-v1';
+
 /**
  * Stable, public animation assets published by the FitPulse animation-studio
  * workflow after a successful main-branch render and manual/CI QA.
