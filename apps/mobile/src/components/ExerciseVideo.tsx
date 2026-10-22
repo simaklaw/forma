@@ -167,7 +167,7 @@ export default function ExerciseVideo({
           <View style={styles.placeholderBg} />
         )}
 
-        <View style={styles.dim} />
+        <View style={[styles.dim, (showVideo || gifAsset != null || posterUri) && styles.dimOverMedia]} />
 
         {!showVideo && gifAsset == null ? (
           <View style={styles.guide}>
@@ -259,6 +259,9 @@ function createStyles(colors: ColorTokens) {
     dim: {
       ...StyleSheet.absoluteFillObject,
       backgroundColor: 'rgba(0,0,0,0.55)'
+    },
+    dimOverMedia: {
+      backgroundColor: 'rgba(0,0,0,0.16)'
     },
     guide: {
       position: 'absolute',
