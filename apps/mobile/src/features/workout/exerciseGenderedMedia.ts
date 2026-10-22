@@ -9,21 +9,46 @@ export type ExercisePresentationSex = 'male' | 'female';
  * The existing video remains the fallback for every unmapped exercise. The
  * gendered URL is only selected for exercises with a published exact variant.
  */
-const GENDERED_VIDEO_URLS: Partial<
-  Record<ExerciseMediaKey, Partial<Record<ExercisePresentationSex, string>>>
+interface GenderedExerciseMediaUrls {
+  video: string;
+  poster: string;
+}
+
+const GENDERED_MEDIA_URLS: Partial<
+  Record<ExerciseMediaKey, Partial<Record<ExercisePresentationSex, GenderedExerciseMediaUrls>>>
 > = {
   pullup: {
-    male: 'https://raw.githubusercontent.com/simaklaw/fitpulse-godot-animation-studio/main/assets/fitpulse/pull-up/male/pull_up.mp4',
-    female: 'https://raw.githubusercontent.com/simaklaw/fitpulse-godot-animation-studio/main/assets/fitpulse/pull-up/female/pull_up.mp4'
+    male: {
+      video: 'https://raw.githubusercontent.com/simaklaw/fitpulse-godot-animation-studio/main/assets/fitpulse/pull-up/male/pull_up.mp4',
+      poster: 'https://raw.githubusercontent.com/simaklaw/fitpulse-godot-animation-studio/main/assets/fitpulse/pull-up/male/poster.png'
+    },
+    female: {
+      video: 'https://raw.githubusercontent.com/simaklaw/fitpulse-godot-animation-studio/main/assets/fitpulse/pull-up/female/pull_up.mp4',
+      poster: 'https://raw.githubusercontent.com/simaklaw/fitpulse-godot-animation-studio/main/assets/fitpulse/pull-up/female/poster.png'
+    }
   }
 };
+
+function genderedMediaFor(
+  mediaKey: ExerciseMediaKey | undefined,
+  sex: ExercisePresentationSex | null | undefined
+): GenderedExerciseMediaUrls | undefined {
+  if (!mediaKey || (sex !== 'male' && sex !== 'female')) return undefined;
+  return GENDERED_MEDIA_URLS[mediaKey]?.[sex];
+}
 
 export function genderedVideoUrlForMediaKey(
   mediaKey: ExerciseMediaKey | undefined,
   sex: ExercisePresentationSex | null | undefined
 ): string | undefined {
-  if (!mediaKey || (sex !== 'male' && sex !== 'female')) return undefined;
-  return GENDERED_VIDEO_URLS[mediaKey]?.[sex];
+  return genderedMediaFor(mediaKey, sex)?.video;
+}
+
+export function genderedPosterUrlForMediaKey(
+  mediaKey: ExerciseMediaKey | undefined,
+  sex: ExercisePresentationSex | null | undefined
+): string | undefined {
+  return genderedMediaFor(mediaKey, sex)?.poster;
 }
 
 export function hasGenderedVideoForMediaKey(
