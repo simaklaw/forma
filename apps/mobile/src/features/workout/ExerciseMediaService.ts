@@ -2,6 +2,7 @@ import * as FileSystem from 'expo-file-system';
 import { EXERCISE_VIDEOS, type ExerciseMediaKey } from './exerciseMedia';
 import {
   genderedVideoUrlForMediaKey,
+  GENDERED_MEDIA_REVISION,
   type ExercisePresentationSex
 } from './exerciseGenderedMedia';
 import { EXERCISE_VIDEO_MANIFEST } from './exerciseVideoManifest.generated';
@@ -72,7 +73,7 @@ export class ExerciseMediaService {
   ): Promise<{ uri: string } | null> {
     const remoteUrl = genderedVideoUrlForMediaKey(mediaKey, sex);
     if (!remoteUrl) return null;
-    return this.getRemotePlaybackSource(`gendered-${mediaKey}-${sex}`, remoteUrl);
+    return this.getRemotePlaybackSource(`gendered-${GENDERED_MEDIA_REVISION}-${mediaKey}-${sex}`, remoteUrl);
   }
 
   private static async getRemotePlaybackSource(
