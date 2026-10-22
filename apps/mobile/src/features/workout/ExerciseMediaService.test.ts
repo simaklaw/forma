@@ -114,6 +114,7 @@ describe('ExerciseMediaService', () => {
     expect(await ExerciseMediaService.getGenderedPlaybackSource('pullup', 'female')).toEqual({
       uri: femaleUrl
     });
+    await ExerciseMediaService.getCacheSizeBytes(); // Drain both queued downloads.
     expect(FileSystem.downloadAsync).toHaveBeenCalledWith(
       maleUrl,
       `${dir}gendered-pullup-male.mp4.part`
