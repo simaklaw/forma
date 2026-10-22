@@ -1,7 +1,5 @@
 import React, { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { StyleSheet, Text, View } from 'react-native';
 import {
   analyzeRecovery,
   buildCoachBrief,
@@ -10,7 +8,6 @@ import {
 } from '@forma/core';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
-import type { TabParamList } from '@/navigation/types';
 import { selectDailyTotals, selectTodayMeals, useFitPulseStore } from '@/state/useFitPulseStore';
 
 const GLASS_ML = 250;
@@ -19,8 +16,6 @@ const WATER_GOAL_ML = 2500;
 type Props = {
   dayName: string;
   anyDoneToday: boolean;
-  exerciseNames?: Record<number, string>;
-  exerciseMeta?: Record<number, { category: string; equipment: string }>;
 };
 
 /**
@@ -30,7 +25,6 @@ type Props = {
 export function WorkoutCoachCard({ dayName, anyDoneToday }: Props) {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const profile = useFitPulseStore((s) => s.profile);
   const allMeals = useFitPulseStore((s) => s.todayMeals);
   const todayMeals = useMemo(() => selectTodayMeals(allMeals), [allMeals]);
@@ -68,17 +62,9 @@ export function WorkoutCoachCard({ dayName, anyDoneToday }: Props) {
       <View style={styles.card} accessibilityRole="text">
         <Text style={styles.label}>FITPULSE · Тренер</Text>
         <Text style={styles.body}>
-          Заполните профиль (пол, вес, рост, возраст) — тогда здесь появится совет под день «
-          {dayName}».
+          Заполните профиль (пол, вес, рост, возраст) во вкладке «Профиль» — тогда здесь появится совет
+          под день «{dayName}».
         </Text>
-        <Pressable
-          style={styles.cta}
-          onPress={() => navigation.navigate('Профиль')}
-          accessibilityRole="button"
-          accessibilityLabel="Открыть профиль"
-        >
-          <Text style={styles.ctaText}>Открыть профиль</Text>
-        </Pressable>
       </View>
     );
   }
@@ -176,19 +162,6 @@ function createStyles(colors: ColorTokens) {
       color: colors.paperDim,
       fontSize: 11,
       fontFamily: fonts.mono
-    },
-    cta: {
-      marginTop: 12,
-      alignSelf: 'flex-start',
-      paddingVertical: 8,
-      paddingHorizontal: 14,
-      borderRadius: radius.control,
-      backgroundColor: colors.lime
-    },
-    ctaText: {
-      color: colors.ink,
-      fontFamily: fonts.bodySemi,
-      fontSize: 13
     }
   });
 }
