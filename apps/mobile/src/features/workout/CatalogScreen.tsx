@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
+import { RestTimerEngine } from '@/engines/RestTimerEngine';
 import { type MuscleKey } from '@/components/MuscleMap';
 import ScreenHeader from '@/components/ScreenHeader';
 import { type TrainingMode } from './catalog';
@@ -222,7 +223,9 @@ export default function CatalogScreen() {
             <TouchableOpacity
               key={item.id}
               onPress={() => {
-                if (!disabled) setCatalogScope(item.id);
+                if (disabled) return;
+                RestTimerEngine.hapticTabSwitch();
+                setCatalogScope(item.id);
               }}
               disabled={disabled}
               style={[
@@ -360,7 +363,10 @@ export default function CatalogScreen() {
             style={styles.chipScroll}
           >
             <TouchableOpacity
-              onPress={() => setEquipment(null)}
+              onPress={() => {
+                RestTimerEngine.hapticTabSwitch();
+                setEquipment(null);
+              }}
               style={[
                 styles.chip,
                 { borderColor: colors.lineStrong, backgroundColor: colors.panel },
@@ -387,7 +393,10 @@ export default function CatalogScreen() {
               return (
                 <TouchableOpacity
                   key={item}
-                  onPress={() => setEquipment(active ? null : item)}
+                  onPress={() => {
+                    RestTimerEngine.hapticTabSwitch();
+                    setEquipment(active ? null : item);
+                  }}
                   style={[
                     styles.chip,
                     { borderColor: colors.lineStrong, backgroundColor: colors.panel },
@@ -415,7 +424,10 @@ export default function CatalogScreen() {
               return (
                 <TouchableOpacity
                   key={item}
-                  onPress={() => setMuscle(active ? null : item)}
+                  onPress={() => {
+                    RestTimerEngine.hapticTabSwitch();
+                    setMuscle(active ? null : item);
+                  }}
                   style={[
                     styles.chip,
                     { borderColor: colors.lineStrong, backgroundColor: colors.panel },
@@ -439,7 +451,10 @@ export default function CatalogScreen() {
               contentContainerStyle={styles.list}
               renderItem={({ item: day, index }) => (
                 <TouchableOpacity
-                  onPress={() => setPlanDayId(day.id)}
+                  onPress={() => {
+                    RestTimerEngine.hapticTabSwitch();
+                    setPlanDayId(day.id);
+                  }}
                   style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}
                   accessibilityRole="button"
                   accessibilityLabel={day.name}
