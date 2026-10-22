@@ -1,5 +1,10 @@
 import * as FileSystem from 'expo-file-system';
 import { EXERCISE_VIDEOS, type ExerciseMediaKey } from './exerciseMedia';
+import {
+  genderedVideoUrlForMediaKey,
+  GENDERED_MEDIA_REVISION,
+  type ExercisePresentationSex
+} from './exerciseGenderedMedia';
 import { EXERCISE_VIDEO_MANIFEST } from './exerciseVideoManifest.generated';
 import {
   EXERCISE_GIF_MANIFEST,
@@ -54,10 +59,31 @@ export class ExerciseMediaService {
     const bundled = key ? EXERCISE_VIDEOS[key] : undefined;
     if (bundled != null) return bundled;
     const remoteUrl = EXERCISE_VIDEO_MANIFEST.find((entry) => entry.id === libraryId)?.videoUrl;
+    return this.getRemotePlaybackSource(libraryId, remoteUrl);
+  }
+
+  /**
+   * Stream a gender-specific technique clip and cache a complete copy for
+   * later offline launches. The caller only uses this route for exercises
+   * with an exact published presentation variant.
+   */
+  static async getGenderedPlaybackSource(
+    mediaKey: ExerciseMediaKey,
+    sex: ExercisePresentationSex
+  ): Promise<{ uri: string } | null> {
+    const remoteUrl = genderedVideoUrlForMediaKey(mediaKey, sex);
+    if (!remoteUrl) return null;
+    return this.getRemotePlaybackSource(`gendered-${GENDERED_MEDIA_REVISION}-${mediaKey}-${sex}`, remoteUrl);
+  }
+
+  private static async getRemotePlaybackSource(
+    cacheKey: string,
+    remoteUrl: string | undefined
+  ): Promise<{ uri: string } | null> {
     const remote = remoteUrl ? { uri: remoteUrl } : null;
     if (!FileSystem.cacheDirectory) return remote;
 
-    const cachePath = this.cacheFilePath(libraryId);
+    const cachePath = this.cacheFilePath(cacheKey);
     try {
       await this.ensureCacheDir();
       const info = await FileSystem.getInfoAsync(cachePath);

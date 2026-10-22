@@ -59,6 +59,9 @@ export default function ExerciseVideo({
   const [stepIdx, setStepIdx] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
+  const showVideo = source != null && !videoFailed;
   const previewRef = useRef<Video>(null);
   const fullscreenRef = useRef<Video>(null);
 
@@ -72,16 +75,21 @@ export default function ExerciseVideo({
   }, [source, gifAsset, steps.length]);
 
   useEffect(() => {
-    if (!source || !previewRef.current) return;
+    setVideoFailed(false);
+    setVideoReady(false);
+  }, [source]);
+
+  useEffect(() => {
+    if (!showVideo || !previewRef.current) return;
     if (shouldPlay) {
       previewRef.current.playAsync().catch(() => {});
     } else {
       previewRef.current.pauseAsync().catch(() => {});
     }
-  }, [shouldPlay, source]);
+  }, [shouldPlay, showVideo, source]);
 
   function openFullscreen() {
-    if (!source) return;
+    if (!showVideo || !videoReady) return;
     previewRef.current?.pauseAsync().catch(() => {});
     setFullscreen(true);
   }
@@ -109,23 +117,37 @@ export default function ExerciseVideo({
       <TouchableOpacity
         style={styles.hero}
         onPress={openFullscreen}
-        disabled={!source}
+        disabled={!showVideo}
         accessibilityRole="button"
         accessibilityLabel={
-          source
+          showVideo
             ? 'Открыть видео техники на весь экран'
             : 'Пошаговая техника выполнения'
         }
       >
-        {source ? (
+        {showVideo && !videoReady && posterUri ? (
+          <Image
+            source={{ uri: posterUri }}
+            style={StyleSheet.absoluteFill}
+            resizeMode="cover"
+            accessibilityIgnoresInvertColors
+          />
+        ) : null}
+        {showVideo && !videoReady && !posterUri ? <View style={styles.placeholderBg} /> : null}
+        {showVideo ? (
           <Video
             ref={previewRef}
             source={source as any}
-            style={StyleSheet.absoluteFill}
+            style={[StyleSheet.absoluteFill, { opacity: videoReady ? 1 : 0 }]}
             resizeMode={ResizeMode.COVER}
             isMuted
             isLooping
             shouldPlay={shouldPlay}
+            onReadyForDisplay={() => setVideoReady(true)}
+            onError={() => {
+              setVideoFailed(true);
+              setVideoReady(false);
+            }}
           />
         ) : gifAsset != null ? (
           <Image
@@ -145,9 +167,9 @@ export default function ExerciseVideo({
           <View style={styles.placeholderBg} />
         )}
 
-        <View style={styles.dim} />
+        <View style={[styles.dim, (showVideo || gifAsset != null || Boolean(posterUri)) && styles.dimOverMedia]} />
 
-        {!source && gifAsset == null ? (
+        {!showVideo && gifAsset == null ? (
           <View style={styles.guide}>
             <Text style={styles.guideStep}>
               Шаг {stepIdx + 1}/{steps.length}
@@ -164,20 +186,20 @@ export default function ExerciseVideo({
               ))}
             </View>
           </View>
-        ) : source != null ? (
+        ) : showVideo ? (
           <View style={styles.playBadge}>
             <Text style={styles.playBadgeText}>▶</Text>
           </View>
         ) : null}
 
         <Text style={styles.heroLabel}>
-          {source != null || gifAsset != null ? label : 'ТЕХНИКА · ПО ШАГАМ'}
+          {showVideo || gifAsset != null ? label : 'ТЕХНИКА · ПО ШАГАМ'}
         </Text>
       </TouchableOpacity>
 
       <Modal visible={fullscreen} animationType="fade" onRequestClose={closeFullscreen}>
         <View style={styles.fullscreenRoot}>
-          {source && (
+          {showVideo && (
             <TouchableOpacity
               style={StyleSheet.absoluteFill}
               activeOpacity={1}
@@ -190,6 +212,10 @@ export default function ExerciseVideo({
                 resizeMode={ResizeMode.CONTAIN}
                 shouldPlay
                 useNativeControls={false}
+                onError={() => {
+                  setVideoFailed(true);
+                  setFullscreen(false);
+                }}
                 onPlaybackStatusUpdate={(status) => {
                   if ('isPlaying' in status) setIsPlaying(!!status.isPlaying);
                 }}
@@ -233,6 +259,9 @@ function createStyles(colors: ColorTokens) {
     dim: {
       ...StyleSheet.absoluteFillObject,
       backgroundColor: 'rgba(0,0,0,0.55)'
+    },
+    dimOverMedia: {
+      backgroundColor: 'rgba(0,0,0,0.16)'
     },
     guide: {
       position: 'absolute',

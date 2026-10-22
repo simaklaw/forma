@@ -104,6 +104,34 @@ describe('ExerciseMediaService', () => {
     expect(files.has(`${dir}lib-video.mp4.part`)).toBe(false);
   });
 
+  it('streams and caches different gendered clips under separate offline cache keys', async () => {
+    const maleUrl = 'https://raw.githubusercontent.com/simaklaw/fitpulse-godot-animation-studio/main/assets/fitpulse/pull-up/male/pull_up.mp4';
+    const femaleUrl = 'https://raw.githubusercontent.com/simaklaw/fitpulse-godot-animation-studio/main/assets/fitpulse/pull-up/female/pull_up.mp4';
+
+    expect(await ExerciseMediaService.getGenderedPlaybackSource('pullup', 'male')).toEqual({
+      uri: maleUrl
+    });
+    expect(await ExerciseMediaService.getGenderedPlaybackSource('pullup', 'female')).toEqual({
+      uri: femaleUrl
+    });
+    await ExerciseMediaService.getCacheSizeBytes(); // Drain both queued downloads.
+    expect(FileSystem.downloadAsync).toHaveBeenCalledWith(
+      maleUrl,
+      `${dir}gendered-pull-up-prototype-v1-pullup-male.mp4.part`
+    );
+    expect(FileSystem.downloadAsync).toHaveBeenCalledWith(
+      femaleUrl,
+      `${dir}gendered-pull-up-prototype-v1-pullup-female.mp4.part`
+    );
+
+    expect(await ExerciseMediaService.getGenderedPlaybackSource('pullup', 'male')).toEqual({
+      uri: `${dir}gendered-pull-up-prototype-v1-pullup-male.mp4`
+    });
+    expect(await ExerciseMediaService.getGenderedPlaybackSource('pullup', 'female')).toEqual({
+      uri: `${dir}gendered-pull-up-prototype-v1-pullup-female.mp4`
+    });
+  });
+
   it('falls back to remote playback if filesystem access fails', async () => {
     (FileSystem.getInfoAsync as jest.Mock).mockRejectedValueOnce(new Error('disk unavailable'));
     expect(await ExerciseMediaService.getPlaybackSource('lib-video')).toEqual({
