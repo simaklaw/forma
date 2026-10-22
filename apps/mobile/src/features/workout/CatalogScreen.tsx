@@ -1,1 +1,1 @@
-PLACEHOLDER_CAT
+file:///home/workdir/artifacts/REAL_CatalogScreen.tsx
