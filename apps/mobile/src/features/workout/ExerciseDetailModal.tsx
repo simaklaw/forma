@@ -27,6 +27,8 @@ import {
 } from './replaceTarget';
 import { EXERCISE_VIDEOS } from './exerciseMedia';
 import { realGifForMediaKey } from './exerciseRealMedia';
+import { useGenderedExerciseVideo } from './useGenderedExerciseVideo';
+import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { techniqueCuesFromNote } from '@/lib/techniqueCues';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT, muscleLabel } from '@/i18n/strings';
@@ -44,6 +46,8 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
   const lang = useLanguageStore((s) => s.lang);
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const reference = useExerciseReference(item?.wgerSearchTerm ?? null);
+  const profileSex = useFitPulseStore((s) => s.profile.sex);
+  const genderedVideo = useGenderedExerciseVideo(item?.mediaKey, profileSex);
   const [favorited, setFavorited] = useState(false);
   const [replaceTarget, setReplaceTargetState] = useState<ReplaceTarget | null>(getReplaceTarget());
   const [replacing, setReplacing] = useState(false);
@@ -102,8 +106,9 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
     replaceTarget.mode === item.mode &&
     replaceTarget.currentExerciseId !== item.id;
   const cues = techniqueCuesFromNote(item.note);
-  const videoSource =
-    item.mediaKey && EXERCISE_VIDEOS[item.mediaKey]
+  const videoSource = genderedVideo.available
+    ? genderedVideo.source
+    : item.mediaKey && EXERCISE_VIDEOS[item.mediaKey]
       ? EXERCISE_VIDEOS[item.mediaKey]
       : undefined;
   const gifAsset = realGifForMediaKey(item.mediaKey);
