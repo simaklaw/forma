@@ -60,6 +60,7 @@ export default function ExerciseVideo({
   const [fullscreen, setFullscreen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
   const showVideo = source != null && !videoFailed;
   const previewRef = useRef<Video>(null);
   const fullscreenRef = useRef<Video>(null);
@@ -75,6 +76,7 @@ export default function ExerciseVideo({
 
   useEffect(() => {
     setVideoFailed(false);
+    setVideoReady(false);
   }, [source]);
 
   useEffect(() => {
@@ -87,7 +89,7 @@ export default function ExerciseVideo({
   }, [shouldPlay, showVideo, source]);
 
   function openFullscreen() {
-    if (!showVideo) return;
+    if (!showVideo || !videoReady) return;
     previewRef.current?.pauseAsync().catch(() => {});
     setFullscreen(true);
   }
@@ -123,16 +125,29 @@ export default function ExerciseVideo({
             : 'Пошаговая техника выполнения'
         }
       >
+        {showVideo && !videoReady && posterUri ? (
+          <Image
+            source={{ uri: posterUri }}
+            style={StyleSheet.absoluteFill}
+            resizeMode="cover"
+            accessibilityIgnoresInvertColors
+          />
+        ) : null}
+        {showVideo && !videoReady && !posterUri ? <View style={styles.placeholderBg} /> : null}
         {showVideo ? (
           <Video
             ref={previewRef}
             source={source as any}
-            style={StyleSheet.absoluteFill}
+            style={[StyleSheet.absoluteFill, { opacity: videoReady ? 1 : 0 }]}
             resizeMode={ResizeMode.COVER}
             isMuted
             isLooping
             shouldPlay={shouldPlay}
-            onError={() => setVideoFailed(true)}
+            onReadyForDisplay={() => setVideoReady(true)}
+            onError={() => {
+              setVideoFailed(true);
+              setVideoReady(false);
+            }}
           />
         ) : gifAsset != null ? (
           <Image
