@@ -1,1 +1,1 @@
-file:///home/workdir/artifacts/REAL_CatalogScreen.tsx
+const x = <View />;
