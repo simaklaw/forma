@@ -167,7 +167,7 @@ export default function ExerciseVideo({
           <View style={styles.placeholderBg} />
         )}
 
-        <View style={[styles.dim, (showVideo || gifAsset != null || posterUri) && styles.dimOverMedia]} />
+        <View style={[styles.dim, (showVideo || gifAsset != null || Boolean(posterUri)) && styles.dimOverMedia]} />
 
         {!showVideo && gifAsset == null ? (
           <View style={styles.guide}>
