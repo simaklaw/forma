@@ -117,18 +117,18 @@ describe('ExerciseMediaService', () => {
     await ExerciseMediaService.getCacheSizeBytes(); // Drain both queued downloads.
     expect(FileSystem.downloadAsync).toHaveBeenCalledWith(
       maleUrl,
-      `${dir}gendered-pullup-male.mp4.part`
+      `${dir}gendered-pull-up-prototype-v1-pullup-male.mp4.part`
     );
     expect(FileSystem.downloadAsync).toHaveBeenCalledWith(
       femaleUrl,
-      `${dir}gendered-pullup-female.mp4.part`
+      `${dir}gendered-pull-up-prototype-v1-pullup-female.mp4.part`
     );
 
     expect(await ExerciseMediaService.getGenderedPlaybackSource('pullup', 'male')).toEqual({
-      uri: `${dir}gendered-pullup-male.mp4`
+      uri: `${dir}gendered-pull-up-prototype-v1-pullup-male.mp4`
     });
     expect(await ExerciseMediaService.getGenderedPlaybackSource('pullup', 'female')).toEqual({
-      uri: `${dir}gendered-pullup-female.mp4`
+      uri: `${dir}gendered-pull-up-prototype-v1-pullup-female.mp4`
     });
   });
 
