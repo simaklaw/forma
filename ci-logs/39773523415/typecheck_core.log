@@ -1,0 +1,28 @@
+Scope: 4 of 8 workspace projects
+packages/core type-check$ tsc --noEmit
+packages/workout-domain type-check$ tsc --noEmit
+packages/workout-domain type-check: Done
+packages/core type-check: Done
+apps/mobile type-check$ tsc --noEmit
+apps/web type-check$ node ../../scripts/generate-web-route-tree.mjs && tsc --noEmit
+apps/web type-check: routeTree.gen.ts updated
+apps/web type-check: Done
+apps/mobile type-check: src/components/MuscleMap.tsx(26,35): error TS2306: File '/home/runner/work/forma/forma/apps/mobile/src/i18n/strings.ts' is not a module.
+apps/mobile type-check: src/features/analytics/ProgressScreen.tsx(15,22): error TS2306: File '/home/runner/work/forma/forma/apps/mobile/src/i18n/strings.ts' is not a module.
+apps/mobile type-check: src/features/nutrition/AddFoodSheet.tsx(8,22): error TS2306: File '/home/runner/work/forma/forma/apps/mobile/src/i18n/strings.ts' is not a module.
+apps/mobile type-check: src/features/nutrition/NutritionScreen.tsx(9,38): error TS2306: File '/home/runner/work/forma/forma/apps/mobile/src/i18n/strings.ts' is not a module.
+apps/mobile type-check: src/features/onboarding/OnboardingScreen.tsx(13,22): error TS2306: File '/home/runner/work/forma/forma/apps/mobile/src/i18n/strings.ts' is not a module.
+apps/mobile type-check: src/features/onboarding/ProfileForm.tsx(7,35): error TS2306: File '/home/runner/work/forma/forma/apps/mobile/src/i18n/strings.ts' is not a module.
+apps/mobile type-check: src/features/profile/ProfileScreen.tsx(17,40): error TS2306: File '/home/runner/work/forma/forma/apps/mobile/src/i18n/strings.ts' is not a module.
+apps/mobile type-check: src/features/workout/CatalogScreen.tsx(26,51): error TS2306: File '/home/runner/work/forma/forma/apps/mobile/src/i18n/strings.ts' is not a module.
+apps/mobile type-check: src/features/workout/ExerciseDetailModal.tsx(32,35): error TS2306: File '/home/runner/work/forma/forma/apps/mobile/src/i18n/strings.ts' is not a module.
+apps/mobile type-check: src/features/workout/ExerciseSheet.tsx(28,22): error TS2306: File '/home/runner/work/forma/forma/apps/mobile/src/i18n/strings.ts' is not a module.
+apps/mobile type-check: src/features/workout/ImportedLibraryPanel.tsx(34,78): error TS2306: File '/home/runner/work/forma/forma/apps/mobile/src/i18n/strings.ts' is not a module.
+apps/mobile type-check: src/features/workout/ProgramsPanel.tsx(8,72): error TS2306: File '/home/runner/work/forma/forma/apps/mobile/src/i18n/strings.ts' is not a module.
+apps/mobile type-check: src/features/workout/WorkoutScreen.tsx(11,71): error TS2306: File '/home/runner/work/forma/forma/apps/mobile/src/i18n/strings.ts' is not a module.
+apps/mobile type-check: src/i18n/strings.ts(1,1): error TS2304: Cannot find name 'PLACEHOLDER_WILL_FAIL'.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(9,38): error TS2306: File '/home/runner/work/forma/forma/apps/mobile/src/i18n/strings.ts' is not a module.
+apps/mobile type-check: Failed
+/home/runner/work/forma/forma/apps/mobile:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @forma/mobile@0.1.0 type-check: `tsc --noEmit`
+Exit status 2
