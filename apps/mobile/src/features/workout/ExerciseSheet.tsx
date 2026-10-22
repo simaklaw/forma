@@ -24,6 +24,7 @@ import { formatLoadLabel, isBodyweightExercise, resolveWorkingLoadKg } from './c
 import { EXERCISE_VIDEOS } from './exerciseMedia';
 import { realGifForMediaKey } from './exerciseRealMedia';
 import { useGenderedExerciseVideo } from './useGenderedExerciseVideo';
+import { genderedPosterUrlForMediaKey } from './exerciseGenderedMedia';
 import { importedByNumericId, IMPORTED_NUMERIC_ID_BASE } from './importedExerciseBridge';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT } from '@/i18n/strings';
@@ -408,7 +409,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         <ExerciseVideo
           source={videoSource}
           gifAsset={gifAsset}
-          posterUri={reference?.imageUrl}
+          posterUri={genderedPosterUrlForMediaKey(exercise.mediaKey, profileSex) ?? reference?.imageUrl}
           cues={cues}
           shouldPlay={sheetOpen}
         />
