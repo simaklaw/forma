@@ -8,6 +8,7 @@ import {
   estimateBurnFromSetLogs,
   evaluateAchievements,
   isProfileComplete,
+  strengthTrends,
   toDateKey
 } from '@forma/core';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
@@ -16,6 +17,7 @@ import { useT } from '@/i18n/strings';
 import { selectDailyTotals, selectTodayMeals, useFitPulseStore } from '@/state/useFitPulseStore';
 import { unifiedStreakDays, lastNDays } from '@/engines/WorkoutStats';
 import { allExerciseNames, allExerciseMetKeys, allExerciseBurnMeta } from '@/features/workout/catalog';
+import { importedByNumericId } from '@/features/workout/importedExerciseBridge';
 import ActivityCalendar from '@/components/ActivityCalendar';
 import {
   ImportActivityButton,
@@ -126,6 +128,13 @@ export default function ProgressScreen() {
       }),
     [domainWorkouts]
   );
+  const strengthTop = useMemo(() => strengthTrends(setLogs).slice(0, 3), [setLogs]);
+  const resolveStrengthName = (exerciseId: number): string => {
+    const imported = importedByNumericId(exerciseId);
+    if (imported) return imported.nameRu ?? imported.nameEn;
+    return exerciseNames[exerciseId] ?? '—';
+  };
+
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]} edges={['top']}>
@@ -249,6 +258,46 @@ export default function ProgressScreen() {
           </View>
         ) : null}
 
+        {strengthTop.length > 0 ? (
+          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+            <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('progressStrengthKicker')}</Text>
+            {strengthTop.map((s) => {
+              const delta =
+                s.deltaKg != null && s.deltaKg !== 0
+                  ? s.deltaKg > 0
+                    ? t('strengthDeltaUp', { kg: s.deltaKg })
+                    : t('strengthDeltaDown', { kg: Math.abs(s.deltaKg) })
+                  : null;
+              return (
+                <View key={s.exerciseId} style={styles.prRow}>
+                  <View style={{ flex: 1, marginRight: 8 }}>
+                    <Text style={[styles.prName, { color: colors.paper }]} numberOfLines={1}>
+                      {resolveStrengthName(s.exerciseId)}
+                    </Text>
+                    <Text style={{ color: colors.paperFaint, fontSize: 11, fontFamily: fonts.mono }}>
+                      {t('strengthVolume', { kg: s.totalVolumeKg })}
+                    </Text>
+                  </View>
+                  <Text style={[styles.prVal, { color: colors.paper }]}>
+                    {s.currentOneRmKg > 0 ? s.currentOneRmKg : s.bestOneRmKg} {t('kg')}
+                  </Text>
+                  {delta ? (
+                    <Text
+                      style={{
+                        fontFamily: fonts.mono,
+                        fontSize: 11,
+                        marginLeft: 8,
+                        color: s.deltaKg != null && s.deltaKg > 0 ? colors.lime : colors.ember
+                      }}
+                    >
+                      {delta}
+                    </Text>
+                  ) : null}
+                </View>
+              );
+            })}
+          </View>
+        ) : null}
         {weekBurns.some((d) => d.kcal > 0) ? (
           <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
             <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('progressBurnWeek')}</Text>
