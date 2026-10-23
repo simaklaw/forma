@@ -26,6 +26,7 @@ import ProtocolBanner from '@/components/ProtocolBanner';
 import HealthConnectCard from '@/features/health/HealthConnectCard';
 import HealthKitCard from '@/features/health/HealthKitCard';
 import SyncAccountCard from '@/features/auth/SyncAccountCard';
+import AiCard from '@/features/ai/AiCard';
 import { buildStamp } from '@/core/buildInfo';
 
 function numStr(v: number | null | undefined): string {
@@ -638,6 +639,12 @@ export default function ProfileScreen() {
           <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>Refeed / Diet Break</Text>
         </View>
         <ProtocolBanner />
+
+        <View style={styles.sectionHead}>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionAi')}</Text>
+          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>{t('aiSectionCount')}</Text>
+        </View>
+        <AiCard />
 
         <View style={styles.sectionHead}>
           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionHealth')}</Text>
