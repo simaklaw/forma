@@ -8,10 +8,12 @@ import {
   estimateBurnFromSetLogs,
   evaluateAchievements,
   isProfileComplete,
+  personalRecords,
   plateauAnalyses,
   strengthTrends,
   toDateKey,
-  type PlateauAnalysis
+  type PlateauAnalysis,
+  type RecordEvent
 } from '@forma/core';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
@@ -148,6 +150,18 @@ export default function ProgressScreen() {
         .slice(0, 6),
     [setLogs]
   );
+  const recordFeed = useMemo(() => {
+    const byExercise = personalRecords(setLogs);
+    const events = byExercise.flatMap((r) =>
+      r.events.map((e) => ({ ...e, exerciseId: r.exerciseId }))
+    );
+    events.sort((a, b) => (a.dateKey < b.dateKey ? 1 : a.dateKey > b.dateKey ? -1 : 0));
+    const droughts = byExercise
+      .filter((r) => r.droughtLevel !== 'none')
+      .sort((a, b) => b.droughtWeeks - a.droughtWeeks)
+      .slice(0, 3);
+    return { feed: events.slice(0, 6), droughts };
+  }, [setLogs]);
   const resolveStrengthName = (exerciseId: number): string => {
     const imported = importedByNumericId(exerciseId);
     if (imported) return imported.nameRu ?? imported.nameEn;
@@ -175,6 +189,27 @@ export default function ProgressScreen() {
               : suggestion === 'check_recovery'
                 ? t('statusSuggestRecover')
                   : t('statusSuggestLog');
+
+  const recordTypeLabel = (type: RecordEvent['type']): string =>
+    type === 'max_weight'
+      ? t('recordTypeWeight')
+      : type === 'max_reps'
+        ? t('recordTypeReps')
+        : type === 'max_e1rm'
+          ? t('recordTypeE1rm')
+          : type === 'max_set_volume'
+            ? t('recordTypeSetVolume')
+            : t('recordTypeSessionVolume');
+
+  const recordValueLabel = (e: RecordEvent): string =>
+    e.type === 'max_reps' ? `${e.value} ${t('sheetRepsUnit')}` : `${e.value} ${t('kg')}`;
+
+  const recordTierLabel = (e: RecordEvent): string =>
+    e.tier === 'gold'
+      ? t('recordTierGold')
+      : e.tier === 'silver'
+        ? t('recordTierSilver', { pct: e.improvementPct ?? 0 })
+        : t('recordTierBronze');
 
 
   return (
@@ -385,6 +420,39 @@ export default function ProgressScreen() {
                 </Text>
                 <Text style={{ color: colors.paperFaint, fontSize: 11, marginTop: 2 }}>
                   {suggestionLabel(p.suggestion)}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+        {recordFeed.feed.length > 0 || recordFeed.droughts.length > 0 ? (
+          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+            <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('recordsKicker')}</Text>
+            {recordFeed.feed.map((e) => (
+              <View key={`${e.exerciseId}-${e.dateKey}-${e.type}`} style={styles.statusRow}>
+                <Text style={[styles.prName, { color: colors.paper }]} numberOfLines={1}>
+                  {resolveStrengthName(e.exerciseId)}
+                </Text>
+                <Text style={{ fontFamily: fonts.mono, fontSize: 11, marginTop: 2, color: colors.paperDim }}>
+                  {recordTypeLabel(e.type)} · {recordValueLabel(e)}
+                </Text>
+                <Text style={{ color: colors.paperFaint, fontSize: 11, marginTop: 2 }}>
+                  {recordTierLabel(e)} · {e.dateKey.slice(5)}
+                </Text>
+                {e.premature ? (
+                  <Text style={{ color: colors.ember, fontSize: 11, marginTop: 2 }}>
+                    {t('recordPremature')}
+                  </Text>
+                ) : null}
+              </View>
+            ))}
+            {recordFeed.droughts.map((d) => (
+              <View key={`drought-${d.exerciseId}`} style={styles.statusRow}>
+                <Text style={[styles.prName, { color: colors.paperDim }]} numberOfLines={1}>
+                  {resolveStrengthName(d.exerciseId)}
+                </Text>
+                <Text style={{ color: colors.ember, fontSize: 11, marginTop: 2 }}>
+                  {t('recordDrought', { weeks: d.droughtWeeks })}
                 </Text>
               </View>
             ))}
