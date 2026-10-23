@@ -9,7 +9,7 @@ export interface ImportedLibraryFilterOptions {
 /**
  * Pure filter for the imported library list (search + category + level + equipment).
  * Search is diacritics-insensitive and token-based: every token of the query
- * must occur in the English name, Russian name, or primary muscles
+ * must occur in the English name, Russian name, primary or secondary muscles
  * (see src/lib/normalizeSearch — workout-guide pattern).
  */
 export function filterImportedLibrary(
@@ -22,7 +22,7 @@ export function filterImportedLibrary(
   const equipment = options.equipment ?? null;
   return items.filter((ex) => {
     const matchesQuery = matchesAllTokens(
-      `${ex.nameEn} ${ex.nameRu ?? ''} ${ex.primaryMuscles.join(' ')}`,
+      `${ex.nameEn} ${ex.nameRu ?? ''} ${ex.primaryMuscles.join(' ')} ${ex.secondaryMuscles.join(' ')}`,
       query
     );
     const matchesCategory = !category || ex.category === category;
@@ -31,3 +31,4 @@ export function filterImportedLibrary(
     return matchesQuery && matchesCategory && matchesLevel && matchesEquipment;
   });
 }
+

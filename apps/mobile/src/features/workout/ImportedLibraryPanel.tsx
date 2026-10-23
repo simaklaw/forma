@@ -31,7 +31,7 @@ import {
 } from './replaceTarget';
 import { importedMuscleKeys, importedToExerciseDef } from './importedExerciseBridge';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
-import { useT, categoryLabel, equipmentLabel, levelLabel, muscleLabel } from '@/i18n/strings';
+import { useT, categoryLabel, equipmentLabel, levelLabel, muscleLabel, mechanicLabel } from '@/i18n/strings';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { TabParamList } from '@/navigation/types';
@@ -294,6 +294,7 @@ export default function ImportedLibraryPanel() {
                   {categoryLabel(item.category, lang)} ·{' '}
                   {equipmentLabel(item.equipment, lang)}
                   {item.level ? ` · ${levelLabel(item.level, lang)}` : ''}
+                  {item.mechanic ? ` · ${mechanicLabel(item.mechanic, lang)}` : ''}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -349,6 +350,7 @@ export default function ImportedLibraryPanel() {
                 {categoryLabel(selected.category, lang)} ·{' '}
                 {equipmentLabel(selected.equipment, lang)}
                 {selected.level ? ` · ${levelLabel(selected.level, lang)}` : ''}
+                {selected.mechanic ? ` · ${mechanicLabel(selected.mechanic, lang)}` : ''}
               </Text>
               <View style={styles.section}>
                 <Text style={[styles.sectionLabel, { color: colors.paperFaint }]}>
@@ -498,3 +500,4 @@ const styles = StyleSheet.create({
   replaceCtaText: { fontFamily: fonts.bodySemi, fontSize: 14, textAlign: 'center' },
   hint: { marginTop: spacing.lg, fontSize: 12, lineHeight: 18, fontFamily: fonts.body }
 });
+
