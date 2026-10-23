@@ -12,6 +12,7 @@ export * from "./engines/RecoveryEngine.ts";
 export * from "./engines/Achievements.ts";
 export * from "./engines/PerformanceEngine.ts";
 export * from "./engines/StrengthStats.ts";
+export * from "./engines/StatsUtils.ts";
 export * from "./met/exerciseMet.ts";
 export * from "./met/sessionBurn.ts";
 export * from "./services/OpenFoodFactsService.ts";
