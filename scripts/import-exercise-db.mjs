@@ -803,10 +803,87 @@ const GYM_EXTRA_NAME_TRANSLATIONS = {
   "Zottman Preacher Curl": "Сгибания Зоттмана на скамье Скотта",
 };
 
+// Переводы названий tier-3 (безынвентарные: растяжки, мобилити, кондиция).
+// Точечный словарь, ключи — поле name датасета.
+const TIER3_NAME_TRANSLATIONS = {
+  "Adductor/Groin": "Растяжка приводящих (пах)",
+  "Alternate Leg Diagonal Bound": "Диагональные прыжки со сменой ног",
+  "Ankle On The Knee": "Голеностоп на колене (растяжка ягодичной)",
+  "Arm Circles": "Вращения руками",
+  "Bodyweight Walking Lunge": "Выпады шагом",
+  "Calf Stretch Elbows Against Wall": "Растяжка икр у стены (на предплечьях)",
+  "Calf Stretch Hands Against Wall": "Растяжка икр у стены (руками)",
+  "Carioca Quick Step": "Кариока (бег с перекрёстными шагами)",
+  "Cat Stretch": "«Кошка» (растяжка спины)",
+  "Child's Pose": "Поза ребёнка",
+  "Chin To Chest Stretch": "Подбородок к груди",
+  "Crossover Reverse Lunge": "Обратный выпад с поворотом корпуса",
+  "Dancer's Stretch": "Растяжка танцовщика",
+  "Dynamic Back Stretch": "Динамическая растяжка спины",
+  "Dynamic Chest Stretch": "Динамическая растяжка грудных мышц",
+  "Elbow Circles": "Вращения локтями",
+  "Elbows Back": "Локти назад (растяжка грудных)",
+  "Floor Glute-Ham Raise": "Сгибания ног на полу (с партнёром)",
+  "Frog Hops": "Прыжки лягушкой",
+  "Groin and Back Stretch": "Растяжка паха и спины",
+  "Hamstring Stretch": "Растяжка задней поверхности бедра",
+  "Hug Knees To Chest": "Обхват коленей (колени к груди)",
+  "Iron Crosses (stretch)": "«Крест» лёжа (растяжка спины)",
+  "Knee Across The Body": "Колено через корпус (растяжка)",
+  "Kneeling Arm Drill": "Махи руками с колена (спринт-дрилл)",
+  "Kneeling Forearm Stretch": "Растяжка предплечья на коленях",
+  "Kneeling Hip Flexor": "Растяжка сгибателей бедра на колене",
+  "Leg-Up Hamstring Stretch": "Растяжка задней поверхности бедра с ногой вверх",
+  "Linear 3-Part Start Technique": "Трёхшаговый старт (спринт-техника)",
+  "Linear Acceleration Wall Drill": "Ускорение у стены (спринт-дрилл)",
+  "Looking At Ceiling": "Прогиб назад на коленях",
+  "Middle Back Stretch": "Растяжка середины спины",
+  "Mountain Climbers": "«Альпинисты» (бег в упоре)",
+  "Moving Claw Series": "«Коготь» в движении (спринт-дрилл)",
+  "On Your Side Quad Stretch": "Растяжка квадрицепса на боку",
+  "One Arm Against Wall": "Рука у стены (растяжка широчайших)",
+  "One Half Locust": "Полукузнечик (поза саранчи)",
+  "One Knee To Chest": "Одно колено к груди",
+  "Overhead Stretch": "Растяжка над головой",
+  "Pelvic Tilt Into Bridge": "Мостик с наклоном таза",
+  "Prone Manual Hamstring": "Растяжка бицепса бедра лёжа (с партнёром)",
+  "Runner's Stretch": "Растяжка бегуна",
+  "Seated Calf Stretch": "Растяжка икр сидя",
+  "Seated Floor Hamstring Stretch": "Складка сидя на полу",
+  "Seated Hamstring": "Растяжка сидя (с партнёром)",
+  "Seated Overhead Stretch": "Растяжка вверх сидя",
+  "Shoulder Circles": "Вращения плечами",
+  "Shoulder Raise": "Подъёмы плеч (разминка)",
+  "Shoulder Stretch": "Растяжка плеч",
+  "Side Lying Groin Stretch": "Растяжка приводящих лёжа на боку",
+  "Side Neck Stretch": "Растяжка шеи в сторону",
+  "Side Standing Long Jump": "Прыжки в длину в сторону",
+  "Side Wrist Pull": "Тяга запястья поперёк корпуса",
+  "Side-Lying Floor Stretch": "Растяжка лёжа на боку",
+  "Sit Squats": "Приседания с паузой",
+  "Split Squats": "Сплит-приседания",
+  "Standing Gastrocnemius Calf Stretch": "Растяжка икроножной мышцы стоя",
+  "Standing Hip Flexors": "Растяжка сгибателей бедра стоя",
+  "Standing Lateral Stretch": "Боковая растяжка стоя",
+  "Standing Pelvic Tilt": "Наклон таза стоя",
+  "Standing Soleus And Achilles Stretch": "Растяжка камбаловидной и ахиллова сухожилия",
+  "Standing Toe Touches": "Касания носков стоя",
+  "The Straddle": "Широкая складка (уголком)",
+  "Trail Running/Walking": "Бег или ходьба по пересечённой местности",
+  "Tricep Side Stretch": "Растяжка трицепса вбок",
+  "Triceps Stretch": "Растяжка трицепса",
+  "Upper Back Stretch": "Растяжка верха спины",
+  "Upper Back-Leg Grab": "Обхват бёдер сидя (складка)",
+  "Upward Stretch": "Растяжка вверх стоя",
+  "Windmills": "«Мельница» (наклоны в стороны)",
+  "World's Greatest Stretch": "Выпад с разворотом («лучшая растяжка»)",
+};
+
 // Единый словарь для translateName: приоритет у курируемых словарей.
 const ALL_NAME_TRANSLATIONS = {
   ...NAME_TRANSLATIONS,
-  ...GYM_EXTRA_NAME_TRANSLATIONS
+  ...GYM_EXTRA_NAME_TRANSLATIONS,
+  ...TIER3_NAME_TRANSLATIONS
 };
 
 const exercises = JSON.parse(
@@ -830,7 +907,21 @@ const extraGymExercises = exercises.filter(
     !GYM_IMPORT_IDS.has(ex.id) &&
     EQUIPMENT_IMPORT[ex.equipment]
 );
-const filtered = [...homeExercises, ...gymExercises, ...extraGymExercises];
+// Tier 3 (appendix): упражнения датасета без оборудования — растяжки,
+// мобилити, безынвентарная кондиция. Инвентарные упоминания в тексте
+// отсекаются той же эвристикой, что и для домашних записей фазы 1.
+// Порядок: домашние → курируемые тренажерные → tier 2 → tier 3 (конец
+// списка) — Bridge (числовые id 100_000+index) рассчитан на этот порядок,
+// новые записи добавляются ТОЛЬКО в конец.
+const noEquipmentExercises = exercises.filter(
+  (ex) => ex.equipment == null && !requiresUnsupportedEquipment(ex)
+);
+const filtered = [
+  ...homeExercises,
+  ...gymExercises,
+  ...extraGymExercises,
+  ...noEquipmentExercises
+];
 
 fs.mkdirSync(OUT_ASSETS_DIR, { recursive: true });
 
@@ -918,7 +1009,7 @@ const dataFileContent = `/**
  * nameRu is null where no manual translation exists yet; UI must fall back
  * to nameEn in that case, not hide the exercise.
  *
- * Home entries (bodyweight/bands) carry dataset photos via imageKeys.
+ * Phase-1 home entries (bodyweight/bands) carry dataset photos via imageKeys.
  * Gym entries are imported in two tiers:
  *  - tier 1: the curated Phase-4 allowlist (full Russian names + instructions);
  *  - tier 2: every remaining dataset exercise with supported equipment
@@ -928,6 +1019,12 @@ const dataFileContent = `/**
  * Gym imageKeys are intentionally empty: the owner is developing his own
  * exercise media, so the UI shows the phase-1 placeholder instead of
  * dataset photos.
+ *
+ * Tier 3 (appendix): dataset exercises with no equipment (stretching,
+ * mobility, bodyweight conditioning) are appended after the gym tiers —
+ * equipment maps to bodyweight, Russian names via TIER3_NAME_TRANSLATIONS,
+ * instructionsRu and imageKeys stay empty (same media policy). Appending
+ * at the end keeps the numeric bridge ids of all earlier entries stable.
  *
  * datasetCategory/force/mechanic/secondaryMuscles mirror the upstream dataset
  * schema (yuhonas/free-exercise-db schema.json) and are validated by
@@ -987,10 +1084,11 @@ fs.writeFileSync(OUT_IMAGES_FILE, imagesFileContent);
 
 console.log('Импортировано упражнений:', entries.length);
 console.log(
-  'Домашние / курируемые тренажерные / tier 2:',
+  'Домашние / курируемые тренажерные / tier 2 / tier 3:',
   homeExercises.length,
   gymExercises.length,
-  extraGymExercises.length
+  extraGymExercises.length,
+  noEquipmentExercises.length
 );
 const withRuInstructions = entries.filter((e) => e.instructionsRu.length > 0).length;
 console.log('Инструкции на русском:', withRuInstructions + '/' + entries.length);
@@ -1002,4 +1100,5 @@ console.log(
 console.log('Картинок скопировано:', imageRequireLines.length);
 console.log('Записано:', OUT_DATA_FILE);
 console.log('Записано:', OUT_IMAGES_FILE);
+
 

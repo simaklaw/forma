@@ -56,7 +56,7 @@ const HOME_EQUIPMENT = new Set(['bodyweight', 'bands']);
 
 describe('imported exercise library schema (generated-file gate)', () => {
   it('is a large, non-empty library', () => {
-    expect(IMPORTED_EXERCISE_LIBRARY.length).toBeGreaterThanOrEqual(500);
+    expect(IMPORTED_EXERCISE_LIBRARY.length).toBeGreaterThanOrEqual(670);
   });
 
   it('ids are unique and follow the lib-<slug> pattern', () => {
@@ -116,29 +116,51 @@ describe('imported exercise library schema (generated-file gate)', () => {
     }
   });
 
-  it('home entries carry dataset imageKeys; gym entries stay media-empty by design', () => {
-    // Договорённость с владельцем: тренажерные записи идут без датасет-фото
-    // (imageKeys = []), владелец готовит собственные иллюстрации. Домашние
-    // записи сохраняют датасет-фото с ключами <slug>-<idx>.
+  it('phase-1 home entries carry dataset imageKeys; gym and tier-3 stay media-empty by design', () => {
+    // Договорённость с владельцем: тренажерные записи (tier-1/2) и tier-3
+    // безынвентарное приложение идут без датасет-фото (imageKeys = []),
+    // владелец готовит собственные иллюстрации. Фазовые домашние записи
+    // сохраняют датасет-фото с ключами <slug>-<idx>.
+    let withPhotos = 0;
     for (const ex of IMPORTED_EXERCISE_LIBRARY) {
-      if (HOME_EQUIPMENT.has(ex.equipment)) {
+      if (ex.imageKeys.length > 0) {
+        withPhotos += 1;
+        expect(HOME_EQUIPMENT.has(ex.equipment)).toBe(true);
         const slug = ex.id.slice('lib-'.length);
         for (const key of ex.imageKeys) {
-          expect(key).toMatch(new RegExp(`^${slug}-\\d+$`));
+          expect(key).toMatch(new RegExp('^' + slug + '-[0-9]+$'));
         }
       } else {
         expect(ex.imageKeys).toHaveLength(0);
       }
     }
+    // Фазовые датасет-фото не потеряны при регенерации.
+    expect(withPhotos).toBeGreaterThanOrEqual(90);
   });
 
-  it('keeps the two-block order: home first, gym after (bridge id stability)', () => {
+  it('keeps the home head, one contiguous gym block, then the tier-3 bodyweight appendix (bridge id stability)', () => {
+    // Порядок записи в bridge = 100_000 + index + 1, поэтому структура списка
+    // критична: домашние (phase-1) идут первыми, затем единый непрерывный
+    // тренажерный блок (tier-1 + tier-2), в конце — tier-3 безынвентарное
+    // приложение. Tier-3 — тоже bodyweight, поэтому для хвоста списка
+    // home-проверка не годится: фиксируем контигуальность тренажерного блока.
     const firstGymIndex = IMPORTED_EXERCISE_LIBRARY.findIndex(
       (ex) => !HOME_EQUIPMENT.has(ex.equipment)
     );
     expect(firstGymIndex).toBeGreaterThanOrEqual(90);
-    for (let i = firstGymIndex; i < IMPORTED_EXERCISE_LIBRARY.length; i++) {
-      expect(HOME_EQUIPMENT.has(IMPORTED_EXERCISE_LIBRARY[i].equipment)).toBe(false);
+    const gymCount = IMPORTED_EXERCISE_LIBRARY.filter(
+      (ex) => !HOME_EQUIPMENT.has(ex.equipment)
+    ).length;
+    let lastGymIndex = -1;
+    for (let i = 0; i < IMPORTED_EXERCISE_LIBRARY.length; i++) {
+      if (!HOME_EQUIPMENT.has(IMPORTED_EXERCISE_LIBRARY[i].equipment)) {
+        lastGymIndex = i;
+      }
+    }
+    expect(lastGymIndex).toBe(firstGymIndex + gymCount - 1);
+    // Хвост после тренажерного блока — только tier-3 bodyweight-записи.
+    for (let i = lastGymIndex + 1; i < IMPORTED_EXERCISE_LIBRARY.length; i++) {
+      expect(IMPORTED_EXERCISE_LIBRARY[i].equipment).toBe('bodyweight');
     }
   });
 });
