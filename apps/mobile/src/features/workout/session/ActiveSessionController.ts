@@ -81,6 +81,19 @@ function scheduleHealthExport(session: WorkoutSession, dayId: string | null): vo
   } catch {
     /* Jest / Expo Go / missing native */
   }
+
+  try {
+    // iOS counterpart — Apple HealthKit export (same payload shape).
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { HealthKitService } = require('@/features/health/HealthKitService') as {
+      HealthKitService: {
+        exportCompletedSession: (p: typeof payload) => Promise<void>;
+      };
+    };
+    void HealthKitService.exportCompletedSession(payload);
+  } catch {
+    /* Jest / Expo Go / missing native */
+  }
 }
 
 class ActiveSessionControllerImpl {

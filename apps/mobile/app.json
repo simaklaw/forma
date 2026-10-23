@@ -49,7 +49,15 @@
           "microphonePermission": false
         }
       ],
-      "react-native-health-connect"
+      "react-native-health-connect",
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": false,
+          "NSHealthUpdateUsageDescription": "FitPulse записывает тренировки, активные калории и вес в Apple Здоровье.",
+          "background": false
+        }
+      ]
     ],
     "extra": {
       "eas": {

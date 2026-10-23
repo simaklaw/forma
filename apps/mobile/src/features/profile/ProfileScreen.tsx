@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -24,6 +24,7 @@ import {
 import { Goal, Sex } from '@/engines/MetabolicEngine';
 import ProtocolBanner from '@/components/ProtocolBanner';
 import HealthConnectCard from '@/features/health/HealthConnectCard';
+import HealthKitCard from '@/features/health/HealthKitCard';
 import SyncAccountCard from '@/features/auth/SyncAccountCard';
 import { buildStamp } from '@/core/buildInfo';
 
@@ -640,9 +641,9 @@ export default function ProfileScreen() {
 
         <View style={styles.sectionHead}>
           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionHealth')}</Text>
-          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>Health Connect</Text>
+          <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>Health Connect / Apple Health</Text>
         </View>
-        <HealthConnectCard />
+        {Platform.OS === 'ios' ? <HealthKitCard /> : <HealthConnectCard />}
 
         <View style={styles.sectionHead}>
           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionSync')}</Text>
