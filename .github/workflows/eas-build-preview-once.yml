@@ -1,0 +1,56 @@
+name: EAS Build (one-off preview)
+
+on:
+  push:
+    branches:
+      - ci/eas-preview-build
+
+concurrency:
+  group: eas-build-one-off-preview
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: EAS ${{ matrix.platform }} · preview
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ios, android]
+    env:
+      # Repo secret is EXPO_TOKEN_FITPULSE; EAS CLI reads EXPO_TOKEN.
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN_FITPULSE }}
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9.15.0
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install workspace dependencies
+        working-directory: .
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate Expo configuration
+        run: pnpm exec expo config --type public --json > /tmp/expo-config.json
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          packager: pnpm
+
+      - name: Build native application
+        run: eas build --platform "${{ matrix.platform }}" --profile preview --non-interactive
