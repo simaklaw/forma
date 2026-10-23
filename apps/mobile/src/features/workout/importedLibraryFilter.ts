@@ -34,7 +34,7 @@ export function filterImportedLibrary(
       !muscles ||
       muscles.length === 0 ||
       muscles.some((m) => ex.primaryMuscles.includes(m) || ex.secondaryMuscles.includes(m));
-    return matchesQuery && matchesCategory && matchesLevel && matchesEquipment; && matchesMuscles;
+    return matchesQuery && matchesCategory && matchesLevel && matchesEquipment && matchesMuscles;
   });
 }
 
