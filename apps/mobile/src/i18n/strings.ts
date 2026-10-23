@@ -360,6 +360,12 @@ const RU = {
   aiClearChat: 'Очистить',
   aiNoHistory: 'Задайте вопрос или запросите анализ дневника',
 
+  // Автопрогрессия рабочего веса после тренировки (по мотивам LibreFit)
+  sectionWorkout: 'Тренировки',
+  autoProgressName: 'Автопрогрессия веса',
+  autoProgressDesc:
+    'После тренировки FitPulse корректирует рабочий вес: все подходы по плану — тяжелее, недобор повторений — легче.',
+
   // Модульный бэкап (выбор модулей при экспорте/импорте)
   backupTitle: 'Резервная копия',
   backupModuleProfile: 'Профиль',
@@ -800,6 +806,12 @@ const EN: Record<StringKey, string> = {
   aiTokensLabel: 'tokens',
   aiClearChat: 'Clear',
   aiNoHistory: 'Ask a question or request a diary analysis',
+
+  // Autoprogression of working weight (inspired by LibreFit)
+  sectionWorkout: 'Workouts',
+  autoProgressName: 'Weight autoprogression',
+  autoProgressDesc:
+    'After a workout FitPulse adjusts the working weight: all sets on plan — heavier, missed reps — lighter.',
 
   backupTitle: 'Backup',
   backupModuleProfile: 'Profile',

@@ -7,6 +7,7 @@ import {
 } from '@/features/workout/data';
 import type { ExerciseDef } from '../ExerciseSheet';
 import { contentHashForExercises, exercisesToSnapshots, PLAN_REVISION } from './planToSnapshots';
+import { updateLoadProgressionFromSession } from '../loadProgression';
 import { LOCAL_USER_ID } from './currentUser';
 import { projectSessionEvents } from '@/features/workout/data/sessionProjections';
 import { clearDayReadModel } from './clearDayReadModel';
@@ -100,6 +101,8 @@ class ActiveSessionControllerImpl {
   private sessionId: string | null = null;
   private dayId: string | null = null;
   private listeners = new Set<() => void>();
+  /** Defs дня активной сессии — нужны автопрогрессии после завершения. */
+  private dayExercises: ExerciseDef[] | null = null;
 
   getSessionId(): string | null {
     return this.sessionId;
@@ -112,6 +115,7 @@ class ActiveSessionControllerImpl {
   resetForTests(): void {
     this.sessionId = null;
     this.dayId = null;
+    this.dayExercises = null;
     this.listeners.clear();
   }
 
@@ -134,6 +138,7 @@ class ActiveSessionControllerImpl {
   private clearBinding(): void {
     this.sessionId = null;
     this.dayId = null;
+    this.dayExercises = null;
     this.emit();
   }
 
@@ -164,6 +169,7 @@ class ActiveSessionControllerImpl {
   }
 
   async ensureDaySession(dayId: string, exercises: ExerciseDef[]): Promise<WorkoutSession | null> {
+    this.dayExercises = exercises;
     const bodyKg = profileBodyKg();
     if (bodyKg == null) {
       log.debug('ensureDaySession blocked: incomplete profile', { dayId });
@@ -300,6 +306,11 @@ class ActiveSessionControllerImpl {
         reason: 'user_finished_partial'
       });
       log.info('finished partial session', { sessionId: result.session.sessionId });
+      // Автопрогрессия веса: ранний уход «Сохранить прогресс» тоже пересматривает веса.
+      const dayExercises = this.dayExercises;
+      if (dayExercises) {
+        void updateLoadProgressionFromSession(result.session, dayExercises).catch(() => {});
+      }
       // Domain persist first; HC is best-effort fire-and-forget.
       scheduleHealthExport(result.session, dayId);
       this.clearBinding();
@@ -397,6 +408,13 @@ class ActiveSessionControllerImpl {
       reason: 'all_sets_done'
     });
     log.info('completed day session', { sessionId: completed.session.sessionId });
+
+    // Автопрогрессия веса (по мотивам LibreFit): fire-and-forget, ошибки глушим —
+    // домен уже принял сессию, пересмотр весов не должен блокировать завершение.
+    const dayExercises = this.dayExercises;
+    if (dayExercises) {
+      void updateLoadProgressionFromSession(completed.session, dayExercises).catch(() => {});
+    }
 
     scheduleHealthExport(completed.session, dayId);
     this.clearBinding();
