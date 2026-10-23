@@ -118,10 +118,7 @@ export default function ImportedLibraryPanel() {
     };
   }, [selected]);
 
-  const filtered = useMemo(
-    () => filterImportedLibrary(IMPORTED_EXERCISE_LIBRARY, query, category, { level, equipment }),
-    [query, category, level, equipment]
-  );  const selectedMuscles = useMemo(() => datasetMusclesForGroups(selectedGroups), [selectedGroups]);
+  const selectedMuscles = useMemo(() => datasetMusclesForGroups(selectedGroups), [selectedGroups]);
 
   const filtered = useMemo(
     () =>
@@ -521,7 +518,8 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
     paddingHorizontal: spacing.xl
   },
-  list: { paddingHorizontal: spacing.xl, paddingBottom: 120, gap: 8 },  pickerWrap: { marginHorizontal: spacing.xl, marginBottom: 8 },
+  list: { paddingHorizontal: spacing.xl, paddingBottom: 120, gap: 8 },
+  pickerWrap: { marginHorizontal: spacing.xl, marginBottom: 8 },
 
   row: {
     flexDirection: 'row',
