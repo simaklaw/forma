@@ -188,6 +188,15 @@ function scheduleWeightExport(weightKg: number): void {
   } catch {
     /* Jest / missing native */
   }
+
+  try {
+    // iOS counterpart — Apple HealthKit weight export.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { HealthKitService } = require('@/features/health/HealthKitService');
+    void HealthKitService.writeWeightKg(weightKg);
+  } catch {
+    /* Jest / missing native */
+  }
 }
 
 interface AppStore {

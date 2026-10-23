@@ -23,6 +23,7 @@
     "@forma/core": "workspace:*",
     "@forma/workout-domain": "workspace:*",
     "@gorhom/bottom-sheet": "^4.6.1",
+    "@kingstinct/react-native-healthkit": "^8.5.0",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-community/slider": "4.5.2",
     "@react-native-picker/picker": "2.7.5",
