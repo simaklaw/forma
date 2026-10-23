@@ -10,6 +10,7 @@ export {
 } from './openAiClient';
 export { AI_ROLES, roleById } from './roles';
 export { buildNutritionDaySnapshot, renderNutritionContext } from './nutritionContext';
+export { buildWorkoutDaySnapshot, renderWorkoutContext } from './workoutContext';
 export { contextHash, stableStringify } from './contextHash';
 export type {
   AiProviderConfig,

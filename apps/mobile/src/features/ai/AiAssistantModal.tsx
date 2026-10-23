@@ -19,6 +19,8 @@ import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useT } from '@/i18n/strings';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
+import { toDateKey } from '@/engines/WorkoutStats';
+import { allExerciseNames } from '@/features/workout/catalog';
 import {
   chatCompletion,
   normalizeBaseUrl,
@@ -30,6 +32,7 @@ import {
 } from './openAiClient';
 import { AI_ROLES, roleById } from './roles';
 import { buildNutritionDaySnapshot, renderNutritionContext } from './nutritionContext';
+import { buildWorkoutDaySnapshot, renderWorkoutContext } from './workoutContext';
 import { contextHash } from './contextHash';
 import { useAiAssistantStore } from './useAiAssistantStore';
 import type { AiChatMessage, AiImageAttachment, AiRoleId } from './types';
@@ -57,6 +60,7 @@ const EMPTY_FORM: FormState = {
 
 const DIARY_KEY = 'nutritionist:nutrition-day';
 const CHAT_HASH = 'chat';
+const WORKOUT_KEY = 'coach:workout-day';
 
 /**
  * Модал BYOK-ассистента: форма подключения (base URL, ключ, модель, vision),
@@ -83,6 +87,7 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
   const [testing, setTesting] = useState(false);
   const [roleId, setRoleId] = useState<AiRoleId>('assistant');
   const [diaryMode, setDiaryMode] = useState(false);
+  const [workoutMode, setWorkoutMode] = useState(false);
   const [input, setInput] = useState('');
   const [photos, setPhotos] = useState<AiImageAttachment[]>([]);
   const [busy, setBusy] = useState(false);
@@ -91,7 +96,12 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
   const role = roleById(roleId);
   const showForm = !active || editing;
   const chatKey = roleId + ':chat';
-  const currentKey = roleId === 'nutritionist' && diaryMode ? DIARY_KEY : chatKey;
+  const currentKey =
+    roleId === 'nutritionist' && diaryMode
+      ? DIARY_KEY
+      : roleId === 'coach' && workoutMode
+        ? WORKOUT_KEY
+        : chatKey;
   const conversation = conversations[currentKey] ?? null;
   const messages = conversation?.messages ?? [];
 
@@ -295,6 +305,28 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
     void runCompletion(DIARY_KEY, hash, renderNutritionContext(snapshot), []);
   }
 
+  function analyzeWorkout() {
+    if (busy) return;
+    const state = useFitPulseStore.getState();
+    const snapshot = buildWorkoutDaySnapshot(
+      state.setLogs,
+      state.personalRecords,
+      allExerciseNames(),
+      toDateKey(new Date())
+    );
+    if (snapshot.exercises.length === 0) {
+      Alert.alert(t('aiRoleCoach'), t('aiCoachNoWorkout'));
+      return;
+    }
+    const hash = contextHash(snapshot);
+    const existing = conversations[WORKOUT_KEY];
+    if (existing && existing.contextHash === hash) {
+      setNotice(t('aiWorkoutCachedNotice'));
+      return;
+    }
+    void runCompletion(WORKOUT_KEY, hash, renderWorkoutContext(snapshot), []);
+  }
+
   const inputStyle = [
     styles.input,
     { backgroundColor: colors.ink, borderColor: colors.lineStrong, color: colors.paper }
@@ -475,6 +507,7 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
                         onPress={() => {
                           setRoleId(r.id);
                           setDiaryMode(false);
+                          setWorkoutMode(false);
                           setNotice(null);
                         }}
                         accessibilityRole="radio"
@@ -535,6 +568,46 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
                   </View>
                 ) : null}
 
+                {roleId === 'coach' ? (
+                  <View style={[styles.chipRow, styles.subTabRow]}>
+                    {(
+                      [
+                        { id: false, label: t('aiChatTab') },
+                        { id: true, label: t('aiWorkoutTab') }
+                      ] as const
+                    ).map((opt) => {
+                      const on = workoutMode === opt.id;
+                      return (
+                        <TouchableOpacity
+                          key={String(opt.id)}
+                          style={[
+                            styles.chip,
+                            { borderColor: colors.lineStrong, backgroundColor: colors.ink },
+                            on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                          ]}
+                          onPress={() => {
+                            setWorkoutMode(opt.id);
+                            setNotice(null);
+                          }}
+                          accessibilityRole="radio"
+                          accessibilityState={{ checked: on }}
+                          accessibilityLabel={opt.label}
+                        >
+                          <Text
+                            style={[
+                              styles.chipText,
+                              { color: colors.paperDim },
+                              on && { color: colors.lime }
+                            ]}
+                          >
+                            {opt.label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                ) : null}
+
                 <Text style={[styles.metaText, { color: colors.paperFaint, marginTop: 8 }]}>
                   {t('aiProviderActive', { name: active.label || active.model })}
                 </Text>
@@ -558,6 +631,25 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
                   >
                     <Text style={[styles.primaryBtnText, { color: colors.ink }]}>
                       {t('aiAnalyzeNutrition')}
+                    </Text>
+                  </TouchableOpacity>
+                  {notice ? (
+                    <Text style={[styles.notice, { color: colors.lime }]}>{notice}</Text>
+                  ) : null}
+                </View>
+              ) : null}
+
+              {roleId === 'coach' && workoutMode ? (
+                <View style={styles.fieldGap}>
+                  <TouchableOpacity
+                    style={[styles.primaryBtn, { backgroundColor: colors.lime, opacity: busy ? 0.5 : 1 }]}
+                    onPress={analyzeWorkout}
+                    disabled={busy}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('aiAnalyzeWorkout')}
+                  >
+                    <Text style={[styles.primaryBtnText, { color: colors.ink }]}>
+                      {t('aiAnalyzeWorkout')}
                     </Text>
                   </TouchableOpacity>
                   {notice ? (
@@ -621,7 +713,7 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
           )}
         </ScrollView>
 
-        {!showForm && !(roleId === 'nutritionist' && diaryMode) ? (
+        {!showForm && !(roleId === 'nutritionist' && diaryMode) && !(roleId === 'coach' && workoutMode) ? (
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={[styles.footer, { borderTopWidth: 1, borderColor: colors.line }]}

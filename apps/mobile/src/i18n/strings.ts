@@ -359,6 +359,10 @@ const RU = {
   aiTokensLabel: 'токенов',
   aiClearChat: 'Очистить',
   aiNoHistory: 'Задайте вопрос или запросите анализ дневника',
+  aiWorkoutTab: 'Тренировка',
+  aiAnalyzeWorkout: 'Проанализировать сегодняшнюю тренировку',
+  aiWorkoutCachedNotice: 'Тренировка не менялась — анализ ниже актуален',
+  aiCoachNoWorkout: 'Сегодня нет записанных подходов — сначала отметьте их в тренировке',
 
   // Автопрогрессия рабочего веса после тренировки (по мотивам LibreFit)
   sectionWorkout: 'Тренировки',
@@ -806,6 +810,10 @@ const EN: Record<StringKey, string> = {
   aiTokensLabel: 'tokens',
   aiClearChat: 'Clear',
   aiNoHistory: 'Ask a question or request a diary analysis',
+  aiWorkoutTab: 'Workout',
+  aiAnalyzeWorkout: 'Analyze today workout',
+  aiWorkoutCachedNotice: 'The workout has not changed — the analysis below is up to date',
+  aiCoachNoWorkout: 'No sets logged today — log sets in a workout first',
 
   // Autoprogression of working weight (inspired by LibreFit)
   sectionWorkout: 'Workouts',
