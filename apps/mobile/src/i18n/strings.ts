@@ -246,6 +246,11 @@ const RU = {
   strengthDeltaUp: '▲ +{kg} кг / 30 дн',
   strengthDeltaDown: '▼ −{kg} кг / 30 дн',
   strengthVolume: 'объём {kg} кг',
+  panelMuscleChip: 'Мышцы',
+  panelMuscleChipCount: 'Мышцы · {count}',
+  panelMuscleClear: 'Сбросить мышцы',
+  panelMuscleMapHint: 'Нажмите мышцу на карте, чтобы отфильтровать упражнения',
+  panelMuscleMapA11y: 'Карта мышц для фильтра каталога',
 
   // Профиль (ProfileScreen)
   profileExport: 'Экспорт',
@@ -632,6 +637,11 @@ const EN: Record<StringKey, string> = {
   strengthDeltaUp: '▲ +{kg} kg / 30 d',
   strengthDeltaDown: '▼ −{kg} kg / 30 d',
   strengthVolume: 'volume {kg} kg',
+  panelMuscleChip: 'Muscles',
+  panelMuscleChipCount: 'Muscles · {count}',
+  panelMuscleClear: 'Clear muscles',
+  panelMuscleMapHint: 'Tap a muscle on the map to filter exercises',
+  panelMuscleMapA11y: 'Muscle map for the catalog filter',
 
   profileExport: 'Export',
   profileExportDone: 'File saved: {path}',

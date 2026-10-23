@@ -21,6 +21,8 @@ import { ExerciseMediaService } from './ExerciseMediaService';
 import { gifEntryForLibraryId } from './exerciseGifManifest.generated';
 import ExerciseVideo from '@/components/ExerciseVideo';
 import { filterImportedLibrary } from './importedLibraryFilter';
+import MusclePickerMap from '@/components/MusclePickerMap';
+import { datasetMusclesForGroups, type MusclePickerGroupKey } from '@/components/musclePickerGroups';
 import { catalogFor } from './catalog';
 import { replaceDaySlot } from './dayPlanOverrides';
 import {
@@ -62,6 +64,8 @@ export default function ImportedLibraryPanel() {
   const [category, setCategory] = useState<ImportedExercise['category'] | null>(null);
   const [level, setLevel] = useState<string | null>(null);
   const [equipment, setEquipment] = useState<ImportedExercise['equipment'] | null>(null);
+  const [musclePickerOpen, setMusclePickerOpen] = useState(false);
+  const [selectedGroups, setSelectedGroups] = useState<MusclePickerGroupKey[]>([]);
   const [selected, setSelected] = useState<ImportedExercise | null>(null);
   const [resolvedVideo, setResolvedVideo] = useState<{ id: string; source: { uri: string } | number } | null>(null);
   const [gifUri, setGifUri] = useState<string | null>(null);
@@ -117,7 +121,23 @@ export default function ImportedLibraryPanel() {
   const filtered = useMemo(
     () => filterImportedLibrary(IMPORTED_EXERCISE_LIBRARY, query, category, { level, equipment }),
     [query, category, level, equipment]
+  );  const selectedMuscles = useMemo(() => datasetMusclesForGroups(selectedGroups), [selectedGroups]);
+
+  const filtered = useMemo(
+    () =>
+      filterImportedLibrary(IMPORTED_EXERCISE_LIBRARY, query, category, {
+        level,
+        equipment,
+        muscles: selectedMuscles.length > 0 ? selectedMuscles : null
+      }),
+    [query, category, level, equipment, selectedMuscles]
   );
+
+  const toggleMuscleGroup = (key: MusclePickerGroupKey) => {
+    setSelectedGroups((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  };
 
   const equipmentOptions = useMemo(() => {
     const present = new Set(IMPORTED_EXERCISE_LIBRARY.map((ex) => ex.equipment));
@@ -250,6 +270,50 @@ export default function ImportedLibraryPanel() {
           );
         })}
       </View>
+      <View style={[styles.chips, styles.chipsRow]}>
+        <TouchableOpacity
+          onPress={() => setMusclePickerOpen((v) => !v)}
+          style={[
+            styles.chip,
+            { borderColor: colors.lineStrong, backgroundColor: colors.panel },
+            (musclePickerOpen || selectedGroups.length > 0) && {
+              borderColor: colors.lime,
+              backgroundColor: colors.limeDim
+            }
+          ]}
+          accessibilityRole="button"
+          accessibilityState={{ selected: musclePickerOpen }}
+        >
+          <Text
+            style={[
+              styles.chipText,
+              {
+                color: musclePickerOpen || selectedGroups.length > 0 ? colors.lime : colors.paperDim
+              }
+            ]}
+          >
+            {selectedGroups.length > 0
+              ? t('panelMuscleChipCount', { count: selectedGroups.length })
+              : t('panelMuscleChip')}
+          </Text>
+        </TouchableOpacity>
+        {selectedGroups.length > 0 ? (
+          <TouchableOpacity
+            onPress={() => setSelectedGroups([])}
+            style={[styles.chip, { borderColor: colors.lineStrong, backgroundColor: colors.panel }]}
+            accessibilityRole="button"
+          >
+            <Text style={[styles.chipText, { color: colors.paperDim }]}>
+              {t('panelMuscleClear')}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
+      </View>
+      {musclePickerOpen ? (
+        <View style={styles.pickerWrap}>
+          <MusclePickerMap selected={selectedGroups} onToggleGroup={toggleMuscleGroup} />
+        </View>
+      ) : null}
       <Text style={[styles.count, { color: colors.paperFaint }]}>
         {t('panelCount', { shown: filtered.length, total: IMPORTED_EXERCISE_LIBRARY.length })}
       </Text>
@@ -457,7 +521,8 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
     paddingHorizontal: spacing.xl
   },
-  list: { paddingHorizontal: spacing.xl, paddingBottom: 120, gap: 8 },
+  list: { paddingHorizontal: spacing.xl, paddingBottom: 120, gap: 8 },  pickerWrap: { marginHorizontal: spacing.xl, marginBottom: 8 },
+
   row: {
     flexDirection: 'row',
     gap: 12,

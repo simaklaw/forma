@@ -210,6 +210,15 @@ describe('filterImportedLibrary', () => {
     expect(result[0].nameEn).toBe('Bench Press');
   });
 
+  it('filters by dataset muscles (muscle map picker)', () => {
+    const items = [
+      sample({ nameEn: 'Lat Pulldown', nameRu: 'Тяга верхнего блока', primaryMuscles: ['middle back'] }),
+      sample({ id: 'lib-curl', nameEn: 'Curl', nameRu: 'Сгибания', primaryMuscles: ['biceps'] })
+    ];
+    const result = filterImportedLibrary(items, '', null, { muscles: ['middle back', 'lats'] });
+    expect(result).toHaveLength(1);
+    expect(result[0].nameEn).toBe('Lat Pulldown');
+  });
   it('combined query tokens can span name and secondary muscles', () => {
     const items = [
       sample({ nameEn: 'Bench Press', nameRu: 'Жим', secondaryMuscles: ['triceps'] }),
