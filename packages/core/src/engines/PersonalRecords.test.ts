@@ -152,6 +152,9 @@ describe("personalRecords", () => {
     assert.equal(r.bests.maxWeightKg, 65);
     assert.equal(r.bests.maxSessionVolumeKg, 855);
     assert.equal(r.events.filter((e) => e.dateKey === day(1)).length, 5);
-    assert.equal(r.events.filter((e) => e.dateKey === day(2)).length, 2);
+    const day2 = r.events.filter((e) => e.dateKey === day(2));
+    assert.equal(day2.length, 1);
+    assert.equal(day2[0]!.type, "max_weight");
+    assert.equal(day2[0]!.tier, "gold");
   });
 });
