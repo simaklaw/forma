@@ -1,0 +1,10 @@
+Scope: 4 of 8 workspace projects
+packages/core type-check$ tsc --noEmit
+packages/workout-domain type-check$ tsc --noEmit
+packages/workout-domain type-check: Done
+packages/core type-check: src/engines/index.ts(7,1): error TS2308: Module "./MetabolicEngine.ts" has already exported a member named 'estimateOneRepMax'. Consider explicitly re-exporting to resolve the ambiguity.
+packages/core type-check: src/index.ts(14,1): error TS2308: Module "./engines/MetabolicEngine.ts" has already exported a member named 'estimateOneRepMax'. Consider explicitly re-exporting to resolve the ambiguity.
+packages/core type-check: Failed
+/home/runner/work/forma/forma/packages/core:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @forma/core@0.5.1 type-check: `tsc --noEmit`
+Exit status 2
