@@ -8,8 +8,10 @@ import {
   estimateBurnFromSetLogs,
   evaluateAchievements,
   isProfileComplete,
+  plateauAnalyses,
   strengthTrends,
-  toDateKey
+  toDateKey,
+  type PlateauAnalysis
 } from '@forma/core';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
@@ -37,6 +39,15 @@ function workoutsFromSetLogs(
     .sort()
     .map((date) => ({ date, completed: true }));
 }
+
+/** Порядок статусов в карточке: сначала требующие внимания. */
+const STATUS_PRIORITY: Record<PlateauAnalysis['status'], number> = {
+  dipping: 0,
+  static_plateau: 1,
+  plateau: 2,
+  growing: 3,
+  insufficient_data: 4
+};
 
 export default function ProgressScreen() {
   const colors = useThemeColors();
@@ -129,11 +140,41 @@ export default function ProgressScreen() {
     [domainWorkouts]
   );
   const strengthTop = useMemo(() => strengthTrends(setLogs).slice(0, 3), [setLogs]);
+  const plateauList = useMemo(
+    () =>
+      plateauAnalyses(setLogs)
+        .filter((p) => p.status !== 'insufficient_data')
+        .sort((a, b) => STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status])
+        .slice(0, 6),
+    [setLogs]
+  );
   const resolveStrengthName = (exerciseId: number): string => {
     const imported = importedByNumericId(exerciseId);
     if (imported) return imported.nameRu ?? imported.nameEn;
     return exerciseNames[exerciseId] ?? '—';
   };
+
+  const statusLabel = (status: PlateauAnalysis['status']): string =>
+    status === 'growing'
+      ? t('statusGrowing')
+      : status === 'plateau'
+        ? t('statusPlateau')
+          : status === 'static_plateau'
+            ? t('statusStatic')
+              : status === 'dipping'
+                ? t('statusDipping')
+                  : t('statusInsufficient');
+
+  const suggestionLabel = (suggestion: PlateauAnalysis['suggestion']): string =>
+    suggestion === 'keep_pushing'
+      ? t('statusSuggestKeep')
+      : suggestion === 'add_rep_or_weight'
+        ? t('statusSuggestProgress')
+          : suggestion === 'change_scheme'
+            ? t('statusSuggestChange')
+              : suggestion === 'check_recovery'
+                ? t('statusSuggestRecover')
+                  : t('statusSuggestLog');
 
 
   return (
@@ -319,6 +360,36 @@ export default function ProgressScreen() {
             })}
           </View>
         ) : null}
+        {plateauList.length > 0 ? (
+          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+            <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('progressStatusKicker')}</Text>
+            {plateauList.map((p) => (
+              <View key={p.exerciseId} style={styles.statusRow}>
+                <Text style={[styles.prName, { color: colors.paper }]} numberOfLines={1}>
+                  {resolveStrengthName(p.exerciseId)}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: fonts.mono,
+                    fontSize: 11,
+                    marginTop: 2,
+                    color:
+                      p.status === 'growing'
+                        ? colors.lime
+                        : p.status === 'dipping'
+                          ? colors.ember
+                          : colors.paperDim
+                  }}
+                >
+                  {statusLabel(p.status)}
+                </Text>
+                <Text style={{ color: colors.paperFaint, fontSize: 11, marginTop: 2 }}>
+                  {suggestionLabel(p.suggestion)}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
         {weekBurns.some((d) => d.kcal > 0) ? (
           <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
             <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('progressBurnWeek')}</Text>
@@ -393,6 +464,7 @@ function createStyles(colors: ColorTokens) {
     },
     prName: { fontFamily: fonts.body, fontSize: 14, flex: 1, marginRight: 8 },
     prVal: { fontFamily: fonts.mono, fontSize: 14 },
+    statusRow: { paddingVertical: 8 },
     importSection: {
       marginTop: spacing.md,
       marginBottom: spacing.md,
