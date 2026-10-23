@@ -359,6 +359,16 @@ const RU = {
   aiTokensLabel: 'токенов',
   aiClearChat: 'Очистить',
   aiNoHistory: 'Задайте вопрос или запросите анализ дневника',
+  aiWorkoutTab: 'Тренировка',
+  aiAnalyzeWorkout: 'Проанализировать сегодняшнюю тренировку',
+  aiWorkoutCachedNotice: 'Тренировка не менялась — анализ ниже актуален',
+  aiCoachNoWorkout: 'Сегодня нет записанных подходов — сначала отметьте их в тренировке',
+
+  // Автопрогрессия рабочего веса после тренировки (по мотивам LibreFit)
+  sectionWorkout: 'Тренировки',
+  autoProgressName: 'Автопрогрессия веса',
+  autoProgressDesc:
+    'После тренировки FitPulse корректирует рабочий вес: все подходы по плану — тяжелее, недобор повторений — легче.',
 
   // Модульный бэкап (выбор модулей при экспорте/импорте)
   backupTitle: 'Резервная копия',
@@ -800,6 +810,16 @@ const EN: Record<StringKey, string> = {
   aiTokensLabel: 'tokens',
   aiClearChat: 'Clear',
   aiNoHistory: 'Ask a question or request a diary analysis',
+  aiWorkoutTab: 'Workout',
+  aiAnalyzeWorkout: 'Analyze today workout',
+  aiWorkoutCachedNotice: 'The workout has not changed — the analysis below is up to date',
+  aiCoachNoWorkout: 'No sets logged today — log sets in a workout first',
+
+  // Autoprogression of working weight (inspired by LibreFit)
+  sectionWorkout: 'Workouts',
+  autoProgressName: 'Weight autoprogression',
+  autoProgressDesc:
+    'After a workout FitPulse adjusts the working weight: all sets on plan — heavier, missed reps — lighter.',
 
   backupTitle: 'Backup',
   backupModuleProfile: 'Profile',

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { isProfileComplete } from '@forma/core';
@@ -25,6 +25,7 @@ import HealthKitCard from '@/features/health/HealthKitCard';
 import SyncAccountCard from '@/features/auth/SyncAccountCard';
 import AiCard from '@/features/ai/AiCard';
 import BackupCard from '@/features/backup/BackupCard';
+import { isLoadProgressionEnabled, setLoadProgressionEnabled } from '@/features/workout/loadProgression';
 import { buildStamp } from '@/core/buildInfo';
 
 function numStr(v: number | null | undefined): string {
@@ -42,6 +43,11 @@ export default function ProfileScreen() {
   const setVoiceCuesEnabled = useVoiceCuesStore((s) => s.setEnabled);
   const restOverride = useRestTimerStore((s) => s.overrideSeconds);
   const setRestOverride = useRestTimerStore((s) => s.setOverrideSeconds);
+
+  const [autoProgressEnabled, setAutoProgressEnabled] = useState(true);
+  useEffect(() => {
+    void isLoadProgressionEnabled().then(setAutoProgressEnabled);
+  }, []);
 
   const profile = useFitPulseStore((s) => s.profile);
   const updateProfile = useFitPulseStore((s) => s.updateProfile);
@@ -611,6 +617,53 @@ export default function ProfileScreen() {
           <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>Refeed / Diet Break</Text>
         </View>
         <ProtocolBanner />
+
+        <View style={styles.sectionHead}>
+          <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionWorkout')}</Text>
+        </View>
+        <View style={[styles.themeCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <Text style={[styles.settingName, { color: colors.paper }]}>{t('autoProgressName')}</Text>
+          <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>
+            {t('autoProgressDesc')}
+          </Text>
+          <View style={styles.themeRow}>
+            {(
+              [
+                { id: false, label: t('off') },
+                { id: true, label: t('on') }
+              ] as const
+            ).map((opt) => {
+              const on = autoProgressEnabled === opt.id;
+              return (
+                <TouchableOpacity
+                  key={String(opt.id)}
+                  style={[
+                    styles.themeBtn,
+                    { borderColor: colors.lineStrong, backgroundColor: colors.ink },
+                    on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                  ]}
+                  onPress={() => {
+                    setAutoProgressEnabled(opt.id);
+                    void setLoadProgressionEnabled(opt.id);
+                  }}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: on }}
+                  accessibilityLabel={opt.label}
+                >
+                  <Text
+                    style={[
+                      styles.themeBtnText,
+                      { color: colors.paperDim },
+                      on && { color: colors.lime }
+                    ]}
+                  >
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
 
         <View style={styles.sectionHead}>
           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionAi')}</Text>

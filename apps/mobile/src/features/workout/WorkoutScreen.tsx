@@ -33,6 +33,7 @@ import {
 } from './program/programEngine';
 import { readyProgramDays } from './program/readyPrograms';
 import { clearDayOverride, loadDayOverrideIds, resolveDayExercises } from './dayPlanOverrides';
+import { applyLoadProgression, loadLoadProgression, type LoadProgressionMap } from './loadProgression';
 import { setReplaceTarget } from './replaceTarget';
 import type { TabParamList } from '@/navigation/types';
 import { EXERCISE_THUMBNAILS } from './exerciseMedia';
@@ -112,6 +113,7 @@ export default function WorkoutScreen() {
 
   const [overrideIds, setOverrideIds] = useState<number[] | null>(null);
   const [overrideTick, setOverrideTick] = useState(0);
+  const [loadProgression, setLoadProgression] = useState<LoadProgressionMap>({});
 
   useFocusEffect(
     useCallback(() => {
@@ -129,11 +131,26 @@ export default function WorkoutScreen() {
     }, [activeDay?.id, trainingMode, overrideTick])
   );
 
+  // Автопрогрессия веса: карта рекомендаций обновляется после завершённой сессии,
+  // перечитываем её при каждом возврате на экран тренировки.
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      void loadLoadProgression().then((map) => {
+        if (!cancelled) setLoadProgression(map);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [])
+  );
+
   const effectiveExercises = useMemo(() => {
     if (!activeDay) return [];
     const resolved = resolveDayExercises(trainingMode, activeDay.exercises, overrideIds);
-    return programInfo ? applyProgramTargets(resolved, programInfo.progression) : resolved;
-  }, [activeDay, trainingMode, overrideIds, programInfo]);
+    const targeted = programInfo ? applyProgramTargets(resolved, programInfo.progression) : resolved;
+    return applyLoadProgression(targeted, loadProgression);
+  }, [activeDay, trainingMode, overrideIds, programInfo, loadProgression]);
 
   // issue #173: реальные превью для упражнений без бандл-медиа (gym-план) —
   // общий кэш AsyncStorage с useExerciseReference, оффлайн — заглушка с инициалами.
