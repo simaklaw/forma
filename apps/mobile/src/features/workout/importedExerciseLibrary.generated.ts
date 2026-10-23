@@ -9,7 +9,7 @@
  * nameRu is null where no manual translation exists yet; UI must fall back
  * to nameEn in that case, not hide the exercise.
  *
- * Home entries (bodyweight/bands) carry dataset photos via imageKeys.
+ * Phase-1 home entries (bodyweight/bands) carry dataset photos via imageKeys.
  * Gym entries are imported in two tiers:
  *  - tier 1: the curated Phase-4 allowlist (full Russian names + instructions);
  *  - tier 2: every remaining dataset exercise with supported equipment
@@ -19,6 +19,12 @@
  * Gym imageKeys are intentionally empty: the owner is developing his own
  * exercise media, so the UI shows the phase-1 placeholder instead of
  * dataset photos.
+ *
+ * Tier 3 (appendix): dataset exercises with no equipment (stretching,
+ * mobility, bodyweight conditioning) are appended after the gym tiers —
+ * equipment maps to bodyweight, Russian names via TIER3_NAME_TRANSLATIONS,
+ * instructionsRu and imageKeys stay empty (same media policy). Appending
+ * at the end keeps the numeric bridge ids of all earlier entries stable.
  *
  * datasetCategory/force/mechanic/secondaryMuscles mirror the upstream dataset
  * schema (yuhonas/free-exercise-db schema.json) and are validated by
@@ -18118,5 +18124,1837 @@ export const IMPORTED_EXERCISE_LIBRARY: ImportedExercise[] = [
     "imageKeys": [],
     "sourceLicense": "Unlicense",
     "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Zottman_Preacher_Curl.json"
+  },
+  {
+    "id": "lib-adductor-groin",
+    "nameEn": "Adductor/Groin",
+    "nameRu": "Растяжка приводящих (пах)",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "intermediate",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "adductors"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "Lie on your back with your feet raised towards the ceiling.",
+      "Have your partner hold your feet or ankles. Abduct your legs as far as you can. This will be your starting position.",
+      "Attempt to squeeze your legs together for 10 or more seconds, while your partner prevents you from doing so.",
+      "Now, relax the muscles in your legs as your partner pushes your feet apart, stretching as far as is comfortable for you. Be sure to let your partner know when the stretch is adequate to prevent overstretching or injury."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Adductor_Groin.json"
+  },
+  {
+    "id": "lib-alternate-leg-diagonal-bound",
+    "nameEn": "Alternate Leg Diagonal Bound",
+    "nameRu": "Диагональные прыжки со сменой ног",
+    "category": "abs",
+    "datasetCategory": "plyometrics",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "push",
+    "mechanic": "compound",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "abductors",
+      "adductors",
+      "calves",
+      "glutes",
+      "hamstrings"
+    ],
+    "instructionsEn": [
+      "Assume a comfortable stance with one foot slightly in front of the other.",
+      "Begin by pushing off with the front leg, driving the opposite knee forward and as high as possible before landing. Attempt to cover as much distance to each side with each bound.",
+      "It may help to use a line on the ground to guage distance from side to side.",
+      "Repeat the sequence with the other leg."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Alternate_Leg_Diagonal_Bound.json"
+  },
+  {
+    "id": "lib-ankle-on-the-knee",
+    "nameEn": "Ankle On The Knee",
+    "nameRu": "Голеностоп на колене (растяжка ягодичной)",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "From a lying position, bend your knees and keep your feet on the floor.",
+      "Place your ankle of one foot on your opposite knee.",
+      "Grasp the thigh or knee of the bottom leg and pull both of your legs into the chest. Relax your neck and shoulders. Hold for 10-20 seconds and then switch sides."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Ankle_On_The_Knee.json"
+  },
+  {
+    "id": "lib-arm-circles",
+    "nameEn": "Arm Circles",
+    "nameRu": "Вращения руками",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "push",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "traps"
+    ],
+    "instructionsEn": [
+      "Stand up and extend your arms straight out by the sides. The arms should be parallel to the floor and perpendicular (90-degree angle) to your torso. This will be your starting position.",
+      "Slowly start to make circles of about 1 foot in diameter with each outstretched arm. Breathe normally as you perform the movement.",
+      "Continue the circular motion of the outstretched arms for about ten seconds. Then reverse the movement, going the opposite direction."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Arm_Circles.json"
+  },
+  {
+    "id": "lib-bodyweight-walking-lunge",
+    "nameEn": "Bodyweight Walking Lunge",
+    "nameRu": "Выпады шагом",
+    "category": "abs",
+    "datasetCategory": "strength",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "push",
+    "mechanic": "compound",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "calves",
+      "glutes",
+      "hamstrings"
+    ],
+    "instructionsEn": [
+      "Begin standing with your feet shoulder width apart and your hands on your hips.",
+      "Step forward with one leg, flexing the knees to drop your hips. Descend until your rear knee nearly touches the ground. Your posture should remain upright, and your front knee should stay above the front foot.",
+      "Drive through the heel of your lead foot and extend both knees to raise yourself back up.",
+      "Step forward with your rear foot, repeating the lunge on the opposite leg."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Bodyweight_Walking_Lunge.json"
+  },
+  {
+    "id": "lib-calf-stretch-elbows-against-wall",
+    "nameEn": "Calf Stretch Elbows Against Wall",
+    "nameRu": "Растяжка икр у стены (на предплечьях)",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "Stand facing a wall from a couple feet away.",
+      "Lean against the wall, placing your weight on your forearms.",
+      "Attempt to keep your heels on the ground. Hold for 10-20 seconds. You may move further or closer the wall, making it more or less difficult, respectively."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Calf_Stretch_Elbows_Against_Wall.json"
+  },
+  {
+    "id": "lib-calf-stretch-hands-against-wall",
+    "nameEn": "Calf Stretch Hands Against Wall",
+    "nameRu": "Растяжка икр у стены (руками)",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "Stand facing a wall from several feet away. Stagger your stance, placing one foot forward.",
+      "Lean forward and rest your hands on the wall, keeping your heel, hip and head in a straight line.",
+      "Attempt to keep your heel on the ground. Hold for 10-20 seconds and then switch sides."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Calf_Stretch_Hands_Against_Wall.json"
+  },
+  {
+    "id": "lib-carioca-quick-step",
+    "nameEn": "Carioca Quick Step",
+    "nameRu": "Кариока (бег с перекрёстными шагами)",
+    "category": "abs",
+    "datasetCategory": "plyometrics",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": null,
+    "mechanic": null,
+    "primaryMuscles": [
+      "adductors"
+    ],
+    "secondaryMuscles": [
+      "abdominals",
+      "abductors",
+      "calves",
+      "glutes",
+      "hamstrings",
+      "quadriceps"
+    ],
+    "instructionsEn": [
+      "Begin with your feet a few inches apart and your left arm up in a relaxed, athletic position.",
+      "With your right foot, quick step behind and pull the knee up.",
+      "Fire your arms back up when you pull the right knee, being sure that your knee goes straight up and down. Avoid turning your feet as you move and continue to look forward as you move to the side."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Carioca_Quick_Step.json"
+  },
+  {
+    "id": "lib-cat-stretch",
+    "nameEn": "Cat Stretch",
+    "nameRu": "«Кошка» (растяжка спины)",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "lower back"
+    ],
+    "secondaryMuscles": [
+      "middle back",
+      "traps"
+    ],
+    "instructionsEn": [
+      "Position yourself on the floor on your hands and knees.",
+      "Pull your belly in and round your spine, lower back, shoulders, and neck, letting your head drop.",
+      "Hold for 15 seconds."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Cat_Stretch.json"
+  },
+  {
+    "id": "lib-childs-pose",
+    "nameEn": "Child's Pose",
+    "nameRu": "Поза ребёнка",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "lower back"
+    ],
+    "secondaryMuscles": [
+      "glutes",
+      "middle back"
+    ],
+    "instructionsEn": [
+      "Get on your hands and knees, walk your hands in front of you.",
+      "Lower your buttocks down to sit on your heels. Let your arms drag along the floor as you sit back to stretch your entire spine.",
+      "Once you settle onto your heels, bring your hands next to your feet and relax. \"breathe\" into your back. Rest your forehead on the floor. Avoid this position if you have knee problems."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Childs_Pose.json"
+  },
+  {
+    "id": "lib-chin-to-chest-stretch",
+    "nameEn": "Chin To Chest Stretch",
+    "nameRu": "Подбородок к груди",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "neck"
+    ],
+    "secondaryMuscles": [
+      "traps"
+    ],
+    "instructionsEn": [
+      "Get into a seated position on the floor.",
+      "Place both hands at the rear of your head, fingers interlocked, thumbs pointing down and elbows pointing straight ahead. Slowly pull your head down to your chest. Hold for 20-30 seconds."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Chin_To_Chest_Stretch.json"
+  },
+  {
+    "id": "lib-crossover-reverse-lunge",
+    "nameEn": "Crossover Reverse Lunge",
+    "nameRu": "Обратный выпад с поворотом корпуса",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "intermediate",
+    "force": "pull",
+    "mechanic": null,
+    "primaryMuscles": [
+      "lower back"
+    ],
+    "secondaryMuscles": [
+      "abdominals",
+      "abductors",
+      "glutes",
+      "hamstrings",
+      "quadriceps"
+    ],
+    "instructionsEn": [
+      "Stand with your feet shoulder width apart. This will be your starting position.",
+      "Perform a rear lunge by stepping back with one foot and flexing the hips and front knee. As you do so, rotate your torso across the front leg.",
+      "After a brief pause, return to the starting position and repeat on the other side, continuing in an alternating fashion."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Crossover_Reverse_Lunge.json"
+  },
+  {
+    "id": "lib-dancers-stretch",
+    "nameEn": "Dancer's Stretch",
+    "nameRu": "Растяжка танцовщика",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "lower back"
+    ],
+    "secondaryMuscles": [
+      "abductors",
+      "glutes"
+    ],
+    "instructionsEn": [
+      "Sit up on the floor.",
+      "Cross your right leg over your left, keeping the knee bent. Your left leg is straight and down on the floor.",
+      "Place your left arm on your right leg and your right hand on the floor.",
+      "Rotate your upper body to the right, and hold for 10-20 seconds. Switch sides."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Dancers_Stretch.json"
+  },
+  {
+    "id": "lib-dynamic-back-stretch",
+    "nameEn": "Dynamic Back Stretch",
+    "nameRu": "Динамическая растяжка спины",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "pull",
+    "mechanic": null,
+    "primaryMuscles": [
+      "lats"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "Stand with your feet shoulder width apart. This will be your starting position.",
+      "Keeping your arms straight, swing them straight up in front of you 5-10 times, increasing the range of motion each time until your arms are above your head."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Dynamic_Back_Stretch.json"
+  },
+  {
+    "id": "lib-dynamic-chest-stretch",
+    "nameEn": "Dynamic Chest Stretch",
+    "nameRu": "Динамическая растяжка грудных мышц",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "pull",
+    "mechanic": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "middle back"
+    ],
+    "instructionsEn": [
+      "Stand with your hands together, arms extended directly in front of you. This will be your starting position.",
+      "Keeping your arms straight, quickly move your arms back as far as possible and back in again, similar to an exaggerated clapping motion. Repeat 5-10 times, increasing speed as you do so."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Dynamic_Chest_Stretch.json"
+  },
+  {
+    "id": "lib-elbow-circles",
+    "nameEn": "Elbow Circles",
+    "nameRu": "Вращения локтями",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "pull",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "traps"
+    ],
+    "instructionsEn": [
+      "Sit or stand with your feet slightly apart.",
+      "Place your hands on your shoulders with your elbows at shoulder level and pointing out.",
+      "Slowly make a circle with your elbows. Breathe out as you start the circle and breathe in as you complete the circle."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Elbow_Circles.json"
+  },
+  {
+    "id": "lib-elbows-back",
+    "nameEn": "Elbows Back",
+    "nameRu": "Локти назад (растяжка грудных)",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "instructionsEn": [
+      "Stand up straight.",
+      "Place both hands on your lower back, fingers pointing downward and elbows out.",
+      "Then gently pull your elbows back aiming to touch them together."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Elbows_Back.json"
+  },
+  {
+    "id": "lib-floor-glute-ham-raise",
+    "nameEn": "Floor Glute-Ham Raise",
+    "nameRu": "Сгибания ног на полу (с партнёром)",
+    "category": "abs",
+    "datasetCategory": "strength",
+    "equipment": "bodyweight",
+    "level": "intermediate",
+    "force": "pull",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "calves",
+      "glutes"
+    ],
+    "instructionsEn": [
+      "You can use a partner for this exercise or brace your feet under something stable.",
+      "Begin on your knees with your upper legs and torso upright. If using a partner, they will firmly hold your feet to keep you in position. This will be your starting position.",
+      "Lower yourself by extending at the knee, taking care to NOT flex the hips as you go forward.",
+      "Place your hands in front of you as you reach the floor. This movement is very difficult and you may be unable to do it unaided. Use your arms to lightly push off the floor to aid your return to the starting position."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Floor_Glute-Ham_Raise.json"
+  },
+  {
+    "id": "lib-frog-hops",
+    "nameEn": "Frog Hops",
+    "nameRu": "Прыжки лягушкой",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "intermediate",
+    "force": "push",
+    "mechanic": "compound",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "calves",
+      "glutes",
+      "hamstrings"
+    ],
+    "instructionsEn": [
+      "Stand with your hands behind your head, and squat down keeping your torso upright and your head up. This will be your starting position.",
+      "Jump forward several feet, avoiding jumping unnecessarily high. As your feet contact the ground, absorb the impact through your legs, and jump again. Repeat this action 5-10 times."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Frog_Hops.json"
+  },
+  {
+    "id": "lib-groin-and-back-stretch",
+    "nameEn": "Groin and Back Stretch",
+    "nameRu": "Растяжка паха и спины",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "intermediate",
+    "force": "static",
+    "mechanic": "compound",
+    "primaryMuscles": [
+      "adductors"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "Sit on the floor with your knees bent and feet together.",
+      "Interlock your fingers behind your head. This will be your starting position.",
+      "Curl downwards, bringing your elbows to the inside of your thighs. After a brief pause, return to the starting position with your head up and your back straight. Repeat for 10-20 repetitions."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Groin_and_Back_Stretch.json"
+  },
+  {
+    "id": "lib-hamstring-stretch",
+    "nameEn": "Hamstring Stretch",
+    "nameRu": "Растяжка задней поверхности бедра",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "Lie on your back with one leg extended above you, with the hip at ninety degrees. Keep the other leg flat on the floor.",
+      "Loop a belt, band, or rope over the ball of your foot. This will be your starting position.",
+      "Pull on the belt to create tension in the calves and hamstrings. Hold this stretch for 10-30 seconds, and repeat with the other leg."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Hamstring_Stretch.json"
+  },
+  {
+    "id": "lib-hug-knees-to-chest",
+    "nameEn": "Hug Knees To Chest",
+    "nameRu": "Обхват коленей (колени к груди)",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "lower back"
+    ],
+    "secondaryMuscles": [
+      "glutes"
+    ],
+    "instructionsEn": [
+      "Lie down on your back and pull both knees up to your chest.",
+      "Hold your arms under the knees, not over (that would put to much pressure on your knee joints).",
+      "Slowly pull the knees toward your shoulders. This also stretches your buttocks muscles."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Hug_Knees_To_Chest.json"
+  },
+  {
+    "id": "lib-iron-crosses-stretch",
+    "nameEn": "Iron Crosses (stretch)",
+    "nameRu": "«Крест» лёжа (растяжка спины)",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "intermediate",
+    "force": "pull",
+    "mechanic": "compound",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "Lie face down on the floor, with your arms extended out to your side, palms pressed to the floor. This will be your starting position.",
+      "To begin, flex one knee and bring that leg across the back of your body, attempting to touch it to the ground near the opposite hand.",
+      "Promptly return the leg to the starting postion, and quickly repeat with the other leg. Continue alternating for 10-20 repetitions."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Iron_Crosses_stretch.json"
+  },
+  {
+    "id": "lib-knee-across-the-body",
+    "nameEn": "Knee Across The Body",
+    "nameRu": "Колено через корпус (растяжка)",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "abductors",
+      "lower back"
+    ],
+    "instructionsEn": [
+      "Lie down on the floor with your right leg straight. Bend your left leg and lower it across your body, holding the knee down toward the floor with your right hand. (The knee doesn't need to touch the floor if you're tight.)",
+      "Place your left arm comfortably beside you and turn your head to the left. Imagine you have a weight tied to your tailbone. let your tailbone fall back toward the floor as your chest reaches in the opposite direction to stretch your lower back. Switch sides."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Knee_Across_The_Body.json"
+  },
+  {
+    "id": "lib-kneeling-arm-drill",
+    "nameEn": "Kneeling Arm Drill",
+    "nameRu": "Махи руками с колена (спринт-дрилл)",
+    "category": "abs",
+    "datasetCategory": "plyometrics",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "pull",
+    "mechanic": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "abdominals"
+    ],
+    "instructionsEn": [
+      "This drill helps increase arm efficiency during the run. Begin kneeling, left foot in front, right knee down. Apply pressure through the front heel to keep your glutes and hamstrings activated.",
+      "Begin by blocking the arms in long, pendulum like swings. Close the arm angle, blocking with the arms as you would when jogging, progressing to a run and finally a sprint.",
+      "As soon as your hands pass the hip, accelerate them forward during the sprinting motion to move them as quickly as possible.",
+      "Switch knees and repeat."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Kneeling_Arm_Drill.json"
+  },
+  {
+    "id": "lib-kneeling-forearm-stretch",
+    "nameEn": "Kneeling Forearm Stretch",
+    "nameRu": "Растяжка предплечья на коленях",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "forearms"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "Start by kneeling on a mat with your palms flat and your fingers pointing back toward your knees.",
+      "Slowly lean back keeping your palms flat on the floor until you feel a stretch in your wrists and forearms. Hold for 20-30 seconds."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Kneeling_Forearm_Stretch.json"
+  },
+  {
+    "id": "lib-kneeling-hip-flexor",
+    "nameEn": "Kneeling Hip Flexor",
+    "nameRu": "Растяжка сгибателей бедра на колене",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "quadriceps"
+    ],
+    "instructionsEn": [
+      "Kneel on a mat and bring your right knee up so the bottom of your foot is on the floor and extend your left leg out behind you so the top of your foot is on the floor.",
+      "Shift your weight forward until you feel a stretch in your hip. Hold for 15 seconds, then repeat for your other side."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Kneeling_Hip_Flexor.json"
+  },
+  {
+    "id": "lib-leg-up-hamstring-stretch",
+    "nameEn": "Leg-Up Hamstring Stretch",
+    "nameRu": "Растяжка задней поверхности бедра с ногой вверх",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "push",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "Lie flat on your back, bend one knee, and put that foot flat on the floor to stabilize your spine.",
+      "Extend the other leg in the air. If you're tight, you wont be able to straighten it. That's okay. Extend the knee so that the sole of the lifted foot faces the ceiling (or as close as you can get it).",
+      "Slowly straighten the legs as much as possible and then pull the leg toward your nose. Switch sides."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Leg-Up_Hamstring_Stretch.json"
+  },
+  {
+    "id": "lib-linear-3-part-start-technique",
+    "nameEn": "Linear 3-Part Start Technique",
+    "nameRu": "Трёхшаговый старт (спринт-техника)",
+    "category": "abs",
+    "datasetCategory": "plyometrics",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "push",
+    "mechanic": "compound",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "calves",
+      "quadriceps"
+    ],
+    "instructionsEn": [
+      "This drill helps you accelerate as quickly as possible into a sprint from a dead stop. It helps to use a line to start from. Begin with two feet on the line. Place your left foot with the toe next to your right ankle. Place your right foot 4-6 inches behind the left.",
+      "Place your right hand onto the line, and thing bring your nose close to your left knee.",
+      "Squat down as you lean foward, your head being lower than your hips and your weight loaded onto the left leg. This will be your starting position.",
+      "Take your left hand up so that it is parallel to the ground, pointing behind you, and explode out when ready."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Linear_3-Part_Start_Technique.json"
+  },
+  {
+    "id": "lib-linear-acceleration-wall-drill",
+    "nameEn": "Linear Acceleration Wall Drill",
+    "nameRu": "Ускорение у стены (спринт-дрилл)",
+    "category": "abs",
+    "datasetCategory": "plyometrics",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": null,
+    "mechanic": "compound",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "calves",
+      "glutes",
+      "quadriceps"
+    ],
+    "instructionsEn": [
+      "Lean at around 45 degrees against a wall. Your feet should be together, glutes contracted.",
+      "Begin by lifting your right knee quickly, pausing, and then driving it straight down into the ground.",
+      "Switch legs, raising the opposite knee, and then attacking the ground straight down.",
+      "Repeat once more with your right leg, and as soon as the right foot strikes the ground hammer them out rapidly, alternating left and right as fast as you can."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Linear_Acceleration_Wall_Drill.json"
+  },
+  {
+    "id": "lib-looking-at-ceiling",
+    "nameEn": "Looking At Ceiling",
+    "nameRu": "Прогиб назад на коленях",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "Kneel on the floor, holding your heels with both hands.",
+      "Lift your buttocks up and forward while bringing your head back to look up at the ceiling, to give an arch in your back."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Looking_At_Ceiling.json"
+  },
+  {
+    "id": "lib-middle-back-stretch",
+    "nameEn": "Middle Back Stretch",
+    "nameRu": "Растяжка середины спины",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "middle back"
+    ],
+    "secondaryMuscles": [
+      "abdominals",
+      "lats",
+      "lower back"
+    ],
+    "instructionsEn": [
+      "Stand so your feet are shoulder width apart and your hands are on your hips.",
+      "Twist at your waist until you feel a stretch. Hold for 10 to 15 seconds, then twist to the other side."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Middle_Back_Stretch.json"
+  },
+  {
+    "id": "lib-mountain-climbers",
+    "nameEn": "Mountain Climbers",
+    "nameRu": "«Альпинисты» (бег в упоре)",
+    "category": "abs",
+    "datasetCategory": "plyometrics",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "pull",
+    "mechanic": "compound",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "chest",
+      "hamstrings",
+      "shoulders"
+    ],
+    "instructionsEn": [
+      "Begin in a pushup position, with your weight supported by your hands and toes. Flexing the knee and hip, bring one leg until the knee is approximately under the hip. This will be your starting position.",
+      "Explosively reverse the positions of your legs, extending the bent leg until the leg is straight and supported by the toe, and bringing the other foot up with the hip and knee flexed. Repeat in an alternating fashion for 20-30 seconds."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Mountain_Climbers.json"
+  },
+  {
+    "id": "lib-moving-claw-series",
+    "nameEn": "Moving Claw Series",
+    "nameRu": "«Коготь» в движении (спринт-дрилл)",
+    "category": "abs",
+    "datasetCategory": "plyometrics",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": null,
+    "mechanic": "compound",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "calves",
+      "quadriceps"
+    ],
+    "instructionsEn": [
+      "This move helps prepare your running form to help you excel at sprinting. As you run, be sure to flex the knee, aiming to kick your glutes as the hip extends.",
+      "Reload the quad as the leg moves back forward, attacking the ground on the next step.",
+      "Ensure that as you run, you block with the arms, punching through in a rapid 1-2 motion."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Moving_Claw_Series.json"
+  },
+  {
+    "id": "lib-on-your-side-quad-stretch",
+    "nameEn": "On Your Side Quad Stretch",
+    "nameRu": "Растяжка квадрицепса на боку",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "Start off by lying on your right side, with your right knee bent at a 90-degree angle resting on the floor in front of you (this stabilizes the torso).",
+      "Bend your left knee behind you and hold your left foot with your left hand. To stretch your hip flexor, press your left hip forward as you push your left foot back into your hand. Switch sides."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/On_Your_Side_Quad_Stretch.json"
+  },
+  {
+    "id": "lib-one-arm-against-wall",
+    "nameEn": "One Arm Against Wall",
+    "nameRu": "Рука у стены (растяжка широчайших)",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "lats"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "From a standing position, place a bent arm against a wall or doorway.",
+      "Slowly lean toward your arm until you feel a stretch in your lats."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/One_Arm_Against_Wall.json"
+  },
+  {
+    "id": "lib-one-half-locust",
+    "nameEn": "One Half Locust",
+    "nameRu": "Полукузнечик (поза саранчи)",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "abdominals",
+      "biceps",
+      "chest"
+    ],
+    "instructionsEn": [
+      "Lie facedown on the floor.",
+      "Put your left hand under your left hipbone to pad your hip and pubic bone.",
+      "Bend your right knee so you can hold the foot in your right hand.",
+      "Lift the foot in the air and simultaneously lift your shoulders off the floor. This also stretches the right hip flexor and the chest and shoulders. Switch sides. If it doesn't bother your back, you can try it with both arms and legs at the same time."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/One_Half_Locust.json"
+  },
+  {
+    "id": "lib-one-knee-to-chest",
+    "nameEn": "One Knee To Chest",
+    "nameRu": "Одно колено к груди",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "compound",
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "instructionsEn": [
+      "Start off by lying on the floor.",
+      "Extend one leg straight and pull the other knee to your chest. Hold under the knee joint to protect the kneecap.",
+      "Gently tug that knee toward your nose.",
+      "Switch sides. This stretches the buttocks and lower back of the bent leg and the hip flexor of the straight leg."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/One_Knee_To_Chest.json"
+  },
+  {
+    "id": "lib-overhead-stretch",
+    "nameEn": "Overhead Stretch",
+    "nameRu": "Растяжка над головой",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "compound",
+    "primaryMuscles": [
+      "abdominals"
+    ],
+    "secondaryMuscles": [
+      "chest",
+      "forearms",
+      "lats",
+      "triceps"
+    ],
+    "instructionsEn": [
+      "Standing straight up, lace your fingers together and open your palms to the ceiling. Keep your shoulders down as you extend your arms up.",
+      "To create a full torso stretch, pull your tailbone down and stabilize your torso as you do this. Stretch the muscles on both the front and the back of the torso."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Overhead_Stretch.json"
+  },
+  {
+    "id": "lib-pelvic-tilt-into-bridge",
+    "nameEn": "Pelvic Tilt Into Bridge",
+    "nameRu": "Мостик с наклоном таза",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "intermediate",
+    "force": "static",
+    "mechanic": "compound",
+    "primaryMuscles": [
+      "lower back"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "Lie down with your feet on the floor, heels directly under your knees.",
+      "Lift only your tailbone to the ceiling to stretch your lower back. (Don't lift the entire spine yet.) Pull in your stomach.",
+      "To go into a bridge, lift the entire spine except the neck."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Pelvic_Tilt_Into_Bridge.json"
+  },
+  {
+    "id": "lib-prone-manual-hamstring",
+    "nameEn": "Prone Manual Hamstring",
+    "nameRu": "Растяжка бицепса бедра лёжа (с партнёром)",
+    "category": "abs",
+    "datasetCategory": "strength",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "You will need a partner for this exercise. Lay face down with your legs straight. Your assistant will place their hand on your heel.",
+      "To begin, flex the knee to curl your leg up. Your partner should provide resistance, starting light and increasing the pressure as the movement is completed. Communicate with your partner to monitor appropriate resistance levels.",
+      "Pause at the top, returning the leg to the starting position as your partner provides resistance going the other direction."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Prone_Manual_Hamstring.json"
+  },
+  {
+    "id": "lib-runners-stretch",
+    "nameEn": "Runner's Stretch",
+    "nameRu": "Растяжка бегуна",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "calves"
+    ],
+    "instructionsEn": [
+      "It's easiest to get into this stretch if you start standing up, put one leg behind you, and slowly lower your torso down to the floor.",
+      "Keep the front heel on the floor (if it lifts up, scoot your other leg further back).",
+      "Place your hands on either side of your front leg. To get more out of this stretch, push your butt up toward the ceiling, and then gradually lower it back toward the floor. You'll Stretch the hip flexor of the back leg and the hamstring and buttocks of the front."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Runners_Stretch.json"
+  },
+  {
+    "id": "lib-seated-calf-stretch",
+    "nameEn": "Seated Calf Stretch",
+    "nameRu": "Растяжка икр сидя",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "instructionsEn": [
+      "Sit up straight on an exercise mat.",
+      "Bend one knee and put that foot on the floor to stabilize the torso.",
+      "Straighten your other leg and flex your ankle.",
+      "Using a band, towel, or your hand if you can reach, pull the toes toward you. Hold for 10 to 20 seconds, then switch sides."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Seated_Calf_Stretch.json"
+  },
+  {
+    "id": "lib-seated-floor-hamstring-stretch",
+    "nameEn": "Seated Floor Hamstring Stretch",
+    "nameRu": "Складка сидя на полу",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "calves"
+    ],
+    "instructionsEn": [
+      "Sit on a mat with your right leg extended in front of you and your left leg bent with your foot against your right inner thigh.",
+      "Lean forward from your hips and reach for your ankle until you feel a stretch in your hamstring. Hold for 15 seconds, then repeat for your other side."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Seated_Floor_Hamstring_Stretch.json"
+  },
+  {
+    "id": "lib-seated-hamstring",
+    "nameEn": "Seated Hamstring",
+    "nameRu": "Растяжка сидя (с партнёром)",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "expert",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "calves"
+    ],
+    "instructionsEn": [
+      "In a seated position with your legs extended, have your partner stand behind you. Now, lean forward as your partner braces your shoulders with their hands. This will be your starting position.",
+      "Attempt to push your torso back for 10-20 seconds, as your partner prevents any actual movement of your torso.",
+      "Now relax your muscles as your partner increases the stretch by gently pushing your torso forward for 10-20 seconds."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Seated_Hamstring.json"
+  },
+  {
+    "id": "lib-seated-overhead-stretch",
+    "nameEn": "Seated Overhead Stretch",
+    "nameRu": "Растяжка вверх сидя",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "abdominals"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "Sit up straight on an exercise mat.",
+      "Touch the soles of your feet together with your feet six to eight inches in front of your hips.",
+      "Place one hand on the floor beside you and your other hand behind your head.",
+      "Lift your elbow to the ceiling as you incline your torso to the other side. Hold for 10 to 20 seconds, then switch sides."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Seated_Overhead_Stretch.json"
+  },
+  {
+    "id": "lib-shoulder-circles",
+    "nameEn": "Shoulder Circles",
+    "nameRu": "Вращения плечами",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "pull",
+    "mechanic": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "traps"
+    ],
+    "instructionsEn": [
+      "With shoulders relaxed and arms resting loosely at your sides (or in your lap if you're seated), gently roll your shoulders forward, up, back, and down.",
+      "Reverse direction. You can do this exercise alternating shoulders or both at the same time."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Shoulder_Circles.json"
+  },
+  {
+    "id": "lib-shoulder-raise",
+    "nameEn": "Shoulder Raise",
+    "nameRu": "Подъёмы плеч (разминка)",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "pull",
+    "mechanic": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "lats"
+    ],
+    "instructionsEn": [
+      "Relax your arms to your sides and raise your shoulders up toward your ears, then back down."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Shoulder_Raise.json"
+  },
+  {
+    "id": "lib-shoulder-stretch",
+    "nameEn": "Shoulder Stretch",
+    "nameRu": "Растяжка плеч",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "pull",
+    "mechanic": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "Reach your left arm across your body and hold it straight."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Shoulder_Stretch.json"
+  },
+  {
+    "id": "lib-side-lying-floor-stretch",
+    "nameEn": "Side-Lying Floor Stretch",
+    "nameRu": "Растяжка лёжа на боку",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "lats"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "First lie on your left side, bending your left knee in front of you to stabilize your torso (use your abdominal muscles as well to hold you upright).",
+      "Straighten your right leg and rest the right foot on the floor behind your left. Straighten your right arm over your head and gently pull on your right wrist to stretch the entire right side of the body. Switch sides."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Side-Lying_Floor_Stretch.json"
+  },
+  {
+    "id": "lib-side-lying-groin-stretch",
+    "nameEn": "Side Lying Groin Stretch",
+    "nameRu": "Растяжка приводящих лёжа на боку",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "adductors"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "instructionsEn": [
+      "Start off by lying on your right side and bend your right knee in front of you to stabilize the torso.",
+      "Rest your head on your right hand or shoulder. Lift your left leg upward and hold it by the back of the knee (easier) or the foot (harder).",
+      "Pull your left knee in toward your left shoulder and simultaneously press your foot or knee down to the floor. To intensify this stretch, straighten your left leg. Switch sides."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Side_Lying_Groin_Stretch.json"
+  },
+  {
+    "id": "lib-side-neck-stretch",
+    "nameEn": "Side Neck Stretch",
+    "nameRu": "Растяжка шеи в сторону",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "neck"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "Start with your shoulders relaxed, gently tilt your head towards your shoulder.",
+      "Assist stretch with a gentle pull on the side of the head."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Side_Neck_Stretch.json"
+  },
+  {
+    "id": "lib-side-standing-long-jump",
+    "nameEn": "Side Standing Long Jump",
+    "nameRu": "Прыжки в длину в сторону",
+    "category": "abs",
+    "datasetCategory": "plyometrics",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "push",
+    "mechanic": "compound",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "calves",
+      "glutes",
+      "hamstrings"
+    ],
+    "instructionsEn": [
+      "Begin standing with your feet hip width apart in an athletic stance. Your head and chest should be up, knees and hips slightly bent. This will be your starting position.",
+      "Leaning to your right, extend through your hips, knees, and ankles to jump into the air. Block with the arms to lead the movement, jumping as far to your right as you can.",
+      "Land facing the same direction with your feet hip width apart, absorbing the impact through your lower body."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Side_Standing_Long_Jump.json"
+  },
+  {
+    "id": "lib-side-wrist-pull",
+    "nameEn": "Side Wrist Pull",
+    "nameRu": "Тяга запястья поперёк корпуса",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "forearms",
+      "lats"
+    ],
+    "instructionsEn": [
+      "This stretch works best standing. Cross your left arm over the midline of your body and hold the left wrist in your right hand down at the level of your hips. Start the stretch with a bent left arm.",
+      "Slowly straighten, pull, and lift it up to shoulder height, as pictured. Feel this stretch originate in your back, not your shoulders, and don't pull too hard on the shoulders joint. Switch sides."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Side_Wrist_Pull.json"
+  },
+  {
+    "id": "lib-sit-squats",
+    "nameEn": "Sit Squats",
+    "nameRu": "Приседания с паузой",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "push",
+    "mechanic": null,
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "abductors",
+      "glutes",
+      "hamstrings"
+    ],
+    "instructionsEn": [
+      "Stand with your feet shoulder width apart. This will be your starting position.",
+      "Begin the movement by flexing your knees and hips, sitting back with your hips.",
+      "Continue until you have squatted a portion of the way down, but are above parallel, and quickly reverse the motion until you return to the starting position. Repeat for 5-10 repetitions."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Sit_Squats.json"
+  },
+  {
+    "id": "lib-split-squats",
+    "nameEn": "Split Squats",
+    "nameRu": "Сплит-приседания",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "intermediate",
+    "force": "push",
+    "mechanic": null,
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "calves",
+      "glutes",
+      "quadriceps"
+    ],
+    "instructionsEn": [
+      "Being in a standing position. Jump into a split leg position, with one leg forward and one leg back, flexing the knees and lowering your hips slightly as you do so.",
+      "As you descend, immediately reverse direction, standing back up and jumping, reversing the position of your legs. Repeat 5-10 times on each leg."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Split_Squats.json"
+  },
+  {
+    "id": "lib-standing-gastrocnemius-calf-stretch",
+    "nameEn": "Standing Gastrocnemius Calf Stretch",
+    "nameRu": "Растяжка икроножной мышцы стоя",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "instructionsEn": [
+      "Place your right heel on a step with your knee extended and lean forward to grab your right toe with your right hand. Your left knee should be slightly bent and your back should be straight.",
+      "Support your weight on your left leg and place your left hand on your left thigh.",
+      "Pull your right toes toward your knee until you feel a stretch in your calf."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Standing_Gastrocnemius_Calf_Stretch.json"
+  },
+  {
+    "id": "lib-standing-hip-flexors",
+    "nameEn": "Standing Hip Flexors",
+    "nameRu": "Растяжка сгибателей бедра стоя",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "Stand up straight with the spine vertical, the left foot slightly in front of the right.",
+      "Bend both knees and lift the back heel off the floor as you press the right hip forward. You can't get a thorough, deep stretch in this position, however, because it's hard to relax the hip flexor and stand on it at the same time. Switch sides."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Standing_Hip_Flexors.json"
+  },
+  {
+    "id": "lib-standing-lateral-stretch",
+    "nameEn": "Standing Lateral Stretch",
+    "nameRu": "Боковая растяжка стоя",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "abdominals"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "Take a slightly wider than hip distance stance with your knees slightly bent.",
+      "Place your right hand on your right hip to support the spine.",
+      "Raise your left arm in a vertical line and place your left hand behind your head. Keep it there as you incline your torso to the right.",
+      "Keep your weight evenly distributed between both legs (don't lean into your left hip). Switch sides."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Standing_Lateral_Stretch.json"
+  },
+  {
+    "id": "lib-standing-pelvic-tilt",
+    "nameEn": "Standing Pelvic Tilt",
+    "nameRu": "Наклон таза стоя",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "lower back"
+    ],
+    "secondaryMuscles": [
+      "glutes"
+    ],
+    "instructionsEn": [
+      "Start off with your feet hip-distance apart.",
+      "Bend your knees slightly to keep them soft and springy.",
+      "You may want to move your pelvis forward and backward and back few times before holding the tailbone forward in this stretch."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Standing_Pelvic_Tilt.json"
+  },
+  {
+    "id": "lib-standing-soleus-and-achilles-stretch",
+    "nameEn": "Standing Soleus And Achilles Stretch",
+    "nameRu": "Растяжка камбаловидной и ахиллова сухожилия",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "instructionsEn": [
+      "Stand with your feet hip-distance apart, one foot slightly in front of the other.",
+      "Bend both knees, keeping your back heel on the floor. Switch sides."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Standing_Soleus_And_Achilles_Stretch.json"
+  },
+  {
+    "id": "lib-standing-toe-touches",
+    "nameEn": "Standing Toe Touches",
+    "nameRu": "Касания носков стоя",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "calves"
+    ],
+    "instructionsEn": [
+      "Stand with some space in front and behind you.",
+      "Bend at the waist, keeping your legs straight, until you can relax and let your upper body hang down in front of you. Let your arms and hands hang down naturally. Hold for 10 to 20 seconds."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Standing_Toe_Touches.json"
+  },
+  {
+    "id": "lib-the-straddle",
+    "nameEn": "The Straddle",
+    "nameRu": "Широкая складка (уголком)",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "adductors",
+      "calves"
+    ],
+    "instructionsEn": [
+      "Begin in a seated, upright position. Start by extending your legs in front of you in a V.",
+      "With your hands on the floor, lean forward as far as possible. Hold for 10 to 20 seconds."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/The_Straddle.json"
+  },
+  {
+    "id": "lib-trail-running-walking",
+    "nameEn": "Trail Running/Walking",
+    "nameRu": "Бег или ходьба по пересечённой местности",
+    "category": "abs",
+    "datasetCategory": "cardio",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": null,
+    "mechanic": null,
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "calves",
+      "glutes",
+      "hamstrings"
+    ],
+    "instructionsEn": [
+      "Running or hiking on trails will get the blood pumping and heart beating almost immediately. Make sure you have good shoes. While you use the muscles in your calves and buttocks to pull yourself up a hill, the knees, joints and ankles absorb the bulk of the pounding coming back down. Take smaller steps as you walk downhill, keep your knees bent to reduce the impact and slow down to avoid falling.",
+      "A 150 lb person can burn over 200 calories for 30 minutes walking uphill, compared to 175 on a flat surface. If running the trail, a 150 lb person can burn well over 500 calories in 30 minutes."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Trail_Running_Walking.json"
+  },
+  {
+    "id": "lib-tricep-side-stretch",
+    "nameEn": "Tricep Side Stretch",
+    "nameRu": "Растяжка трицепса вбок",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "instructionsEn": [
+      "Bring right arm across your body and over your left shoulder, holding your elbow with your left hand, until you feel a stretch in your tricep. Then repeat for your other arm."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Tricep_Side_Stretch.json"
+  },
+  {
+    "id": "lib-triceps-stretch",
+    "nameEn": "Triceps Stretch",
+    "nameRu": "Растяжка трицепса",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": "isolation",
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "secondaryMuscles": [
+      "lats"
+    ],
+    "instructionsEn": [
+      "Reach your hand behind your head, grasp your elbow and gently pull. Hold for 10 to 20 seconds, then switch sides."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Triceps_Stretch.json"
+  },
+  {
+    "id": "lib-upper-back-leg-grab",
+    "nameEn": "Upper Back-Leg Grab",
+    "nameRu": "Обхват бёдер сидя (складка)",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "lower back",
+      "middle back"
+    ],
+    "instructionsEn": [
+      "While seated, bend forward to hug your thighs from underneath with both arms.",
+      "Keep your knees together and your legs extended out as you bring your chest down to your knees. You can also stretch your middle back by pulling your back away from your knees as your hugging them."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Upper_Back-Leg_Grab.json"
+  },
+  {
+    "id": "lib-upper-back-stretch",
+    "nameEn": "Upper Back Stretch",
+    "nameRu": "Растяжка верха спины",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "middle back"
+    ],
+    "secondaryMuscles": [
+      "middle back"
+    ],
+    "instructionsEn": [
+      "Clasp fingers together with your thumbs pointing down, round your shoulders as you reach your hands forward."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Upper_Back_Stretch.json"
+  },
+  {
+    "id": "lib-upward-stretch",
+    "nameEn": "Upward Stretch",
+    "nameRu": "Растяжка вверх стоя",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "chest",
+      "lats"
+    ],
+    "instructionsEn": [
+      "Extend both hands straight above your head, palms touching.",
+      "Slowly push your hands up and back, keeping your back straight."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Upward_Stretch.json"
+  },
+  {
+    "id": "lib-windmills",
+    "nameEn": "Windmills",
+    "nameRu": "«Мельница» (наклоны в стороны)",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "intermediate",
+    "force": "pull",
+    "mechanic": null,
+    "primaryMuscles": [
+      "abductors"
+    ],
+    "secondaryMuscles": [
+      "glutes",
+      "hamstrings",
+      "lower back"
+    ],
+    "instructionsEn": [
+      "Lie on your back with your arms extended out to the sides and your legs straight. This will be your starting position.",
+      "Lift one leg and quickly cross it over your body, attempting to touch the ground near the opposite hand.",
+      "Return to the starting position, and repeat with the opposite leg. Continue to alternate for 10-20 repetitions."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Windmills.json"
+  },
+  {
+    "id": "lib-worlds-greatest-stretch",
+    "nameEn": "World's Greatest Stretch",
+    "nameRu": "Выпад с разворотом («лучшая растяжка»)",
+    "category": "abs",
+    "datasetCategory": "stretching",
+    "equipment": "bodyweight",
+    "level": "intermediate",
+    "force": "static",
+    "mechanic": null,
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "calves",
+      "glutes",
+      "quadriceps"
+    ],
+    "instructionsEn": [
+      "This is a three-part stretch. Begin by lunging forward, with your front foot flat on the ground and on the toes of your back foot. With your knees bent, squat down until your knee is almost touching the ground. Keep your torso erect, and hold this position for 10-20 seconds.",
+      "Now, place the arm on the same side as your front leg on the ground, with the elbow next to the foot. Your other hand should be placed on the ground, parallel to your lead leg, to help support you during this portion of the stretch.",
+      "After 10-20 seconds, place your hands on either side of your front foot. Raise the toes of the front foot off of the ground, and straighten your leg. You may need to reposition your rear leg to do so. Hold for 10-20 seconds, and then repeat the entire sequence for the other side."
+    ],
+    "instructionsRu": [],
+    "imageKeys": [],
+    "sourceLicense": "Unlicense",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Worlds_Greatest_Stretch.json"
   }
 ];

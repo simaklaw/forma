@@ -71,12 +71,16 @@ describe('filterImportedLibrary', () => {
     expect(all.length).toBe(IMPORTED_EXERCISE_LIBRARY.length);
   });
 
-  it('every home entry keeps non-empty Russian instructions (smoke)', () => {
-    const home = IMPORTED_EXERCISE_LIBRARY.filter(
-      (ex) => ex.equipment === 'bodyweight' || ex.equipment === 'bands'
+  it('entries with dataset photos keep non-empty Russian instructions (smoke)', () => {
+    // Phase-1 домашние записи (единственные с датасет-фото) сохраняют
+    // переведённые инструкции. Тренажерные (tier-1/2) и tier-3 идут без
+    // датасет-фото и с пустыми instructionsRu — RU-фолбэк на EN, переводы
+    // догоняются инкрементально в scripts/lib/instructions-ru.json.
+    const withPhotos = IMPORTED_EXERCISE_LIBRARY.filter(
+      (ex) => ex.imageKeys.length > 0
     );
-    expect(home.length).toBeGreaterThanOrEqual(90);
-    for (const ex of home) {
+    expect(withPhotos.length).toBeGreaterThanOrEqual(90);
+    for (const ex of withPhotos) {
       expect(ex.instructionsRu.length).toBeGreaterThan(0);
     }
   });
@@ -221,4 +225,5 @@ describe('filterImportedLibrary', () => {
     expect(filterImportedLibrary(items, 'жим biceps', null)).toHaveLength(0);
   });
 });
+
 
