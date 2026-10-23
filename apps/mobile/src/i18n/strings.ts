@@ -242,6 +242,10 @@ const RU = {
   progressImportSection: 'С ЧАСОВ / GPS',
   progressAchievements: 'ДОСТИЖЕНИЯ',
   progressBurnWeek: 'ЖЖЕНИЕ · 7 ДНЕЙ',
+  progressStrengthKicker: 'СИЛА · e1RM (ЭПЛИ)',
+  strengthDeltaUp: '▲ +{kg} кг / 30 дн',
+  strengthDeltaDown: '▼ −{kg} кг / 30 дн',
+  strengthVolume: 'объём {kg} кг',
 
   // Профиль (ProfileScreen)
   profileExport: 'Экспорт',
@@ -624,6 +628,10 @@ const EN: Record<StringKey, string> = {
   progressImportSection: 'FROM WATCH / GPS',
   progressAchievements: 'ACHIEVEMENTS',
   progressBurnWeek: 'BURN · 7 DAYS',
+  progressStrengthKicker: 'STRENGTH · e1RM (EPLEY)',
+  strengthDeltaUp: '▲ +{kg} kg / 30 d',
+  strengthDeltaDown: '▼ −{kg} kg / 30 d',
+  strengthVolume: 'volume {kg} kg',
 
   profileExport: 'Export',
   profileExportDone: 'File saved: {path}',
