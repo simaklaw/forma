@@ -1,0 +1,273 @@
+name: Build Android APK
+
+on:
+  # Одноразовый запуск: срабатывает автоматически на пуш в эту временную ветку.
+  push:
+    branches:
+      - ci/apk-build
+    inputs:
+      sync_api_url:
+        description: "HTTPS sync API URL for this test APK"
+        required: false
+        default: "https://fitpulse-api.fly.dev"
+      mailru_client_id:
+        description: "Public Mail.ru OIDC client ID"
+        required: false
+        default: "01a0f7166d967e68a13e38353948a6a5"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-apk:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    env:
+      # Repository Variables override these defaults when configured.
+      # Production sync API: https://fitpulse-api.fly.dev (see docs/deploy-fly-r2.md).
+      EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID: ${{ inputs.mailru_client_id || vars.EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID || '01a0f7166d967e68a13e38353948a6a5' }}
+      EXPO_PUBLIC_SYNC_API_URL: ${{ inputs.sync_api_url || vars.EXPO_PUBLIC_SYNC_API_URL || 'https://fitpulse-api.fly.dev' }}
+      # issue #171: штамп сборки — git-SHA попадает в JS-бандл через Metro (EXPO_PUBLIC_*).
+      EXPO_PUBLIC_GIT_SHA: ${{ github.sha }}
+      # Do NOT set NODE_ENV=production at job level — pnpm then skips
+      # devDependencies (babel-plugin-module-resolver) and Metro fails.
+      GRADLE_OPTS: -Xmx4g -XX:MaxMetaspaceSize=1g -Dorg.gradle.daemon=false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9.15.0
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Configure Android SDK (preinstalled on GitHub runners)
+        shell: bash
+        run: |
+          set -euo pipefail
+          ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+
+          for d in latest 16.0 13.0 12.0; do
+            if [[ -d "$ANDROID_HOME/cmdline-tools/$d/bin" ]]; then
+              echo "$ANDROID_HOME/cmdline-tools/$d/bin" >> "$GITHUB_PATH"
+              export PATH="$ANDROID_HOME/cmdline-tools/$d/bin:$PATH"
+              break
+            fi
+          done
+
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;35.0.0" \
+            "ndk;25.1.8937393" \
+            "cmake;3.22.1" || true
+
+      - name: Validate production app configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID" || { echo "::error::Missing GitHub Variable EXPO_PUBLIC_OIDC_MAILRU_CLIENT_ID"; exit 1; }
+
+          # Prefer explicit HTTPS URL; if a repo Variable is empty or HTTP (local/dev),
+          # fall back to production Fly so main APK builds stay green.
+          DEFAULT_SYNC_URL="https://fitpulse-api.fly.dev"
+          SYNC_URL="${EXPO_PUBLIC_SYNC_API_URL:-}"
+          case "$SYNC_URL" in
+            https://*) ;;
+            *)
+              echo "::warning::EXPO_PUBLIC_SYNC_API_URL is missing or not HTTPS ('${SYNC_URL}'). Using ${DEFAULT_SYNC_URL}."
+              SYNC_URL="$DEFAULT_SYNC_URL"
+              ;;
+          esac
+          echo "EXPO_PUBLIC_SYNC_API_URL=$SYNC_URL" >> "$GITHUB_ENV"
+          echo "Production Mail.ru client ID and HTTPS API URL are configured: $SYNC_URL"
+      - name: Install workspace dependencies (incl. devDeps for Babel/Metro)
+        shell: bash
+        env:
+          NODE_ENV: development
+        run: |
+          set -euo pipefail
+          # The web workspace manifest has recently changed without a matching lockfile update.
+          # Resolve the current workspace graph for APK builds instead of failing before Expo prebuild.
+          pnpm install --no-frozen-lockfile
+          node -e "require.resolve('babel-plugin-module-resolver')"
+          echo "babel-plugin-module-resolver OK"
+
+      - name: Generate Android project (expo prebuild)
+        working-directory: apps/mobile
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -q '"expo-dev-client"' package.json; then
+            sed -i '/"expo-dev-client":/d' package.json
+          fi
+          pnpm exec expo prebuild --platform android --clean --no-install
+
+          if [[ -f android/settings.gradle ]]; then
+            sed -i "s#require.resolve('@react-native/gradle-plugin/package.json')#require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })#" android/settings.gradle || true
+          fi
+
+          if [[ -f android/gradle.properties ]]; then
+            {
+              echo ""
+              echo "# CI overrides"
+              echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError"
+              echo "org.gradle.parallel=true"
+              echo "android.enableJetifier=false"
+            } >> android/gradle.properties
+          fi
+
+          APP_GRADLE="android/app/build.gradle"
+          if [[ -f "$APP_GRADLE" ]]; then
+            sed -i 's|^[[:space:]]*//[[:space:]]*debuggableVariants.*|    debuggableVariants = []|' "$APP_GRADLE" || true
+            if ! grep -q '^[[:space:]]*debuggableVariants' "$APP_GRADLE"; then
+              awk '
+                /react[[:space:]]*\{/ && !done {
+                  print
+                  print "    debuggableVariants = []"
+                  done=1
+                  next
+                }
+                { print }
+              ' "$APP_GRADLE" > "$APP_GRADLE.tmp" && mv "$APP_GRADLE.tmp" "$APP_GRADLE"
+            fi
+          fi
+
+          if [[ ! -f index.js ]]; then
+            echo "::error::apps/mobile/index.js missing"
+            exit 1
+          fi
+
+          # SDK 35 / newer AGP: PackageInfo.requestedPermissions is Array<String>?
+          # expo-modules-core (SDK 51) still uses non-null contains() — patch until
+          # dependency bumps past the null-safe call.
+          PERM_KT=$(find ../../node_modules/expo-modules-core -path '*/permissions/PermissionsService.kt' 2>/dev/null | head -1)
+          if [[ -n "${PERM_KT:-}" && -f "$PERM_KT" ]]; then
+            echo "Patching null-safe requestedPermissions in $PERM_KT"
+            sed -i 's/return requestedPermissions\.contains(permission)/return requestedPermissions?.contains(permission) ?: false/' "$PERM_KT"
+            grep -n 'requestedPermissions' "$PERM_KT" | head -5 || true
+          else
+            echo "::warning::PermissionsService.kt not found — skip nullability patch"
+          fi
+
+      - name: Prefetch SQLite amalgamation
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZIP_URL="https://www.sqlite.org/2024/sqlite-amalgamation-3450300.zip"
+          DEST="$RUNNER_TEMP/sqlite-amalgamation-3450300.zip"
+          for i in 1 2 3 4 5; do
+            if curl -fsSL --retry 5 --retry-delay 3 -o "$DEST" "$ZIP_URL"; then
+              echo "SQLite zip OK (attempt $i)"
+              break
+            fi
+            sleep 3
+          done
+          ls -la "$DEST" 2>/dev/null || echo "::warning::SQLite prefetch failed"
+
+      - name: Build release APK (JS bundle embedded, debug-signed)
+        working-directory: apps/mobile/android
+        shell: bash
+        env:
+          NODE_ENV: production
+        run: |
+          set -euo pipefail
+          echo "ANDROID_HOME=${ANDROID_HOME:-}"
+          chmod +x ./gradlew
+
+          # React Native's Android resource names omit the file extension. The exercise
+          # dataset intentionally ships matching .jpg previews and .gif demos, which
+          # therefore collide during mergeReleaseResources. Keep the GIF resource so
+          # exercise demonstrations remain available; both asset references resolve
+          # to that shared Android resource identifier.
+          cat > "$RUNNER_TEMP/prune-duplicate-exercise-assets.gradle" <<'GRADLE'
+          gradle.projectsEvaluated {
+            // Do not assume the Android application is registered under the literal
+            // Gradle path ':app'; locate it by project name across this build.
+            def appProject = gradle.rootProject.allprojects.find { it.name == 'app' }
+            if (appProject == null) {
+              // The init script also runs for Gradle included builds used by React
+              // Native plugins. Those builds do not contain the Android :app project;
+              // skip them and let the callback configure the actual app build.
+              println "Skipping duplicate exercise image cleanup for Gradle build without app project: " +
+                gradle.rootProject.allprojects.collect { it.path }.join(', ')
+              return
+            }
+
+            def bundleTask = appProject.tasks.findByName('createBundleReleaseJsAndAssets')
+            def mergeTask = appProject.tasks.findByName('mergeReleaseResources')
+            if (bundleTask == null || mergeTask == null) {
+              throw new GradleException("Expected React Native bundle and Android resource merge tasks were not found in ${appProject.path}")
+            }
+
+            def pruneTask = appProject.tasks.register('pruneDuplicateExerciseImages') {
+              dependsOn bundleTask
+              doLast {
+                def generatedRes = new File(appProject.buildDir, 'generated/res/createBundleReleaseJsAndAssets')
+                int removed = 0
+                if (generatedRes.exists()) {
+                  generatedRes.eachFileRecurse { file ->
+                    if (file.isFile() && file.name.endsWith('.jpg') && file.name.startsWith('assets_exercises_dataset_')) {
+                      def gif = new File(file.parentFile, file.name.substring(0, file.name.lastIndexOf('.')) + '.gif')
+                      if (gif.exists()) {
+                        if (!file.delete()) {
+                          throw new GradleException("Could not remove duplicate exercise image resource: ${file}")
+                        }
+                        removed++
+                      }
+                    }
+                  }
+                }
+                println "Pruned ${removed} duplicate exercise JPG resources; GIF resources retained"
+              }
+            }
+            mergeTask.configure { dependsOn pruneTask }
+          }
+          GRADLE
+
+          ./gradlew -I "$RUNNER_TEMP/prune-duplicate-exercise-assets.gradle" assembleRelease --no-daemon --stacktrace
+
+      - name: Verify bundle inside APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=$(find apps/mobile/android/app/build/outputs/apk -name '*.apk' | head -1)
+          echo "APK=$APK"
+          test -n "$APK"
+          unzip -l "$APK" | tee "$RUNNER_TEMP/apk-list.txt" | grep -E 'index\.(android\.)?bundle|assets/index' \
+            || { echo '::error::JS bundle not found inside APK'; exit 1; }
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: fitpulse-android-standalone-apk
+          path: |
+            apps/mobile/android/app/build/outputs/apk/release/*.apk
+            apps/mobile/android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 7
