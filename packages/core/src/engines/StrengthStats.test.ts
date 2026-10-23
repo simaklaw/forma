@@ -69,3 +69,64 @@ describe("strengthTrends", () => {
     assert.equal(strengthTrends([log(6, "2026-10-10", 0, 12)], NOW).length, 0);
   });
 });
+
+describe("strength trend (regression + R2, порт из whoop-mcp)", () => {
+  it("classifies a steadily increasing exercise as improving", () => {
+    const logs = [
+      log(7, "2026-10-01", 50, 1),
+      log(7, "2026-10-02", 55, 1),
+      log(7, "2026-10-03", 60, 1),
+      log(7, "2026-10-04", 65, 1),
+      log(7, "2026-10-05", 70, 1),
+      log(7, "2026-10-06", 75, 1),
+      log(7, "2026-10-07", 80, 1),
+      log(7, "2026-10-08", 85, 1),
+    ];
+    const t = strengthTrends(logs, NOW)[0]!;
+    assert.equal(t.trend, "improving");
+  });
+
+  it("classifies a steadily decreasing exercise as declining", () => {
+    const logs = [
+      log(8, "2026-10-01", 85, 1),
+      log(8, "2026-10-02", 80, 1),
+      log(8, "2026-10-03", 75, 1),
+      log(8, "2026-10-04", 70, 1),
+      log(8, "2026-10-05", 65, 1),
+      log(8, "2026-10-06", 60, 1),
+      log(8, "2026-10-07", 55, 1),
+      log(8, "2026-10-08", 50, 1),
+    ];
+    const t = strengthTrends(logs, NOW)[0]!;
+    assert.equal(t.trend, "declining");
+  });
+
+  it("classifies zigzag values as stable (low R2)", () => {
+    const logs = [
+      log(9, "2026-10-01", 50, 1),
+      log(9, "2026-10-02", 80, 1),
+      log(9, "2026-10-03", 50, 1),
+      log(9, "2026-10-04", 80, 1),
+      log(9, "2026-10-05", 50, 1),
+      log(9, "2026-10-06", 80, 1),
+    ];
+    const t = strengthTrends(logs, NOW)[0]!;
+    assert.equal(t.trend, "stable");
+  });
+
+  it("returns null trend with fewer than 3 distinct days", () => {
+    const t = strengthTrends([log(10, "2026-10-15", 50, 3), log(10, "2026-10-15", 52, 3)], NOW)[0]!;
+    assert.equal(t.trend, null);
+  });
+
+  it("uses the best e1RM of the day as the trend point", () => {
+    const logs = [
+      log(11, "2026-10-01", 40, 1),
+      log(11, "2026-10-01", 60, 1), // лучший подход дня перекрывает первый
+      log(11, "2026-10-02", 70, 1),
+      log(11, "2026-10-03", 80, 1),
+    ];
+    const t = strengthTrends(logs, NOW)[0]!;
+    assert.equal(t.trend, "improving"); // дневные точки: 61.7 → 72.3 → 82.7
+  });
+});
