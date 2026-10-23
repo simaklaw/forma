@@ -1,8 +1,10 @@
 import type { SetLogEntry } from '@/engines/WorkoutStats';
 import {
   buildMuscleVolumeSnapshot,
+  buildSetReviewSnapshot,
   buildWorkoutDaySnapshot,
   renderMuscleVolumeContext,
+  renderSetReviewContext,
   renderWorkoutContext
 } from './workoutContext';
 
@@ -124,5 +126,67 @@ describe('renderMuscleVolumeContext', () => {
   it('mentions an empty window', () => {
     const text = renderMuscleVolumeContext(buildMuscleVolumeSnapshot([], {}, {}, NOW));
     expect(text).toContain('Записанных подходов за окно нет.');
+  });
+});
+
+describe('buildSetReviewSnapshot', () => {
+  it('labels scenarios and counts effective sets', () => {
+    const logs = [log(11, 60, 8, 2), log(11, 60, 12, 4), log(12, 40, 10, 0)];
+    const snap = buildSetReviewSnapshot(logs, { 11: 'Присед', 12: 'Жим' }, DAY);
+    expect(snap.exercises.map((ex) => ex.name)).toEqual(['Присед', 'Жим']);
+    const ex = snap.exercises[0]!;
+    expect(ex.totalSets).toBe(2);
+    expect(ex.effectiveSets).toBe(1);
+    expect(ex.counts.find((c) => c.scenario === 'productive')?.sets).toBe(1);
+    expect(ex.counts.find((c) => c.scenario === 'easy')?.sets).toBe(1);
+    expect(snap.totalSets).toBe(3);
+    expect(snap.effectiveSets).toBe(2);
+  });
+
+  it('flags excessive failure', () => {
+    const logs = [log(13, 60, 5, 0), log(13, 60, 5, 0), log(13, 60, 5, 2)];
+    const snap = buildSetReviewSnapshot(logs, {}, DAY);
+    expect(snap.excessiveFailure).toBe(true);
+  });
+
+  it('flags an all-easy day', () => {
+    const logs = [log(14, 60, 12, 4), log(14, 60, 12, 5)];
+    const snap = buildSetReviewSnapshot(logs, {}, DAY);
+    expect(snap.allEasy).toBe(true);
+  });
+
+  it('falls back to numeric names', () => {
+    const snap = buildSetReviewSnapshot([log(15, 60, 8, 2)], {}, DAY);
+    expect(snap.exercises[0]!.name).toBe('#15');
+  });
+});
+
+describe('renderSetReviewContext', () => {
+  it('renders exercise lines with scenario counts', () => {
+    const logs = [log(16, 100, 8, 2), log(16, 100, 12, 4), log(16, 40, 10, 2), log(17, 60, 5, 0)];
+    const snap = buildSetReviewSnapshot(logs, { 16: 'Присед' }, DAY);
+    const text = renderSetReviewContext(snap);
+    expect(text).toContain('Разбор подходов за ' + DAY);
+    expect(text).toContain(
+      'Присед: рабочие 1, лёгкие (RIR 4+ — можно тяжелее) 1, разминочные 1 (эффективных 1 из 3)'
+    );
+    expect(text).toContain('#17: в отказ (RIR 0) 1 (эффективных 1 из 1)');
+    expect(text).toContain('Учитывай разбор подходов в рекомендациях.');
+  });
+
+  it('renders summary notes for failure and easy days', () => {
+    const failureText = renderSetReviewContext(
+      buildSetReviewSnapshot([log(18, 60, 5, 0), log(18, 60, 5, 0), log(18, 60, 5, 2)], {}, DAY)
+    );
+    expect(failureText).toContain('Итог: больше половины рабочих подходов в отказ');
+    const easyText = renderSetReviewContext(
+      buildSetReviewSnapshot([log(19, 60, 12, 4), log(19, 60, 12, 5)], {}, DAY)
+    );
+    expect(easyText).toContain('Итог: все рабочие подходы лёгкие — предложи прибавить вес');
+  });
+
+  it('mentions an empty day', () => {
+    const text = renderSetReviewContext(buildSetReviewSnapshot([], {}, DAY));
+    expect(text).toContain('Подходов за день нет.');
   });
 });

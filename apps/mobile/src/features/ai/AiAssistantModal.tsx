@@ -35,8 +35,10 @@ import { AI_ROLES, roleById } from './roles';
 import { buildNutritionDaySnapshot, renderNutritionContext } from './nutritionContext';
 import {
   buildMuscleVolumeSnapshot,
+  buildSetReviewSnapshot,
   buildWorkoutDaySnapshot,
   renderMuscleVolumeContext,
+  renderSetReviewContext,
   renderWorkoutContext
 } from './workoutContext';
 import { contextHash } from './contextHash';
@@ -329,7 +331,12 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
       allExerciseMuscles(),
       MUSCLE_LABELS
     );
-    const hash = contextHash({ day: snapshot, volume: volumeSnapshot });
+    const setReviewSnapshot = buildSetReviewSnapshot(
+      state.setLogs,
+      allExerciseNames(),
+      snapshot.dateKey
+    );
+    const hash = contextHash({ day: snapshot, volume: volumeSnapshot, review: setReviewSnapshot });
     const existing = conversations[WORKOUT_KEY];
     if (existing && existing.contextHash === hash) {
       setNotice(t('aiWorkoutCachedNotice'));
@@ -338,7 +345,11 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
     void runCompletion(
       WORKOUT_KEY,
       hash,
-      renderWorkoutContext(snapshot) + '\n\n' + renderMuscleVolumeContext(volumeSnapshot),
+      renderWorkoutContext(snapshot) +
+        '\n\n' +
+        renderMuscleVolumeContext(volumeSnapshot) +
+        '\n\n' +
+        renderSetReviewContext(setReviewSnapshot),
       []
     );
   }
