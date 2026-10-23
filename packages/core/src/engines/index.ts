@@ -9,3 +9,4 @@ export * from "./StatsUtils.ts";
 export * from "./PersonalBaselines.ts";
 export * from "./PlateauStats.ts";
 export * from "./PersonalRecords.ts";
+export * from "./MuscleVolumeStats.ts";
