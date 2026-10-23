@@ -360,6 +360,16 @@ const RU = {
   aiClearChat: 'Очистить',
   aiNoHistory: 'Задайте вопрос или запросите анализ дневника',
 
+  // Модульный бэкап (выбор модулей при экспорте/импорте)
+  backupTitle: 'Резервная копия',
+  backupModuleProfile: 'Профиль',
+  backupModuleNutrition: 'Питание',
+  backupModuleWorkout: 'Тренировки',
+  backupModuleBody: 'Вес и замеры',
+  backupExportBtn: 'Экспорт',
+  backupImportBtn: 'Импорт',
+  backupRestored: 'Восстановлено: {modules}',
+
   // Онбординг (Фаза 5: локализация формы профиля)
   onboardingTitle: 'Профиль',
   onboardingSub:
@@ -790,6 +800,15 @@ const EN: Record<StringKey, string> = {
   aiTokensLabel: 'tokens',
   aiClearChat: 'Clear',
   aiNoHistory: 'Ask a question or request a diary analysis',
+
+  backupTitle: 'Backup',
+  backupModuleProfile: 'Profile',
+  backupModuleNutrition: 'Nutrition',
+  backupModuleWorkout: 'Workouts',
+  backupModuleBody: 'Weight & measurements',
+  backupExportBtn: 'Export',
+  backupImportBtn: 'Import',
+  backupRestored: 'Restored: {modules}',
 
   onboardingTitle: 'Profile',
   onboardingSub:

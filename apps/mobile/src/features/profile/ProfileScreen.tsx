@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
-import * as DocumentPicker from 'expo-document-picker';
 import { isProfileComplete } from '@forma/core';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
@@ -27,6 +24,7 @@ import HealthConnectCard from '@/features/health/HealthConnectCard';
 import HealthKitCard from '@/features/health/HealthKitCard';
 import SyncAccountCard from '@/features/auth/SyncAccountCard';
 import AiCard from '@/features/ai/AiCard';
+import BackupCard from '@/features/backup/BackupCard';
 import { buildStamp } from '@/core/buildInfo';
 
 function numStr(v: number | null | undefined): string {
@@ -51,8 +49,6 @@ export default function ProfileScreen() {
   const bodyMeasurements = useFitPulseStore((s) => s.bodyMeasurements);
   const logBodyMeasurement = useFitPulseStore((s) => s.logBodyMeasurement);
   const deleteBodyMeasurement = useFitPulseStore((s) => s.deleteBodyMeasurement);
-  const hydrate = useFitPulseStore((s) => s.hydrate);
-  const fullState = useFitPulseStore((s) => s);
 
   const complete = isProfileComplete({
     weightKg: profile.weight,
@@ -80,35 +76,11 @@ export default function ProfileScreen() {
     }
   }
 
-  async function exportData() {
-    try {
-      const path = FileSystem.documentDirectory + 'fitpulse_backup.json';
-      await FileSystem.writeAsStringAsync(path, JSON.stringify(fullState, null, 2));
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(path, { mimeType: 'application/json' });
-      } else {
-        Alert.alert(t('profileExport'), t('profileExportDone', { path }));
-      }
-    } catch (e) {
-      Alert.alert(t('profileExportError'), String(e));
-    }
-  }
-
-  async function importData() {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({ type: 'application/json' });
-      if (result.canceled || !result.assets?.[0]) return;
-      const content = await FileSystem.readAsStringAsync(result.assets[0].uri);
-      const parsed = JSON.parse(content);
-      hydrate(parsed);
-      const next = useFitPulseStore.getState().profile;
-      setAgeInput(numStr(next.age));
-      setHeightInput(numStr(next.height));
-      setWeightInput(numStr(next.weight));
-      Alert.alert(t('profileImport'), t('profileImportDone'));
-    } catch (e) {
-      Alert.alert(t('profileImportError'), e instanceof Error ? e.message : t('profileImportBadFile'));
-    }
+  function refreshProfileInputs() {
+    const next = useFitPulseStore.getState().profile;
+    setAgeInput(numStr(next.age));
+    setHeightInput(numStr(next.height));
+    setWeightInput(numStr(next.weight));
   }
 
   const initials =
@@ -661,22 +633,7 @@ export default function ProfileScreen() {
         <View style={styles.sectionHead}>
           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionData')}</Text>
         </View>
-        <TouchableOpacity
-          style={[styles.settingRow, { backgroundColor: colors.panel, borderColor: colors.line }]}
-          onPress={exportData}
-          accessibilityRole="button"
-        >
-          <Text style={[styles.settingName, { color: colors.paper }]}>{t('dataExportName')}</Text>
-          <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>{t('dataExportDesc')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.settingRow, { backgroundColor: colors.panel, borderColor: colors.line }]}
-          onPress={importData}
-          accessibilityRole="button"
-        >
-          <Text style={[styles.settingName, { color: colors.paper }]}>{t('dataImportName')}</Text>
-          <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>{t('dataImportDesc')}</Text>
-        </TouchableOpacity>
+        <BackupCard onAfterRestore={refreshProfileInputs} />
 
         <Text style={[styles.buildStamp, { color: colors.paperFaint }]}>{buildStamp()}</Text>
       </ScrollView>
