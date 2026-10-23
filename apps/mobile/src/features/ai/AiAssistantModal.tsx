@@ -20,7 +20,8 @@ import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useT } from '@/i18n/strings';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { toDateKey } from '@/engines/WorkoutStats';
-import { allExerciseNames } from '@/features/workout/catalog';
+import { MUSCLE_LABELS } from '@/domain/muscleKeys';
+import { allExerciseMuscles, allExerciseNames } from '@/features/workout/catalog';
 import {
   chatCompletion,
   normalizeBaseUrl,
@@ -32,7 +33,12 @@ import {
 } from './openAiClient';
 import { AI_ROLES, roleById } from './roles';
 import { buildNutritionDaySnapshot, renderNutritionContext } from './nutritionContext';
-import { buildWorkoutDaySnapshot, renderWorkoutContext } from './workoutContext';
+import {
+  buildMuscleVolumeSnapshot,
+  buildWorkoutDaySnapshot,
+  renderMuscleVolumeContext,
+  renderWorkoutContext
+} from './workoutContext';
 import { contextHash } from './contextHash';
 import { useAiAssistantStore } from './useAiAssistantStore';
 import type { AiChatMessage, AiImageAttachment, AiRoleId } from './types';
@@ -318,13 +324,23 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
       Alert.alert(t('aiRoleCoach'), t('aiCoachNoWorkout'));
       return;
     }
-    const hash = contextHash(snapshot);
+    const volumeSnapshot = buildMuscleVolumeSnapshot(
+      state.setLogs,
+      allExerciseMuscles(),
+      MUSCLE_LABELS
+    );
+    const hash = contextHash({ day: snapshot, volume: volumeSnapshot });
     const existing = conversations[WORKOUT_KEY];
     if (existing && existing.contextHash === hash) {
       setNotice(t('aiWorkoutCachedNotice'));
       return;
     }
-    void runCompletion(WORKOUT_KEY, hash, renderWorkoutContext(snapshot), []);
+    void runCompletion(
+      WORKOUT_KEY,
+      hash,
+      renderWorkoutContext(snapshot) + '\n\n' + renderMuscleVolumeContext(volumeSnapshot),
+      []
+    );
   }
 
   const inputStyle = [

@@ -101,6 +101,15 @@ export function importedExerciseDefByNumericId(id: number): ExerciseDef | null {
   return ex ? importedToExerciseDef(ex) : null;
 }
 
+/** primary muscles → MuscleKey[] для всех импортированных (недельный объём по мышцам). */
+export function allImportedExerciseMuscles(): Record<number, MuscleKey[]> {
+  const out: Record<number, MuscleKey[]> = {};
+  for (const [id, ex] of exerciseByNumeric) {
+    out[id] = muscleKeyFromPrimary(ex.primaryMuscles);
+  }
+  return out;
+}
+
 /** category/equipment for estimateBurnFromSetLogs.exerciseMeta */
 export function allImportedExerciseMeta(): Record<
   number,

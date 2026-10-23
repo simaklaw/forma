@@ -1,5 +1,10 @@
 import type { SetLogEntry } from '@/engines/WorkoutStats';
-import { buildWorkoutDaySnapshot, renderWorkoutContext } from './workoutContext';
+import {
+  buildMuscleVolumeSnapshot,
+  buildWorkoutDaySnapshot,
+  renderMuscleVolumeContext,
+  renderWorkoutContext
+} from './workoutContext';
 
 const DAY = '2026-10-23';
 
@@ -68,5 +73,56 @@ describe('renderWorkoutContext', () => {
   it('mentions empty day when there are no sets', () => {
     const text = renderWorkoutContext(buildWorkoutDaySnapshot([], {}, {}, DAY));
     expect(text).toContain('Сегодня записанных подходов нет.');
+  });
+});
+
+const NOW = new Date('2026-10-23T12:00:00Z');
+
+describe('buildMuscleVolumeSnapshot', () => {
+  it('weights the primary muscle in full and synergists at half', () => {
+    const logs = [log(1, 60, 8), log(1, 62.5, 6), log(1, 60, 7)];
+    const snap = buildMuscleVolumeSnapshot(logs, { 1: ['chest', 'triceps'] }, { chest: 'грудь' }, NOW);
+    const chest = snap.lines.find((l) => l.muscle === 'chest');
+    expect(chest?.weeklySets).toBe(3);
+    const triceps = snap.lines.find((l) => l.muscle === 'triceps');
+    expect(triceps?.weeklySets).toBe(1.5);
+    expect(chest?.label).toBe('грудь');
+    expect(triceps?.label).toBe('triceps');
+  });
+
+  it('collects junk/under muscles and push/pull balance', () => {
+    const chestLogs = Array.from({ length: 21 }, (_, i) => log(2, 50, 10 + i));
+    const backLogs = Array.from({ length: 2 }, (_, i) => log(3, 60, 8 + i));
+    const snap = buildMuscleVolumeSnapshot([...chestLogs, ...backLogs], { 2: ['chest'], 3: ['back'] }, {}, NOW);
+    expect(snap.junkMuscles).toEqual(['chest']);
+    expect(snap.underMuscles).toEqual(['back']);
+    expect(snap.pushSets).toBe(21);
+    expect(snap.pullSets).toBe(2);
+  });
+});
+
+describe('renderMuscleVolumeContext', () => {
+  it('renders verdicts, totals and the balance note', () => {
+    const chestLogs = Array.from({ length: 21 }, (_, i) => log(4, 50, 10 + i));
+    const backLogs = Array.from({ length: 2 }, (_, i) => log(5, 60, 8 + i));
+    const snap = buildMuscleVolumeSnapshot(
+      [...chestLogs, ...backLogs],
+      { 4: ['chest'], 5: ['back'] },
+      { chest: 'грудь', back: 'спина' },
+      NOW
+    );
+    const text = renderMuscleVolumeContext(snap);
+    expect(text).toContain('Недельная нагрузка по мышцам (7 дней');
+    expect(text).toContain('грудь: 21 (MEV 10, MRV 20) — превышение MRV — junk volume');
+    expect(text).toContain('спина: 2 (MEV 10, MRV 20) — ниже MEV');
+    expect(text).toContain('junk volume: грудь — предложи, что сократить');
+    expect(text).toContain('недобор объёма: спина — предложи, что добавить');
+    expect(text).toContain('баланс жим/тяга за неделю: 21 vs 2 сетов');
+    expect(text).toContain('Учитывай недельный объём и баланс мышц в рекомендациях.');
+  });
+
+  it('mentions an empty window', () => {
+    const text = renderMuscleVolumeContext(buildMuscleVolumeSnapshot([], {}, {}, NOW));
+    expect(text).toContain('Записанных подходов за окно нет.');
   });
 });

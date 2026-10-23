@@ -3,7 +3,8 @@ import type { Sex } from '@/engines/MetabolicEngine';
 import { WORKOUT_PLAN as HOME_PLAN, type WorkoutDay } from './bodyweightPlan';
 import { GYM_PLAN } from './gymPlan';
 import { planForSex } from './sexPlan';
-import { allImportedExerciseMeta } from './importedExerciseBridge';
+import { allImportedExerciseMeta, allImportedExerciseMuscles } from './importedExerciseBridge';
+import type { MuscleKey } from '@/domain/muscleKeys';
 
 export type TrainingMode = 'gym' | 'home';
 export type { WorkoutDay };
@@ -59,6 +60,15 @@ export function allExerciseMetKeys(): Record<number, string> {
       day.exercises.map((ex) => [ex.id, ex.mediaKey ?? ex.name])
     )
   );
+}
+
+/** exerciseId → целевые мышцы (планы + импортированная библиотека). */
+export function allExerciseMuscles(): Record<number, MuscleKey[]> {
+  const out: Record<number, MuscleKey[]> = {};
+  for (const day of [...GYM_PLAN, ...HOME_PLAN]) {
+    for (const ex of day.exercises) out[ex.id] = ex.targetMuscles;
+  }
+  return { ...out, ...allImportedExerciseMuscles() };
 }
 
 /** Category/equipment meta for imported-library numeric ids (burn estimates). */

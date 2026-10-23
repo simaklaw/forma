@@ -16,6 +16,7 @@ export * from "./engines/StatsUtils.ts";
 export * from "./engines/PersonalBaselines.ts";
 export * from "./engines/PlateauStats.ts";
 export * from "./engines/PersonalRecords.ts";
+export * from "./engines/MuscleVolumeStats.ts";
 export * from "./met/exerciseMet.ts";
 export * from "./met/sessionBurn.ts";
 export * from "./services/OpenFoodFactsService.ts";
