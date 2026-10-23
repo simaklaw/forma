@@ -379,6 +379,8 @@ const RU = {
   equipmentEzBarLabel: 'EZ-гриф',
   equipmentPullupBarLabel: 'турник',
   equipmentBenchLabel: 'скамья',
+  mechanicCompoundLabel: 'базовое',
+  mechanicIsolationLabel: 'изолирующее',
   playerPrev: 'Назад',
   playerNext: 'Далее',
   playerPause: 'Пауза',
@@ -751,6 +753,8 @@ const EN: Record<StringKey, string> = {
   equipmentEzBarLabel: 'EZ bar',
   equipmentPullupBarLabel: 'pull-up bar',
   equipmentBenchLabel: 'bench',
+  mechanicCompoundLabel: 'compound',
+  mechanicIsolationLabel: 'isolation',
   playerPrev: 'Back',
   playerNext: 'Next',
   playerPause: 'Pause',
@@ -872,6 +876,16 @@ export function levelLabel(level: string | null, lang: Language): string {
   return LEVEL_LABELS[lang][level] ?? level;
 }
 
+/** Механика упражнения из датасета: compound (базовое) / isolation (изолирующее). */
+const MECHANIC_LABELS: Record<Language, Record<'compound' | 'isolation', string>> = {
+  ru: { compound: RU.mechanicCompoundLabel, isolation: RU.mechanicIsolationLabel },
+  en: { compound: EN.mechanicCompoundLabel, isolation: EN.mechanicIsolationLabel }
+};
+
+export function mechanicLabel(mechanic: 'compound' | 'isolation', lang: Language): string {
+  return MECHANIC_LABELS[lang][mechanic];
+}
+
 const PROGRAM_TEMPLATE_TITLES: Record<ProgramTemplateId, Record<Language, string>> = {
   'strength-home': { ru: 'Сила · дом', en: 'Strength · home' },
   'fatloss-home': { ru: 'Жиросжигание · дом', en: 'Fat loss · home' },
@@ -902,3 +916,4 @@ export function streakDayWord(count: number, lang: Language): string {
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'дня';
   return 'дней';
 }
+

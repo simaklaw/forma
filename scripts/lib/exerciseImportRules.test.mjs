@@ -4,8 +4,27 @@ import {
   requiresUnsupportedEquipment,
   translateName,
   slugify,
-  categoryFor
+  categoryFor,
+  validateDataset
 } from './exerciseImportRules.mjs';
+
+/** A complete, schema-valid dataset row used by validateDataset tests. */
+function validExercise(overrides = {}) {
+  return {
+    id: 'Test_Exercise-1',
+    name: 'Test Exercise',
+    category: 'strength',
+    equipment: 'barbell',
+    level: 'beginner',
+    force: 'push',
+    mechanic: 'compound',
+    primaryMuscles: ['chest'],
+    secondaryMuscles: ['triceps'],
+    instructions: ['Do it.'],
+    images: ['Test_Exercise-1/0.jpg'],
+    ...overrides
+  };
+}
 
 test('requiresUnsupportedEquipment: no equipment mentioned → false', () => {
   const ex = { instructions: ['Lie on the floor and lift your legs.'] };
@@ -77,4 +96,64 @@ test('categoryFor: first matching muscle wins', () => {
 test('categoryFor: unmapped muscle falls back to abs default', () => {
   const map = { chest: 'chest' };
   assert.equal(categoryFor(['unknown-muscle'], map), 'abs');
+});
+
+
+test('validateDataset: accepts a full valid row', () => {
+  assert.doesNotThrow(() => validateDataset([validExercise()]));
+});
+
+test('validateDataset: null force/mechanic/equipment are allowed', () => {
+  assert.doesNotThrow(() =>
+    validateDataset([validExercise({ force: null, mechanic: null, equipment: null })])
+  );
+});
+
+test('validateDataset: empty instructions/images are allowed (upstream quirk)', () => {
+  assert.doesNotThrow(() =>
+    validateDataset([validExercise({ instructions: [], images: [] })])
+  );
+});
+
+test('validateDataset: collects every problem and throws once', () => {
+  const bad = [
+    validExercise({
+      id: 'bad id!',
+      level: 'pro',
+      category: 'yoga',
+      equipment: 'trampoline',
+      force: 'twist',
+      mechanic: 'hybrid',
+      primaryMuscles: ['elbow']
+    })
+  ];
+  assert.throws(
+    () => validateDataset(bad),
+    (err) =>
+      /level must be one of/.test(err.message) &&
+      /unknown dataset category "yoga"/.test(err.message) &&
+      /unknown equipment "trampoline"/.test(err.message) &&
+      /force must be push\/pull\/static/.test(err.message) &&
+      /mechanic must be isolation\/compound/.test(err.message) &&
+      /unknown muscle "elbow"/.test(err.message) &&
+      /id must be a string/.test(err.message) &&
+      /7 problem\(s\)/.test(err.message)
+  );
+});
+
+test('validateDataset: duplicate ids are reported', () => {
+  const rows = [validExercise(), validExercise({ name: 'Second' })];
+  assert.throws(() => validateDataset(rows), /duplicate id/);
+});
+
+test('validateDataset: non-array or empty dataset throws', () => {
+  assert.throws(() => validateDataset(null), /non-empty array/);
+  assert.throws(() => validateDataset([]), /non-empty array/);
+});
+
+test('validateDataset: missing required fields are reported', () => {
+  assert.throws(
+    () => validateDataset([validExercise({ name: undefined, primaryMuscles: [] })]),
+    (err) => /name is required/.test(err.message) && /primaryMuscles must be a non-empty/.test(err.message)
+  );
 });

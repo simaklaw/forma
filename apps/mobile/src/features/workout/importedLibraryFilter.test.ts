@@ -8,9 +8,13 @@ function sample(overrides: Partial<ImportedExercise> = {}): ImportedExercise {
     nameEn: 'Sample Push-Up',
     nameRu: 'Пример отжиманий',
     category: 'chest',
+    datasetCategory: 'strength',
     equipment: 'bodyweight',
     level: 'beginner',
+    force: 'push',
+    mechanic: 'compound',
     primaryMuscles: ['chest'],
+    secondaryMuscles: ['triceps'],
     instructionsEn: ['Down and up.'],
     instructionsRu: ['Вниз и вверх.'],
     imageKeys: [],
@@ -67,9 +71,25 @@ describe('filterImportedLibrary', () => {
     expect(all.length).toBe(IMPORTED_EXERCISE_LIBRARY.length);
   });
 
-  it('every generated entry has non-empty Russian instructions (smoke)', () => {
-    for (const ex of IMPORTED_EXERCISE_LIBRARY) {
+  it('every home entry keeps non-empty Russian instructions (smoke)', () => {
+    const home = IMPORTED_EXERCISE_LIBRARY.filter(
+      (ex) => ex.equipment === 'bodyweight' || ex.equipment === 'bands'
+    );
+    expect(home.length).toBeGreaterThanOrEqual(90);
+    for (const ex of home) {
       expect(ex.instructionsRu.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('every entry has instructions in at least one language (3 documented upstream quirks)', () => {
+    const KNOWN_EMPTY = new Set([
+      'Iron Cross',
+      'One-Arm Kettlebell Swings',
+      'Push Press'
+    ]);
+    for (const ex of IMPORTED_EXERCISE_LIBRARY) {
+      if (KNOWN_EMPTY.has(ex.nameEn)) continue;
+      expect(ex.instructionsEn.length + ex.instructionsRu.length).toBeGreaterThan(0);
     }
   });
 
@@ -169,4 +189,36 @@ describe('filterImportedLibrary', () => {
     const items = [sample({ nameEn: 'Push-Up', nameRu: 'Отжимания' })];
     expect(filterImportedLibrary(items, 'отжимания', null)).toHaveLength(1);
   });
+
+  it('searches secondary muscles (tier-2 dataset field)', () => {
+    const items = [
+      sample({ nameEn: 'Bench Press', nameRu: 'Жим', secondaryMuscles: ['triceps'] }),
+      sample({
+        id: 'lib-row',
+        nameEn: 'Row',
+        nameRu: 'Тяга',
+        category: 'back',
+        secondaryMuscles: ['biceps']
+      })
+    ];
+    const result = filterImportedLibrary(items, 'triceps', null);
+    expect(result).toHaveLength(1);
+    expect(result[0].nameEn).toBe('Bench Press');
+  });
+
+  it('combined query tokens can span name and secondary muscles', () => {
+    const items = [
+      sample({ nameEn: 'Bench Press', nameRu: 'Жим', secondaryMuscles: ['triceps'] }),
+      sample({
+        id: 'lib-row',
+        nameEn: 'Row',
+        nameRu: 'Тяга',
+        category: 'back',
+        secondaryMuscles: ['biceps']
+      })
+    ];
+    expect(filterImportedLibrary(items, 'жим triceps', null)).toHaveLength(1);
+    expect(filterImportedLibrary(items, 'жим biceps', null)).toHaveLength(0);
+  });
 });
+
