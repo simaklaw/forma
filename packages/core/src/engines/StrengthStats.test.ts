@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { estimateOneRepMax, strengthTrends } from "./StrengthStats.ts";
+import { estimateEpleyOneRm, strengthTrends } from "./StrengthStats.ts";
 import type { SetLogEntry } from "./WorkoutStats.ts";
 
 const NOW = new Date(2026, 9, 23, 12);
@@ -16,17 +16,17 @@ function log(exerciseId: number, dateKey: string, weight: number, reps: number):
   };
 }
 
-describe("estimateOneRepMax (Epley)", () => {
+describe("estimateEpleyOneRm (Epley)", () => {
   it("matches known Epley values", () => {
-    assert.equal(estimateOneRepMax(100, 5), 116.7);
-    assert.equal(estimateOneRepMax(120, 1), 124);
+    assert.equal(estimateEpleyOneRm(100, 5), 116.7);
+    assert.equal(estimateEpleyOneRm(120, 1), 124);
   });
 
   it("returns 0 for invalid or bodyweight input", () => {
-    assert.equal(estimateOneRepMax(0, 10), 0);
-    assert.equal(estimateOneRepMax(60, 0), 0);
-    assert.equal(estimateOneRepMax(-10, 5), 0);
-    assert.equal(estimateOneRepMax(Number.NaN, 5), 0);
+    assert.equal(estimateEpleyOneRm(0, 10), 0);
+    assert.equal(estimateEpleyOneRm(60, 0), 0);
+    assert.equal(estimateEpleyOneRm(-10, 5), 0);
+    assert.equal(estimateEpleyOneRm(Number.NaN, 5), 0);
   });
 });
 

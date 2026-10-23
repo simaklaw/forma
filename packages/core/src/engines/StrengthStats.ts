@@ -5,7 +5,7 @@
 import { toDateKey, type SetLogEntry } from "./WorkoutStats.ts";
 
 /** Epley 1RM estimate, округление до 0.1 кг. 0 для невалидных и bodyweight логов. */
-export function estimateOneRepMax(weightKg: number, reps: number): number {
+export function estimateEpleyOneRm(weightKg: number, reps: number): number {
   if (!Number.isFinite(weightKg) || !Number.isFinite(reps)) return 0;
   if (weightKg <= 0 || reps <= 0) return 0;
   return Math.round(weightKg * (1 + reps / 30) * 10) / 10;
@@ -52,7 +52,7 @@ export function strengthTrends(
     if (!Number.isFinite(weight) || !Number.isFinite(reps) || weight <= 0 || reps <= 0) {
       continue;
     }
-    const oneRm = estimateOneRepMax(weight, reps);
+    const oneRm = estimateEpleyOneRm(weight, reps);
     const acc =
       byExercise.get(log.exerciseId) ??
       { best: 0, current: 0, previous: 0, hasPrevious: false, volume: 0, sets: 0 };
