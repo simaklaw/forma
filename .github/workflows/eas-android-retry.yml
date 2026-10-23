@@ -1,0 +1,72 @@
+name: EAS Android retry (with log upload)
+
+on:
+  push:
+    branches:
+      - ci/eas-android-retry
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: EAS android · preview (retry)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      # Repo secret is EXPO_TOKEN_FITPULSE; EAS CLI reads EXPO_TOKEN.
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN_FITPULSE }}
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9.15.0
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install workspace dependencies
+        working-directory: .
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate Expo configuration
+        run: pnpm exec expo config --type public --json > /tmp/expo-config.json
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          packager: pnpm
+
+      - name: Build native application
+        run: |
+          set -o pipefail
+          eas build --platform android --profile preview --non-interactive 2>&1 | tee eas_android.log
+
+      - name: Publish EAS log on failure
+        if: failure()
+        working-directory: .
+        run: |
+          set +e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          git fetch origin ci-logs || true
+          git checkout -B ci-logs origin/ci-logs 2>/dev/null || git checkout -B ci-logs
+          DIR="ci-logs/${{ github.run_id }}"
+          mkdir -p "$DIR"
+          cp apps/mobile/eas_android.log "$DIR/" 2>/dev/null || true
+          echo "eas android retry run: ${{ github.run_id }} commit ${{ github.sha }} date $(date -u +%FT%TZ)" >> "$DIR/README.txt"
+          git add -f ci-logs
+          git commit -m "ci: eas android log from failed run ${{ github.run_id }}" || true
+          git push --force origin ci-logs 2>&1 | tail -3
+          exit 0
