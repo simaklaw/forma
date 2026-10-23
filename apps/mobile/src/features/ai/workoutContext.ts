@@ -1,5 +1,5 @@
 import type { SetLogEntry } from '@/engines/WorkoutStats';
-import { muscleVolumeStats, type MuscleLoadStatus } from '@forma/core';
+import { daySetReview, muscleVolumeStats, type MuscleLoadStatus, type SetScenario } from '@forma/core';
 
 export interface WorkoutSetSummary {
   weightKg: number;
@@ -170,6 +170,102 @@ export function renderMuscleVolumeContext(snapshot: MuscleVolumeSnapshot): strin
     lines.push('Итог: ' + notes.join('; ') + '.');
   }
   lines.push('Учитывай недельный объём и баланс мышц в рекомендациях.');
+  return lines.join('\n');
+}
+
+export interface SetReviewExerciseLine {
+  exerciseId: number;
+  name: string;
+  totalSets: number;
+  effectiveSets: number;
+  /** Сценарий → число подходов (в порядке первого появления). */
+  counts: { scenario: SetScenario; sets: number }[];
+}
+
+/** Разбор подходов дня по сценариям для роли «Тренер». */
+export interface SetReviewSnapshot {
+  dateKey: string;
+  exercises: SetReviewExerciseLine[];
+  totalSets: number;
+  effectiveSets: number;
+  allEasy: boolean;
+  excessiveFailure: boolean;
+}
+
+/** Подписи сценариев для текста промпта. */
+const SCENARIO_LABELS: Record<SetScenario, string> = {
+  warmup: 'разминочные',
+  easy: 'лёгкие (RIR 4+ — можно тяжелее)',
+  productive: 'рабочие',
+  grinder: 'тяжёлые (RIR 1)',
+  failure: 'в отказ (RIR 0)',
+  backoff: 'добивка на остатке'
+};
+
+/**
+ * Разбор подходов за dateKey по сценариям: разминка, рабочие, отказы,
+ * лёгкие и «добивка на остатке». Имена — из каталога + импортированной библиотеки.
+ */
+export function buildSetReviewSnapshot(
+  setLogs: SetLogEntry[],
+  exerciseNames: Record<number, string>,
+  dateKey: string
+): SetReviewSnapshot {
+  const review = daySetReview(setLogs, dateKey);
+  const exercises = review.exercises.map((ex) => {
+    const counts = new Map<SetScenario, number>();
+    for (const s of ex.sets) {
+      counts.set(s.scenario, (counts.get(s.scenario) ?? 0) + 1);
+    }
+    return {
+      exerciseId: ex.exerciseId,
+      name: exerciseNames[ex.exerciseId] ?? '#' + ex.exerciseId,
+      totalSets: ex.totalSets,
+      effectiveSets: ex.effectiveSets,
+      counts: [...counts.entries()].map(([scenario, sets]) => ({ scenario, sets }))
+    };
+  });
+  return {
+    dateKey: review.dateKey,
+    exercises,
+    totalSets: review.totalSets,
+    effectiveSets: review.effectiveSets,
+    allEasy: review.allEasy,
+    excessiveFailure: review.excessiveFailure
+  };
+}
+
+/** Текст разбора подходов для промпта роли «Тренер». */
+export function renderSetReviewContext(snapshot: SetReviewSnapshot): string {
+  const lines: string[] = ['Разбор подходов за ' + snapshot.dateKey + ' (RIR — повторы в запасе):'];
+  if (snapshot.exercises.length === 0) {
+    lines.push('Подходов за день нет.');
+  }
+  for (const ex of snapshot.exercises) {
+    const parts = ex.counts.map((c) => SCENARIO_LABELS[c.scenario] + ' ' + c.sets);
+    lines.push(
+      '- ' +
+        ex.name +
+        ': ' +
+        parts.join(', ') +
+        ' (эффективных ' +
+        ex.effectiveSets +
+        ' из ' +
+        ex.totalSets +
+        ')'
+    );
+  }
+  const notes: string[] = [];
+  if (snapshot.excessiveFailure) {
+    notes.push('больше половины рабочих подходов в отказ — следи за техникой и восстановлением');
+  }
+  if (snapshot.allEasy) {
+    notes.push('все рабочие подходы лёгкие — предложи прибавить вес');
+  }
+  if (notes.length > 0) {
+    lines.push('Итог: ' + notes.join('; ') + '.');
+  }
+  lines.push('Учитывай разбор подходов в рекомендациях.');
   return lines.join('\n');
 }
 
