@@ -1,8 +1,10 @@
 /**
  * StrengthStats — оценка 1ПМ по Эпли и тренды силы по 30-дневным окнам.
  * Порт концепции OneRepMaxChart из Snouzy/workout-cool (MIT): без UI, чистая логика.
+ * Классификация тренда — линейная регрессия с порогом R² (порт из whoop-mcp, MIT).
  */
 import { toDateKey, type SetLogEntry } from "./WorkoutStats.ts";
+import { linearRegression, trendDirection, type TrendDirectionResult } from "./StatsUtils.ts";
 
 /** Epley 1RM estimate, округление до 0.1 кг. 0 для невалидных и bodyweight логов. */
 export function estimateEpleyOneRm(weightKg: number, reps: number): number {
@@ -25,9 +27,21 @@ export interface StrengthTrend {
   totalVolumeKg: number;
   /** Число учтённых подходов (bodyweight-логи с weight 0 не считаются). */
   setCount: number;
+  /** Тренд дневных лучших e1RM (регрессия + порог R²); null при < 3 тренировочных днях. */
+  trend: TrendDirectionResult | null;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Регрессия по дневным лучшим e1RM в хронологическом порядке по dateKey. */
+function classifyDailyTrend(daily: Map<string, number>): TrendDirectionResult | null {
+  if (daily.size < 3) return null;
+  const values = [...daily.entries()]
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([, value]) => value);
+  const { slope, r2 } = linearRegression(values);
+  return trendDirection(slope, r2);
+}
 
 export function strengthTrends(
   setLogs: SetLogEntry[],
@@ -44,6 +58,7 @@ export function strengthTrends(
     hasPrevious: boolean;
     volume: number;
     sets: number;
+    daily: Map<string, number>;
   }
 
   const byExercise = new Map<number, Acc>();
@@ -55,10 +70,19 @@ export function strengthTrends(
     const oneRm = estimateEpleyOneRm(weight, reps);
     const acc =
       byExercise.get(log.exerciseId) ??
-      { best: 0, current: 0, previous: 0, hasPrevious: false, volume: 0, sets: 0 };
+      {
+        best: 0,
+        current: 0,
+        previous: 0,
+        hasPrevious: false,
+        volume: 0,
+        sets: 0,
+        daily: new Map<string, number>(),
+      };
     acc.best = Math.max(acc.best, oneRm);
     acc.volume += weight * reps;
     acc.sets += 1;
+    acc.daily.set(dateKey, Math.max(acc.daily.get(dateKey) ?? 0, oneRm));
     if (dateKey >= currentStart) {
       acc.current = Math.max(acc.current, oneRm);
     } else if (dateKey >= previousStart) {
@@ -77,6 +101,7 @@ export function strengthTrends(
       deltaKg: acc.hasPrevious ? Math.round((acc.current - acc.previous) * 10) / 10 : null,
       totalVolumeKg: Math.round(acc.volume * 10) / 10,
       setCount: acc.sets,
+      trend: classifyDailyTrend(acc.daily),
     }))
     .sort((a, b) => b.bestOneRmKg - a.bestOneRmKg || a.exerciseId - b.exerciseId);
 }

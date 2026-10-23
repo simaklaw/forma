@@ -277,6 +277,27 @@ export default function ProgressScreen() {
                     <Text style={{ color: colors.paperFaint, fontSize: 11, fontFamily: fonts.mono }}>
                       {t('strengthVolume', { kg: s.totalVolumeKg })}
                     </Text>
+                    {s.trend != null ? (
+                      <Text
+                        style={{
+                          color:
+                            s.trend === 'improving'
+                              ? colors.lime
+                              : s.trend === 'declining'
+                                ? colors.ember
+                                : colors.paperFaint,
+                          fontSize: 11,
+                          fontFamily: fonts.mono,
+                          marginTop: 2
+                        }}
+                      >
+                        {s.trend === 'improving'
+                          ? t('strengthTrendUp')
+                          : s.trend === 'declining'
+                            ? t('strengthTrendDown')
+                            : t('strengthTrendStable')}
+                      </Text>
+                    ) : null}
                   </View>
                   <Text style={[styles.prVal, { color: colors.paper }]}>
                     {s.currentOneRmKg > 0 ? s.currentOneRmKg : s.bestOneRmKg} {t('kg')}
