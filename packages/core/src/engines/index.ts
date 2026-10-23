@@ -6,3 +6,4 @@ export * from "./Achievements.ts";
 export * from "./PerformanceEngine.ts";
 export * from "./StrengthStats.ts";
 export * from "./StatsUtils.ts";
+export * from "./PersonalBaselines.ts";
