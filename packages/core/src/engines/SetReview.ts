@@ -69,6 +69,9 @@ function verdictScenario(
   topWeight: number,
   bestRepsAtWeight: number,
 ): SetScenario {
+  // Явный тип из импорта (Hevy set_type) приоритетнее эвристики по весу/RIR.
+  if (entry.setType === "warmup" || entry.setType === "failure") return entry.setType;
+  if (entry.setType === "dropset") return "grinder";
   if (topWeight > 0 && entry.weight > 0 && entry.weight < WARMUP_WEIGHT_RATIO * topWeight) {
     return "warmup";
   }

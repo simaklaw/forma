@@ -6,7 +6,7 @@ import {
   WARMUP_WEIGHT_RATIO,
   daySetReview,
 } from "./SetReview.ts";
-import type { SetLogEntry } from "./WorkoutStats.ts";
+import type { GymSetType, SetLogEntry } from "./WorkoutStats.ts";
 
 const DAY = "2026-10-23";
 
@@ -17,9 +17,10 @@ function log(
   reps: number,
   rir: number,
   dateKey: string = DAY,
+  setType?: GymSetType,
 ): SetLogEntry {
   seq += 1;
-  return { id: "log-" + seq, exerciseId, dateKey, weight, reps, rir };
+  return { id: "log-" + seq, exerciseId, dateKey, weight, reps, rir, setType };
 }
 
 describe("daySetReview", () => {
@@ -119,5 +120,21 @@ describe("daySetReview", () => {
     assert.equal(WARMUP_WEIGHT_RATIO, 0.7);
     assert.equal(EASY_RIR, 4);
     assert.equal(BACKOFF_MIN_BEST_REPS, 6);
+  });
+
+  it("gives imported setType priority over weight and RIR heuristics", () => {
+    const review = daySetReview(
+      [
+        log(1, 100, 5, 2, DAY, "warmup"),
+        log(1, 100, 5, 3, DAY, "failure"),
+        log(1, 100, 5, 3, DAY, "dropset"),
+      ],
+      DAY,
+    );
+    const sets = review.exercises[0]!.sets;
+    assert.equal(sets[0]!.scenario, "warmup");
+    assert.equal(sets[0]!.effective, false);
+    assert.equal(sets[1]!.scenario, "failure");
+    assert.equal(sets[2]!.scenario, "grinder");
   });
 });

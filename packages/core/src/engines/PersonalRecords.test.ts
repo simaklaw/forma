@@ -1,9 +1,15 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { personalRecords } from "./PersonalRecords.ts";
-import type { SetLogEntry } from "./WorkoutStats.ts";
+import type { GymSetType, SetLogEntry } from "./WorkoutStats.ts";
 
-function log(exerciseId: number, dateKey: string, weight: number, reps: number): SetLogEntry {
+function log(
+  exerciseId: number,
+  dateKey: string,
+  weight: number,
+  reps: number,
+  setType?: GymSetType,
+): SetLogEntry {
   return {
     id: exerciseId + "-" + dateKey + "-" + weight + "-" + reps,
     exerciseId,
@@ -11,6 +17,7 @@ function log(exerciseId: number, dateKey: string, weight: number, reps: number):
     weight,
     reps,
     rir: 0,
+    setType,
   };
 }
 
@@ -156,5 +163,13 @@ describe("personalRecords", () => {
     assert.equal(day2.length, 1);
     assert.equal(day2[0]!.type, "max_weight");
     assert.equal(day2[0]!.tier, "gold");
+  });
+
+  it("ignores warmup sets for records", () => {
+    const recs = personalRecords([log(50, day(1), 40, 10, "warmup"), log(50, day(1), 60, 8)]);
+    const r = recs[0]!;
+    assert.equal(r.bests.maxWeightKg, 60);
+    assert.equal(r.bests.maxReps, 8);
+    assert.equal(r.events.filter((e) => e.value === 40).length, 0);
   });
 });

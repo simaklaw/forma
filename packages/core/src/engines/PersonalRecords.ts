@@ -78,6 +78,7 @@ const DROUGHT_MIN_SESSIONS = 2;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function validSet(entry: SetLogEntry): boolean {
+  if (entry.setType === "warmup") return false;
   return (
     Number.isFinite(entry.weight) &&
     Number.isFinite(entry.reps) &&

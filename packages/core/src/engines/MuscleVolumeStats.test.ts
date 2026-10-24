@@ -118,4 +118,12 @@ describe("muscleVolumeStats", () => {
     assert.equal(stats.find((s) => s.muscle === "biceps")!.weeklySets, 1.5);
     assert.equal(stats.find((s) => s.muscle === "biceps")!.directSets, 0);
   });
+
+  it("excludes explicit warmup sets from weekly volume", () => {
+    const warmup: SetLogEntry = { ...log(16, day(22), 100, 8), setType: "warmup" };
+    const stats = muscleVolumeStats([log(16, day(22), 60, 8), warmup], { 16: ["chest"] }, NOW);
+    const chest = stats.find((s) => s.muscle === "chest")!;
+    assert.equal(chest.weeklySets, 1);
+    assert.equal(chest.volumeKg, 480);
+  });
 });

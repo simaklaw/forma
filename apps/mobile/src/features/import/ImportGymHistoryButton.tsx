@@ -39,9 +39,11 @@ export default function ImportGymHistoryButton() {
           : '';
       const dupesNote =
         skippedDuplicates > 0 ? `\n(дубликаты пропущены: ${skippedDuplicates})` : '';
+      const supersetNote =
+        result.supersetGroups > 0 ? `\nСуперсет-групп: ${result.supersetGroups}` : '';
       const warnNote = result.warnings.length > 0 ? `\n\n⚠ ${result.warnings.join('; ')}` : '';
 
-      Alert.alert('Импортировано', `Подходов добавлено: ${added}${dupesNote}${unmatchedNote}${warnNote}`);
+      Alert.alert('Импортировано', `Подходов добавлено: ${added}${dupesNote}${supersetNote}${unmatchedNote}${warnNote}`);
     } finally {
       setBusy(false);
     }
