@@ -230,6 +230,9 @@ interface AppStore {
 
   recordSet: (exerciseId: number, weight: number, reps: number, rir: number) => number;
   completedSetsToday: (exerciseId: number) => number;
+  importSetLogs: (
+    entries: Array<Omit<SetLogEntry, 'id' | 'imported'>>
+  ) => { added: number; skippedDuplicates: number };
   addImportedActivities: (items: ImportedActivity[]) => number;
   removeImportedActivity: (id: string) => void;
 
@@ -452,9 +455,14 @@ export const useFitPulseStore = create<AppStore>()(
         const todayForDay = state.dayProgress[todayKey] ?? {};
         const nextCount = (todayForDay[exerciseId] ?? 0) + 1;
         const prunedLogs = pruneOldSetLogs(state.setLogs, SET_LOG_RETENTION_DAYS);
+        // Импортированная история не срезается политикой хранения (imported: true).
+        const keptIds = new Set(prunedLogs.map((e) => e.id));
+        const keptImported = state.setLogs.filter(
+          (e) => e.imported === true && !keptIds.has(e.id)
+        );
 
         set({
-          setLogs: [...prunedLogs, entry],
+          setLogs: [...prunedLogs, ...keptImported, entry],
           dayProgress: {
             ...state.dayProgress,
             [todayKey]: { ...todayForDay, [exerciseId]: nextCount }
@@ -471,6 +479,34 @@ export const useFitPulseStore = create<AppStore>()(
       completedSetsToday: (exerciseId) => {
         const todayKey = toDateKey(new Date());
         return get().dayProgress[todayKey]?.[exerciseId] ?? 0;
+      },
+
+      importSetLogs: (entries) => {
+        if (!entries.length) return { added: 0, skippedDuplicates: 0 };
+        const fingerprint = (e: Omit<SetLogEntry, 'id'>): string =>
+          `${e.exerciseId}|${e.dateKey}|${e.weight}|${e.reps}|${e.rir}`;
+        const seen = new Set(get().setLogs.map(fingerprint));
+        const fresh: SetLogEntry[] = [];
+        let skippedDuplicates = 0;
+        for (const e of entries) {
+          const fp = fingerprint(e);
+          if (seen.has(fp)) {
+            skippedDuplicates += 1;
+            continue;
+          }
+          seen.add(fp);
+          fresh.push({ ...e, id: generateId(), imported: true });
+        }
+        if (fresh.length === 0) return { added: 0, skippedDuplicates };
+        const state = get();
+        const nextRecords = { ...state.personalRecords };
+        for (const e of fresh) {
+          if (e.weight > 0) {
+            nextRecords[e.exerciseId] = Math.max(nextRecords[e.exerciseId] ?? 0, e.weight);
+          }
+        }
+        set({ setLogs: [...state.setLogs, ...fresh], personalRecords: nextRecords });
+        return { added: fresh.length, skippedDuplicates };
       },
 
       addImportedActivities: (items) => {
