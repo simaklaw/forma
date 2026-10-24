@@ -6,6 +6,9 @@ export function roundToStep(value: number, step: number): number {
   return Math.round(Math.round(value / step) * step * 100) / 100;
 }
 
+/** Тип подхода: обычный / разминка / дроп-сет / в отказ. */
+export type GymSetType = "normal" | "warmup" | "dropset" | "failure";
+
 export interface SetLogEntry {
   id: string;
   exerciseId: number;
@@ -15,6 +18,10 @@ export interface SetLogEntry {
   rir: number;
   /** Импортированная история (Hevy/Strong CSV): не срезается политикой хранения. */
   imported?: boolean;
+  /** Тип подхода из импорта (Hevy set_type); undefined — обычный рабочий подход. */
+  setType?: GymSetType;
+  /** Идентификатор суперсета из импорта (Hevy superset_id). */
+  supersetId?: string;
 }
 
 export type DayProgress = Record<string, Record<number, number>>;

@@ -4,7 +4,7 @@
  * приложений; реализация собственная, код Hevy/Strong не используется.
  * Чистый строковый разбор без зависимостей — безопасно для React Native.
  */
-import { toDateKey } from '../engines/WorkoutStats.ts';
+import { toDateKey, type GymSetType } from '../engines/WorkoutStats.ts';
 
 /** Источник импорта: CSV-экспорт Hevy или Strong. */
 export type GymCsvFormat = 'hevy' | 'strong';
@@ -22,6 +22,10 @@ export interface ImportedGymSet {
   reps: number;
   /** Запас в повторениях (RIR); приведён из RPE, если экспорт её содержит. */
   rir: number;
+  /** Тип подхода (Hevy set_type); undefined — обычный рабочий. */
+  setType?: GymSetType;
+  /** Идентификатор суперсета (Hevy superset_id), если подход в суперсете. */
+  supersetId?: string;
 }
 
 export interface GymCsvParseResult {
@@ -120,6 +124,15 @@ function rirFromRpe(raw: string): number | null {
   return Math.min(10, Math.max(0, 10 - Math.round(v)));
 }
 
+/** Hevy set_type → GymSetType; неизвестные значения не типизируем. */
+function hevySetType(raw: string): GymSetType | undefined {
+  const s = raw.trim().toLowerCase();
+  if (s === 'normal' || s === 'warmup') return s;
+  if (s === 'dropset' || s === 'drop_set') return 'dropset';
+  if (s === 'failure') return 'failure';
+  return undefined;
+}
+
 /** Определение формата по заголовку: 'hevy' | 'strong' | null. */
 export function detectGymCsvFormat(text: string): GymCsvFormat | null {
   const header = (parseCsvRows(text, detectDelimiter(text))[0] ?? []).map((h) =>
@@ -151,6 +164,7 @@ export function parseHevyCsv(text: string): GymCsvParseResult {
   const iRpe = idx('rpe');
   const iKg = idx('weight_kg');
   const iLbs = idx('weight_lbs');
+  const iSuperset = idx('superset_id');
 
   const sets: ImportedGymSet[] = [];
   const warnings: string[] = [];
@@ -183,6 +197,8 @@ export function parseHevyCsv(text: string): GymCsvParseResult {
       weightKg,
       reps: Math.round(reps),
       rir,
+      setType: hevySetType(row[iSetType] ?? ''),
+      supersetId: (row[iSuperset] ?? '').trim() || undefined,
     });
   }
   if (skipped > 0) {

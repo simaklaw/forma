@@ -57,10 +57,13 @@ describe('parseHevyCsv', () => {
       weightKg: 60,
       reps: 8,
       rir: 2,
+      setType: 'normal',
+      supersetId: undefined,
     });
     assert.equal(r.sets[1]!.weightKg, 62.5);
     // failure без RPE → RIR 0.
     assert.equal(r.sets[2]!.rir, 0);
+    assert.equal(r.sets[2]!.setType, 'failure');
     // Пустой вес — собственный вес; RPE 7 → RIR 3.
     assert.equal(r.sets[3]!.weightKg, 0);
     assert.equal(r.sets[3]!.reps, 10);
@@ -129,4 +132,22 @@ describe('parseStrongCsv', () => {
     assert.equal(r.sets[1]!.weightKg, 45);
     assert.equal(r.sets[1]!.rir, 0);
   });
+
+describe('parseHevyCsv set types and supersets', () => {
+  it('parses set_type and superset_id columns', () => {
+    const csv = [
+      'title,start_time,end_time,description,exercise_title,superset_id,exercise_notes,set_index,set_type,weight_kg,reps,distance_km,duration_seconds,rpe',
+      'Sup,2025-06-01T10:00:00Z,2025-06-01T10:30:00Z,,Bench Press,abc-1,,1,warmup,40,10,,,',
+      'Sup,2025-06-01T10:00:00Z,2025-06-01T10:30:00Z,,Bench Press,abc-1,,2,normal,80,8,,,',
+      'Sup,2025-06-01T10:00:00Z,2025-06-01T10:30:00Z,,Bench Press,,,3,dropset,50,12,,,'
+    ].join('\n');
+    const r = parseHevyCsv(csv);
+    assert.equal(r.sets.length, 3);
+    assert.equal(r.sets[0]!.setType, 'warmup');
+    assert.equal(r.sets[0]!.supersetId, 'abc-1');
+    assert.equal(r.sets[1]!.setType, 'normal');
+    assert.equal(r.sets[2]!.setType, 'dropset');
+    assert.equal(r.sets[2]!.supersetId, undefined);
+  });
 });
+

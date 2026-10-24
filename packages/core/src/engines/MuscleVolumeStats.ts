@@ -34,8 +34,9 @@ const SYNERGIST_WEIGHT = 0.5;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** Bodyweight-логи (weight 0) — валидная нагрузка: считаются подходами. */
+/** Bodyweight-логи (weight 0) — валидная нагрузка; разминка (setType) — нет. */
 function validEntry(entry: SetLogEntry): boolean {
+  if (entry.setType === "warmup") return false;
   return (
     Number.isFinite(entry.reps) &&
     entry.reps > 0 &&
