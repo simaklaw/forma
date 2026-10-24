@@ -20,6 +20,7 @@ export * from "./engines/MuscleVolumeStats.ts";
 export * from "./engines/SetReview.ts";
 export * from "./engines/PatternStats.ts";
 export * from "./engines/SwapGraph.ts";
+export * from "./engines/SetMeasure.ts";
 export * from "./met/exerciseMet.ts";
 export * from "./met/sessionBurn.ts";
 export * from "./services/OpenFoodFactsService.ts";

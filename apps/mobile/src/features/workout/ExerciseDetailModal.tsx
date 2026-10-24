@@ -28,6 +28,8 @@ import {
 import { EXERCISE_VIDEOS } from './exerciseMedia';
 import { realGifForMediaKey } from './exerciseRealMedia';
 import { swapsForPlanExercise, type ExerciseSwap } from './exerciseSwaps';
+import { formatPlanAmount } from './exerciseMeasures';
+import { isTimedMeasure, resolveSetMeasure } from '@forma/core';
 import { techniqueCuesFromNote } from '@/lib/techniqueCues';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT, muscleLabel } from '@/i18n/strings';
@@ -95,6 +97,9 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
   }
 
   if (!item) return null;
+
+  const timed = isTimedMeasure(resolveSetMeasure(item.measure));
+  const secondsUnit = t('secShort');
 
   const loadLabel =
     item.workingWeight > 0
@@ -183,8 +188,12 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
               <Text style={[styles.statValue, { color: colors.paper }]}>{item.totalSets}</Text>
             </View>
             <View style={[styles.stat, { borderColor: colors.line, backgroundColor: colors.panel }]}>
-              <Text style={[styles.statLabel, { color: colors.paperFaint }]}>{t('statReps')}</Text>
-              <Text style={[styles.statValue, { color: colors.paper }]}>{item.workingReps}</Text>
+              <Text style={[styles.statLabel, { color: colors.paperFaint }]}>
+                {timed ? t('statSeconds') : t('statReps')}
+              </Text>
+              <Text style={[styles.statValue, { color: colors.paper }]}>
+                {formatPlanAmount(resolveSetMeasure(item.measure), item.workingReps, secondsUnit)}
+              </Text>
             </View>
             <View style={[styles.stat, { borderColor: colors.line, backgroundColor: colors.panel }]}>
               <Text style={[styles.statLabel, { color: colors.paperFaint }]}>{t('statRest')}</Text>
