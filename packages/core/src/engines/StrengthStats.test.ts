@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { estimateEpleyOneRm, strengthTrends } from "./StrengthStats.ts";
+import { e1RmDailyBests, estimateEpleyOneRm, strengthTrends } from "./StrengthStats.ts";
 import type { SetLogEntry } from "./WorkoutStats.ts";
 
 const NOW = new Date(2026, 9, 23, 12);
@@ -129,4 +129,34 @@ describe("strength trend (regression + R2, порт из whoop-mcp)", () => {
     const t = strengthTrends(logs, NOW)[0]!;
     assert.equal(t.trend, "improving"); // дневные точки: 61.7 → 72.3 → 82.7
   });
+
+describe("e1RmDailyBests", () => {
+  it("builds a daily best-e1RM series in chronological order", () => {
+    const points = e1RmDailyBests(
+      [
+        log(20, "2026-10-02", 60, 5),
+        log(20, "2026-10-01", 50, 5),
+        log(20, "2026-10-01", 55, 3),
+        log(20, "2026-10-03", 70, 2),
+        log(21, "2026-10-01", 100, 5),
+      ],
+      20,
+    );
+    assert.deepEqual(points, [
+      { dateKey: "2026-10-01", oneRmKg: 60.5 },
+      { dateKey: "2026-10-02", oneRmKg: 70 },
+      { dateKey: "2026-10-03", oneRmKg: 74.7 },
+    ]);
+  });
+
+  it("skips warmups, bodyweight logs and other exercises", () => {
+    const warmup: SetLogEntry = { ...log(22, "2026-10-01", 40, 10), setType: "warmup" };
+    const points = e1RmDailyBests(
+      [warmup, log(22, "2026-10-02", 0, 15), log(23, "2026-10-01", 80, 5)],
+      22,
+    );
+    assert.deepEqual(points, []);
+  });
+});
+
 });
