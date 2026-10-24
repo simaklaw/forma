@@ -11,11 +11,14 @@ import {
   evaluateAchievements,
   isProfileComplete,
   muscleVolumeStats,
+  patternVolumeStats,
+  pushPullBalance,
   personalRecords,
   plateauAnalyses,
   strengthTrends,
   toDateKey,
   type DaySetReview,
+  type MovementPattern,
   type MuscleLoadStatus,
   type PlateauAnalysis,
   type RecordEvent,
@@ -23,7 +26,8 @@ import {
 } from '@forma/core';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
-import { useT } from '@/i18n/strings';
+import { movementPatternLabel, useT } from '@/i18n/strings';
+import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { selectDailyTotals, selectTodayMeals, useFitPulseStore } from '@/state/useFitPulseStore';
 import { unifiedStreakDays, lastNDays } from '@/engines/WorkoutStats';
 import {
@@ -32,6 +36,7 @@ import {
   allExerciseMuscles,
   allExerciseNames
 } from '@/features/workout/catalog';
+import { allExercisePatterns } from '@/features/workout/exercisePatterns';
 import { MUSCLE_LABELS, type MuscleKey } from '@/domain/muscleKeys';
 import { importedByNumericId } from '@/features/workout/importedExerciseBridge';
 import ActivityCalendar from '@/components/ActivityCalendar';
@@ -70,6 +75,7 @@ export default function ProgressScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const t = useT();
+  const lang = useLanguageStore((s) => s.lang);
 
   const setLogs = useFitPulseStore((s) => s.setLogs);
   const profile = useFitPulseStore((s) => s.profile);
@@ -193,6 +199,11 @@ export default function ProgressScreen() {
     [setLogs]
   );
   const muscleVolume = muscleVolumeAll.slice(0, 6);
+  const patternVolume = useMemo(
+    () => patternVolumeStats(setLogs, allExercisePatterns(), new Date()),
+    [setLogs]
+  );
+  const pushPull = useMemo(() => pushPullBalance(patternVolume), [patternVolume]);
 
   const lastReview = useMemo((): DaySetReview | null => {
     if (setLogs.length === 0) return null;
@@ -609,6 +620,40 @@ export default function ProgressScreen() {
                 </Text>
               </View>
             ))}
+          </View>
+        ) : null}
+        {patternVolume.length > 0 ? (
+          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+            <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('patternKicker')}</Text>
+            <View style={styles.chipRow}>
+              {patternVolume.map((p) => (
+                <View
+                  key={p.pattern}
+                  style={[styles.chartChip, { borderColor: colors.lineStrong }]}
+                >
+                  <Text style={[styles.chartChipText, { color: colors.paperDim }]}>
+                    {movementPatternLabel(p.pattern as MovementPattern, lang)} · {p.weeklySets}
+                  </Text>
+                </View>
+              ))}
+            </View>
+            {pushPull.status !== 'none' ? (
+              <Text
+                style={{
+                  fontFamily: fonts.mono,
+                  fontSize: 11,
+                  marginTop: 4,
+                  color: pushPull.status === 'balanced' ? colors.lime : colors.ember
+                }}
+              >
+                {t('patternPushPull', { push: pushPull.pushSets, pull: pushPull.pullSets })} ·{' '}
+                {pushPull.status === 'balanced'
+                  ? t('patternBalanceBalanced')
+                  : pushPull.status === 'push_heavy'
+                    ? t('patternBalancePushHeavy')
+                    : t('patternBalancePullHeavy')}
+              </Text>
+            ) : null}
           </View>
         ) : null}
         {lastReview !== null ? (

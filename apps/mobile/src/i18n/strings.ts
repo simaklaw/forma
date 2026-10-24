@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useLanguageStore, type Language } from './useLanguageStore';
 import { MUSCLE_LABELS, type MuscleKey } from '@/domain/muscleKeys';
 import type { ProgramTemplateId } from '@/features/workout/program/readyPrograms';
+import type { MovementPattern } from '@forma/core';
 
 /**
  * Лёгкий i18n-слой: два словаря (ru/en), RU по умолчанию.
@@ -278,6 +279,11 @@ const RU = {
   volumeStatusJunk: 'выше MRV — junk volume',
   volumeStatusUnder: 'ниже MEV',
   volumeStatusOptimal: 'оптимум',
+  patternKicker: 'ПАТТЕРНЫ ДВИЖЕНИЙ · 7 ДНЕЙ',
+  patternPushPull: 'жим {push} · тяга {pull}',
+  patternBalanceBalanced: 'баланс в норме',
+  patternBalancePushHeavy: 'перекос в жимы',
+  patternBalancePullHeavy: 'перекос в тяги',
   reviewKicker: 'РАЗБОР ПОДХОДОВ',
   reviewEffective: 'эффективных {eff} из {total}',
   reviewScenarioWarmup: 'разминочные',
@@ -772,6 +778,11 @@ const EN: Record<StringKey, string> = {
   volumeStatusJunk: 'above MRV — junk volume',
   volumeStatusUnder: 'below MEV',
   volumeStatusOptimal: 'optimal',
+  patternKicker: 'MOVEMENT PATTERNS · 7 DAYS',
+  patternPushPull: 'push {push} · pull {pull}',
+  patternBalanceBalanced: 'balanced',
+  patternBalancePushHeavy: 'push-heavy',
+  patternBalancePullHeavy: 'pull-heavy',
   reviewKicker: 'SET REVIEW',
   reviewEffective: '{eff} of {total} effective',
   reviewScenarioWarmup: 'warmup',
@@ -1030,6 +1041,33 @@ const MUSCLE_LABELS_EN: Record<MuscleKey, string> = {
 
 export function muscleLabel(key: MuscleKey, lang: Language): string {
   return lang === 'en' ? MUSCLE_LABELS_EN[key] : MUSCLE_LABELS[key];
+}
+
+const MOVEMENT_PATTERN_LABELS: Record<MovementPattern, string> = {
+  squat: 'присед',
+  hinge: 'наклон',
+  push_horizontal: 'жим гориз.',
+  push_vertical: 'жим верт.',
+  pull_horizontal: 'тяга гориз.',
+  pull_vertical: 'тяга верт.',
+  core: 'кор',
+  isolation: 'изоляция'
+};
+
+const MOVEMENT_PATTERN_LABELS_EN: Record<MovementPattern, string> = {
+  squat: 'squat',
+  hinge: 'hinge',
+  push_horizontal: 'hor. push',
+  push_vertical: 'vert. push',
+  pull_horizontal: 'hor. pull',
+  pull_vertical: 'vert. pull',
+  core: 'core',
+  isolation: 'isolation'
+};
+
+/** Метка паттерна движения для чипов аналитики. */
+export function movementPatternLabel(pattern: MovementPattern, lang: Language): string {
+  return lang === 'en' ? MOVEMENT_PATTERN_LABELS_EN[pattern] : MOVEMENT_PATTERN_LABELS[pattern];
 }
 
 export type EquipmentKey =
