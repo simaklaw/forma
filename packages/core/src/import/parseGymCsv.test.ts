@@ -132,6 +132,7 @@ describe('parseStrongCsv', () => {
     assert.equal(r.sets[1]!.weightKg, 45);
     assert.equal(r.sets[1]!.rir, 0);
   });
+});
 
 describe('parseHevyCsv set types and supersets', () => {
   it('parses set_type and superset_id columns', () => {
