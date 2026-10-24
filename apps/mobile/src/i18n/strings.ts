@@ -98,6 +98,10 @@ const RU = {
   statLoad: 'Нагрузка',
   metaEquipment: 'Оборудование: {name}',
   metaMuscles: 'Мышцы: {list}',
+  swapKicker: 'ЗАМЕНЫ · ПРОЩЕ / СЛОЖНЕЕ',
+  swapEasier: 'Проще',
+  swapHarder: 'Сложнее',
+  swapChipA11y: 'Заменить на «{name}»',
 
   // Экран тренировки (ExerciseSheet)
   sheetExerciseShort: 'Упр. {index} · шаг {step}/{total}',
@@ -602,6 +606,10 @@ const EN: Record<StringKey, string> = {
   statLoad: 'Load',
   metaEquipment: 'Equipment: {name}',
   metaMuscles: 'Muscles: {list}',
+  swapKicker: 'SWAPS · EASIER / HARDER',
+  swapEasier: 'Easier',
+  swapHarder: 'Harder',
+  swapChipA11y: 'Substitute with {name}',
 
   sheetExerciseShort: 'Ex. {index} · step {step}/{total}',
   sheetExerciseFull: 'Exercise {index}',
