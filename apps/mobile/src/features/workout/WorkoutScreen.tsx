@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
-import { estimateBurnFromSetLogs, toDateKey as coreToDateKey } from '@forma/core';
+import { estimateBurnFromSetLogs, resolveSetMeasure, toDateKey as coreToDateKey } from '@forma/core';
 import { fonts } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
@@ -35,6 +35,7 @@ import { readyProgramDays } from './program/readyPrograms';
 import { clearDayOverride, loadDayOverrideIds, resolveDayExercises } from './dayPlanOverrides';
 import { applyLoadProgression, loadLoadProgression, type LoadProgressionMap } from './loadProgression';
 import { setReplaceTarget } from './replaceTarget';
+import { formatPlanAmount } from './exerciseMeasures';
 import type { TabParamList } from '@/navigation/types';
 import { EXERCISE_THUMBNAILS } from './exerciseMedia';
 import { useExerciseListThumbs } from './useExerciseListThumbs';
@@ -861,7 +862,7 @@ export default function WorkoutScreen() {
                   ) : null}
                 </View>
                 <Text style={[styles.logSpec, { color: colors.paperDim }]}>
-                  {ex.totalSets}×{ex.workingReps} · {formatLoadLabel(ex, safeWeightKg)}
+                  {ex.totalSets}×{formatPlanAmount(resolveSetMeasure(ex.measure), ex.workingReps, t('secShort'))} · {formatLoadLabel(ex, safeWeightKg)}
                   {finished
                     ? t('workoutDoneSuffix')
                     : doneSets > 0

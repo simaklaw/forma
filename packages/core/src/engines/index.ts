@@ -13,3 +13,4 @@ export * from "./MuscleVolumeStats.ts";
 export * from "./SetReview.ts";
 export * from "./PatternStats.ts";
 export * from "./SwapGraph.ts";
+export * from "./SetMeasure.ts";

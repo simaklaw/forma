@@ -27,6 +27,8 @@ import { realGifForMediaKey } from './exerciseRealMedia';
 import { importedByNumericId, IMPORTED_NUMERIC_ID_BASE } from './importedExerciseBridge';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT } from '@/i18n/strings';
+import { isTimedMeasure, resolveSetMeasure, stepSetAmount, type SetMeasure } from '@forma/core';
+import { formatPlanAmount } from './exerciseMeasures';
 
 const beepSource = require('../../../assets/sfx/beep.wav');
 
@@ -36,6 +38,8 @@ export interface ExerciseDef {
   name: string;
   workingWeight: number;
   workingReps: number;
+  /** Как считать подход: повторы или секунды (статика). */
+  measure?: SetMeasure;
   weightStep?: number;
   totalSets: number;
   restSeconds: number;
@@ -170,6 +174,10 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
     if (!exercise) return null;
 
+    const measure = resolveSetMeasure(exercise.measure);
+    const timed = isTimedMeasure(measure);
+    const secondsUnit = t('secShort');
+
     const sessionForDay = sessionForViewedDay(sessionSnap, dayId);
     const seq =
       dayId && dayExercises?.length
@@ -184,7 +192,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
     const weightStep = exercise.weightStep ?? 2.5;
     const oneRm =
-      Number.isFinite(weight) && weight > 0 && Number.isFinite(reps) && reps >= 1
+      !timed && Number.isFinite(weight) && weight > 0 && Number.isFinite(reps) && reps >= 1
         ? Math.round(estimateOneRepMax(weight, reps))
         : 0;
     const rpe = rpeFromRir(rir);
@@ -449,7 +457,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         <View style={[styles.grid, { marginTop: spacing.md }]}>
           <View style={styles.gridCell}>
             <Text style={styles.gridVal}>
-              {exercise.totalSets}×{exercise.workingReps}
+              {exercise.totalSets}×{formatPlanAmount(measure, exercise.workingReps, secondsUnit)}
             </Text>
             <Text style={styles.gridLbl}>{t('gridSets')}</Text>
           </View>
@@ -496,7 +504,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           );
         })()}
 
-        <Text style={styles.rirLabel}>{t('sheetRirLabel')}</Text>
+        <Text style={styles.rirLabel}>
+          {timed ? t('sheetRirLabelTimed') : t('sheetRirLabel')}
+        </Text>
         <View style={styles.stepperRow}>
           <View style={styles.stepperBlock}>
             <TouchableOpacity
@@ -528,22 +538,22 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           <View style={styles.stepperBlock}>
             <TouchableOpacity
               style={styles.stepperBtn}
-              onPress={() => setReps((r) => Math.max(1, r - 1))}
+              onPress={() => setReps((r) => stepSetAmount(measure, r, -1))}
               accessibilityRole="button"
-              accessibilityLabel={t('sheetDecreaseReps')}
+              accessibilityLabel={timed ? t('sheetDecreaseSeconds') : t('sheetDecreaseReps')}
               disabled={blockedBySequence}
             >
               <Text style={styles.stepperBtnText}>−</Text>
             </TouchableOpacity>
             <View style={styles.stepperValueWrap}>
               <Text style={styles.stepperValue}>{reps}</Text>
-              <Text style={styles.stepperUnit}>{t('sheetRepsUnit')}</Text>
+              <Text style={styles.stepperUnit}>{timed ? secondsUnit : t('sheetRepsUnit')}</Text>
             </View>
             <TouchableOpacity
               style={styles.stepperBtn}
-              onPress={() => setReps((r) => r + 1)}
+              onPress={() => setReps((r) => stepSetAmount(measure, r, 1))}
               accessibilityRole="button"
-              accessibilityLabel={t('sheetIncreaseReps')}
+              accessibilityLabel={timed ? t('sheetIncreaseSeconds') : t('sheetIncreaseReps')}
               disabled={blockedBySequence}
             >
               <Text style={styles.stepperBtnText}>+</Text>
@@ -551,7 +561,9 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           </View>
         </View>
 
-        <Text style={styles.rirLabel}>{t('sheetRirQuestion')}</Text>
+        <Text style={styles.rirLabel}>
+          {timed ? t('sheetRirQuestionTimed') : t('sheetRirQuestion')}
+        </Text>
         <View style={styles.rirRow}>
           {[1, 2, 3].map((val) => (
             <TouchableOpacity
@@ -621,12 +633,18 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
                 <Text style={styles.setNum}>{setNum}</Text>
                 <Text style={styles.setSpec}>
                   {done
-                    ? t('sheetSetLogged', { weight: logged!.weight, reps: logged!.reps })
+                    ? t('sheetSetLogged', {
+                        weight: logged!.weight,
+                        reps: formatPlanAmount(measure, logged!.reps, secondsUnit)
+                      })
                     : isNext
-                      ? t('sheetSetLoggedArrow', { weight, reps })
+                      ? t('sheetSetLoggedArrow', {
+                          weight,
+                          reps: formatPlanAmount(measure, reps, secondsUnit)
+                        })
                       : t('sheetSetPlan', {
                           load: formatLoadLabel(exercise, bodyKg),
-                          reps: exercise.workingReps
+                          reps: formatPlanAmount(measure, exercise.workingReps, secondsUnit)
                         })}
                 </Text>
                 <Text style={done ? styles.setDone : styles.setPending}>
