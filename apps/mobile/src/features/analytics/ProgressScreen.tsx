@@ -36,6 +36,7 @@ import { importedByNumericId } from '@/features/workout/importedExerciseBridge';
 import ActivityCalendar from '@/components/ActivityCalendar';
 import {
   ImportActivityButton,
+  ImportGymHistoryButton,
   ImportedActivitiesList
 } from '@/features/import';
 
@@ -367,6 +368,7 @@ export default function ProgressScreen() {
         <View style={styles.importSection}>
           <Text style={[styles.sectionLabel, { color: colors.paperDim }]}>{t('progressImportSection')}</Text>
           <ImportActivityButton />
+          <ImportGymHistoryButton />
           <ImportedActivitiesList />
         </View>
 

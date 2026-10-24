@@ -13,6 +13,8 @@ export interface SetLogEntry {
   weight: number;
   reps: number;
   rir: number;
+  /** Импортированная история (Hevy/Strong CSV): не срезается политикой хранения. */
+  imported?: boolean;
 }
 
 export type DayProgress = Record<string, Record<number, number>>;

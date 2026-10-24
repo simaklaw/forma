@@ -10,3 +10,5 @@ export { parseFitHeader, isFitFile } from './fitHeader.ts';
 export { parseGpx } from './parseGpx.ts';
 export { parseTcx } from './parseTcx.ts';
 export { activitiesFromFitSessions, type FitSessionLike } from './parseFitSummary.ts';
+export { detectGymCsvFormat, parseGymCsv, parseHevyCsv, parseStrongCsv } from './parseGymCsv.ts';
+export type { GymCsvFormat, GymCsvParseResult, ImportedGymSet } from './parseGymCsv.ts';

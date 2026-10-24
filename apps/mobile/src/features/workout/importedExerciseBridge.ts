@@ -110,6 +110,22 @@ export function allImportedExerciseMuscles(): Record<number, MuscleKey[]> {
   return out;
 }
 
+/** Название импортированного упражнения для сопоставления CSV-импорта. */
+export interface ImportedExerciseName {
+  id: number;
+  nameEn: string;
+  nameRu: string | null;
+}
+
+/** Все импортированные упражнения (id + названия EN/RU). */
+export function allImportedExerciseNames(): ImportedExerciseName[] {
+  const out: ImportedExerciseName[] = [];
+  for (const [id, ex] of exerciseByNumeric) {
+    out.push({ id, nameEn: ex.nameEn, nameRu: ex.nameRu ?? null });
+  }
+  return out;
+}
+
 /** category/equipment for estimateBurnFromSetLogs.exerciseMeta */
 export function allImportedExerciseMeta(): Record<
   number,
