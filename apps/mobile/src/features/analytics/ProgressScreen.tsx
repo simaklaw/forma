@@ -36,6 +36,7 @@ import { MUSCLE_LABELS, type MuscleKey } from '@/domain/muscleKeys';
 import { importedByNumericId } from '@/features/workout/importedExerciseBridge';
 import ActivityCalendar from '@/components/ActivityCalendar';
 import WeightChart from '@/components/WeightChart';
+import MuscleLoadMap from '@/components/MuscleLoadMap';
 import {
   ImportActivityButton,
   ImportGymHistoryButton,
@@ -187,10 +188,11 @@ export default function ProgressScreen() {
       .slice(0, 3);
     return { feed: events.slice(0, 6), droughts };
   }, [setLogs]);
-  const muscleVolume = useMemo(
-    () => muscleVolumeStats(setLogs, allExerciseMuscles(), new Date()).slice(0, 6),
+  const muscleVolumeAll = useMemo(
+    () => muscleVolumeStats(setLogs, allExerciseMuscles(), new Date()),
     [setLogs]
   );
+  const muscleVolume = muscleVolumeAll.slice(0, 6);
 
   const lastReview = useMemo((): DaySetReview | null => {
     if (setLogs.length === 0) return null;
@@ -589,6 +591,7 @@ export default function ProgressScreen() {
         {muscleVolume.length > 0 ? (
           <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
             <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('volumeKicker')}</Text>
+            <MuscleLoadMap loads={muscleVolumeAll} />
             {muscleVolume.map((m) => (
               <View key={m.muscle} style={styles.statusRow}>
                 <Text style={[styles.prName, { color: colors.paper }]} numberOfLines={1}>
