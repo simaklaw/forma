@@ -105,3 +105,28 @@ export function strengthTrends(
     }))
     .sort((a, b) => b.bestOneRmKg - a.bestOneRmKg || a.exerciseId - b.exerciseId);
 }
+
+export interface E1RmDailyPoint {
+  dateKey: string;
+  /** Лучший e1RM тренировочного дня, кг (Эпли). */
+  oneRmKg: number;
+}
+
+/**
+ * Временной ряд e1RM одного упражнения: лучший e1RM каждого тренировочного
+ * дня в хронологическом порядке. Разминочные подходы (setType "warmup") и
+ * bodyweight-логи не учитываются.
+ */
+export function e1RmDailyBests(setLogs: SetLogEntry[], exerciseId: number): E1RmDailyPoint[] {
+  const byDay = new Map<string, number>();
+  for (const log of setLogs) {
+    if (log.exerciseId !== exerciseId) continue;
+    if (log.setType === "warmup") continue;
+    const oneRm = estimateEpleyOneRm(log.weight, log.reps);
+    if (oneRm <= 0) continue;
+    byDay.set(log.dateKey, Math.max(byDay.get(log.dateKey) ?? 0, oneRm));
+  }
+  return [...byDay.entries()]
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([dateKey, oneRmKg]) => ({ dateKey, oneRmKg }));
+}

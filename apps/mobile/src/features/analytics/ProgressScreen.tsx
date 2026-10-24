@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   analyzeRecovery,
   buildCoachBrief,
   daySetReview,
+  e1RmDailyBests,
   estimateDailyBurns,
   estimateBurnFromSetLogs,
   evaluateAchievements,
@@ -34,6 +35,7 @@ import {
 import { MUSCLE_LABELS, type MuscleKey } from '@/domain/muscleKeys';
 import { importedByNumericId } from '@/features/workout/importedExerciseBridge';
 import ActivityCalendar from '@/components/ActivityCalendar';
+import WeightChart from '@/components/WeightChart';
 import {
   ImportActivityButton,
   ImportGymHistoryButton,
@@ -153,7 +155,18 @@ export default function ProgressScreen() {
       }),
     [domainWorkouts]
   );
-  const strengthTop = useMemo(() => strengthTrends(setLogs).slice(0, 3), [setLogs]);
+  const strengthAll = useMemo(() => strengthTrends(setLogs), [setLogs]);
+  const strengthTop = strengthAll.slice(0, 3);
+  const chartExercises = strengthAll.slice(0, 6);
+  const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
+  const chartExerciseId =
+    chartExercises.find((s) => s.exerciseId === selectedExerciseId)?.exerciseId ??
+    chartExercises[0]?.exerciseId ??
+    null;
+  const e1rmSeries = useMemo(
+    () => (chartExerciseId == null ? [] : e1RmDailyBests(setLogs, chartExerciseId)),
+    [setLogs, chartExerciseId]
+  );
   const plateauList = useMemo(
     () =>
       plateauAnalyses(setLogs)
@@ -458,6 +471,58 @@ export default function ProgressScreen() {
             })}
           </View>
         ) : null}
+        {chartExercises.length > 0 ? (
+          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+            <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>
+              {t('progressE1rmChartKicker')}
+            </Text>
+            <View style={styles.chipRow}>
+              {chartExercises.map((s) => {
+                const active = s.exerciseId === chartExerciseId;
+                return (
+                  <TouchableOpacity
+                    key={s.exerciseId}
+                    style={[
+                      styles.chartChip,
+                      { borderColor: active ? colors.lime : colors.lineStrong }
+                    ]}
+                    onPress={() => setSelectedExerciseId(s.exerciseId)}
+                    accessibilityRole="button"
+                    accessibilityLabel={resolveStrengthName(s.exerciseId)}
+                  >
+                    <Text
+                      style={[styles.chartChipText, { color: active ? colors.lime : colors.paperDim }]}
+                      numberOfLines={1}
+                    >
+                      {resolveStrengthName(s.exerciseId)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            {e1rmSeries.length >= 2 ? (
+              <View>
+                <WeightChart history={e1rmSeries.map((p) => p.oneRmKg)} />
+                <Text
+                  style={{
+                    color: colors.paperFaint,
+                    fontSize: 11,
+                    fontFamily: fonts.mono,
+                    marginTop: 4
+                  }}
+                >
+                  {e1rmSeries[0]!.dateKey.slice(5)} →{' '}
+                  {e1rmSeries[e1rmSeries.length - 1]!.dateKey.slice(5)} ·{" "}
+                  {e1rmSeries[e1rmSeries.length - 1]!.oneRmKg} {t("kg")}
+                </Text>
+              </View>
+            ) : (
+              <Text style={{ color: colors.paperFaint, fontSize: 11 }}>
+                {t('e1rmChartEmpty')}
+              </Text>
+            )}
+          </View>
+        ) : null}
         {plateauList.length > 0 ? (
           <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
             <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('progressStatusKicker')}</Text>
@@ -653,6 +718,14 @@ function createStyles(colors: ColorTokens) {
       marginBottom: spacing.md,
       gap: 4
     },
+    chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
+    chartChip: {
+      borderWidth: 1,
+      borderRadius: radius.pill,
+      paddingHorizontal: 10,
+      paddingVertical: 5
+    },
+    chartChipText: { fontFamily: fonts.body, fontSize: 11 },
     sectionLabel: {
       fontSize: 11,
       fontFamily: fonts.mono,
