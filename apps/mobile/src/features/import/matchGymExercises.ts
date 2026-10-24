@@ -1,4 +1,4 @@
-import type { GymCsvParseResult } from '@forma/core';
+import type { GymCsvParseResult, GymSetType } from '@forma/core';
 
 export interface GymHistoryDraft {
   exerciseId: number;
@@ -6,6 +6,10 @@ export interface GymHistoryDraft {
   weight: number;
   reps: number;
   rir: number;
+  /** Тип подхода из импорта Hevy: разминка, дропсет, отказ. */
+  setType?: GymSetType;
+  /** Идентификатор суперсета из импорта Hevy; подходы одной группы идут друг за другом. */
+  supersetId?: string;
 }
 
 export type GymNameIndex = {
@@ -79,7 +83,9 @@ export function matchGymCsvSets(
       dateKey: set.dateKey,
       weight: set.weightKg,
       reps: set.reps,
-      rir: set.rir
+      rir: set.rir,
+      setType: set.setType,
+      supersetId: set.supersetId
     });
   }
   return { drafts, unmatchedNames: [...unmatched], totalSets: result.sets.length };

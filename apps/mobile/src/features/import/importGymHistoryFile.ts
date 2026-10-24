@@ -19,6 +19,8 @@ export type GymHistoryImportOutcome = {
   cancelled: boolean;
   fileName?: string;
   totalSets: number;
+  /** Число суперсет-групп среди сопоставленных подходов. */
+  supersetGroups: number;
 };
 
 /** Индекс имён планов и импортированной библиотеки для сопоставления CSV-имён. */
@@ -42,7 +44,14 @@ export async function pickAndImportGymHistoryFile(): Promise<GymHistoryImportOut
   });
 
   if (picked.canceled || !picked.assets?.length) {
-    return { drafts: [], unmatchedNames: [], warnings: [], cancelled: true, totalSets: 0 };
+    return {
+      drafts: [],
+      unmatchedNames: [],
+      warnings: [],
+      cancelled: true,
+      totalSets: 0,
+      supersetGroups: 0
+    };
   }
 
   const asset = picked.assets[0];
@@ -54,13 +63,17 @@ export async function pickAndImportGymHistoryFile(): Promise<GymHistoryImportOut
     });
     const parsed = parseGymCsv(text);
     const matched = matchGymCsvSets(parsed, gymCatalogNameIndex());
+    const supersetGroups = new Set(
+      matched.drafts.map((d) => d.supersetId).filter((id): id is string => id != null)
+    ).size;
     return {
       drafts: matched.drafts,
       unmatchedNames: matched.unmatchedNames,
       warnings: parsed.warnings,
       cancelled: false,
       fileName,
-      totalSets: matched.totalSets
+      totalSets: matched.totalSets,
+      supersetGroups
     };
   } catch (err) {
     return {
@@ -69,7 +82,8 @@ export async function pickAndImportGymHistoryFile(): Promise<GymHistoryImportOut
       warnings: [err instanceof Error ? err.message : String(err)],
       cancelled: false,
       fileName,
-      totalSets: 0
+      totalSets: 0,
+      supersetGroups: 0
     };
   }
 }

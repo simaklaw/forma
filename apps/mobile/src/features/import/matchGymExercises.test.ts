@@ -69,4 +69,26 @@ describe('gym csv name matching', () => {
     expect(matched.drafts.map((d) => d.exerciseId)).toEqual([7, 7]);
     expect(matched.unmatchedNames).toEqual([]);
   });
+
+  it('passes set type and superset id through to drafts', () => {
+    const index = buildGymNameIndex([{ id: 3, aliases: ['Squat'] }]);
+    const result: GymCsvParseResult = {
+      format: 'hevy',
+      sets: [{ ...parsedSet('Squat', 100, 5), setType: 'warmup', supersetId: 's1' }],
+      warnings: []
+    };
+    const matched = matchGymCsvSets(result, index);
+    expect(matched.drafts).toEqual([
+      {
+        exerciseId: 3,
+        dateKey: '2025-03-28',
+        weight: 100,
+        reps: 5,
+        rir: 2,
+        setType: 'warmup',
+        supersetId: 's1'
+      }
+    ]);
+  });
+
 });
