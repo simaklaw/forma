@@ -12,3 +12,4 @@ export * from "./PersonalRecords.ts";
 export * from "./MuscleVolumeStats.ts";
 export * from "./SetReview.ts";
 export * from "./PatternStats.ts";
+export * from "./SwapGraph.ts";

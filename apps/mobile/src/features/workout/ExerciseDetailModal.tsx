@@ -27,6 +27,7 @@ import {
 } from './replaceTarget';
 import { EXERCISE_VIDEOS } from './exerciseMedia';
 import { realGifForMediaKey } from './exerciseRealMedia';
+import { swapsForPlanExercise, type ExerciseSwap } from './exerciseSwaps';
 import { techniqueCuesFromNote } from '@/lib/techniqueCues';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT, muscleLabel } from '@/i18n/strings';
@@ -70,8 +71,10 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
     onFavoriteChange?.(next);
   }
 
-  async function onConfirmReplace() {
+  async function onConfirmReplace(replacementId?: number) {
     if (!item || !replaceTarget || replaceTarget.mode !== item.mode) return;
+    const targetId = replacementId ?? item.id;
+    if (replaceTarget.currentExerciseId === targetId) return;
     const day = catalogFor(replaceTarget.mode).find((d) => d.id === replaceTarget.dayId);
     if (!day) return;
     setReplacing(true);
@@ -80,7 +83,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
         replaceTarget.mode,
         replaceTarget.dayId,
         replaceTarget.slotIndex,
-        item.id,
+        targetId,
         day.exercises
       );
       clearReplaceTarget();
@@ -153,7 +156,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
 
           {canReplace ? (
             <TouchableOpacity
-              onPress={() => void onConfirmReplace()}
+              onPress={() => void onConfirmReplace(item.id)}
               disabled={replacing}
               style={[styles.replaceCta, { backgroundColor: colors.lime }]}
               accessibilityRole="button"
@@ -212,6 +215,36 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
               <Text style={[styles.noteBody, { color: colors.paper }]}>{item.note}</Text>
             </View>
           ) : null}
+
+          {(() => {
+            const swaps = swapsForPlanExercise(item.id);
+            if (!swaps.easier.length && !swaps.harder.length) return null;
+            const swapChip = (swap: ExerciseSwap, kind: 'easier' | 'harder') => (
+              <TouchableOpacity
+                key={`${kind}-${swap.id}`}
+                style={[styles.metaChip, { borderColor: colors.lineStrong }]}
+                onPress={canReplace ? () => void onConfirmReplace(swap.id) : undefined}
+                disabled={!canReplace || replacing}
+                accessibilityRole="button"
+                accessibilityLabel={t('swapChipA11y', { name: swap.name })}
+              >
+                <Text style={[styles.metaChipText, { color: colors.paperDim }]}>
+                  {kind === 'easier' ? t('swapEasier') : t('swapHarder')} · {swap.name}
+                </Text>
+              </TouchableOpacity>
+            );
+            return (
+              <View style={styles.swapSection}>
+                <Text style={[styles.sectionLabel, { color: colors.paperFaint }]}>
+                  {t('swapKicker')}
+                </Text>
+                <View style={styles.swapRow}>
+                  {swaps.easier.map((swap) => swapChip(swap, 'easier'))}
+                  {swaps.harder.map((swap) => swapChip(swap, 'harder'))}
+                </View>
+              </View>
+            );
+          })()}
 
           <MuscleMap targetMuscles={item.targetMuscles} />
 
@@ -273,6 +306,8 @@ const styles = StyleSheet.create({
     paddingVertical: 4
   },
   metaChipText: { fontSize: 12, fontFamily: fonts.body },
+  swapSection: { gap: 8 },
+  swapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   noteBox: {
     borderWidth: 1,
     borderRadius: radius.card,
