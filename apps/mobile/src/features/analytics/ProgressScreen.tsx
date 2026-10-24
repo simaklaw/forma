@@ -4,23 +4,34 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   analyzeRecovery,
   buildCoachBrief,
+  daySetReview,
   estimateDailyBurns,
   estimateBurnFromSetLogs,
   evaluateAchievements,
   isProfileComplete,
+  muscleVolumeStats,
   personalRecords,
   plateauAnalyses,
   strengthTrends,
   toDateKey,
+  type DaySetReview,
+  type MuscleLoadStatus,
   type PlateauAnalysis,
-  type RecordEvent
+  type RecordEvent,
+  type SetScenario
 } from '@forma/core';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useT } from '@/i18n/strings';
 import { selectDailyTotals, selectTodayMeals, useFitPulseStore } from '@/state/useFitPulseStore';
 import { unifiedStreakDays, lastNDays } from '@/engines/WorkoutStats';
-import { allExerciseNames, allExerciseMetKeys, allExerciseBurnMeta } from '@/features/workout/catalog';
+import {
+  allExerciseBurnMeta,
+  allExerciseMetKeys,
+  allExerciseMuscles,
+  allExerciseNames
+} from '@/features/workout/catalog';
+import { MUSCLE_LABELS, type MuscleKey } from '@/domain/muscleKeys';
 import { importedByNumericId } from '@/features/workout/importedExerciseBridge';
 import ActivityCalendar from '@/components/ActivityCalendar';
 import {
@@ -162,6 +173,56 @@ export default function ProgressScreen() {
       .slice(0, 3);
     return { feed: events.slice(0, 6), droughts };
   }, [setLogs]);
+  const muscleVolume = useMemo(
+    () => muscleVolumeStats(setLogs, allExerciseMuscles(), new Date()).slice(0, 6),
+    [setLogs]
+  );
+
+  const lastReview = useMemo((): DaySetReview | null => {
+    if (setLogs.length === 0) return null;
+    const lastDay = setLogs.reduce((acc, e) => (e.dateKey > acc ? e.dateKey : acc), '');
+    const review = daySetReview(setLogs, lastDay);
+    return review.exercises.length === 0 ? null : review;
+  }, [setLogs]);
+
+  const reviewLines = useMemo(() => {
+    if (!lastReview) return [];
+    return lastReview.exercises.map((ex) => {
+      const counts = new Map<SetScenario, number>();
+      for (const s of ex.sets) {
+        counts.set(s.scenario, (counts.get(s.scenario) ?? 0) + 1);
+      }
+      return {
+        exerciseId: ex.exerciseId,
+        effectiveSets: ex.effectiveSets,
+        totalSets: ex.totalSets,
+        parts: [...counts.entries()].map(([scenario, n]) => ({ scenario, n }))
+      };
+    });
+  }, [lastReview]);
+
+  const volumeLabel = (muscle: string): string => MUSCLE_LABELS[muscle as MuscleKey] ?? muscle;
+
+  const volumeStatusLabel = (status: MuscleLoadStatus): string =>
+    status === 'junk'
+      ? t('volumeStatusJunk')
+      : status === 'under'
+        ? t('volumeStatusUnder')
+        : t('volumeStatusOptimal');
+
+  const scenarioLabel = (scenario: SetScenario): string =>
+    scenario === 'warmup'
+      ? t('reviewScenarioWarmup')
+      : scenario === 'easy'
+        ? t('reviewScenarioEasy')
+        : scenario === 'productive'
+          ? t('reviewScenarioProductive')
+          : scenario === 'grinder'
+            ? t('reviewScenarioGrinder')
+            : scenario === 'failure'
+              ? t('reviewScenarioFailure')
+              : t('reviewScenarioBackoff');
+
   const resolveStrengthName = (exerciseId: number): string => {
     const imported = importedByNumericId(exerciseId);
     if (imported) return imported.nameRu ?? imported.nameEn;
@@ -456,6 +517,58 @@ export default function ProgressScreen() {
                 </Text>
               </View>
             ))}
+          </View>
+        ) : null}
+        {muscleVolume.length > 0 ? (
+          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+            <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('volumeKicker')}</Text>
+            {muscleVolume.map((m) => (
+              <View key={m.muscle} style={styles.statusRow}>
+                <Text style={[styles.prName, { color: colors.paper }]} numberOfLines={1}>
+                  {volumeLabel(m.muscle)}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: fonts.mono,
+                    fontSize: 11,
+                    marginTop: 2,
+                    color: m.status === 'junk' ? colors.ember : colors.paperDim
+                  }}
+                >
+                  {m.weeklySets} · MEV {m.mev} · MRV {m.mrv} · {volumeStatusLabel(m.status)}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+        {lastReview !== null ? (
+          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+            <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('reviewKicker')}</Text>
+            <Text style={{ color: colors.paperFaint, fontSize: 11, marginTop: 2 }}>
+              {lastReview.dateKey.slice(5)} ·{' '}
+              {t('reviewEffective', { eff: lastReview.effectiveSets, total: lastReview.totalSets })}
+            </Text>
+            {reviewLines.map((l) => (
+              <View key={l.exerciseId} style={styles.statusRow}>
+                <Text style={[styles.prName, { color: colors.paper }]} numberOfLines={1}>
+                  {resolveStrengthName(l.exerciseId)}
+                </Text>
+                <Text style={{ fontFamily: fonts.mono, fontSize: 11, marginTop: 2, color: colors.paperDim }}>
+                  {l.parts.map((p) => scenarioLabel(p.scenario) + ' ' + p.n).join(' · ')}
+                </Text>
+                <Text style={{ color: colors.paperFaint, fontSize: 11, marginTop: 2 }}>
+                  {t('reviewEffective', { eff: l.effectiveSets, total: l.totalSets })}
+                </Text>
+              </View>
+            ))}
+            {lastReview.excessiveFailure ? (
+              <Text style={{ color: colors.ember, fontSize: 11, marginTop: 2 }}>
+                {t('reviewExcessiveFailure')}
+              </Text>
+            ) : null}
+            {lastReview.allEasy ? (
+              <Text style={{ color: colors.ember, fontSize: 11, marginTop: 2 }}>{t('reviewAllEasy')}</Text>
+            ) : null}
           </View>
         ) : null}
         {weekBurns.some((d) => d.kcal > 0) ? (
