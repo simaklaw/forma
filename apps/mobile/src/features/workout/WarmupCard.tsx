@@ -236,6 +236,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   markBtnText: { fontSize: 16 },
+  stepDoneMark: { fontSize: 16, fontFamily: fonts.bodySemi },
   allDone: {
     fontSize: 12,
     fontFamily: fonts.bodySemi,
