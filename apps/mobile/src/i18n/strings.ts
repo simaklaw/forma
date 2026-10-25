@@ -104,6 +104,16 @@ const RU = {
   customBackToPlan: 'К плану',
   customEmptyItemsHint: 'Добавьте хотя бы одно упражнение',
 
+  // Разминка перед тренировкой (WarmupCard)
+  warmupTitle: 'Разминка',
+  warmupMinutesShort: '{min} мин',
+  warmupStart: 'Старт',
+  warmupStop: 'Стоп',
+  warmupMarkDone: 'Отметить выполненным',
+  warmupDoneBadge: 'Разминка выполнена',
+  warmupStepA11y: '{name}, {sec} секунд',
+  warmupToggleA11y: 'Разминка: развернуть или свернуть',
+
   // Панель справочника (ImportedLibraryPanel)
   panelSearchPlaceholder: 'Поиск в справочнике (EN / RU)',
   panelSearchA11y: 'Поиск в справочнике упражнений',
@@ -653,6 +663,15 @@ const EN: Record<StringKey, string> = {
   customTicketMeta: 'hand-built',
   customBackToPlan: 'Back to plan',
   customEmptyItemsHint: 'Add at least one exercise',
+
+  warmupTitle: 'Warm-up',
+  warmupMinutesShort: '{min} min',
+  warmupStart: 'Start',
+  warmupStop: 'Stop',
+  warmupMarkDone: 'Mark as done',
+  warmupDoneBadge: 'Warm-up complete',
+  warmupStepA11y: '{name}, {sec} seconds',
+  warmupToggleA11y: 'Warm-up: expand or collapse',
 
   panelSearchPlaceholder: 'Search the library (EN / RU)',
   panelSearchA11y: 'Exercise library search',

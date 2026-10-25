@@ -47,6 +47,7 @@ import { BusyGuard } from './sessionActionGuard';
 import { workoutScreenStyles as styles } from './workoutScreenStyles';
 import { useCustomWorkoutStore } from '@/state/useCustomWorkoutStore';
 import { buildCustomWorkoutDay, customDayId } from './customWorkouts';
+import { WarmupCard } from './WarmupCard';
 import {
   WEEKDAY_RU_FULL,
   SHOW_GYM_MODE_TOGGLE,
@@ -175,6 +176,12 @@ export default function WorkoutScreen() {
   // issue #173: реальные превью для упражнений без бандл-медиа (gym-план) —
   // общий кэш AsyncStorage с useExerciseReference, оффлайн — заглушка с инициалами.
   const thumbUris = useExerciseListThumbs(effectiveExercises);
+
+  // Разминка: комплекс подбирается по целевым мышцам дня (план или кастом).
+  const warmupMuscles = useMemo(
+    () => effectiveExercises.flatMap((ex) => ex.targetMuscles),
+    [effectiveExercises]
+  );
 
   useEffect(() => {
     if (selectedExerciseId != null && !effectiveExercises.some((ex) => ex.id === selectedExerciseId)) {
@@ -814,6 +821,8 @@ export default function WorkoutScreen() {
         )}
 
         <WorkoutCoachCard dayName={activeDay.name} anyDoneToday={anyDoneToday} />
+
+        {effectiveExercises.length > 0 ? <WarmupCard muscles={warmupMuscles} /> : null}
 
         <View style={styles.sectionHead}>
           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionExercises')}</Text>
