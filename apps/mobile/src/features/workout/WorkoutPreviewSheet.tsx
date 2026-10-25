@@ -5,7 +5,8 @@ import AppBottomSheet from '@/components/BottomSheet';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import type { ExerciseDef } from './ExerciseSheet';
-import { EXERCISE_THUMBNAILS } from './exerciseMedia';
+import { thumbnailForExercise } from './exerciseMedia';
+import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { formatLoadLabel } from './catalog';
 
 interface Props {
@@ -20,6 +21,7 @@ const WorkoutPreviewSheet = forwardRef<GorhomBottomSheet, Props>(
   ({ dayName, dayMeta, exercises, onStart, onClose }, ref) => {
     const colors = useThemeColors();
     const styles = createStyles(colors);
+    const profileSex = useFitPulseStore((s) => s.profile.sex);
 
     const totalSets = exercises.reduce((n, ex) => n + ex.totalSets, 0);
     const estMinutes = Math.round(
@@ -40,7 +42,7 @@ const WorkoutPreviewSheet = forwardRef<GorhomBottomSheet, Props>(
 
         <BottomSheetScrollView contentContainerStyle={styles.list}>
           {exercises.map((ex, i) => {
-            const thumb = ex.mediaKey ? EXERCISE_THUMBNAILS[ex.mediaKey] : undefined;
+            const thumb = ex.mediaKey ? thumbnailForExercise(ex.mediaKey, profileSex) : undefined;
             return (
               <View key={ex.id} style={[styles.row, { borderColor: colors.line }]}>
                 <Text style={[styles.rowIndex, { color: colors.paperFaint }]}>{i + 1}</Text>
