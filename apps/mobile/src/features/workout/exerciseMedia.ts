@@ -1,3 +1,6 @@
+import type { Sex } from '@/engines/MetabolicEngine';
+import { selectSexSpecificVariant, type ExerciseMediaKey } from './exerciseMediaSelection';
+
 /**
  * Bundled exercise media (mp4 + optional jpg).
  *
@@ -8,21 +11,7 @@
  * apps/web/public/exercises/ so we do not duplicate binary blobs).
  */
 
-export type ExerciseMediaKey =
-  | 'pushup'
-  | 'squat'
-  | 'pullup'
-  | 'lunge'
-  | 'plank'
-  | 'dead-bug'
-  | 'chair-dip'
-  | 'glute-bridge'
-  | 'row-band'
-  | 'hip-thrust'
-  | 'shoulder-press'
-  | 'side-plank'
-  | 'stomach-vacuum';
-
+export type { ExerciseMediaKey } from './exerciseMediaSelection';
 /** Static previews — all 12 keys have jpg next to the mp4 in web public. */
 export const EXERCISE_THUMBNAILS: Partial<Record<ExerciseMediaKey, number>> = {
   pushup: require('../../../assets/exercises/pushup.jpg'),
@@ -55,3 +44,47 @@ export const EXERCISE_VIDEOS: Partial<Record<ExerciseMediaKey, number>> = {
   'side-plank': require('../../../assets/exercises/side-plank.mp4'),
   'stomach-vacuum': require('../../../assets/exercises/stomach-vacuum.mp4')
 };
+
+
+/** Sex-specific FitPulse renders for exercises with newly validated 3D clips. */
+const SEX_VARIANT_THUMBNAILS: Partial<Record<ExerciseMediaKey, Record<'male' | 'female', number>>> = {
+  pushup: {
+    male: require('../../../assets/exercises/fitpulse-pushup-male.jpg'),
+    female: require('../../../assets/exercises/fitpulse-pushup-female.jpg')
+  },
+  pullup: {
+    male: require('../../../assets/exercises/fitpulse-pullup-male.jpg'),
+    female: require('../../../assets/exercises/fitpulse-pullup-female.jpg')
+  }
+};
+
+const SEX_VARIANT_VIDEOS: Partial<Record<ExerciseMediaKey, Record<'male' | 'female', number>>> = {
+  pushup: {
+    male: require('../../../assets/exercises/fitpulse-pushup-male.mp4'),
+    female: require('../../../assets/exercises/fitpulse-pushup-female.mp4')
+  },
+  pullup: {
+    male: require('../../../assets/exercises/fitpulse-pullup-male.mp4'),
+    female: require('../../../assets/exercises/fitpulse-pullup-female.mp4')
+  }
+};
+
+/** Select a bundled poster for the active profile; retain existing media elsewhere. */
+export function thumbnailForExercise(
+  key: ExerciseMediaKey,
+  sex: Sex | null | undefined
+): number | undefined {
+  const variant = selectSexSpecificVariant(key, sex);
+  return (variant ? SEX_VARIANT_THUMBNAILS[variant.key]?.[variant.sex] : undefined) ??
+    EXERCISE_THUMBNAILS[key];
+}
+
+/** Select a bundled loop for the active profile; retain existing media elsewhere. */
+export function videoForExercise(
+  key: ExerciseMediaKey,
+  sex: Sex | null | undefined
+): number | undefined {
+  const variant = selectSexSpecificVariant(key, sex);
+  return (variant ? SEX_VARIANT_VIDEOS[variant.key]?.[variant.sex] : undefined) ??
+    EXERCISE_VIDEOS[key];
+}
