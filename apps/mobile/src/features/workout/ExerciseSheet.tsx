@@ -29,6 +29,7 @@ import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT } from '@/i18n/strings';
 import { isTimedMeasure, resolveSetMeasure, stepSetAmount, type SetMeasure } from '@forma/core';
 import { formatPlanAmount } from './exerciseMeasures';
+import { nextRestStep, restTimerPhase, type RestTimerPhase } from './restTimerPhase';
 
 const beepSource = require('../../../assets/sfx/beep.wav');
 
@@ -58,6 +59,20 @@ interface Props {
   /** Fired when the whole day session completes (all sets done). */
   onDayComplete?: (ctx: { sessionId: string; dayId: string; session: WorkoutSession }) => void;
 }
+
+/**
+ * «Светофор» таймера отдыха (clean-room концепция из обзора workout_buddy):
+ * рамка, фон, подпись и полоса прогресса зеленеют→желтеют→краснеют по мере
+ * истечения. plenty держит фирменный lime; soon/final — warning/danger.
+ */
+const REST_PHASE_TINT: Record<
+  RestTimerPhase,
+  { accent: keyof ColorTokens; surface: keyof ColorTokens }
+> = {
+  plenty: { accent: 'lime', surface: 'limeDim' },
+  soon: { accent: 'warning', surface: 'panel' },
+  final: { accent: 'danger', surface: 'panel' }
+};
 
 function remainingRestSeconds(restEndsAtMs: number | null | undefined, nowMs = Date.now()): number | null {
   if (restEndsAtMs == null) return null;
@@ -206,6 +221,8 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const restTotal = Math.max(1, resolvedRestSeconds ?? exercise.restSeconds);
     const restPct =
       restRemaining != null ? Math.min(100, Math.round((restRemaining / restTotal) * 100)) : 0;
+    const restPhaseTint =
+      restRemaining != null ? REST_PHASE_TINT[restTimerPhase(restRemaining, restTotal)] : null;
 
     function recordNextSet() {
       if (!exercise || completedSets >= exercise.totalSets || blockedBySequence) return;
@@ -379,6 +396,26 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const prevExercise = navIndex > 0 ? dayList[navIndex - 1] : null;
     const nextExercise =
       navIndex >= 0 && navIndex + 1 < dayList.length ? dayList[navIndex + 1] : null;
+    // Превью «дальше» для экрана отдыха: следующий подход или следующее упражнение.
+    const restNextBase = nextExercise
+      ? {
+          name: nextExercise.name,
+          sets: nextExercise.totalSets,
+          amount: formatPlanAmount(
+            resolveSetMeasure(nextExercise.measure),
+            nextExercise.workingReps,
+            secondsUnit
+          )
+        }
+      : null;
+    const restNext =
+      restRemaining == null ? null : nextRestStep(completedSets, exercise.totalSets, restNextBase);
+    const restNextText =
+      restNext == null
+        ? null
+        : restNext.kind === 'set'
+          ? t('sheetRestNextSet', { set: restNext.setNumber, total: restNext.totalSets })
+          : t('sheetRestNext', { name: restNext.name, sets: restNext.sets, amount: restNext.amount });
     const hasActiveSession =
       Boolean(dayId && dayList.length) &&
       sessionSnap != null &&
@@ -592,15 +629,34 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
         {restRemaining !== null && (
           <View
-            style={[styles.restTimer, { borderColor: colors.lime }]}
+            style={[
+              styles.restTimer,
+              restPhaseTint && {
+                borderColor: colors[restPhaseTint.accent],
+                backgroundColor: colors[restPhaseTint.surface]
+              }
+            ]}
             accessibilityLiveRegion="polite"
             accessibilityLabel={t('sheetRestTimer', { time: formatRestClock(restRemaining) })}
           >
-            <Text style={styles.restLabel}>{t('sheetRestHeader')}</Text>
+            <Text
+              style={[styles.restLabel, restPhaseTint && { color: colors[restPhaseTint.accent] }]}
+            >
+              {t('sheetRestHeader')}
+            </Text>
             <Text style={styles.restVal}>{formatRestClock(restRemaining)}</Text>
             <View style={styles.restBarTrack}>
-              <View style={[styles.restBarFill, { width: `${restPct}%` }]} />
+              <View
+                style={[
+                  styles.restBarFill,
+                  { width: `${restPct}%` },
+                  restPhaseTint && { backgroundColor: colors[restPhaseTint.accent] }
+                ]}
+              />
             </View>
+            {restNextText != null && (
+              <Text style={[styles.restNext, { color: colors.paperDim }]}>{restNextText}</Text>
+            )}
             <View style={styles.restActions}>
               <TouchableOpacity
                 onPress={extendRest}
@@ -941,6 +997,7 @@ function createStyles(colors: ColorTokens) {
       overflow: 'hidden'
     },
     restBarFill: { height: 6, borderRadius: 3, backgroundColor: colors.lime },
+    restNext: { marginBottom: 10, fontFamily: fonts.bodySemi, fontSize: 12 },
     restSkip: {
       color: colors.paperDim,
       fontSize: 13,
