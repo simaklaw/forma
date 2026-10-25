@@ -35,7 +35,7 @@ export function normalizeReminderDays(input: unknown): number[] {
 
 export function normalizeReminderTime(input: unknown): string {
   if (typeof input !== 'string') return DEFAULT_REMINDER_TIME;
-  const m = /^(\d{1,2}):(\d{2})$/.exec(input.trim());
+  const m = /^(\d{1,2}):(\d{1,2})$/.exec(input.trim());
   if (!m) return DEFAULT_REMINDER_TIME;
   const hh = Number(m[1]);
   const mm = Number(m[2]);
