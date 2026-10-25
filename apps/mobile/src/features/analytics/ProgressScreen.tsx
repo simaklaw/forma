@@ -29,7 +29,9 @@ import { useThemeColors } from '@/core/theme/useThemeColors';
 import { movementPatternLabel, useT } from '@/i18n/strings';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { selectDailyTotals, selectTodayMeals, useFitPulseStore } from '@/state/useFitPulseStore';
+import { useStreakFreezeStore } from '@/state/useStreakFreezeStore';
 import { unifiedStreakDays, lastNDays } from '@/engines/WorkoutStats';
+import { FREEZES_PER_MONTH, freezesLeftInMonth } from '@/engines/streakFreeze';
 import {
   allExerciseBurnMeta,
   allExerciseMetKeys,
@@ -101,7 +103,12 @@ export default function ProgressScreen() {
     return weekKeys.filter((k) => dates.has(k)).length;
   }, [setLogs, weekKeys]);
 
-  const streak = useMemo(() => unifiedStreakDays(setLogs, allMeals), [setLogs, allMeals]);
+  const frozenDates = useStreakFreezeStore((s) => s.frozenDates);
+  const streak = useMemo(
+    () => unifiedStreakDays(setLogs, allMeals, new Date(), frozenDates),
+    [setLogs, allMeals, frozenDates]
+  );
+  const freezesLeft = freezesLeftInMonth(frozenDates, todayKey);
 
   const domainWorkouts = useMemo(() => workoutsFromSetLogs(setLogs), [setLogs]);
   const mealTotals = useMemo(() => selectDailyTotals(todayMeals), [todayMeals]);
@@ -310,6 +317,9 @@ export default function ProgressScreen() {
           <View style={[styles.statCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
             <Text style={[styles.statVal, { color: colors.paper }]}>{streak}</Text>
             <Text style={[styles.statLbl, { color: colors.paperFaint }]}>{t('progressStatStreak')}</Text>
+            <Text style={[styles.statFreeze, { color: colors.paperFaint }]}>
+              🧊 {freezesLeft}/{FREEZES_PER_MONTH}
+            </Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
             <Text style={[styles.statVal, { color: colors.paper }]}>{weekSets}</Text>
@@ -389,7 +399,7 @@ export default function ProgressScreen() {
           ) : null}
         </View>
 
-        <ActivityCalendar setLogs={setLogs} allMeals={allMeals} />
+        <ActivityCalendar setLogs={setLogs} allMeals={allMeals} frozenDates={frozenDates} />
 
         <View style={styles.importSection}>
           <Text style={[styles.sectionLabel, { color: colors.paperDim }]}>{t('progressImportSection')}</Text>
@@ -741,6 +751,7 @@ function createStyles(colors: ColorTokens) {
     },
     statVal: { fontFamily: fonts.mono, fontSize: 20 },
     statLbl: { fontFamily: fonts.body, fontSize: 10, marginTop: 2 },
+    statFreeze: { fontFamily: fonts.body, fontSize: 9, marginTop: 2 },
     badgeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
     badge: {
       width: '30%',

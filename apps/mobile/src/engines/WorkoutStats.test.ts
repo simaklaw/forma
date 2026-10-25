@@ -322,6 +322,24 @@ describe('unifiedStreakDays', () => {
     };
     expect(unifiedStreakDays([], meals, NOW)).toBe(1);
   });
+
+  it('treats a frozen day as active and keeps the streak through it', () => {
+    const workouts = [{ dateKey: toDateKey(NOW) }];
+    const frozen = [toDateKey(daysAgo(1))];
+    expect(unifiedStreakDays(workouts, emptyMeals(), NOW, frozen)).toBe(2);
+  });
+
+  it('counts several frozen days in a row', () => {
+    const workouts = [{ dateKey: toDateKey(NOW) }, { dateKey: toDateKey(daysAgo(3)) }];
+    const frozen = [toDateKey(daysAgo(1)), toDateKey(daysAgo(2))];
+    expect(unifiedStreakDays(workouts, emptyMeals(), NOW, frozen)).toBe(4);
+  });
+
+  it('stops at a gap that has no freeze', () => {
+    const workouts = [{ dateKey: toDateKey(NOW) }];
+    const frozen = [toDateKey(daysAgo(2))];
+    expect(unifiedStreakDays(workouts, emptyMeals(), NOW, frozen)).toBe(1);
+  });
 });
 
 describe('selectMonthActivity', () => {
@@ -361,7 +379,7 @@ describe('selectMonthActivity', () => {
       ...emptyMeals,
       dinner: [{ id: 'legacy', name: 'x', kcal: 1, protein: 0, fat: 0, carbs: 0 }]
     };
-    const result = selectMonthActivity([], meals, 2026, 9, now);
+    const result = selectMonthActivity([], meals, 2026, 9, [], now);
     expect(result.find((d) => d.dayOfMonth === 10)?.level).toBe('light');
   });
 
@@ -377,9 +395,21 @@ describe('selectMonthActivity', () => {
 
   it('flags today and future days correctly', () => {
     const now = new Date(2026, 9, 10);
-    const result = selectMonthActivity([], emptyMeals, 2026, 9, now);
+    const result = selectMonthActivity([], emptyMeals, 2026, 9, [], now);
     expect(result.find((d) => d.dayOfMonth === 10)?.isToday).toBe(true);
     expect(result.find((d) => d.dayOfMonth === 15)?.isFuture).toBe(true);
     expect(result.find((d) => d.dayOfMonth === 5)?.isFuture).toBe(false);
+  });
+
+  it('marks an idle frozen day as frozen', () => {
+    const result = selectMonthActivity([], emptyMeals, 2026, 9, ['2026-10-05']);
+    expect(result.find((d) => d.dayOfMonth === 5)?.level).toBe('frozen');
+  });
+
+  it('prefers real activity over a freeze mark on the same day', () => {
+    const result = selectMonthActivity([{ dateKey: '2026-10-05' }], emptyMeals, 2026, 9, [
+      '2026-10-05'
+    ]);
+    expect(result.find((d) => d.dayOfMonth === 5)?.level).toBe('light');
   });
 });

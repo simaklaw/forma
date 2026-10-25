@@ -24,6 +24,8 @@ const WEEKDAY_HEAD_RU = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 interface Props {
   setLogs: { dateKey: string }[];
   allMeals: DayMeals;
+  /** Замороженные дни серии (streak freeze) — рисуются «льдом». */
+  frozenDates?: readonly string[];
 }
 
 /** Monday-first leading blanks count for a given year/month. */
@@ -32,7 +34,7 @@ function leadingBlanks(year: number, month: number): number {
   return jsDay === 0 ? 6 : jsDay - 1;
 }
 
-export default function ActivityCalendar({ setLogs, allMeals }: Props) {
+export default function ActivityCalendar({ setLogs, allMeals, frozenDates = [] }: Props) {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -42,8 +44,8 @@ export default function ActivityCalendar({ setLogs, allMeals }: Props) {
   });
 
   const days = useMemo(
-    () => selectMonthActivity(setLogs, allMeals, cursor.year, cursor.month),
-    [setLogs, allMeals, cursor]
+    () => selectMonthActivity(setLogs, allMeals, cursor.year, cursor.month, frozenDates),
+    [setLogs, allMeals, cursor, frozenDates]
   );
   const blanks = leadingBlanks(cursor.year, cursor.month);
 
@@ -57,6 +59,8 @@ export default function ActivityCalendar({ setLogs, allMeals }: Props) {
   function dotColor(level: DayActivity['level']): string {
     if (level === 'full') return colors.lime;
     if (level === 'light') return colors.cyan;
+    // Замороженный день — «ледяной» голубой (макро-токен углеводов).
+    if (level === 'frozen') return colors.macroCarb;
     return colors.line;
   }
 
@@ -132,6 +136,10 @@ export default function ActivityCalendar({ setLogs, allMeals }: Props) {
           <View style={[styles.legendDot, { backgroundColor: colors.cyan }]} />
           <Text style={[styles.legendText, { color: colors.paperFaint }]}>Одно из двух</Text>
         </View>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendDot, { backgroundColor: colors.macroCarb }]} />
+          <Text style={[styles.legendText, { color: colors.paperFaint }]}>Заморозка серии</Text>
+        </View>
       </View>
     </View>
   );
@@ -176,7 +184,13 @@ function createStyles(_colors: ColorTokens) {
       justifyContent: 'center'
     },
     dayNum: { fontFamily: fonts.mono, fontSize: 11 },
-    legend: { flexDirection: 'row', gap: 16, marginTop: spacing.sm },
+    legend: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      columnGap: 16,
+      rowGap: 4,
+      marginTop: spacing.sm
+    },
     legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     legendDot: { width: 8, height: 8, borderRadius: 4 },
     legendText: { fontFamily: fonts.body, fontSize: 10 }

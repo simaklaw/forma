@@ -37,7 +37,7 @@ export function activityStreakDays(setLogs: { dateKey: string }[]): number {
 }
 
 /** Dates with at least one food log; legacy items without timestamps count today. */
-function foodLogDates(allMeals: DayMeals, todayKey: string): Set<string> {
+export function foodLogDates(allMeals: DayMeals, todayKey: string): Set<string> {
   const allItems: FoodItem[] = [
     ...allMeals.breakfast,
     ...allMeals.lunch,
@@ -50,27 +50,33 @@ function foodLogDates(allMeals: DayMeals, todayKey: string): Set<string> {
 }
 
 /**
- * Unified streak: a day counts if EITHER a workout set was logged OR at
- * least one food item was logged.
+ * Unified streak: a day counts if a workout set was logged, at least one food
+ * item was logged, OR the day spent a streak freeze (см. streakFreeze.ts).
  */
 export function unifiedStreakDays(
   setLogs: { dateKey: string }[],
   allMeals: DayMeals,
-  now: Date = new Date()
+  now: Date = new Date(),
+  frozenDates: readonly string[] = []
 ): number {
   const workoutDates = new Set(setLogs.map((e) => e.dateKey));
   const todayKey = toDateKey(now);
   const mealDates = foodLogDates(allMeals, todayKey);
+  const frozen = new Set(frozenDates);
   let streak = 0;
   const cursor = new Date(now);
-  while (workoutDates.has(toDateKey(cursor)) || mealDates.has(toDateKey(cursor))) {
+  while (
+    workoutDates.has(toDateKey(cursor)) ||
+    mealDates.has(toDateKey(cursor)) ||
+    frozen.has(toDateKey(cursor))
+  ) {
     streak += 1;
     cursor.setDate(cursor.getDate() - 1);
   }
   return streak;
 }
 
-export type ActivityLevel = 'none' | 'light' | 'full';
+export type ActivityLevel = 'none' | 'light' | 'full' | 'frozen';
 
 export interface DayActivity {
   dateKey: string;
@@ -85,6 +91,7 @@ export interface DayActivity {
  * 'full'  — workout AND nutrition logged that day
  * 'light' — only one of the two logged
  * 'none'  — neither
+ * 'frozen' — день без активности, покрытый заморозкой серии (streakFreeze.ts)
  * Mirrors Fitstars' ActivityDots concept (calendar heatmap).
  */
 export function selectMonthActivity(
@@ -97,6 +104,7 @@ export function selectMonthActivity(
   },
   year: number,
   month: number, // 0-based, as Date.getMonth()
+  frozenDates: readonly string[] = [],
   now: Date = new Date()
 ): DayActivity[] {
   const workoutDates = new Set(setLogs.map((e) => e.dateKey));
@@ -108,6 +116,8 @@ export function selectMonthActivity(
       )
   );
 
+  const frozen = new Set(frozenDates);
+
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const out: DayActivity[] = [];
@@ -117,7 +127,13 @@ export function selectMonthActivity(
     const hasWorkout = workoutDates.has(dateKey);
     const hasFood = foodDates.has(dateKey);
     const level: ActivityLevel =
-      hasWorkout && hasFood ? 'full' : hasWorkout || hasFood ? 'light' : 'none';
+      hasWorkout && hasFood
+        ? 'full'
+        : hasWorkout || hasFood
+          ? 'light'
+          : frozen.has(dateKey)
+            ? 'frozen'
+            : 'none';
     out.push({
       dateKey,
       dayOfMonth: day,
