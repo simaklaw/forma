@@ -169,7 +169,7 @@ export function buildCustomWorkoutDay(
   if (exercises.length === 0) return null;
   return {
     id: customDayId(workout.id),
-    name: workout.name || fallbackName,
+    name: normalizeCustomWorkoutName(workout.name) || fallbackName,
     meta,
     exercises
   };
