@@ -58,6 +58,7 @@ export default function App() {
   const themeMode = useThemeStore((s) => s.mode);
   const shell = resolveColors(themeMode);
   const voiceCuesEnabled = useVoiceCuesStore((s) => s.enabled);
+  const voiceCueFlags = useVoiceCuesStore((s) => s.events);
   const systemScheme = useColorScheme();
 
   // issue #160: предпочтение «Как на устройстве» — store получает системную
@@ -69,6 +70,12 @@ export default function App() {
   useEffect(() => {
     VoiceCuesEngine.setEnabled(voiceCuesEnabled);
   }, [voiceCuesEnabled]);
+
+  // Гранулярные настройки «что озвучивать» из профиля: каждый announce-метод
+  // движка проверяет свой флаг (мастер-тумблер включения — эффект выше).
+  useEffect(() => {
+    VoiceCuesEngine.configure(voiceCueFlags);
+  }, [voiceCueFlags]);
 
   useEffect(() => {
     void Font.loadAsync({

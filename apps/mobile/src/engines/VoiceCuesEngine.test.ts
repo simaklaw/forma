@@ -1,5 +1,6 @@
 import * as Speech from 'expo-speech';
 import { VoiceCuesEngine } from './VoiceCuesEngine';
+import { DEFAULT_VOICE_CUE_FLAGS } from './voiceCueEvents';
 
 async function flushSpeech(): Promise<void> {
   await Promise.resolve();
@@ -15,6 +16,7 @@ describe('VoiceCuesEngine', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     VoiceCuesEngine.setEnabled(false);
+    VoiceCuesEngine.configure(DEFAULT_VOICE_CUE_FLAGS);
   });
 
   it('does not call Speech.speak when disabled', () => {
@@ -63,6 +65,38 @@ describe('VoiceCuesEngine', () => {
     VoiceCuesEngine.setEnabled(true);
     VoiceCuesEngine.announceExercise('Отжимания');
     VoiceCuesEngine.setEnabled(false);
+    await flushSpeech();
+    expect(Speech.speak).not.toHaveBeenCalled();
+  });
+
+  it('mutes only the configured cue kinds (granular settings)', async () => {
+    VoiceCuesEngine.setEnabled(true);
+    VoiceCuesEngine.configure({
+      ...DEFAULT_VOICE_CUE_FLAGS,
+      exerciseStart: false,
+      restCountdown: false
+    });
+    VoiceCuesEngine.announceExercise('Отжимания');
+    VoiceCuesEngine.announceRestCountdown(3);
+    await flushSpeech();
+    expect(Speech.speak).not.toHaveBeenCalled();
+    VoiceCuesEngine.announceSetComplete(2, 4);
+    await flushSpeech();
+    expect(Speech.speak).toHaveBeenCalledWith('Подход 2 из 4', expect.any(Object));
+  });
+
+  it('granular flags do not force speech while the master toggle is off', async () => {
+    VoiceCuesEngine.setEnabled(false);
+    VoiceCuesEngine.configure({ ...DEFAULT_VOICE_CUE_FLAGS, restOver: true });
+    VoiceCuesEngine.announceRestOver();
+    await flushSpeech();
+    expect(Speech.speak).not.toHaveBeenCalled();
+  });
+
+  it('does not start a queued cue if its event was muted before stop resolves', async () => {
+    VoiceCuesEngine.setEnabled(true);
+    VoiceCuesEngine.announceExercise('Отжимания');
+    VoiceCuesEngine.configure({ ...DEFAULT_VOICE_CUE_FLAGS, exerciseStart: false });
     await flushSpeech();
     expect(Speech.speak).not.toHaveBeenCalled();
   });
