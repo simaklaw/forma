@@ -26,6 +26,7 @@ import HealthKitCard from '@/features/health/HealthKitCard';
 import SyncAccountCard from '@/features/auth/SyncAccountCard';
 import AiCard from '@/features/ai/AiCard';
 import BackupCard from '@/features/backup/BackupCard';
+import { WorkoutRemindersPanel } from '@/features/profile/WorkoutRemindersPanel';
 import { isLoadProgressionEnabled, setLoadProgressionEnabled } from '@/features/workout/loadProgression';
 import { buildStamp } from '@/core/buildInfo';
 
@@ -732,6 +733,8 @@ export default function ProfileScreen() {
             })}
           </View>
         </View>
+
+        <WorkoutRemindersPanel />
 
         <View style={styles.sectionHead}>
           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionAi')}</Text>
