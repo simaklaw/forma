@@ -6,7 +6,7 @@ import { BarlowCondensed_600SemiBold, BarlowCondensed_700Bold } from '@expo-goog
 import { Inter_400Regular, Inter_600SemiBold } from '@expo-google-fonts/inter';
 import * as Font from 'expo-font';
 import { Platform, useColorScheme, View } from 'react-native';
-import { CoachEngine, isProfileComplete } from '@forma/core';
+import { CoachEngine, isProfileComplete, toDateKey } from '@forma/core';
 import { resolveColors } from '@/core/theme/tokens';
 import { useThemeStore } from '@/state/useThemeStore';
 import RootNavigator from '@/navigation/RootNavigator';
@@ -24,6 +24,9 @@ import { hydrateSessionReadModel } from '@/features/workout/session/hydrateSessi
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { useVoiceCuesStore } from '@/state/useVoiceCuesStore';
 import { VoiceCuesEngine } from '@/engines/VoiceCuesEngine';
+import { reconcileStreakFreeze } from '@/engines/streakFreeze';
+import { foodLogDates } from '@/engines/WorkoutStats';
+import { useStreakFreezeStore } from '@/state/useStreakFreezeStore';
 
 function enableSqliteSessions(): void {
   const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
@@ -76,6 +79,26 @@ export default function App() {
   useEffect(() => {
     VoiceCuesEngine.configure(voiceCueFlags);
   }, [voiceCueFlags]);
+
+  // Заморозка серии: после гидратации логов и при каждом их изменении
+  // пересчитываем, какие пустые дни «съедают» заморозку (авто-режим, до
+  // FREEZES_PER_MONTH в месяц — без ручных действий пользователя).
+  useEffect(() => {
+    if (!hydrated) return;
+    const runFreezeReconcile = () => {
+      const { setLogs, todayMeals } = useFitPulseStore.getState();
+      const workoutDates = new Set(setLogs.map((e) => e.dateKey));
+      const mealDates = foodLogDates(todayMeals, toDateKey(new Date()));
+      const isActiveDay = (key: string) => workoutDates.has(key) || mealDates.has(key);
+      useStreakFreezeStore
+        .getState()
+        .applyReconciled(
+          reconcileStreakFreeze(useStreakFreezeStore.getState().frozenDates, isActiveDay)
+        );
+    };
+    runFreezeReconcile();
+    return useFitPulseStore.subscribe(runFreezeReconcile);
+  }, [hydrated]);
 
   useEffect(() => {
     void Font.loadAsync({
