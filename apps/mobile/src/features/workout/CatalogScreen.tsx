@@ -28,6 +28,7 @@ import ExerciseDetailModal from './ExerciseDetailModal';
 import ImportedLibraryPanel from './ImportedLibraryPanel';
 import ProgramsPanel from './ProgramsPanel';
 import TabataPanel from './tabata/TabataPanel';
+import CustomWorkoutsPanel from './CustomWorkoutsPanel';
 import { favoriteKey, loadFavorites, loadRecent, parseFavoriteKey } from './exerciseFavorites';
 import {
   clearReplaceTarget,
@@ -61,9 +62,9 @@ export default function CatalogScreen() {
   const [recentKeys, setRecentKeys] = useState<string[]>([]);
   const [selected, setSelected] = useState<CatalogItem | null>(null);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [catalogScope, setCatalogScope] = useState<'plans' | 'library' | 'tabata' | 'programs'>(
-    'plans'
-  );
+  const [catalogScope, setCatalogScope] = useState<
+    'plans' | 'library' | 'tabata' | 'programs' | 'custom'
+  >('plans');
   const [planDayId, setPlanDayId] = useState<string | null>(null);
   const [replaceTarget, setReplaceTargetState] = useState<ReplaceTarget | null>(getReplaceTarget());
 
@@ -169,10 +170,12 @@ export default function CatalogScreen() {
               ? t('catalogHintLibrary')
               : catalogScope === 'tabata'
                 ? t('catalogHintTabata')
-                : t('catalogHintOffline', {
-                    shown: browsingDays ? planDays.length : listed.length,
-                    total: browsingDays ? planDays.length : items.length
-                  })
+                : catalogScope === 'custom'
+                  ? t('catalogHintCustom')
+                  : t('catalogHintOffline', {
+                      shown: browsingDays ? planDays.length : listed.length,
+                      total: browsingDays ? planDays.length : items.length
+                    })
         }
       />
 
@@ -214,7 +217,8 @@ export default function CatalogScreen() {
             { id: 'plans' as const, label: t('catalogSegmentPlans') },
             { id: 'library' as const, label: t('catalogSegmentLibrary') },
             { id: 'tabata' as const, label: t('catalogSegmentTabata') },
-            { id: 'programs' as const, label: t('catalogSegmentPrograms') }
+            { id: 'programs' as const, label: t('catalogSegmentPrograms') },
+            { id: 'custom' as const, label: t('catalogSegmentCustom') }
           ] as const
         ).map((item) => {
           const active = catalogScope === item.id;
@@ -251,6 +255,8 @@ export default function CatalogScreen() {
         <ImportedLibraryPanel />
       ) : catalogScope === 'tabata' ? (
         <TabataPanel />
+      ) : catalogScope === 'custom' ? (
+        <CustomWorkoutsPanel />
       ) : (
         <>
           {SHOW_GYM_MODE_TOGGLE && (

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
@@ -45,6 +45,8 @@ import { presentEarlyLeave } from './session/earlyLeave';
 import { KEEP_AWAKE_TAG, shouldKeepScreenAwake } from './sessionKeepAwake';
 import { BusyGuard } from './sessionActionGuard';
 import { workoutScreenStyles as styles } from './workoutScreenStyles';
+import { useCustomWorkoutStore } from '@/state/useCustomWorkoutStore';
+import { buildCustomWorkoutDay, customDayId } from './customWorkouts';
 import {
   WEEKDAY_RU_FULL,
   SHOW_GYM_MODE_TOGGLE,
@@ -61,6 +63,11 @@ export default function WorkoutScreen() {
   const t = useT();
   const lang = useLanguageStore((s) => s.lang);
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
+  const route = useRoute<RouteProp<TabParamList, 'Тренировки'>>();
+  const customWorkoutId = route.params?.customWorkoutId;
+  const customWorkout = useCustomWorkoutStore((s) =>
+    customWorkoutId ? s.workouts.find((w) => w.id === customWorkoutId) ?? null : null
+  );
   const sheetRef = useRef<GorhomBottomSheet>(null);
   const previewSheetRef = useRef<GorhomBottomSheet>(null);
   const feedbackSheetRef = useRef<GorhomBottomSheet>(null);
@@ -112,7 +119,16 @@ export default function WorkoutScreen() {
   );
   const todayDayId = programTodayDayId(plan, program);
   const planDayIds = useMemo(() => new Set(plan.map((d) => d.id)), [plan]);
-  const activeDay = plan.find((d) => d.id === (selectedDayId ?? plan[0]?.id)) ?? plan[0];
+  // Кастомная тренировка (сегмент «Мои» в каталоге): виртуальный «день» поверх плана.
+  const customDay = useMemo(
+    () =>
+      customWorkout
+        ? buildCustomWorkoutDay(customWorkout, t('customUntitled'), t('customTicketMeta'))
+        : null,
+    [customWorkout, t]
+  );
+  const activeDay =
+    customDay ?? plan.find((d) => d.id === (selectedDayId ?? plan[0]?.id)) ?? plan[0];
 
   const [overrideIds, setOverrideIds] = useState<number[] | null>(null);
   const [overrideTick, setOverrideTick] = useState(0);
@@ -149,11 +165,12 @@ export default function WorkoutScreen() {
   );
 
   const effectiveExercises = useMemo(() => {
+    if (customDay) return applyLoadProgression(customDay.exercises, loadProgression);
     if (!activeDay) return [];
     const resolved = resolveDayExercises(trainingMode, activeDay.exercises, overrideIds);
     const targeted = programInfo ? applyProgramTargets(resolved, programInfo.progression) : resolved;
     return applyLoadProgression(targeted, loadProgression);
-  }, [activeDay, trainingMode, overrideIds, programInfo, loadProgression]);
+  }, [customDay, activeDay, trainingMode, overrideIds, programInfo, loadProgression]);
 
   // issue #173: реальные превью для упражнений без бандл-медиа (gym-план) —
   // общий кэш AsyncStorage с useExerciseReference, оффлайн — заглушка с инициалами.
@@ -197,14 +214,14 @@ export default function WorkoutScreen() {
       return;
     }
     const dayId = dayIdFromTemplate(session.templateRevisionId);
-    if (!dayId || !planDayIds.has(dayId)) {
+    if (!dayId || (!planDayIds.has(dayId) && dayId !== (customWorkoutId ? customDayId(customWorkoutId) : null))) {
       setResumable(null);
       return;
     }
     const projection = await ActiveSessionController.getLegacyProjection(session.sessionId);
     if (projection) applySessionProjection(projection);
     setResumable(session);
-  }, [planDayIds]);
+  }, [planDayIds, customWorkoutId]);
 
   useEffect(() => {
     void refreshResumable();
@@ -351,8 +368,14 @@ export default function WorkoutScreen() {
       <View style={styles.ticketMain}>
         <View style={{ flex: 1, paddingRight: 12 }}>
           <Text style={[styles.ticketLabel, { color: colors.paperFaint }]}>
-            {t('today')} · {ticketSex} · {ticketMode}
-            {t('ticketGoal', { goal: ticketGoal })}
+            {customDay ? (
+              t('customTicketLabel')
+            ) : (
+              <>
+                {t('today')} · {ticketSex} · {ticketMode}
+                {t('ticketGoal', { goal: ticketGoal })}
+              </>
+            )}
           </Text>
           <Text style={[styles.ticketName, { color: colors.paper }]}>{activeDay.name}</Text>
           <Text style={[styles.ticketMeta, { color: colors.paperDim }]}>
@@ -513,7 +536,7 @@ export default function WorkoutScreen() {
             <Text style={[styles.catalogButtonText, { color: colors.lime }]}>{t('workoutCatalogShort')}</Text>
           </TouchableOpacity>
         </View>
-        {programInfo && !programInfo.finished && (
+        {programInfo && !programInfo.finished && !customDay && (
           <View
             style={styles.programRow}
             accessibilityLabel={t('programWeekLine', {
@@ -674,7 +697,7 @@ export default function WorkoutScreen() {
         </View>
       )}
 
-      {programInfo?.finished && (
+      {programInfo?.finished && !customDay && (
         <View style={{ paddingHorizontal: 16, paddingBottom: 4 }}>
           <View
             style={[
@@ -705,7 +728,8 @@ export default function WorkoutScreen() {
         </View>
       )}
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dayTabs} accessibilityRole="tablist">
+      {!customDay ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dayTabs} accessibilityRole="tablist">
         {plan.map((day) => {
           const active = day.id === activeDay.id;
           const isToday = day.id === todayDayId;
@@ -728,7 +752,19 @@ export default function WorkoutScreen() {
             </TouchableOpacity>
           );
         })}
-      </ScrollView>
+        </ScrollView>
+      ) : (
+        <TouchableOpacity
+          style={[styles.dayTab, { borderColor: colors.lineStrong, backgroundColor: colors.panel }]}
+          onPress={() => navigation.setParams({ customWorkoutId: undefined })}
+          accessibilityRole="button"
+          accessibilityLabel={t('customBackToPlan')}
+        >
+          <Text style={[styles.dayTabText, { color: colors.lime }]} numberOfLines={1}>
+            ← {t('customBackToPlan')}
+          </Text>
+        </TouchableOpacity>
+      )}
 
       <ScrollView contentContainerStyle={styles.body}>
         <View
