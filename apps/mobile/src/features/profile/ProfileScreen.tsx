@@ -11,7 +11,7 @@ import {
 } from '@/state/useFitPulseStore';
 import { useThemeStore } from '@/state/useThemeStore';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
-import { useT, measurementLabel } from '@/i18n/strings';
+import { useT, measurementLabel, type StringKey } from '@/i18n/strings';
 import { useVoiceCuesStore } from '@/state/useVoiceCuesStore';
 import {
   REST_PRESET_OPTIONS,
@@ -19,6 +19,7 @@ import {
   type RestPresetSeconds
 } from '@/state/useRestTimerStore';
 import { Goal, Sex } from '@/engines/MetabolicEngine';
+import { VOICE_CUE_EVENTS, type VoiceCueEvent } from '@/engines/voiceCueEvents';
 import ProtocolBanner from '@/components/ProtocolBanner';
 import HealthConnectCard from '@/features/health/HealthConnectCard';
 import HealthKitCard from '@/features/health/HealthKitCard';
@@ -32,6 +33,15 @@ function numStr(v: number | null | undefined): string {
   return typeof v === 'number' && Number.isFinite(v) ? String(v) : '';
 }
 
+/** Подписи событий озвучки для карточки «Что озвучивать» в профиле. */
+const VOICE_CUE_EVENT_LABEL_KEYS: Record<VoiceCueEvent, StringKey> = {
+  exerciseStart: 'voiceCuesEventExerciseStart',
+  setComplete: 'voiceCuesEventSetComplete',
+  restCountdown: 'voiceCuesEventRestCountdown',
+  restOver: 'voiceCuesEventRestOver',
+  dayComplete: 'voiceCuesEventDayComplete'
+};
+
 export default function ProfileScreen() {
   const colors = useThemeColors();
   const t = useT();
@@ -41,6 +51,8 @@ export default function ProfileScreen() {
   const setThemePreference = useThemeStore((s) => s.setPreference);
   const voiceCuesEnabled = useVoiceCuesStore((s) => s.enabled);
   const setVoiceCuesEnabled = useVoiceCuesStore((s) => s.setEnabled);
+  const voiceCueFlags = useVoiceCuesStore((s) => s.events);
+  const setVoiceCueEvent = useVoiceCuesStore((s) => s.setEventEnabled);
   const restOverride = useRestTimerStore((s) => s.overrideSeconds);
   const setRestOverride = useRestTimerStore((s) => s.setOverrideSeconds);
 
@@ -276,6 +288,60 @@ export default function ProfileScreen() {
             })}
           </View>
         </View>
+
+        {voiceCuesEnabled && (
+          <View style={[styles.themeCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+            <Text style={[styles.settingName, { color: colors.paper }]}>
+              {t('voiceCuesEventsName')}
+            </Text>
+            <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>
+              {t('voiceCuesEventsDesc')}
+            </Text>
+            {VOICE_CUE_EVENTS.map((event) => {
+              const eventLabel = t(VOICE_CUE_EVENT_LABEL_KEYS[event]);
+              const eventOn = voiceCueFlags[event] ?? true;
+              return (
+                <View key={event} style={styles.voiceEventRow}>
+                  <Text style={[styles.voiceEventName, { color: colors.paperDim }]}>
+                    {eventLabel}
+                  </Text>
+                  {(
+                    [
+                      { id: false, label: t('off') },
+                      { id: true, label: t('on') }
+                    ] as const
+                  ).map((opt) => {
+                    const on = eventOn === opt.id;
+                    return (
+                      <TouchableOpacity
+                        key={String(opt.id)}
+                        style={[
+                          styles.voiceEventBtn,
+                          { borderColor: colors.lineStrong, backgroundColor: colors.ink },
+                          on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                        ]}
+                        onPress={() => setVoiceCueEvent(event, opt.id)}
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: on }}
+                        accessibilityLabel={eventLabel + ' · ' + opt.label}
+                      >
+                        <Text
+                          style={[
+                            styles.voiceEventBtnText,
+                            { color: colors.paperDim },
+                            on && { color: colors.lime }
+                          ]}
+                        >
+                          {opt.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              );
+            })}
+          </View>
+        )}
 
         <View style={[styles.themeCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
           <Text style={[styles.settingName, { color: colors.paper }]}>{t('restPresetName')}</Text>
@@ -804,6 +870,16 @@ const styles = StyleSheet.create({
   },
   settingName: { fontSize: 15, fontFamily: fonts.bodySemi },
   settingDesc: { fontSize: 12, marginTop: 4 },
+  voiceEventRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 },
+  voiceEventName: { flex: 1, fontSize: 13, fontFamily: fonts.bodySemi },
+  voiceEventBtn: {
+    width: 72,
+    paddingVertical: 8,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    alignItems: 'center'
+  },
+  voiceEventBtnText: { fontSize: 12, fontFamily: fonts.bodySemi },
   measureTypeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 },
   measureTypeChip: {
     paddingHorizontal: 10,
