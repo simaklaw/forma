@@ -1,6 +1,8 @@
+import { isTimedMeasure, measureStep, type SetMeasure } from '@forma/core';
 import type { DayProgress } from '@/engines/WorkoutStats';
 import { toDateKey } from '@/engines/WorkoutStats';
 import type { ExerciseDef } from '../ExerciseSheet';
+import { measureForPlanExercise } from '../exerciseMeasures';
 import type { WorkoutDay } from '../catalog';
 import { isDayPlanComplete, todayPlanDayId } from '../workoutScreenHelpers';
 import type { ProgramTemplateId, ReadyProgramLevel } from './readyPrograms';
@@ -8,7 +10,9 @@ import type { ProgramTemplateId, ReadyProgramLevel } from './readyPrograms';
 /**
  * Движок многонедельных программ (Фаза 3, issue #158): расписание по дням
  * недели, прогрессия «+1 повтор/неделя → затем +сет», разгрузочная
- * (deload) неделя и авторегуляция по факту выполнения.
+ * (deload) неделя и авторегуляция по факту выполнения. Таймированные
+ * упражнения (мера seconds, PR #209) растут шагом меры — +5 с за бонусную
+ * единицу — с собственным потолком секунд.
  * Чистые функции: без React, без хранения, без Date.now() внутри.
  */
 
@@ -58,6 +62,8 @@ const MAX_REP_BONUS = 3;
 const MAX_SET_BONUS = 2;
 const REPS_HARD_CAP = 50;
 const SETS_HARD_CAP = 8;
+/** Потолок таймированных упражнений: 3 минуты статики. */
+const SECONDS_HARD_CAP = 180;
 /** Авторегуляция: сколько дней прошлой недели нужно выполнить, чтобы нагрузка росла. */
 const AUTOREG_MIN_WEEK_DAYS = 4;
 
@@ -110,7 +116,22 @@ export function nominalProgression(weekIndex: number): WeekProgression {
   };
 }
 
-/** Применить прогрессию недели к упражнениям дня (чистый map). */
+/**
+ * Мера упражнения в программе: собственное поле def (планы), иначе таблица
+ * планов (шаблонные дни и замены); импортированная библиотека — reps.
+ */
+export function programExerciseMeasure(ex: Pick<ExerciseDef, 'id' | 'measure'>): SetMeasure {
+  if (ex.measure === 'seconds' || ex.measure === 'reps') {
+    return ex.measure;
+  }
+  return measureForPlanExercise(ex.id);
+}
+
+/**
+ * Применить прогрессию недели к упражнениям дня (чистый map). Таймированные
+ * упражнения получают шаг меры (+5 с) за каждую бонусную единицу вместо
+ * одиночных повторов; потолки — по мере (50 повторов / 180 секунд).
+ */
 export function applyProgramTargets(
   exercises: ExerciseDef[],
   progression: WeekProgression
@@ -121,11 +142,15 @@ export function applyProgramTargets(
   if (progression.repBonus === 0 && progression.setBonus === 0) {
     return exercises;
   }
-  return exercises.map((ex) => ({
-    ...ex,
-    workingReps: Math.min(REPS_HARD_CAP, ex.workingReps + progression.repBonus),
-    totalSets: Math.min(SETS_HARD_CAP, ex.totalSets + progression.setBonus)
-  }));
+  return exercises.map((ex) => {
+    const measure = programExerciseMeasure(ex);
+    const hardCap = isTimedMeasure(measure) ? SECONDS_HARD_CAP : REPS_HARD_CAP;
+    return {
+      ...ex,
+      workingReps: Math.min(hardCap, ex.workingReps + progression.repBonus * measureStep(measure)),
+      totalSets: Math.min(SETS_HARD_CAP, ex.totalSets + progression.setBonus)
+    };
+  });
 }
 
 /** Сколько дней недели weekIndex выполнено по факту (из dayProgress). */

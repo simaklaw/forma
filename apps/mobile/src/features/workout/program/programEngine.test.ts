@@ -123,6 +123,88 @@ describe('programEngine', () => {
       expect(deload[0].totalSets).toBe(3);
     });
 
+    it('таймированные растут по 5 с за бонусную единицу, а не по 1 повтору', () => {
+      const plank = {
+        id: 15,
+        index: 1,
+        name: 'Планка',
+        workingWeight: 0,
+        workingReps: 40,
+        measure: 'seconds' as const,
+        totalSets: 3,
+        restSeconds: 45,
+        targetMuscles: ['core'],
+        note: ''
+      };
+      expect(applyProgramTargets([plank], nominalProgression(1))[0].workingReps).toBe(45);
+      // Неделя 4 (repBonus 3): 40 + 3×5 = 55 с.
+      const boosted = applyProgramTargets([plank], nominalProgression(4));
+      expect(boosted[0].workingReps).toBe(55);
+      expect(boosted[0].totalSets).toBe(4);
+    });
+
+    it('мера без поля def берётся из таблицы планов (id 15)', () => {
+      const plank = {
+        id: 15,
+        index: 1,
+        name: 'Планка',
+        workingWeight: 0,
+        workingReps: 50,
+        totalSets: 3,
+        restSeconds: 45,
+        targetMuscles: ['core'],
+        note: ''
+      };
+      // Раньше кап в 50 «повторов» срезал планку 50 с; теперь секунды растут.
+      expect(applyProgramTargets([plank], nominalProgression(4))[0].workingReps).toBe(65);
+    });
+
+    it('потолок 180 с для таймированных, 50 для повторов', () => {
+      const plank = {
+        id: 700,
+        index: 1,
+        name: 'Планка',
+        workingWeight: 0,
+        workingReps: 176,
+        measure: 'seconds' as const,
+        totalSets: 3,
+        restSeconds: 45,
+        targetMuscles: ['core'],
+        note: ''
+      };
+      expect(applyProgramTargets([plank], nominalProgression(4))[0].workingReps).toBe(180);
+      const pushups = {
+        id: 701,
+        index: 1,
+        name: 'Отжимания',
+        workingWeight: 0,
+        workingReps: 49,
+        totalSets: 3,
+        restSeconds: 60,
+        targetMuscles: ['chest'],
+        note: ''
+      };
+      expect(applyProgramTargets([pushups], nominalProgression(4))[0].workingReps).toBe(50);
+    });
+
+    it('deload возвращает таймированные к базе и минусует подход', () => {
+      const plank = {
+        id: 15,
+        index: 1,
+        name: 'Планка',
+        workingWeight: 0,
+        workingReps: 40,
+        measure: 'seconds' as const,
+        totalSets: 4,
+        restSeconds: 45,
+        targetMuscles: ['core'],
+        note: ''
+      };
+      const deload = applyProgramTargets([plank], nominalProgression(3));
+      expect(deload[0].workingReps).toBe(40);
+      expect(deload[0].totalSets).toBe(3);
+    });
+
     it('авторегуляция: провальная неделя не двигает нагрузку', () => {
       const plan = makePlan();
       const program = { lengthWeeks: 4 as const, startDateKey: START, skippedDateKeys: [] };
