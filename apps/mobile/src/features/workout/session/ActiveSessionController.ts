@@ -8,12 +8,23 @@ import {
 import type { ExerciseDef } from '../ExerciseSheet';
 import { contentHashForExercises, exercisesToSnapshots, PLAN_REVISION } from './planToSnapshots';
 import { updateLoadProgressionFromSession } from '../loadProgression';
+import { isDeloadWeekIndex, programWeekIndex } from '../program/programEngine';
+import { useProgramStore } from '@/state/useProgramStore';
 import { LOCAL_USER_ID } from './currentUser';
 import { projectSessionEvents } from '@/features/workout/data/sessionProjections';
 import { clearDayReadModel } from './clearDayReadModel';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 
 const log = createLogger('session');
+
+/**
+ * Разгрузочная (deload) неделя активной программы: автопрогрессия веса
+ * в ней не поднимает вес (снижения остаются). Вне программы — false.
+ */
+function isDeloadProgramWeek(now: Date = new Date()): boolean {
+  const program = useProgramStore.getState().program;
+  return program != null && isDeloadWeekIndex(programWeekIndex(program, now));
+}
 
 /** Template id includes plan revision so plan edits do not resume stale sessions. */
 export function dayTemplateId(dayId: string): string {
@@ -309,7 +320,9 @@ class ActiveSessionControllerImpl {
       // Автопрогрессия веса: ранний уход «Сохранить прогресс» тоже пересматривает веса.
       const dayExercises = this.dayExercises;
       if (dayExercises) {
-        void updateLoadProgressionFromSession(result.session, dayExercises).catch(() => {});
+        void updateLoadProgressionFromSession(result.session, dayExercises, new Date(), {
+          deloadWeek: isDeloadProgramWeek()
+        }).catch(() => {});
       }
       // Domain persist first; HC is best-effort fire-and-forget.
       scheduleHealthExport(result.session, dayId);
@@ -413,7 +426,9 @@ class ActiveSessionControllerImpl {
     // домен уже принял сессию, пересмотр весов не должен блокировать завершение.
     const dayExercises = this.dayExercises;
     if (dayExercises) {
-      void updateLoadProgressionFromSession(completed.session, dayExercises).catch(() => {});
+      void updateLoadProgressionFromSession(completed.session, dayExercises, new Date(), {
+        deloadWeek: isDeloadProgramWeek()
+      }).catch(() => {});
     }
 
     scheduleHealthExport(completed.session, dayId);

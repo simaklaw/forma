@@ -9,6 +9,7 @@ import { isBodyweightExercise } from './catalog';
  * workout»): после завершённой тренировки пересматривает рабочий вес каждого
  * упражнения. Персистится отдельно от доменных сессий — это пользовательский
  * оверлей плана, он не меняет PLAN_REVISION и не трогает возобновляемые сессии.
+ * В разгрузочную (deload) неделю программы рост веса замораживается.
  */
 
 const STORAGE_KEY = 'fitpulse_load_progression_v1';
@@ -25,6 +26,23 @@ export interface LoadProgressionEntry {
 export type LoadProgressionMap = Record<string, LoadProgressionEntry>;
 
 export type LoadDecision = 'increase' | 'keep' | 'decrease' | 'skip';
+
+/** Опции пересмотра весов после сессии. */
+export interface LoadProgressionOptions {
+  /**
+   * Разгрузочная (deload) неделя программы: рост веса замораживается,
+   * снижения остаются — неделя восстановления не добавляет нагрузку.
+   */
+  deloadWeek?: boolean;
+}
+
+/**
+ * Решение с учётом делоада: в разгрузочную неделю 'increase' становится
+ * 'keep'; снижения и прочие решения проходят без изменений.
+ */
+export function deloadAwareDecision(decision: LoadDecision, deloadWeek: boolean): LoadDecision {
+  return deloadWeek && decision === 'increase' ? 'keep' : decision;
+}
 
 /** Входные данные решения по одному упражнению сессии. */
 export interface LoadProgressionInput {
@@ -134,21 +152,24 @@ export function sessionProgressionInputs(
 
 /**
  * Пересчитать веса после тренировки: пишет только increase/decrease записи,
- * возвращает их же или null (выключено тумблером / нечего менять).
+ * возвращает их же или null (выключено тумблером / нечего менять). В делоад
+ * (options.deloadWeek) рост замораживается — записываются только снижения.
  * Вызывающий использует fire-and-forget: ошибки глушатся снаружи.
  */
 export async function updateLoadProgressionFromSession(
   session: Pick<WorkoutSession, 'steps'>,
   exercises: ExerciseDef[],
-  now: Date = new Date()
+  now: Date = new Date(),
+  options: LoadProgressionOptions = {}
 ): Promise<LoadProgressionMap | null> {
   if (!(await isLoadProgressionEnabled())) {
     return null;
   }
+  const deloadWeek = options.deloadWeek === true;
   const changed: LoadProgressionMap = {};
   const updatedAt = toDateKey(now);
   for (const input of sessionProgressionInputs(session, exercises)) {
-    const decision = nextLoadDecision(input);
+    const decision = deloadAwareDecision(nextLoadDecision(input), deloadWeek);
     if (decision !== 'increase' && decision !== 'decrease') {
       continue;
     }

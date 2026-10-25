@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ExerciseDef } from './ExerciseSheet';
 import {
   applyLoadProgression,
+  deloadAwareDecision,
   isLoadProgressionEnabled,
   loadLoadProgression,
   nextLoadDecision,
@@ -249,3 +250,58 @@ describe('updateLoadProgressionFromSession', () => {
     expect(await loadLoadProgression()).toEqual({});
   });
 });
+
+describe('deload-aware progression', () => {
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+  });
+
+  it('deloadAwareDecision freezes only the increase', () => {
+    expect(deloadAwareDecision('increase', true)).toBe('keep');
+    expect(deloadAwareDecision('increase', false)).toBe('increase');
+    expect(deloadAwareDecision('decrease', true)).toBe('decrease');
+    expect(deloadAwareDecision('keep', true)).toBe('keep');
+    expect(deloadAwareDecision('skip', true)).toBe('skip');
+  });
+
+  it('deload week freezes increases but still persists decreases', async () => {
+    const defs = [
+      exercise({ id: 1, workingWeight: 60 }),
+      exercise({ id: 2, workingWeight: 40, workingReps: 10 })
+    ];
+    const session = fakeSession([
+      {
+        exerciseId: 1,
+        targetSets: 3,
+        targetReps: 8,
+        sets: [
+          { weightKg: 60, reps: 8 },
+          { weightKg: 60, reps: 8 },
+          { weightKg: 60, reps: 8 }
+        ]
+      },
+      {
+        exerciseId: 2,
+        targetSets: 3,
+        targetReps: 10,
+        sets: [
+          { weightKg: 40, reps: 8 },
+          { weightKg: 40, reps: 8 }
+        ]
+      }
+    ]);
+    const changed = await updateLoadProgressionFromSession(
+      session,
+      defs,
+      new Date('2026-10-24T12:00:00'),
+      { deloadWeek: true }
+    );
+    expect(changed).toEqual({
+      '2': { targetKg: 37.5, updatedAt: expect.any(String) }
+    });
+    const stored = await loadLoadProgression();
+    expect(stored['1']).toBeUndefined();
+    expect(stored['2']?.targetKg).toBe(37.5);
+  });
+});
+
