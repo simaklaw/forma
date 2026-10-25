@@ -176,7 +176,7 @@ function useStyles(colors: ColorTokens) {
     wrap: {
       marginTop: spacing.sm,
       marginBottom: spacing.sm,
-      borderRadius: radius.lg,
+      borderRadius: radius.card,
       backgroundColor: colors.panel,
       borderWidth: 1,
       borderColor: colors.line,
