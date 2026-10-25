@@ -136,6 +136,17 @@ const RU = {
   reminderDay5: 'Сб',
   reminderDay6: 'Вс',
 
+  // Процедурная анимация техники (ExerciseFigure)
+  figurePhaseTop: 'Исходное положение',
+  figurePhaseDescent: 'Опускание',
+  figurePhaseHold: 'Параллель бёдер',
+  figurePhaseAscent: 'Подъём',
+  figureBreathReady: 'Готовься',
+  figureBreathIn: 'Вдох при опускании',
+  figureBreathHold: 'Задержка в нижней точке',
+  figureBreathOut: 'Мощный выдох',
+  figureKneeAngle: 'Угол колена',
+
   // Панель справочника (ImportedLibraryPanel)
   panelSearchPlaceholder: 'Поиск в справочнике (EN / RU)',
   panelSearchA11y: 'Поиск в справочнике упражнений',
@@ -715,6 +726,16 @@ const EN: Record<StringKey, string> = {
   reminderDay4: 'Fri',
   reminderDay5: 'Sat',
   reminderDay6: 'Sun',
+
+  figurePhaseTop: 'Starting position',
+  figurePhaseDescent: 'Descent',
+  figurePhaseHold: 'Hip parallel',
+  figurePhaseAscent: 'Ascent',
+  figureBreathReady: 'Get ready',
+  figureBreathIn: 'Inhale on the way down',
+  figureBreathHold: 'Hold at the bottom',
+  figureBreathOut: 'Powerful exhale',
+  figureKneeAngle: 'Knee angle',
 
   panelSearchPlaceholder: 'Search the library (EN / RU)',
   panelSearchA11y: 'Exercise library search',
