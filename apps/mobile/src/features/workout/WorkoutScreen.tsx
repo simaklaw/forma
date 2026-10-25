@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { estimateBurnFromSetLogs, resolveSetMeasure, toDateKey as coreToDateKey } from '@forma/core';
 import { fonts } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
@@ -41,6 +42,7 @@ import { EXERCISE_THUMBNAILS } from './exerciseMedia';
 import { useExerciseListThumbs } from './useExerciseListThumbs';
 import { realThumbForMediaKey } from './exerciseRealMedia';
 import { presentEarlyLeave } from './session/earlyLeave';
+import { KEEP_AWAKE_TAG, shouldKeepScreenAwake } from './sessionKeepAwake';
 import { BusyGuard } from './sessionActionGuard';
 import { workoutScreenStyles as styles } from './workoutScreenStyles';
 import {
@@ -207,6 +209,21 @@ export default function WorkoutScreen() {
   useEffect(() => {
     void refreshResumable();
   }, [refreshResumable]);
+
+  // Экран не гаснет, пока идёт тренировка просматриваемого дня: wake-lock
+  // активен только на время активной сессии, чтобы не жечь батарею впустую.
+  const activeSessionDayId = resumable ? dayIdFromTemplate(resumable.templateRevisionId) : null;
+  const keepScreenAwake = shouldKeepScreenAwake({
+    sessionDayId: activeSessionDayId,
+    activeDayId: activeDay?.id
+  });
+  useEffect(() => {
+    if (!keepScreenAwake) return;
+    void activateKeepAwakeAsync(KEEP_AWAKE_TAG).catch(() => {});
+    return () => {
+      deactivateKeepAwake(KEEP_AWAKE_TAG);
+    };
+  }, [keepScreenAwake]);
 
   const selectedExercise = effectiveExercises.find((e) => e.id === selectedExerciseId) ?? null;
   const todayLabel = WEEKDAY_RU_FULL[new Date().getDay()];
