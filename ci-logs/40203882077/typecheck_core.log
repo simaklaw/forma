@@ -1,0 +1,14 @@
+Scope: 4 of 8 workspace projects
+packages/workout-domain type-check$ tsc --noEmit
+packages/core type-check$ tsc --noEmit
+packages/workout-domain type-check: Done
+packages/core type-check: Done
+apps/mobile type-check$ tsc --noEmit
+apps/web type-check$ node ../../scripts/generate-web-route-tree.mjs && tsc --noEmit
+apps/web type-check: routeTree.gen.ts updated
+apps/web type-check: Done
+apps/mobile type-check: src/features/workout/ExerciseFigure.tsx(179,28): error TS2339: Property 'lg' does not exist on type '{ readonly card: 16; readonly pill: 999; readonly control: 12; readonly sheet: 22; }'.
+apps/mobile type-check: Failed
+/home/runner/work/forma/forma/apps/mobile:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @forma/mobile@0.1.0 type-check: `tsc --noEmit`
+Exit status 2
