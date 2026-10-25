@@ -278,6 +278,8 @@ export default function NutritionScreen() {
                   <Text style={styles.foodKcal}>{item.kcal}</Text>
                   <TouchableOpacity
                     onPress={() => removeFoodItem(key, item.id)}
+                    style={styles.foodDelBtn}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     accessibilityRole="button"
                     accessibilityLabel={t('delete')}
                   >
@@ -437,7 +439,8 @@ function createStyles(colors: ColorTokens) {
     mealKcal: { color: colors.paperDim, fontFamily: fonts.mono, fontSize: 13 },
     addBtn: {
       paddingHorizontal: 12,
-      height: 32,
+      minHeight: 32,
+      paddingVertical: 6,
       borderRadius: radius.control,
       borderWidth: 1,
       borderColor: colors.lime,
@@ -469,6 +472,14 @@ function createStyles(colors: ColorTokens) {
       fontFamily: fonts.mono,
       fontWeight: '700'
     },
-    foodDel: { width: 22, textAlign: 'center', color: colors.paperFaint, fontSize: 16 }
+    /** issue «микро-кнопки»: видимая зона нажатия 32×32 + hitSlop вместо ~22×18. */
+    foodDelBtn: {
+      width: 32,
+      height: 32,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: radius.control
+    },
+    foodDel: { fontSize: 18, lineHeight: 22, textAlign: 'center', color: colors.paperFaint }
   });
 }
