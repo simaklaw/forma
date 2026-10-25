@@ -21,8 +21,14 @@ function expectFinitePose(pose: SquatPose): void {
 }
 
 describe('squatPose: биомеханика приседания', () => {
-  test('границы цикла: t=0 — исходное положение', () => {
+  test('границы цикла: t=0 — старт опускания (depth=0)', () => {
     const pose = squatPose(0);
+    expect(pose.phase).toBe('descent');
+    expect(pose.depth).toBe(0);
+  });
+
+  test('конец цикла: t≈0.97 — исходное положение (top, depth=0)', () => {
+    const pose = squatPose(0.97);
     expect(pose.phase).toBe('top');
     expect(pose.depth).toBe(0);
   });
