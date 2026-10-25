@@ -669,6 +669,8 @@ export default function ProfileScreen() {
                 </Text>
                 <TouchableOpacity
                   onPress={() => deleteBodyMeasurement(e.id)}
+                  style={styles.measureHistoryDelBtn}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   accessibilityRole="button"
                   accessibilityLabel={t('profileMeasureDelete')}
                 >
@@ -873,7 +875,7 @@ const styles = StyleSheet.create({
   voiceEventRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 },
   voiceEventName: { flex: 1, fontSize: 13, fontFamily: fonts.bodySemi },
   voiceEventBtn: {
-    width: 72,
+    minWidth: 72,
     paddingVertical: 8,
     borderRadius: radius.control,
     borderWidth: 1,
@@ -883,7 +885,7 @@ const styles = StyleSheet.create({
   measureTypeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 },
   measureTypeChip: {
     paddingHorizontal: 10,
-    height: 30,
+    paddingVertical: 7,
     borderRadius: radius.control,
     borderWidth: 1,
     alignItems: 'center',
@@ -893,7 +895,8 @@ const styles = StyleSheet.create({
   measureInputRow: { flexDirection: 'row', gap: 8 },
   measureInput: {
     flex: 1,
-    height: 44,
+    minHeight: 44,
+    paddingVertical: 10,
     borderWidth: 1,
     borderRadius: radius.control,
     paddingHorizontal: 12,
@@ -902,7 +905,8 @@ const styles = StyleSheet.create({
   },
   measureAddBtn: {
     paddingHorizontal: 16,
-    height: 44,
+    minHeight: 44,
+    paddingVertical: 12,
     borderRadius: radius.control,
     alignItems: 'center',
     justifyContent: 'center'
@@ -917,7 +921,15 @@ const styles = StyleSheet.create({
   },
   measureHistoryDate: { flex: 1, fontFamily: fonts.mono, fontSize: 12 },
   measureHistoryVal: { fontFamily: fonts.mono, fontSize: 13 },
-  measureHistoryDel: { width: 20, textAlign: 'center', fontSize: 15 },
+  /** issue «микро-кнопки»: видимая зона нажатия 32×32 + hitSlop вместо ~20×18. */
+  measureHistoryDelBtn: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.control
+  },
+  measureHistoryDel: { fontSize: 18, lineHeight: 22, textAlign: 'center' },
   /** issue #171: штамп сборки в подвале профиля. */
   buildStamp: { fontFamily: fonts.mono, fontSize: 11, textAlign: 'center', marginTop: spacing.lg }
 });
