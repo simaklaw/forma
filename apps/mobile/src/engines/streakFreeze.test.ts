@@ -62,13 +62,23 @@ describe('streakFreeze (заморозка серии)', () => {
 
   test('лимит месяца: из четырёх пустых дней морозятся только два', () => {
     const result = reconcileStreakFreeze([], () => false, NOW);
-    expect(result).toEqual([daysAgoKey(1), daysAgoKey(2)]);
+    // результат всегда отсортирован по возрастанию (как normalizeFrozenDates)
+    expect(result).toEqual([daysAgoKey(2), daysAgoKey(1)]);
   });
 
   test('замороженный ранее день прозрачен для прохода', () => {
-    const active = new Set([daysAgoKey(4)]);
+    // вчера уже заморожен — проход не останавливается на нём и морозит дальше,
+    // пока не упрётся в активный день
+    const active = new Set([daysAgoKey(3)]);
     const result = reconcileStreakFreeze([daysAgoKey(1)], (key) => active.has(key), NOW);
-    expect(result).toEqual([daysAgoKey(1), daysAgoKey(2), daysAgoKey(3)]);
+    expect(result).toEqual([daysAgoKey(2), daysAgoKey(1)]);
+  });
+
+  test('уже потраченная заморозка расходует лимит своего месяца', () => {
+    // одна заморозка октября уже потрачена на вчера — осталась только одна,
+    // поэтому дальше позавчера проход останавливается по лимиту
+    const result = reconcileStreakFreeze([daysAgoKey(1)], () => false, NOW);
+    expect(result).toEqual([daysAgoKey(2), daysAgoKey(1)]);
   });
 
   test('идемпотентность: повторный проход ничего не добавляет', () => {
