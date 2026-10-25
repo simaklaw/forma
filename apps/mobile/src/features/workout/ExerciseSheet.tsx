@@ -5,6 +5,8 @@ import type { WorkoutSession } from '@forma/workout-domain';
 import { SetFeedbackCard } from './SetFeedbackCard';
 import AppBottomSheet from '@/components/BottomSheet';
 import ExerciseVideo from '@/components/ExerciseVideo';
+import ExerciseFigure from './ExerciseFigure';
+import { figureKindForMediaKey } from './exerciseFigure';
 import MuscleMap, { type MuscleKey } from '@/components/MuscleMap';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
@@ -428,6 +430,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
         ? EXERCISE_VIDEOS[exercise.mediaKey]
         : undefined;
     const gifAsset = realGifForMediaKey(exercise.mediaKey);
+    const figureKind = figureKindForMediaKey(exercise.mediaKey);
 
     return (
       <AppBottomSheet
@@ -479,6 +482,8 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           cues={cues}
           shouldPlay={sheetOpen}
         />
+
+        {figureKind && <ExerciseFigure kind={figureKind} playing={sheetOpen} />}
 
         {reference && (
           <View style={styles.refPhotoWrap}>
