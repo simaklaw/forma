@@ -214,6 +214,10 @@ jobs:
           "$VENV/bin/pip" install --disable-pip-version-check --quiet "Pillow==11.3.0"
           "$VENV/bin/python" scripts/prepare-premium-exercise-pilot.py \
             "$ARCHIVE" apps/mobile/assets/premium-exercises
+          "$VENV/bin/python" scripts/validate-premium-exercise-pilot.py \
+            apps/mobile/assets/premium-exercises \
+            --report "$RUNNER_TEMP/premium-animation-validation.json" \
+            --summary "$GITHUB_STEP_SUMMARY"
 
       - name: Build release APK (JS bundle embedded, debug-signed)
         working-directory: apps/mobile/android
