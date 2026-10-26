@@ -300,3 +300,11 @@ jobs:
             apps/mobile/android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 7
+
+      - name: Upload premium animation validation report
+        uses: actions/upload-artifact@v4
+        with:
+          name: fitpulse-premium-animation-validation
+          path: ${{ runner.temp }}/premium-animation-validation.json
+          if-no-files-found: error
+          retention-days: 7
