@@ -14,8 +14,8 @@ from pathlib import Path
 
 from PIL import Image
 
-SIZE = (160, 160)
-FRAME_COUNT = 20
+SIZE = (384, 384)
+FRAME_COUNT = 30
 SLOWDOWN_FACTOR = 1.12  # slightly slower loop after device review
 MOTIONS = (
     "pull-up",
@@ -81,7 +81,7 @@ def make_gif(webp_bytes: bytes, target: Path) -> None:
         )
     indices = sampled_indices(count)
 
-    # GIF stores delays in 10 ms ticks. 20 sampled poses span one complete source loop.
+    # GIF stores delays in 10 ms ticks. 30 sampled poses preserve more of the source motion.
     duration_ms = max(20, round(source_duration_ms / FRAME_COUNT * SLOWDOWN_FACTOR / 10) * 10)
 
     frames_rgba: list[Image.Image] = []

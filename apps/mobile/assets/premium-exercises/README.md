@@ -11,4 +11,7 @@ The Android app bundles these GIFs locally. The selected variant follows the use
 
 Attribution: **Exercise data & images: RepDB — https://repdb.co**.
 
-These are pilot animations only, not coverage of all 225 app exercise IDs. Confirm the applicable RepDB license/permission for any intended distribution or commercial use before release.
+These are pilot animations only, not coverage of all 229 app exercise IDs. Confirm the applicable RepDB license/permission for any intended distribution or commercial use before release.
+
+
+Build pipeline note: the five selected motions are converted from the source WebP bundle to local transparent GIFs during Android CI; generated binaries are not committed to this branch. The next PR build targets 384×384 output and 30 sampled frames (previous successful build: 160×160, 20 frames). The pilot is not full-library coverage and does not count as original-authored animation coverage.

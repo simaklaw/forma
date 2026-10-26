@@ -1,6 +1,6 @@
 # FitPulse Premium 2D Exercise Animation Library — Plan
 
-Status: the first SVG rig attempt was rejected after physical-device testing. Its UI integration has been removed. All 225 IDs are marked not-started for newly authored, exercise-accurate animation. This branch restores the existing media path without reusing generic clips for exercise variants, resolves exact local posters where available, removes the fake-player treatment from missing-media cards, and guards against stale sessions from another workout day. These fixes still require a fresh CI run and Android retest; `main` remains unchanged.
+Status: the first SVG rig attempt was rejected after physical-device testing. Its UI integration has been removed. All 229 stable IDs remain not-started for newly authored, exercise-accurate animation. PR #180 now packages a five-motion pilot with male/female variants during APK CI; those licensed-source pilot clips are not counted as original-authored coverage. Monorepo CI and APK build passed for `cbac005` on 2026-10-20; real-device acceptance remains pending. `main` remains unchanged.
 
 
 ## Device review — corrective actions (2026-10-19)
@@ -96,13 +96,13 @@ Reuse rigs and motion blocks only where biomechanics genuinely match. Exercise-s
 - Animations and manifests do not break existing catalog/program/session behavior.
 - License/attribution is recorded for every non-original asset; new art is original.
 - CI passes and the APK is verified before any release.
-- `main` is not changed without explicit user approval. Work proceeds on `feat/premium-exercise-animation-library` and should be proposed as a PR for review.
+- `main` is not changed without explicit user approval. The original `feat/premium-exercise-animation-library` branch is stale at `0cf75e8`; the current integrated work is on `fix/pr178-rebased-main` in PR #180 and remains unmerged.
 
 ## Work completed on the feature branch
 
 - Added a reproducible inventory generator and [full inventory report](./EXERCISE_ANIMATION_INVENTORY.md).
-- Added a per-exercise [coverage registry](./EXERCISE_ANIMATION_COVERAGE.json): 62 workout-plan entries plus 163 imported-library entries (225 total), with separate male/female status and legacy-media-rights status. All 225 entries are currently marked not-started for new animation. The previous three SVG prototypes were rejected and are no longer counted as coverage.
-- Added **25 preliminary motion-family candidate groups** across all 225 entries. Exactly **3 entries require manual classification**; all candidates remain unreviewed and do not count as animation coverage.
+- Added a per-exercise [coverage registry](./EXERCISE_ANIMATION_COVERAGE.json): 66 workout-plan entries plus 163 imported-library entries (229 total), with separate male/female status and legacy-media-rights status. All 229 entries are currently marked not-started for new animation. The previous three SVG prototypes were rejected and are no longer counted as coverage.
+- Added **25 preliminary motion-family candidate groups** across all 229 entries. Exactly **3 entries require manual classification**; all candidates remain unreviewed and do not count as animation coverage.
 - Added CI validation that fails if the committed coverage registry is stale after a catalog change.
 - Added a manual [Android pilot checklist](./EXERCISE_RIG_PILOT_DEVICE_CHECKLIST.md).
 - The first SVG-based vector rig (squat ID 13, push-up ID 10, seated dumbbell press ID 5) failed visual acceptance and was removed from both exercise-detail surfaces; those three records are no longer counted as prototypes or coverage.
@@ -112,7 +112,7 @@ Reuse rigs and motion blocks only where biomechanics genuinely match. Exercise-s
 - No changes have been made to main.
 ## Immediate next implementation task
 
-- The generator creates the full inventory and coverage registry; CI checks that the committed 225-ID registry stays byte-for-byte synchronized and asserts key candidate assignments plus the three manual-review blockers. The updated coverage now records zero approved new animations; a fresh CI run is pending.
-- A previous Android APK was successfully packaged, but the user rejected its on-device visual result. Do not reuse that APK as a quality sign-off; the fixes on this branch must be included in a new build.
-- Run the newly queued CI on the updated branch. If green, produce a fresh Android APK and retest the media fallback plus the different-day session guard on the phone. Do not expand into full animation production until the user approves a licensed dataset or original-asset route.
+- The generator creates the full inventory and coverage registry; CI checks that the committed 229-ID registry stays byte-for-byte synchronized and asserts key candidate assignments plus the three manual-review blockers. The latest Monorepo CI and Android APK build passed on 2026-10-20 at `cbac005`; the next build is being improved to preserve more visual detail and motion frames. Approved original-authored animation coverage remains zero.
+- PR #180 produced a fresh Android APK from `cbac005` on 2026-10-20. The build log confirms 10 local GIFs (five motions × male/female) were generated and the APK uploaded successfully. This is a build result, not a visual sign-off; the exact artifact still requires on-device acceptance.
+- Install the APK from [PR #180's successful build](https://github.com/simaklaw/forma/actions/runs/39367839078) and verify all five pilot motions in both character modes, transparency, offline playback, fullscreen display, the timer, and the session/day guard. The current PR workflow packages the five pilot motions; new original-authored exercises remain blocked on a usable GDevelop authoring path. The user has confirmed a separate license; keep its scope documented for the exact files used by the build.
 - Do not generate hundreds of animations before the rig and pilot pass review.
