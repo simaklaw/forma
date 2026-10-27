@@ -41,6 +41,7 @@ import {
   parseOr400,
 } from './validation.ts';
 import { buildOpenApiDocument } from './openapi.ts';
+import { docsHtml } from './docs.ts';
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -95,6 +96,11 @@ export function createApp(
   // OpenAPI 3.1 document generated from the same zod schemas that
   // validate requests (FastAPI-style: schema = validation = docs).
   app.get('/api/openapi.json', (c) => c.json(buildOpenApiDocument()));
+
+  // Interactive Swagger UI rendering the document above.
+  app.get('/api/docs', (c) =>
+    c.body(docsHtml(), 200, { 'content-type': 'text/html; charset=utf-8' }),
+  );
 
   if (jwtSecret && registerUser) {
     app.post('/api/v1/auth/register', async (c) => {
