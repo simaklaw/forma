@@ -14,6 +14,7 @@ import {
   oidcAuthSchema,
   syncPushOperationSchema,
 } from './validation.ts';
+import { barcodeSchema } from './nutrition.ts';
 
 const validationErrorSchema = {
   type: 'object',
@@ -41,6 +42,36 @@ function jsonContent(schema: unknown) {
 }
 
 export function buildOpenApiDocument(): Record<string, unknown> {
+  const nutritionProductResponseSchema = {
+    type: 'object',
+    required: ['barcode', 'name', 'source'],
+    properties: {
+      barcode: { type: 'string' },
+      name: { type: 'string' },
+      brands: { type: 'string' },
+      quantity: { type: 'string' },
+      ingredients_text: { type: 'string' },
+      allergens_tags: { type: 'array', items: { type: 'string' } },
+      nutriscore_grade: { type: 'string' },
+      nova_group: { type: 'number' },
+      image_url: { type: 'string' },
+      nutriments: {
+        type: 'object',
+        properties: {
+          energy_kcal_100g: { type: 'number' },
+          proteins_100g: { type: 'number' },
+          carbohydrates_100g: { type: 'number' },
+          sugars_100g: { type: 'number' },
+          fat_100g: { type: 'number' },
+          saturated_fat_100g: { type: 'number' },
+          salt_100g: { type: 'number' },
+          fiber_100g: { type: 'number' },
+        },
+      },
+      source: { type: 'string', enum: ['open-food-facts'] },
+    },
+  };
+
   const pushRequestSchema = {
     type: 'object',
     required: ['user_id', 'operations'],
@@ -68,6 +99,10 @@ export function buildOpenApiDocument(): Record<string, unknown> {
       { name: 'health', description: 'Liveness and configuration probe' },
       { name: 'auth', description: 'Registration and OIDC login' },
       { name: 'sync', description: 'Idempotent operation sync' },
+      {
+        name: 'nutrition',
+        description: 'Open Food Facts proxy (ODbL, cached)',
+      },
     ],
     paths: {
       '/health': {
@@ -241,6 +276,32 @@ export function buildOpenApiDocument(): Record<string, unknown> {
             '400': { $ref: '#/components/responses/ValidationError' },
             '401': { description: 'Missing/invalid bearer token' },
             '403': { description: 'user_id does not match the token subject' },
+          },
+        },
+      },
+      '/api/v1/nutrition/product/{barcode}': {
+        get: {
+          tags: ['nutrition'],
+          summary: 'Look up a packaged product by barcode (Open Food Facts)',
+          description:
+            'Proxies Open Food Facts with a TTL cache. Product data is Open Database License (ODbL) — the response carries the source attribution.',
+          parameters: [
+            {
+              name: 'barcode',
+              in: 'path',
+              required: true,
+              schema: z.toJSONSchema(barcodeSchema),
+              description: 'EAN/UPC barcode (8-14 digits)',
+            },
+          ],
+          responses: {
+            '200': {
+              description: 'Product summary',
+              content: jsonContent(nutritionProductResponseSchema),
+            },
+            '400': { $ref: '#/components/responses/ValidationError' },
+            '404': { description: 'Unknown barcode' },
+            '502': { description: 'Open Food Facts is unreachable' },
           },
         },
       },

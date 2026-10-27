@@ -136,4 +136,26 @@ describe('createSyncClient', () => {
       },
     );
   });
+
+  it('nutritionProduct calls the nutrition proxy path', async () => {
+    const stub = stubFetch(
+      200,
+      JSON.stringify({
+        barcode: '3017620422003',
+        name: 'Nutella',
+        source: 'open-food-facts',
+      }),
+    );
+    const client = createSyncClient({
+      baseUrl: 'https://api.example.com',
+      fetch: stub.fetch as any,
+    });
+    const product = await client.nutritionProduct('3017620422003');
+    assert.equal(product.name, 'Nutella');
+    assert.equal(product.source, 'open-food-facts');
+    assert.equal(
+      stub.calls[0].url,
+      'https://api.example.com/api/v1/nutrition/product/3017620422003',
+    );
+  });
 });

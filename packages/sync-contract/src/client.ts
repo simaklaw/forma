@@ -13,6 +13,7 @@ import type {
   SyncPushRequest,
   SyncPushResponse,
   SyncPullResponse,
+  NutritionProductSummary,
 } from './types.ts';
 
 /** Minimal structural subset of a fetch Response used by the client. */
@@ -53,6 +54,8 @@ export interface SyncClient {
   push(request: SyncPushRequest): Promise<SyncPushResponse>;
   /** Pull one page of changes after a cursor. */
   pull(params: SyncPullParams): Promise<SyncPullResponse>;
+  /** Look up a packaged product by barcode (Open Food Facts proxy). */
+  nutritionProduct(barcode: string): Promise<NutritionProductSummary>;
 }
 
 /** HTTP-level error from the sync API; body carries code/message/issues. */
@@ -132,6 +135,15 @@ export function createSyncClient(options: SyncClientOptions): SyncClient {
         'GET',
         baseUrl + '/api/v1/sync/pull?' + query,
       )) as SyncPullResponse;
+    },
+
+    async nutritionProduct(
+      barcode: string,
+    ): Promise<NutritionProductSummary> {
+      return (await request(
+        'GET',
+        baseUrl + '/api/v1/nutrition/product/' + encodeURIComponent(barcode),
+      )) as NutritionProductSummary;
     },
   };
 }
