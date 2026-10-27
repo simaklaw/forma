@@ -56,3 +56,33 @@ export interface SyncPullResponse {
   next_change_id: number;
   has_more: boolean;
 }
+
+/** Per-100g nutrition values (subset of Open Food Facts nutriments). */
+export interface NutritionNutriments {
+  energy_kcal_100g?: number;
+  proteins_100g?: number;
+  carbohydrates_100g?: number;
+  sugars_100g?: number;
+  fat_100g?: number;
+  saturated_fat_100g?: number;
+  salt_100g?: number;
+  fiber_100g?: number;
+}
+
+/**
+ * Nutrition product summary for barcode lookups (Open Food Facts proxy
+ * in apps/api). ODbL — keep the 'source' attribution downstream.
+ */
+export interface NutritionProductSummary {
+  barcode: string;
+  name: string;
+  brands?: string;
+  quantity?: string;
+  ingredients_text?: string;
+  allergens_tags?: string[];
+  nutriscore_grade?: string;
+  nova_group?: number;
+  image_url?: string;
+  nutriments?: NutritionNutriments;
+  source: 'open-food-facts';
+}
