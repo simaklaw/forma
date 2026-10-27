@@ -1,0 +1,10 @@
+BEGIN
+ pg_advisory_xact_lock 
+-----------------------
+ 
+(1 row)
+
+psql:/tmp/tmp.ThPuQtcY9g:7: NOTICE:  relation "forma_schema_migration" already exists, skipping
+CREATE TABLE
+COMMIT
+All migrations applied.
