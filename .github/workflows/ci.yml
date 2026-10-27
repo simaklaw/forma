@@ -39,6 +39,16 @@ jobs:
       - name: Check diff whitespace
         run: git diff --check
 
+      - name: Setup Python for exercise asset tooling
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Test original exercise frame converter
+        run: |
+          python -m pip install --disable-pip-version-check Pillow
+          python -m unittest discover -s scripts/tests -v
+
       # Progressive Prettier gate — expand as packages are formatted.
       - name: Check formatting (gate paths)
         run: pnpm exec prettier --version && pnpm format:check:gate
