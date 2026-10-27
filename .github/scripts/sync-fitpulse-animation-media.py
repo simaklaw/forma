@@ -7,7 +7,10 @@ import json
 import os
 from pathlib import Path
 import re
+import subprocess
 import sys
+import tempfile
+from fractions import Fraction
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -45,6 +48,69 @@ def verify_digest(data: bytes, expected: str, label: str) -> None:
     actual = sha256(data)
     if actual != expected:
         raise RuntimeError(f"SHA-256 mismatch for {label}: expected {expected}, got {actual}")
+
+
+
+def validate_video_probe(probe: dict, label: str, expected_frames: int) -> dict:
+    """Validate the decoded MP4 stream, not only its publisher-supplied manifest."""
+    streams = probe.get("streams", [])
+    video_streams = [stream for stream in streams if stream.get("codec_type") == "video"]
+    if len(video_streams) != 1:
+        raise RuntimeError(f"{label}: expected exactly one video stream")
+    stream = video_streams[0]
+
+    try:
+        width = int(stream.get("width", 0))
+        height = int(stream.get("height", 0))
+        frames = int(stream.get("nb_read_frames", 0))
+        frame_rate = float(Fraction(stream.get("avg_frame_rate", "0/0")))
+    except (TypeError, ValueError, ZeroDivisionError, OverflowError) as exc:
+        raise RuntimeError(f"{label}: invalid MP4 stream metadata") from exc
+
+    if (width, height) != (720, 720):
+        raise RuntimeError(f"{label}: expected decoded 720x720 video, got {width}x{height}")
+    if abs(frame_rate - 30.0) > 0.01:
+        raise RuntimeError(f"{label}: expected decoded 30 fps video, got {frame_rate:g} fps")
+    if frames != expected_frames:
+        raise RuntimeError(
+            f"{label}: expected {expected_frames} decoded frames, got {frames}"
+        )
+
+    return {"width": width, "height": height, "fps": frame_rate, "frames": frames}
+
+
+def verify_mp4_stream(data: bytes, label: str, expected_frames: int) -> dict:
+    """Run ffprobe against downloaded bytes before staging them as app assets."""
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".mp4") as temp_file:
+            temp_file.write(data)
+            temp_file.flush()
+            result = subprocess.run(
+                [
+                    "ffprobe", "-v", "error", "-count_frames",
+                    "-select_streams", "v:0",
+                    "-show_entries",
+                    "stream=codec_type,width,height,avg_frame_rate,nb_read_frames",
+                    "-of", "json", temp_file.name,
+                ],
+                capture_output=True,
+                text=True,
+                timeout=120,
+                check=False,
+            )
+    except FileNotFoundError as exc:
+        raise RuntimeError("ffprobe is required for media validation") from exc
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError(f"{label}: ffprobe timed out while decoding the MP4") from exc
+
+    if result.returncode != 0:
+        detail = result.stderr.strip()[-500:]
+        raise RuntimeError(f"{label}: ffprobe could not decode MP4: {detail}")
+    try:
+        probe = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"{label}: ffprobe returned invalid JSON") from exc
+    return validate_video_probe(probe, label, expected_frames)
 
 
 def source_url(relative_path: str) -> str:
@@ -129,6 +195,7 @@ def main() -> int:
                 )
             if not (len(video_data) > 12 and video_data[4:8] == b"ftyp"):
                 raise RuntimeError(f"{exercise}/{gender}: payload does not look like an MP4")
+            verify_mp4_stream(video_data, f"{exercise}/{gender}", spec["frames"])
             if not poster_data.startswith(b"\x89PNG\r\n\x1a\n"):
                 raise RuntimeError(f"{exercise}/{gender}: poster is not a PNG")
             key = spec["key"]
