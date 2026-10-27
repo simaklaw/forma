@@ -43,6 +43,5 @@ export function docsHtml(): string {
     '</body>',
     '</html>',
     '',
-  ].join('
-');
+  ].join('\n');
 }
