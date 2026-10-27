@@ -16,7 +16,7 @@ from PIL import Image, ImageOps, ImageSequence
 
 FRAME_RE = re.compile(r"(\d+)\.png$", re.IGNORECASE)
 DEFAULT_SIZE = 384
-DEFAULT_FPS = 24
+DEFAULT_FPS = 25
 DEFAULT_MAX_BYTES = 8 * 1024 * 1024
 
 
@@ -87,7 +87,8 @@ def convert(input_dir: Path, output: Path, *, size: int = DEFAULT_SIZE,
         palette_frames.append(indexed)
 
     output.parent.mkdir(parents=True, exist_ok=True)
-    duration_ms = round(1000 / fps)
+    # GIF stores frame delays in 10 ms units; report the encoded rate, not only the requested rate.
+    duration_ms = max(10, round((1000 / fps) / 10) * 10)
     palette_frames[0].save(
         output, save_all=True, append_images=palette_frames[1:],
         duration=duration_ms, loop=0, disposal=2, transparency=0,
@@ -101,7 +102,8 @@ def convert(input_dir: Path, output: Path, *, size: int = DEFAULT_SIZE,
         "outputFrames": len(palette_frames),
         "width": size,
         "height": size,
-        "fps": fps,
+        "fps": round(1000 / duration_ms, 2),
+        "requestedFps": fps,
         "durationMs": duration_ms * len(palette_frames),
         "transparentBackground": True,
         "loop": 0,
