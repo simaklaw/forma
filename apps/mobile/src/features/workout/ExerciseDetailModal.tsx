@@ -25,7 +25,7 @@ import {
   subscribeReplaceTarget,
   type ReplaceTarget
 } from './replaceTarget';
-import { EXERCISE_PROFILE_POSTERS, EXERCISE_PROFILE_VIDEOS, EXERCISE_VIDEOS } from './exerciseMedia';
+import { EXERCISE_PROFILE_POSTERS, EXERCISE_PROFILE_VIDEOS, EXERCISE_THUMBNAILS, EXERCISE_VIDEOS } from './exerciseMedia';
 import { resolveProfileExerciseMedia } from './exerciseMediaSelection';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { realGifForMediaKey } from './exerciseRealMedia';
@@ -123,7 +123,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
     item.mediaKey,
     profileSex,
     EXERCISE_PROFILE_POSTERS,
-    {}
+    EXERCISE_THUMBNAILS
   );
   const gifAsset = realGifForMediaKey(item.mediaKey);
 
