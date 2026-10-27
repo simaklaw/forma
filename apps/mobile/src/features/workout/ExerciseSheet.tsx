@@ -24,7 +24,7 @@ import { sequentialStepInfo, sessionForViewedDay } from './session/sequentialSte
 import { applySessionProjection } from './data/applySessionProjection';
 import { getSessionService } from './data';
 import { formatLoadLabel, isBodyweightExercise, resolveWorkingLoadKg } from './catalog';
-import { EXERCISE_PROFILE_POSTERS, EXERCISE_PROFILE_VIDEOS, EXERCISE_VIDEOS } from './exerciseMedia';
+import { EXERCISE_PROFILE_POSTERS, EXERCISE_PROFILE_VIDEOS, EXERCISE_THUMBNAILS, EXERCISE_VIDEOS } from './exerciseMedia';
 import { resolveProfileExerciseMedia } from './exerciseMediaSelection';
 import { realGifForMediaKey } from './exerciseRealMedia';
 import { importedByNumericId, IMPORTED_NUMERIC_ID_BASE } from './importedExerciseBridge';
@@ -437,7 +437,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       exercise.mediaKey,
       profileSex,
       EXERCISE_PROFILE_POSTERS,
-      {}
+      EXERCISE_THUMBNAILS
     );
     const gifAsset = realGifForMediaKey(exercise.mediaKey);
     const figureKind = figureKindForMediaKey(exercise.mediaKey);
