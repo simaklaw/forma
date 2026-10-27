@@ -25,7 +25,9 @@ import {
   subscribeReplaceTarget,
   type ReplaceTarget
 } from './replaceTarget';
-import { EXERCISE_VIDEOS } from './exerciseMedia';
+import { EXERCISE_PROFILE_POSTERS, EXERCISE_PROFILE_VIDEOS, EXERCISE_THUMBNAILS, EXERCISE_VIDEOS } from './exerciseMedia';
+import { resolveProfileExerciseMedia } from './exerciseMediaSelection';
+import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { realGifForMediaKey } from './exerciseRealMedia';
 import { swapsForPlanExercise, type ExerciseSwap } from './exerciseSwaps';
 import { formatPlanAmount } from './exerciseMeasures';
@@ -47,6 +49,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
   const lang = useLanguageStore((s) => s.lang);
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const reference = useExerciseReference(item?.wgerSearchTerm ?? null);
+  const profileSex = useFitPulseStore((s) => s.profile.sex);
   const [favorited, setFavorited] = useState(false);
   const [replaceTarget, setReplaceTargetState] = useState<ReplaceTarget | null>(getReplaceTarget());
   const [replacing, setReplacing] = useState(false);
@@ -110,10 +113,18 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
     replaceTarget.mode === item.mode &&
     replaceTarget.currentExerciseId !== item.id;
   const cues = techniqueCuesFromNote(item.note);
-  const videoSource =
-    item.mediaKey && EXERCISE_VIDEOS[item.mediaKey]
-      ? EXERCISE_VIDEOS[item.mediaKey]
-      : undefined;
+  const videoSource = resolveProfileExerciseMedia(
+    item.mediaKey,
+    profileSex,
+    EXERCISE_PROFILE_VIDEOS,
+    EXERCISE_VIDEOS
+  );
+  const videoPoster = resolveProfileExerciseMedia(
+    item.mediaKey,
+    profileSex,
+    EXERCISE_PROFILE_POSTERS,
+    EXERCISE_THUMBNAILS
+  );
   const gifAsset = realGifForMediaKey(item.mediaKey);
 
   return (
@@ -177,6 +188,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
 
           <ExerciseVideo
             source={videoSource}
+            posterAsset={videoPoster}
             gifAsset={gifAsset}
             posterUri={reference?.imageUrl}
             cues={cues}

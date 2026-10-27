@@ -8,6 +8,8 @@
  * apps/web/public/exercises/ so we do not duplicate binary blobs).
  */
 
+export type ExercisePresentation = 'male' | 'female';
+
 export type ExerciseMediaKey =
   | 'pushup'
   | 'squat'
@@ -22,6 +24,33 @@ export type ExerciseMediaKey =
   | 'shoulder-press'
   | 'side-plank'
   | 'stomach-vacuum';
+
+/** Profile-specific render variants published by the FitPulse Animation Studio. */
+export const EXERCISE_PROFILE_VIDEOS: Partial<
+  Record<ExerciseMediaKey, Partial<Record<ExercisePresentation, number>>>
+> = {
+  pushup: {
+    male: require('../../../assets/exercises/pushup-male.mp4'),
+    female: require('../../../assets/exercises/pushup-female.mp4')
+  },
+  pullup: {
+    male: require('../../../assets/exercises/pullup-male.mp4'),
+    female: require('../../../assets/exercises/pullup-female.mp4')
+  }
+};
+
+export const EXERCISE_PROFILE_POSTERS: Partial<
+  Record<ExerciseMediaKey, Partial<Record<ExercisePresentation, number>>>
+> = {
+  pushup: {
+    male: require('../../../assets/exercises/pushup-male.png'),
+    female: require('../../../assets/exercises/pushup-female.png')
+  },
+  pullup: {
+    male: require('../../../assets/exercises/pullup-male.png'),
+    female: require('../../../assets/exercises/pullup-female.png')
+  }
+};
 
 /** Static previews — all 12 keys have jpg next to the mp4 in web public. */
 export const EXERCISE_THUMBNAILS: Partial<Record<ExerciseMediaKey, number>> = {

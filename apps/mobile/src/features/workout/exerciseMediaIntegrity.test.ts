@@ -98,6 +98,21 @@ describe('exercise gif manifest integrity', () => {
   });
 });
 
+describe('profile-specific FitPulse exercise media integrity', () => {
+  it('ships male/female MP4s and PNG posters for pull-ups and push-ups', () => {
+    for (const exercise of ['pullup', 'pushup']) {
+      for (const presentation of ['male', 'female']) {
+        expect(
+          existsSync(resolve(mobileRoot, 'assets/exercises', `${exercise}-${presentation}.mp4`))
+        ).toBe(true);
+        expect(
+          existsSync(resolve(mobileRoot, 'assets/exercises', `${exercise}-${presentation}.png`))
+        ).toBe(true);
+      }
+    }
+  });
+});
+
 describe('bundled exercise media integrity', () => {
   it('every bundled clip exists on disk', () => {
     for (const key of BUNDLED_VIDEO_KEYS) {

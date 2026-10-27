@@ -25,7 +25,9 @@ interface Props {
   source?: { uri: string } | number;
   /** Vetted dataset GIF for the exact exercise (issue #175); Android animates GIF natively. */
   gifAsset?: number;
-  /** Optional still from wger when video is missing. */
+  /** Optional local poster bundled with a profile-specific animation. */
+  posterAsset?: number;
+  /** Optional still from wger when bundled media is missing. */
   posterUri?: string;
   /** Short technique steps (from plan note). */
   cues?: string[];
@@ -47,6 +49,7 @@ function normalizeCues(cues: string[] | undefined): string[] {
 
 export default function ExerciseVideo({
   source,
+  posterAsset,
   gifAsset,
   posterUri,
   cues,
@@ -59,17 +62,24 @@ export default function ExerciseVideo({
   const [stepIdx, setStepIdx] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
+  const [failedSourceKey, setFailedSourceKey] = useState<string | null>(null);
+  const sourceIdentity =
+    source == null ? '' : typeof source === 'number' ? `asset:${source}` : `uri:${source.uri}`;
+  const videoFailed = sourceIdentity !== '' && failedSourceKey === sourceIdentity;
+  const posterSource =
+    posterAsset != null ? posterAsset : posterUri ? { uri: posterUri } : undefined;
   const previewRef = useRef<Video>(null);
   const fullscreenRef = useRef<Video>(null);
 
   useEffect(() => {
-    if (source || gifAsset != null) return;
+    if (source || gifAsset != null || posterAsset != null || posterUri) return;
     setStepIdx(0);
     const id = setInterval(() => {
       setStepIdx((i) => (i + 1) % steps.length);
     }, 2800);
     return () => clearInterval(id);
-  }, [source, gifAsset, steps.length]);
+  }, [source, gifAsset, posterAsset, posterUri, steps.length]);
 
   useEffect(() => {
     if (!source || !previewRef.current) return;
@@ -81,7 +91,7 @@ export default function ExerciseVideo({
   }, [shouldPlay, source]);
 
   function openFullscreen() {
-    if (!source) return;
+    if (!source || videoFailed) return;
     previewRef.current?.pauseAsync().catch(() => {});
     setFullscreen(true);
   }
@@ -109,24 +119,45 @@ export default function ExerciseVideo({
       <TouchableOpacity
         style={styles.hero}
         onPress={openFullscreen}
-        disabled={!source}
+        disabled={!source || videoFailed}
         accessibilityRole="button"
         accessibilityLabel={
-          source
+          source && !videoFailed
             ? 'Открыть видео техники на весь экран'
-            : 'Пошаговая техника выполнения'
+            : posterSource
+              ? 'Видео недоступно; показан постер упражнения'
+              : 'Пошаговая техника выполнения'
         }
       >
-        {source ? (
-          <Video
-            ref={previewRef}
-            source={source as any}
-            style={StyleSheet.absoluteFill}
-            resizeMode={ResizeMode.COVER}
-            isMuted
-            isLooping
-            shouldPlay={shouldPlay}
-          />
+        {source && !videoFailed ? (
+          <>
+            <Video
+              ref={previewRef}
+              source={source as any}
+              style={StyleSheet.absoluteFill}
+              resizeMode={ResizeMode.COVER}
+              isMuted
+              isLooping
+              shouldPlay={shouldPlay}
+              onLoadStart={() => {
+                setVideoReady(false);
+                setFailedSourceKey((failed) => (failed === sourceIdentity ? null : failed));
+              }}
+              onReadyForDisplay={() => setVideoReady(true)}
+              onError={() => {
+                setVideoReady(false);
+                setFailedSourceKey(sourceIdentity);
+              }}
+            />
+            {posterSource && !videoReady ? (
+              <Image
+                source={posterSource}
+                style={StyleSheet.absoluteFill}
+                resizeMode="cover"
+                accessibilityIgnoresInvertColors
+              />
+            ) : null}
+          </>
         ) : gifAsset != null ? (
           <Image
             source={gifAsset}
@@ -134,9 +165,9 @@ export default function ExerciseVideo({
             resizeMode="cover"
             accessibilityIgnoresInvertColors
           />
-        ) : posterUri ? (
+        ) : posterSource ? (
           <Image
-            source={{ uri: posterUri }}
+            source={posterSource}
             style={StyleSheet.absoluteFill}
             resizeMode="cover"
             accessibilityIgnoresInvertColors
@@ -147,7 +178,7 @@ export default function ExerciseVideo({
 
         <View style={styles.dim} />
 
-        {!source && gifAsset == null ? (
+        {!source && gifAsset == null && !posterSource ? (
           <View style={styles.guide}>
             <Text style={styles.guideStep}>
               Шаг {stepIdx + 1}/{steps.length}
@@ -164,20 +195,20 @@ export default function ExerciseVideo({
               ))}
             </View>
           </View>
-        ) : source != null ? (
+        ) : source != null && !videoFailed ? (
           <View style={styles.playBadge}>
             <Text style={styles.playBadgeText}>▶</Text>
           </View>
         ) : null}
 
         <Text style={styles.heroLabel}>
-          {source != null || gifAsset != null ? label : 'ТЕХНИКА · ПО ШАГАМ'}
+          {((source != null && !videoFailed) || gifAsset != null || posterSource) ? label : 'ТЕХНИКА · ПО ШАГАМ'}
         </Text>
       </TouchableOpacity>
 
       <Modal visible={fullscreen} animationType="fade" onRequestClose={closeFullscreen}>
         <View style={styles.fullscreenRoot}>
-          {source && (
+          {source && !videoFailed ? (
             <TouchableOpacity
               style={StyleSheet.absoluteFill}
               activeOpacity={1}
@@ -190,6 +221,11 @@ export default function ExerciseVideo({
                 resizeMode={ResizeMode.CONTAIN}
                 shouldPlay
                 useNativeControls={false}
+                onReadyForDisplay={() => setVideoReady(true)}
+                onError={() => {
+                  setVideoReady(false);
+                  setFailedSourceKey(sourceIdentity);
+                }}
                 onPlaybackStatusUpdate={(status) => {
                   if ('isPlaying' in status) setIsPlaying(!!status.isPlaying);
                 }}
@@ -200,7 +236,14 @@ export default function ExerciseVideo({
                 </View>
               )}
             </TouchableOpacity>
-          )}
+          ) : posterSource ? (
+            <Image
+              source={posterSource}
+              style={StyleSheet.absoluteFill}
+              resizeMode={ResizeMode.CONTAIN}
+              accessibilityIgnoresInvertColors
+            />
+          ) : null}
           <TouchableOpacity
             style={styles.closeBtn}
             onPress={closeFullscreen}
