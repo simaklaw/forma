@@ -34,6 +34,13 @@ import {
   isAllowedOidcRedirectUri,
   createOidcRateLimiter,
 } from './oidc.ts';
+import {
+  authRegisterSchema,
+  oidcAuthSchema,
+  syncPushRequestSchema,
+  parseOr400,
+} from './validation.ts';
+import { buildOpenApiDocument } from './openapi.ts';
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -85,24 +92,26 @@ export function createApp(
     }),
   );
 
+  // OpenAPI 3.1 document generated from the same zod schemas that
+  // validate requests (FastAPI-style: schema = validation = docs).
+  app.get('/api/openapi.json', (c) => c.json(buildOpenApiDocument()));
+
   if (jwtSecret && registerUser) {
     app.post('/api/v1/auth/register', async (c) => {
-      let body: { auth_subject?: unknown };
+      let raw: unknown;
       try {
-        body = await c.req.json();
+        raw = await c.req.json();
       } catch {
         return c.json({ error: 'invalid_json' }, 400);
       }
-      const subject = stringFrom(body?.auth_subject);
-      if (!subject || subject.length < 3 || subject.length > 200) {
-        return c.json(
-          {
-            error: 'invalid_auth_subject',
-            message: 'auth_subject must be 3-200 chars',
-          },
-          400,
-        );
-      }
+      const parsed = parseOr400(
+        authRegisterSchema,
+        raw,
+        'invalid_auth_subject',
+        'auth_subject must be 3-200 chars',
+      );
+      if (!parsed.ok) return c.json(parsed.body, 400);
+      const subject = parsed.data.auth_subject;
       const { user_id, created } = await registerUser.register(subject);
       const token = signJwt(jwtSecret, user_id);
       const expiresAt = new Date(
@@ -114,23 +123,26 @@ export function createApp(
 
   if (jwtSecret && registerUser && oidcConfig) {
     app.post('/api/v1/auth/oidc', async (c) => {
-      let body: {
-        provider?: unknown;
-        id_token?: unknown;
-        code?: unknown;
-        redirect_uri?: unknown;
-        code_verifier?: unknown;
-      };
+      let raw: unknown;
       try {
-        body = await c.req.json();
+        raw = await c.req.json();
       } catch {
         return c.json({ error: 'invalid_json' }, 400);
       }
-      const provider = stringFrom(body?.provider) as OidcProvider | undefined;
-      let idToken = stringFrom(body?.id_token);
-      const code = stringFrom(body?.code);
-      const redirectUri = stringFrom(body?.redirect_uri);
-      const codeVerifier = stringFrom(body?.code_verifier);
+      const parsed = parseOr400(
+        oidcAuthSchema,
+        raw,
+        'invalid_body',
+        'body must be a JSON object with string fields',
+      );
+      if (!parsed.ok) return c.json(parsed.body, 400);
+      const provider = stringFrom(parsed.data.provider) as
+        | OidcProvider
+        | undefined;
+      let idToken = stringFrom(parsed.data.id_token);
+      const code = stringFrom(parsed.data.code);
+      const redirectUri = stringFrom(parsed.data.redirect_uri);
+      const codeVerifier = stringFrom(parsed.data.code_verifier);
       const clientKey =
         c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ||
         c.req.header('cf-connecting-ip') ||
@@ -240,16 +252,22 @@ export function createApp(
   }
 
   app.post('/api/v1/sync/push', async (c) => {
-    let body: SyncPushRequest;
+    let raw: unknown;
     try {
-      body = await c.req.json();
+      raw = await c.req.json();
     } catch {
       return c.json({ error: 'invalid_json' }, 400);
     }
-
-    if (!body?.user_id || !Array.isArray(body.operations)) {
-      return c.json({ error: 'invalid_body' }, 400);
-    }
+    const parsed = parseOr400(
+      syncPushRequestSchema,
+      raw,
+      'invalid_body',
+      'body must contain user_id (non-empty string) and operations (array)',
+    );
+    if (!parsed.ok) return c.json(parsed.body, 400);
+    // Envelope is validated; individual operations are still checked
+    // one-by-one below so partial batches get per-op rejected results.
+    const body = parsed.data as unknown as SyncPushRequest;
 
     if (requireUuid && !UUID_RE.test(body.user_id)) {
       return c.json({ error: 'user_id_must_be_uuid' }, 400);
@@ -401,7 +419,20 @@ export function createApp(
   app.get('/api/v1/sync/pull', async (c) => {
     const after = Number(c.req.query('after_change_id') ?? '0');
     if (!Number.isFinite(after) || after < 0) {
-      return c.json({ error: 'invalid_after_change_id' }, 400);
+      return c.json(
+        {
+          error: 'invalid_after_change_id',
+          message: 'after_change_id must be a non-negative integer',
+          issues: [
+            {
+              path: 'after_change_id',
+              code: 'invalid_type',
+              message: 'must be a non-negative integer',
+            },
+          ],
+        },
+        400,
+      );
     }
 
     let userId = c.req.query('user_id') ?? '';
