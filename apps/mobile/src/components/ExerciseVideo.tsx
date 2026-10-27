@@ -62,11 +62,15 @@ export default function ExerciseVideo({
   const [stepIdx, setStepIdx] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [videoReady, setVideoReady] = useState(false);
+  const [readySourceKey, setReadySourceKey] = useState<string | null>(null);
   const [failedSourceKey, setFailedSourceKey] = useState<string | null>(null);
   const sourceIdentity =
     source == null ? '' : typeof source === 'number' ? `asset:${source}` : `uri:${source.uri}`;
+  const videoReady = sourceIdentity !== '' && readySourceKey === sourceIdentity;
   const videoFailed = sourceIdentity !== '' && failedSourceKey === sourceIdentity;
+  useEffect(() => {
+    setFailedSourceKey(null);
+  }, [sourceIdentity]);
   const posterSource =
     posterAsset != null ? posterAsset : posterUri ? { uri: posterUri } : undefined;
   const previewRef = useRef<Video>(null);
@@ -140,12 +144,12 @@ export default function ExerciseVideo({
               isLooping
               shouldPlay={shouldPlay}
               onLoadStart={() => {
-                setVideoReady(false);
+                setReadySourceKey((ready) => (ready === sourceIdentity ? null : ready));
                 setFailedSourceKey((failed) => (failed === sourceIdentity ? null : failed));
               }}
-              onReadyForDisplay={() => setVideoReady(true)}
+              onReadyForDisplay={() => setReadySourceKey(sourceIdentity)}
               onError={() => {
-                setVideoReady(false);
+                setReadySourceKey((ready) => (ready === sourceIdentity ? null : ready));
                 setFailedSourceKey(sourceIdentity);
               }}
             />
@@ -221,9 +225,9 @@ export default function ExerciseVideo({
                 resizeMode={ResizeMode.CONTAIN}
                 shouldPlay
                 useNativeControls={false}
-                onReadyForDisplay={() => setVideoReady(true)}
+                onReadyForDisplay={() => setReadySourceKey(sourceIdentity)}
                 onError={() => {
-                  setVideoReady(false);
+                  setReadySourceKey((ready) => (ready === sourceIdentity ? null : ready));
                   setFailedSourceKey(sourceIdentity);
                 }}
                 onPlaybackStatusUpdate={(status) => {
