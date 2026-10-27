@@ -150,7 +150,7 @@ def main() -> int:
                 "videoSha256": sha256(video_data),
                 "posterBytes": len(poster_data),
                 "posterSha256": sha256(poster_data),
-                "generatedFrom": generated_from if (generated_from := manifest["generatedFrom"]) else {},
+                "generatedFrom": manifest["generatedFrom"],
             }
         for asset in manifest.get("sourceAssets", []):
             if asset not in combined["attribution"]:
