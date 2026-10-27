@@ -24,7 +24,8 @@ import { sequentialStepInfo, sessionForViewedDay } from './session/sequentialSte
 import { applySessionProjection } from './data/applySessionProjection';
 import { getSessionService } from './data';
 import { formatLoadLabel, isBodyweightExercise, resolveWorkingLoadKg } from './catalog';
-import { EXERCISE_VIDEOS } from './exerciseMedia';
+import { EXERCISE_PROFILE_POSTERS, EXERCISE_PROFILE_VIDEOS, EXERCISE_VIDEOS } from './exerciseMedia';
+import { resolveProfileExerciseMedia } from './exerciseMediaSelection';
 import { realGifForMediaKey } from './exerciseRealMedia';
 import { importedByNumericId, IMPORTED_NUMERIC_ID_BASE } from './importedExerciseBridge';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
@@ -104,6 +105,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const completedSetsToday = useFitPulseStore((s) => s.completedSetsToday);
     const setLogs = useFitPulseStore((s) => s.setLogs);
     const profileWeight = useFitPulseStore((s) => s.profile.weight);
+    const profileSex = useFitPulseStore((s) => s.profile.sex);
     const reference = useExerciseReference(exercise?.wgerSearchTerm ?? null);
     const restOverride = useRestTimerStore((s) => s.overrideSeconds);
 
@@ -425,10 +427,18 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       sessionSnap.status !== 'abandoned';
     const ctaDisabled = finished || restRemaining !== null || blockedBySequence || sessionPaused;
     const cues = techniqueCuesFromNote(exercise.note);
-    const videoSource =
-      exercise.mediaKey && EXERCISE_VIDEOS[exercise.mediaKey]
-        ? EXERCISE_VIDEOS[exercise.mediaKey]
-        : undefined;
+    const videoSource = resolveProfileExerciseMedia(
+      exercise.mediaKey,
+      profileSex,
+      EXERCISE_PROFILE_VIDEOS,
+      EXERCISE_VIDEOS
+    );
+    const videoPoster = resolveProfileExerciseMedia(
+      exercise.mediaKey,
+      profileSex,
+      EXERCISE_PROFILE_POSTERS,
+      {}
+    );
     const gifAsset = realGifForMediaKey(exercise.mediaKey);
     const figureKind = figureKindForMediaKey(exercise.mediaKey);
 
@@ -477,6 +487,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
         <ExerciseVideo
           source={videoSource}
+          posterAsset={videoPoster}
           gifAsset={gifAsset}
           posterUri={reference?.imageUrl}
           cues={cues}
