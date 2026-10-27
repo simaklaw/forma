@@ -88,7 +88,7 @@ def verify_mp4_stream(data: bytes, label: str, expected_frames: int) -> dict:
             result = subprocess.run(
                 [
                     "ffprobe", "-v", "error", "-count_frames",
-                    "-select_streams", "v:0",
+                    "-select_streams", "v",
                     "-show_entries",
                     "stream=codec_type,width,height,avg_frame_rate,nb_read_frames",
                     "-of", "json", temp_file.name,
