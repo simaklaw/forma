@@ -77,7 +77,7 @@ class FitPulseMediaSyncTests(unittest.TestCase):
             "poster_data.startswith",
             "sourceMotions",
             "attribution",
-        )
+        ):
             with self.subTest(required=required):
                 self.assertIn(required, source)
 
