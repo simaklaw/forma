@@ -1,8 +1,10 @@
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 from PIL import Image, ImageDraw
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from convert_exercise_frames import convert, ordered_frames, prepare_frame
 
 
@@ -44,6 +46,8 @@ class ConvertExerciseFramesTests(unittest.TestCase):
                 self.assertEqual(gif.info.get("loop"), 0)
                 self.assertIsNotNone(gif.info.get("transparency"))
                 self.assertGreaterEqual(gif.n_frames, 6)
+                first = gif.convert("RGBA")
+                self.assertEqual(first.getpixel((0, 0))[3], 0)
 
     def test_rejects_too_few_frames(self):
         with tempfile.TemporaryDirectory() as tmp:
