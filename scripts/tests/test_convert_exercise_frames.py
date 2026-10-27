@@ -43,11 +43,15 @@ class ConvertExerciseFramesTests(unittest.TestCase):
             output = root / "out" / "test.gif"
             report = convert(source, output, size=128, fps=12, stride=1, max_bytes=1_000_000)
             self.assertTrue(report["pass"])
+            self.assertEqual(report["requestedFps"], 12)
+            self.assertEqual(report["fps"], 12.5)  # GIF frame delays are quantized to 10 ms.
+            self.assertEqual(report["durationMs"], 12 * 80)
             with Image.open(output) as gif:
                 self.assertEqual(gif.size, (128, 128))
                 self.assertEqual(gif.info.get("loop"), 0)
                 self.assertIsNotNone(gif.info.get("transparency"))
                 self.assertGreaterEqual(gif.n_frames, 6)
+                self.assertEqual(gif.info.get("duration"), 80)
                 first = gif.convert("RGBA")
                 self.assertEqual(first.getpixel((0, 0))[3], 0)
 
