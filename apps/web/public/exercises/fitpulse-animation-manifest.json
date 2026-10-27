@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "sourceRepository": "simaklaw/fitpulse-godot-animation-studio",
+  "profiles": {
+    "pullup-male": {
+      "exerciseId": "pull_up",
+      "gender": "male",
+      "video": "/exercises/pullup-male.mp4",
+      "poster": "/exercises/pullup-male.png",
+      "videoBytes": 76357,
+      "videoSha256": "00a9bffeb102b3a201e0ff77c04a2157bf3c834a17c6f2f33243d72bdfd1d638",
+      "posterBytes": 85313,
+      "posterSha256": "0383e0c10a4e0773c42eaa66202b71637b7c5205d9666b527c0523afeb0f7b01",
+      "generatedFrom": {
+        "repository": "simaklaw/fitpulse-godot-animation-studio",
+        "commit": "ad778c3637192c2e7c0cd7504d864c93ef257db2",
+        "workflowRunId": 40461983918
+      }
+    },
+    "pullup-female": {
+      "exerciseId": "pull_up",
+      "gender": "female",
+      "video": "/exercises/pullup-female.mp4",
+      "poster": "/exercises/pullup-female.png",
+      "videoBytes": 69146,
+      "videoSha256": "668bd8e5431e46423a4e25a986f24ad280e08befecd9434fb9a63a6efd2256ad",
+      "posterBytes": 86995,
+      "posterSha256": "f1c161ffc8eab01c0826e485302cac38733141b9ca6e57f3b7ae90460b0d9b0b",
+      "generatedFrom": {
+        "repository": "simaklaw/fitpulse-godot-animation-studio",
+        "commit": "ad778c3637192c2e7c0cd7504d864c93ef257db2",
+        "workflowRunId": 40461983918
+      }
+    },
+    "pushup-male": {
+      "exerciseId": "push_up",
+      "gender": "male",
+      "video": "/exercises/pushup-male.mp4",
+      "poster": "/exercises/pushup-male.png",
+      "videoBytes": 142677,
+      "videoSha256": "69ec50d7682035ed929d1cc97ab4440eca3f736db2b5319bbe9107ef9204f0ee",
+      "posterBytes": 81657,
+      "posterSha256": "d0dcead29c3e326d49d344ce586e11933a01388b11538d610c502ae2b401e397",
+      "generatedFrom": {
+        "repository": "simaklaw/fitpulse-godot-animation-studio",
+        "commit": "ad778c3637192c2e7c0cd7504d864c93ef257db2",
+        "workflowRunId": 40461983874
+      }
+    },
+    "pushup-female": {
+      "exerciseId": "push_up",
+      "gender": "female",
+      "video": "/exercises/pushup-female.mp4",
+      "poster": "/exercises/pushup-female.png",
+      "videoBytes": 113046,
+      "videoSha256": "b9a1908e65bd7815d64e7ada2dc13e5a8f19b7af22efaf63ee29824074579172",
+      "posterBytes": 79020,
+      "posterSha256": "82fc278ccec6c98fd9d4a4a93747e5f62aa1f625be8fc797277e1090f3896fdc",
+      "generatedFrom": {
+        "repository": "simaklaw/fitpulse-godot-animation-studio",
+        "commit": "ad778c3637192c2e7c0cd7504d864c93ef257db2",
+        "workflowRunId": 40461983874
+      }
+    }
+  },
+  "attribution": [
+    {
+      "asset": "elvs_male_athletic_tank1 / elvs_ladies_tank1",
+      "author": "Elvaerwyn",
+      "license": "CC-BY (as listed by MakeHuman Community)",
+      "source": "https://static.makehumancommunity.org/assets/assetpacks/shirts03.html",
+      "attribution": "Athletic tank tops: Elvaerwyn, MakeHuman Community Shirts 03 asset pack (CC-BY, as listed by the pack index)."
+    },
+    {
+      "asset": "cortu_jeans_shorts",
+      "author": "Cortu",
+      "license": "CC0",
+      "source": "https://static.makehumancommunity.org/assets/assetpacks/pants01.html"
+    },
+    {
+      "asset": "cortu_short_messy_hair / elvs_reverse_french_braid_bun",
+      "authors": [
+        "Cortu",
+        "Elvaerwyn"
+      ],
+      "license": "CC0",
+      "source": "https://static.makehumancommunity.org/assets/assetpacks/hair01.html"
+    },
+    {
+      "asset": "punkduck_running_shoes_01",
+      "author": "Punkduck",
+      "license": "CC-BY (as listed by MakeHuman Community)",
+      "source": "https://static.makehumancommunity.org/assets/assetpacks/shoes02.html",
+      "attribution": "Running shoes: Punkduck, MakeHuman Community Shoes 02 asset pack (CC-BY, as listed by the pack index)."
+    }
+  ],
+  "sourceMotions": [
+    {
+      "repository": "AssiamahS/opengym3d",
+      "revision": "ea3a60130fdcfb3c4771e44d09f84ebab4ee9bae",
+      "asset": "motions/cc0/mesh2motion/human-addon-animations.glb#Pushup",
+      "license": "CC0 1.0 Universal",
+      "source": "https://github.com/AssiamahS/opengym3d"
+    }
+  ]
+}
