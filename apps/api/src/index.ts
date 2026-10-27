@@ -42,6 +42,7 @@ import {
 } from './validation.ts';
 import { buildOpenApiDocument } from './openapi.ts';
 import { docsHtml } from './docs.ts';
+import { NutritionService, barcodeSchema } from './nutrition.ts';
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -56,6 +57,7 @@ export interface AppDeps {
   jwtSecret?: string;
   registerUser?: UserRegistry;
   oidcConfig?: OidcConfig;
+  nutrition?: NutritionService;
 }
 
 function stringFrom(value: unknown): string | undefined {
@@ -78,6 +80,7 @@ export function createApp(
     jwtSecret,
     registerUser,
     oidcConfig,
+    nutrition = new NutritionService(),
   } = deps;
   const uow: SyncUnitOfWork =
     deps.uow ?? new MemorySyncUnitOfWork(store, feed, projections);
@@ -101,6 +104,30 @@ export function createApp(
   app.get('/api/docs', (c) =>
     c.body(docsHtml(), 200, { 'content-type': 'text/html; charset=utf-8' }),
   );
+
+  // Public read-only nutrition lookup — Open Food Facts proxy with a
+  // TTL cache. ODbL attribution travels in the product 'source' field.
+  app.get('/api/v1/nutrition/product/:barcode', async (c) => {
+    const parsed = parseOr400(
+      barcodeSchema,
+      c.req.param('barcode'),
+      'invalid_barcode',
+      'barcode must be 8-14 digits (EAN/UPC)',
+    );
+    if (!parsed.ok) return c.json(parsed.body, 400);
+    const result = await nutrition.lookup(parsed.data);
+    if (result.status === 'found') return c.json(result.product);
+    if (result.status === 'not_found') {
+      return c.json({ error: 'product_not_found' }, 404);
+    }
+    return c.json(
+      {
+        error: 'nutrition_unavailable',
+        message: 'Open Food Facts is unreachable, try again later',
+      },
+      502,
+    );
+  });
 
   if (jwtSecret && registerUser) {
     app.post('/api/v1/auth/register', async (c) => {
