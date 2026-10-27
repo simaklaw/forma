@@ -42,6 +42,49 @@ class FitPulseMediaSyncTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "Invalid SHA-256"):
             media_sync.verify_digest(payload, "not-a-hash", "fixture")
 
+
+    def test_validates_decoded_mp4_stream_metadata(self):
+        probe = {
+            "streams": [{
+                "codec_type": "video",
+                "width": 720,
+                "height": 720,
+                "avg_frame_rate": "30/1",
+                "nb_read_frames": "72",
+            }]
+        }
+        self.assertEqual(
+            media_sync.validate_video_probe(probe, "pull-up/male", 72),
+            {"width": 720, "height": 720, "fps": 30.0, "frames": 72},
+        )
+
+        invalid_cases = (
+            ({"width": 360, "height": 360, "avg_frame_rate": "30/1", "nb_read_frames": "72"},
+             "720x720"),
+            ({"width": 720, "height": 720, "avg_frame_rate": "30000/1001", "nb_read_frames": "72"},
+             "30 fps"),
+            ({"width": 720, "height": 720, "avg_frame_rate": "30/1", "nb_read_frames": "71"},
+             "expected 72 decoded frames"),
+        )
+        for overrides, expected_error in invalid_cases:
+            with self.subTest(overrides=overrides):
+                bad_probe = {"streams": [{**probe["streams"][0], **overrides}]}
+                with self.assertRaisesRegex(RuntimeError, expected_error):
+                    media_sync.validate_video_probe(bad_probe, "pull-up/male", 72)
+
+    def test_rejects_missing_or_multiple_video_streams(self):
+        with self.assertRaisesRegex(RuntimeError, "exactly one video stream"):
+            media_sync.validate_video_probe({"streams": []}, "fixture", 72)
+        with self.assertRaisesRegex(RuntimeError, "exactly one video stream"):
+            media_sync.validate_video_probe(
+                {"streams": [
+                    {"codec_type": "video"},
+                    {"codec_type": "video"},
+                ]},
+                "fixture",
+                72,
+            )
+
     def test_mobile_symlink_points_to_public_asset_with_relative_path(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -62,6 +105,7 @@ class FitPulseMediaSyncTests(unittest.TestCase):
         self.assertIn("- main", workflow)
         self.assertIn(".github/workflows/sync-fitpulse-animation-media.yml", workflow)
         self.assertIn("peter-evans/create-pull-request@v7", workflow)
+        self.assertIn("ffprobe is available", workflow)
 
     def test_sync_script_checks_provenance_video_metadata_hashes_and_png(self):
         source = SYNC_SCRIPT.read_text(encoding="utf-8")
@@ -74,6 +118,9 @@ class FitPulseMediaSyncTests(unittest.TestCase):
             "posterSha256",
             "videoBytes",
             "video_data[4:8]",
+            "verify_mp4_stream",
+            "validate_video_probe",
+            "ffprobe",
             "poster_data.startswith",
             "sourceMotions",
             "attribution",
