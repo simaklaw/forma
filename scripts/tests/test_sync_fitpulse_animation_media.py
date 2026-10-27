@@ -73,11 +73,11 @@ class FitPulseMediaSyncTests(unittest.TestCase):
             "videoSha256",
             "posterSha256",
             "videoBytes",
-            "b\\\"ftyp\\\"",
-            "b\\\"\\\\x89PNG\\\\r\\\\n\\\\x1a\\\\n\\\"",
+            "video_data[4:8]",
+            "poster_data.startswith",
             "sourceMotions",
             "attribution",
-        ):
+        )
             with self.subTest(required=required):
                 self.assertIn(required, source)
 
