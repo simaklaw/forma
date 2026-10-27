@@ -63,8 +63,12 @@ export default function ExerciseVideo({
   const [fullscreen, setFullscreen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
-  const [videoFailed, setVideoFailed] = useState(false);
-  const posterSource = posterAsset != null ? posterAsset : posterUri ? { uri: posterUri } : undefined;
+  const [failedSourceKey, setFailedSourceKey] = useState<string | null>(null);
+  const sourceIdentity =
+    source == null ? '' : typeof source === 'number' ? `asset:${source}` : `uri:${source.uri}`;
+  const videoFailed = sourceIdentity !== '' && failedSourceKey === sourceIdentity;
+  const posterSource =
+    posterAsset != null ? posterAsset : posterUri ? { uri: posterUri } : undefined;
   const previewRef = useRef<Video>(null);
   const fullscreenRef = useRef<Video>(null);
 
@@ -137,12 +141,12 @@ export default function ExerciseVideo({
               shouldPlay={shouldPlay}
               onLoadStart={() => {
                 setVideoReady(false);
-                setVideoFailed(false);
+                setFailedSourceKey((failed) => (failed === sourceIdentity ? null : failed));
               }}
               onReadyForDisplay={() => setVideoReady(true)}
               onError={() => {
                 setVideoReady(false);
-                setVideoFailed(true);
+                setFailedSourceKey(sourceIdentity);
               }}
             />
             {posterSource && !videoReady ? (
@@ -220,7 +224,7 @@ export default function ExerciseVideo({
                 onReadyForDisplay={() => setVideoReady(true)}
                 onError={() => {
                   setVideoReady(false);
-                  setVideoFailed(true);
+                  setFailedSourceKey(sourceIdentity);
                 }}
                 onPlaybackStatusUpdate={(status) => {
                   if ('isPlaying' in status) setIsPlaying(!!status.isPlaying);
