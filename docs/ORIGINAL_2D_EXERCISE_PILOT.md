@@ -7,10 +7,10 @@ This pipeline converts the approved, transparent PNG frame sequences exported by
 Install Pillow in the active Python environment, then run:
 
 ```bash
-python scripts/convert_exercise_frames.py /path/to/frames_pull_up apps/mobile/assets/exercises/pull-up-male.gif --size 384 --fps 12 --stride 4 --report /tmp/pull-up-male.json
+python scripts/convert_exercise_frames.py /path/to/frames_pull_up apps/mobile/assets/exercises/pull-up-male.gif --size 384 --fps 24 --stride 1 --report /tmp/pull-up-male.json
 ```
 
-Use a separate output for the female variant. Input frames must be numbered PNG files with transparency. The converter keeps the full figure/equipment inside the square rather than cropping limbs. Defaults sample every fourth frame and include the final frame, targeting roughly 37 frames from a 147-frame render.
+Use a separate output for the female variant. Input frames must be numbered PNG files with transparency. The converter keeps the full figure/equipment inside the square rather than cropping limbs. Defaults retain every rendered frame and export at 24 fps for smooth movement with slightly slower playback than a 30 fps source. The final frame is retained when a custom stride is requested; increasing stride without lowering FPS shortens the cycle and can make it look unnaturally fast.
 
 ## Tests
 
