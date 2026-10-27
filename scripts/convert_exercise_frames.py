@@ -16,7 +16,7 @@ from PIL import Image, ImageOps, ImageSequence
 
 FRAME_RE = re.compile(r"(\d+)\.png$", re.IGNORECASE)
 DEFAULT_SIZE = 384
-DEFAULT_FPS = 12
+DEFAULT_FPS = 24
 DEFAULT_MAX_BYTES = 8 * 1024 * 1024
 
 
@@ -52,7 +52,7 @@ def prepare_frame(path: Path, size: int) -> Image.Image:
 
 
 def convert(input_dir: Path, output: Path, *, size: int = DEFAULT_SIZE,
-            fps: int = DEFAULT_FPS, stride: int = 4,
+            fps: int = DEFAULT_FPS, stride: int = 1,
             max_bytes: int = DEFAULT_MAX_BYTES) -> dict:
     if size < 64 or size > 1024:
         raise ValueError("size must be between 64 and 1024")
@@ -74,21 +74,12 @@ def convert(input_dir: Path, output: Path, *, size: int = DEFAULT_SIZE,
         alpha = frame.getchannel("A")
         rgb = Image.new("RGB", frame.size, (0, 0, 0))
         rgb.paste(frame.convert("RGB"), mask=alpha)
-        pal = rgb.quantize(colors=255, method=Image.Quantize.MEDIANCUT)
-        pal_data = list(pal.getpalette() or [])
-        pal_data[:3] = [0, 0, 0]
-        pal.putpalette(pal_data)
-        # Make transparent pixels index 0 and shift visible palette indices by 1.
-        indexed = Image.new("P", frame.size, 0)
-        visible = alpha.point(lambda value: 255 if value >= 128 else 0)
         quantized = rgb.quantize(colors=255, method=Image.Quantize.MEDIANCUT)
-        quantized_pixels = quantized.load()
-        indexed_pixels = indexed.load()
-        visible_pixels = visible.load()
-        for y in range(size):
-            for x in range(size):
-                if visible_pixels[x, y]:
-                    indexed_pixels[x, y] = min(quantized_pixels[x, y] + 1, 255)
+        # Shift each visible palette index by one; index 0 is reserved for transparency.
+        indexed = quantized.point([min(index + 1, 255) for index in range(256)])
+        visible = alpha.point(lambda value: 255 if value >= 128 else 0)
+        transparent = visible.point(lambda value: 255 - value)
+        indexed.paste(0, mask=transparent)
         palette = [0, 0, 0] + (quantized.getpalette() or [])[:765]
         palette = palette[:768] + [0] * max(0, 768 - len(palette))
         indexed.putpalette(palette)
@@ -130,7 +121,7 @@ def main() -> int:
     parser.add_argument("output", type=Path)
     parser.add_argument("--size", type=int, default=DEFAULT_SIZE)
     parser.add_argument("--fps", type=int, default=DEFAULT_FPS)
-    parser.add_argument("--stride", type=int, default=4)
+    parser.add_argument("--stride", type=int, default=1)
     parser.add_argument("--max-bytes", type=int, default=DEFAULT_MAX_BYTES)
     parser.add_argument("--report", type=Path)
     args = parser.parse_args()
