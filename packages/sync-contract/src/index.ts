@@ -9,3 +9,12 @@ export type {
   SyncPullRequest,
   SyncPullResponse,
 } from './types.ts';
+
+export { createSyncClient, SyncApiError } from './client.ts';
+export type {
+  SyncClient,
+  SyncClientOptions,
+  SyncFetch,
+  SyncFetchResponse,
+  SyncPullParams,
+} from './client.ts';
