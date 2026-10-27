@@ -22,10 +22,12 @@ class ConvertExerciseFramesTests(unittest.TestCase):
     def test_orders_numeric_frame_names(self):
         with tempfile.TemporaryDirectory() as tmp:
             folder = Path(tmp)
-            for name in ("0010.png", "0002.png", "0001.png"):
+            for name in ("0010.png", "0002.png", "0001.png", "0003.png",
+                         "0004.png", "0005.png", "0006.png", "0007.png"):
                 Image.new("RGBA", (64, 64), (1, 2, 3, 0)).save(folder / name)
             self.assertEqual([p.name for p in ordered_frames(folder)],
-                             ["0001.png", "0002.png", "0010.png"])
+                             ["0001.png", "0002.png", "0003.png", "0004.png",
+                              "0005.png", "0006.png", "0007.png", "0010.png"])
 
     def test_rejects_opaque_frame(self):
         with tempfile.TemporaryDirectory() as tmp:
