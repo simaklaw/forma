@@ -29,6 +29,14 @@ jobs:
           ref: main
           persist-credentials: false
 
+      - name: Ensure ffprobe is available
+        run: |
+          if ! command -v ffprobe >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install --yes ffmpeg
+          fi
+          ffprobe -version | head -n 1
+
       - name: Download, verify and stage published media
         run: python3 .github/scripts/sync-fitpulse-animation-media.py
 
@@ -42,6 +50,6 @@ jobs:
           body: |
             Automated asset sync from the public FitPulse Animation Studio manifests.
 
-            The workflow verifies source repository and exercise identity, expected video dimensions/frame rate/frame counts, SHA-256 and byte length for every video, PNG poster signatures, and gender-specific outputs before staging them. It preserves source motion/apparel attribution in fitpulse-animation-manifest.json and creates mobile asset symlinks to the public files.
+            The workflow verifies source repository and exercise identity, compares publisher metadata with decoded MP4 width, height, frame rate and frame count using ffprobe, checks SHA-256 and byte length for every video, validates PNG poster signatures, and stages gender-specific outputs only after all checks pass. It preserves source motion/apparel attribution in fitpulse-animation-manifest.json and creates mobile asset symlinks to the public files.
 
             This PR contains only generated exercise media and their manifest. It does not change workout logic, timers, history, buttons, or navigation.
