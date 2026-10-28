@@ -399,6 +399,20 @@ const RU = {
   shareWorkoutTotal: 'Итого: {sets} подх. · объём {volume} кг',
   shareWorkoutTotalSets: 'Итого: {sets} подх.',
 
+  // Цели по упражнению (ExerciseGoalCard, идея — NeverSkip, AGPL ideas-only)
+  goalKicker: 'ЦЕЛИ',
+  goalEmptyHint: 'Поставьте цель по весу — например, жим 100 кг. Карточка покажет рекорд и остаток до цели.',
+  goalBest: 'Рекорд: {kg} кг',
+  goalReached: 'Достигнуто {date}',
+  goalRemaining: 'осталось {kg} кг',
+  goalAdd: '+ Добавить цель',
+  goalDeleteA11y: 'Убрать цель: {name}',
+  goalModalTitle: 'Новая цель',
+  goalPickExercise: 'Упражнение',
+  goalTargetLabel: 'Целевой вес, кг',
+  goalTargetPlaceholder: '80',
+  goalInvalidWeight: 'Введите вес больше нуля',
+
   // Прогресс (ProgressScreen)
   progressRecoveryA11y: 'Восстановление {score} процентов, {status}',
   progressMuscles: 'Мышцы',
@@ -1063,6 +1077,19 @@ const EN: Record<StringKey, string> = {
   shareWorkoutTotal: 'Total: {sets} sets · volume {volume} kg',
   shareWorkoutTotalSets: 'Total: {sets} sets.',
 
+  goalKicker: 'GOALS',
+  goalEmptyHint: 'Set a weight goal — e.g. bench 100 kg. The card shows your best lift and the gap.',
+  goalBest: 'Best: {kg} kg',
+  goalReached: 'Reached {date}',
+  goalRemaining: '{kg} kg to go',
+  goalAdd: '+ Add goal',
+  goalDeleteA11y: 'Remove goal: {name}',
+  goalModalTitle: 'New goal',
+  goalPickExercise: 'Exercise',
+  goalTargetLabel: 'Target weight, kg',
+  goalTargetPlaceholder: '80',
+  goalInvalidWeight: 'Enter a weight above zero',
+
   progressRecoveryA11y: 'Recovery {score} percent, {status}',
   progressMuscles: 'Muscles',
   progressEnergy: 'Energy',
@@ -1515,6 +1542,7 @@ export function streakDayWord(count: number, lang: Language): string {
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'дня';
   return 'дней';
 }
+
 
 
 
