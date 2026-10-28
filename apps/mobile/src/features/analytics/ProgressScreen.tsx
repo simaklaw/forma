@@ -48,6 +48,7 @@ import {
   type TrendWindow
 } from '@/features/nutrition/nutritionTrends';
 import ActivityCalendar from '@/components/ActivityCalendar';
+import EcoCard from '@/components/EcoCard';
 import WeightChart from '@/components/WeightChart';
 import MuscleLoadMap from '@/components/MuscleLoadMap';
 import {
@@ -92,6 +93,8 @@ export default function ProgressScreen() {
   const todayMeals = useMemo(() => selectTodayMeals(allMeals), [allMeals]);
   const calcTargets = useFitPulseStore((s) => s.calculateTargets);
   const metabolic = useFitPulseStore((s) => s.metabolic);
+  const loggedActivities = useFitPulseStore((s) => s.loggedActivities);
+  const importedActivities = useFitPulseStore((s) => s.importedActivities);
 
   const exerciseNames = useMemo(() => allExerciseNames(), []);
   const exerciseMetKeys = useMemo(() => allExerciseMetKeys(), []);
@@ -442,6 +445,8 @@ export default function ProgressScreen() {
         </View>
 
         <ActivityCalendar setLogs={setLogs} allMeals={allMeals} frozenDates={frozenDates} />
+
+        <EcoCard loggedActivities={loggedActivities} importedActivities={importedActivities} />
 
         {nutritionDaily.length > 0 ? (
           <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
@@ -894,3 +899,4 @@ function createStyles(colors: ColorTokens) {
     }
   });
 }
+

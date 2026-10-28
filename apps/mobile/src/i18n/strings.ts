@@ -382,6 +382,12 @@ const RU = {
   calPrevMonth: 'Предыдущий месяц',
   calNextMonth: 'Следующий месяц',
 
+  // Эко-эффект активности (EcoCard)
+  ecoKicker: '🌱 ЭКО-ЭФФЕКТ',
+  ecoCo2Saved: '-{kg} кг CO₂',
+  ecoDistanceKm: '{km} км за последние {days} дн. пешком / бегом / на велосипеде',
+  ecoHint: 'Столько CO₂ выбросила бы машина на этой дистанции (≈250 г/км).',
+
   // Прогресс (ProgressScreen)
   progressRecoveryA11y: 'Восстановление {score} процентов, {status}',
   progressMuscles: 'Мышцы',
@@ -1031,6 +1037,11 @@ const EN: Record<StringKey, string> = {
   calPrevMonth: 'Previous month',
   calNextMonth: 'Next month',
 
+  ecoKicker: '🌱 ECO IMPACT',
+  ecoCo2Saved: '-{kg} kg CO₂',
+  ecoDistanceKm: '{km} km in the last {days} days on foot / running / cycling',
+  ecoHint: 'CO₂ a car would have emitted over this distance (~250 g/km).',
+
   progressRecoveryA11y: 'Recovery {score} percent, {status}',
   progressMuscles: 'Muscles',
   progressEnergy: 'Energy',
@@ -1483,4 +1494,5 @@ export function streakDayWord(count: number, lang: Language): string {
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'дня';
   return 'дней';
 }
+
 
