@@ -23,6 +23,36 @@ export function realGifForMediaKey(key: ExerciseMediaKey | undefined): number | 
   return libId != null ? DATASET_GIF_MODULES[libId] : undefined;
 }
 
+/**
+ * Per-plan visual overrides for push-up variations. The generated FitPulse clip is
+ * a regular push-up; do not reuse it for the close-grip or feet-elevated rows.
+ * The close-grip row has a matching local dataset GIF. The feet-elevated row
+ * intentionally falls back to its exercise-specific reference image / technique cues.
+ */
+export interface PlanExerciseMediaOverride {
+  suppressSharedVideo: true;
+  gifAsset?: number;
+  posterAsset?: number;
+}
+
+export function planExerciseMediaOverride(
+  exerciseId: number,
+  mediaKey: ExerciseMediaKey | undefined
+): PlanExerciseMediaOverride | undefined {
+  if (mediaKey !== 'pushup') return undefined;
+  if (exerciseId === 48) {
+    return {
+      suppressSharedVideo: true,
+      gifAsset: DATASET_GIF_MODULES['lib-push-ups-close-triceps-position'],
+      posterAsset: DATASET_THUMB_MODULES['lib-push-ups-close-triceps-position']
+    };
+  }
+  if (exerciseId === 49) {
+    return { suppressSharedVideo: true };
+  }
+  return undefined;
+}
+
 /** Static dataset thumb (poster frame) for list tiles, or undefined. */
 export function realThumbForMediaKey(key: ExerciseMediaKey | undefined): number | undefined {
   const libId = key ? REAL_GIF_BY_MEDIA_KEY[key] : undefined;
