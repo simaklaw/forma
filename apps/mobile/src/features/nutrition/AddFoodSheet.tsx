@@ -9,6 +9,7 @@ import { useT } from '@/i18n/strings';
 import { useFitPulseStore, selectTodayMeals, DayMeals } from '@/state/useFitPulseStore';
 import { OpenFoodFactsService, NormalizedFood } from '@/services/OpenFoodFactsService';
 import BarcodeScannerSheet from './BarcodeScannerSheet';
+import { foodFingerprint, type LoggedFoodSummary } from './recentFoods';
 
 /** Offline-first RU presets — always visible when sheet opens / query empty. Values per 100g unless noted in name. */
 const LOCAL_PRESETS: NormalizedFood[] = [
@@ -56,6 +57,10 @@ const LOCAL_PRESETS: NormalizedFood[] = [
   { name: 'Масло сливочное', kcal: 717, protein: 0.5, fat: 81, carbs: 0.5 }
 ];
 
+function summaryToFood(f: LoggedFoodSummary): NormalizedFood {
+  return { name: f.name, kcal: f.kcal, protein: f.protein, fat: f.fat, carbs: f.carbs };
+}
+
 function matchesQuery(name: string, query: string): boolean {
   const n = name.toLowerCase();
   const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -79,6 +84,13 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
   const customFoods = useFitPulseStore((s) => s.customFoods);
   const addCustomFood = useFitPulseStore((s) => s.addCustomFood);
   const saveMealAsTemplate = useFitPulseStore((s) => s.saveMealAsTemplate);
+  const recentFoods = useFitPulseStore((s) => s.recentFoods);
+  const favoriteFoods = useFitPulseStore((s) => s.favoriteFoods);
+  const toggleFavoriteFood = useFitPulseStore((s) => s.toggleFavoriteFood);
+  const favoriteKeys = React.useMemo(
+    () => new Set(favoriteFoods.map((f) => foodFingerprint(f))),
+    [favoriteFoods]
+  );
   const allMeals = useFitPulseStore((s) => s.todayMeals);
   const mealItems = selectTodayMeals(allMeals)[mealKey];
 
@@ -97,6 +109,8 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
   const [templateName, setTemplateName] = useState('');
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
   const [scannerVisible, setScannerVisible] = useState(false);
+  const [quickName, setQuickName] = useState('');
+  const [quickKcal, setQuickKcal] = useState('');
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -191,6 +205,22 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
     onClose();
   }
 
+  /** Quick add: название + kcal, без поиска и макросов (паттерн OpenNutriTracker). */
+  function logQuickAdd() {
+    const kcal = Math.round(parseFloat(quickKcal.replace(',', '.')) || 0);
+    if (kcal <= 0) return;
+    addFoodItem(mealKey, {
+      name: quickName.trim() || t('foodQuickAddUntitled'),
+      kcal,
+      protein: 0,
+      fat: 0,
+      carbs: 0
+    });
+    setQuickName('');
+    setQuickKcal('');
+    onClose();
+  }
+
   function confirmCustom() {
     const def = {
       name: name.trim() || t('foodCustomProduct'),
@@ -253,6 +283,32 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
               <Text style={styles.scanBtnText}>{t('scanBtn')}</Text>
             </TouchableOpacity>
           </View>
+          <View style={styles.quickAddRow}>
+            <TextInput
+              style={[styles.searchInput, styles.quickAddNameInput]}
+              placeholder={t('foodQuickAddName')}
+              placeholderTextColor={colors.paperFaint}
+              value={quickName}
+              onChangeText={setQuickName}
+              autoCorrect={false}
+            />
+            <TextInput
+              style={[styles.searchInput, styles.quickAddKcalInput]}
+              placeholder={t('kcal')}
+              placeholderTextColor={colors.paperFaint}
+              value={quickKcal}
+              onChangeText={setQuickKcal}
+              keyboardType="numeric"
+            />
+            <TouchableOpacity
+              style={styles.scanBtn}
+              onPress={logQuickAdd}
+              accessibilityRole="button"
+              accessibilityLabel={t('foodQuickAddA11y')}
+            >
+              <Text style={styles.scanBtnText}>＋</Text>
+            </TouchableOpacity>
+          </View>
           <Text style={styles.sourceLabel}>
             {loading ? t('foodSearchingOff', { source: sourceLabel }) : sourceLabel}
           </Text>
@@ -267,6 +323,75 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
             maximumTrackTintColor={colors.lineStrong}
             thumbTintColor={colors.lime}
           />
+          {query.trim().length === 0 ? (
+            <View>
+              {favoriteFoods.length > 0 ? (
+                <View style={styles.sectionBlock}>
+                  <Text style={styles.sectionTitle}>{t('favoritesChip')}</Text>
+                  {favoriteFoods.slice(0, 8).map((f) => (
+                    <View key={foodFingerprint(f)} style={styles.presetRow}>
+                      <TouchableOpacity
+                        style={styles.rowMain}
+                        onPress={() => logFromFood(summaryToFood(f))}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('nutritionAddToMealShort', { meal: mealLabel })}
+                      >
+                        <Text style={styles.presetName} numberOfLines={1}>
+                          {f.name}
+                        </Text>
+                        <Text style={styles.presetKcal}>
+                          {Math.round(f.kcal)} {t('kcal')}
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.starBtn}
+                        onPress={() => toggleFavoriteFood(f)}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('favoriteRemove')}
+                      >
+                        <Text style={styles.starOn}>★</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+              {recentFoods.length > 0 ? (
+                <View style={styles.sectionBlock}>
+                  <Text style={styles.sectionTitle}>{t('foodRecentTitle')}</Text>
+                  {recentFoods.slice(0, 10).map((f) => {
+                    const starred = favoriteKeys.has(foodFingerprint(f));
+                    return (
+                      <View key={foodFingerprint(f)} style={styles.presetRow}>
+                        <TouchableOpacity
+                          style={styles.rowMain}
+                          onPress={() => logFromFood(summaryToFood(f))}
+                          accessibilityRole="button"
+                          accessibilityLabel={t('nutritionAddToMealShort', { meal: mealLabel })}
+                        >
+                          <Text style={styles.presetName} numberOfLines={1}>
+                            {f.name}
+                          </Text>
+                          <Text style={styles.presetKcal}>
+                            {Math.round(f.kcal)} {t('kcal')}
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.starBtn}
+                          onPress={() => toggleFavoriteFood(f)}
+                          accessibilityRole="button"
+                          accessibilityLabel={starred ? t('favoriteRemove') : t('favoriteAdd')}
+                        >
+                          <Text style={starred ? styles.starOn : styles.starOff}>
+                            {starred ? '★' : '☆'}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    );
+                  })}
+                </View>
+              ) : null}
+            </View>
+          ) : null}
           <View style={styles.presetList}>
             {results.length === 0 ? (
               <Text style={styles.empty}>{t('foodNothingFound')}</Text>
@@ -440,6 +565,22 @@ function createStyles(colors: ColorTokens) {
       marginBottom: 4
     },
     scanBtnText: { color: colors.lime, fontFamily: fonts.bodySemi, fontSize: 13 },
+    quickAddRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
+    quickAddNameInput: { flex: 1, marginBottom: 0 },
+    quickAddKcalInput: { width: 72, marginBottom: 0, textAlign: 'center', fontFamily: fonts.mono },
+    sectionBlock: { marginTop: 12 },
+    sectionTitle: {
+      fontSize: 10,
+      color: colors.paperFaint,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      marginBottom: 2,
+      fontFamily: fonts.bodySemi
+    },
+    rowMain: { flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    starBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
+    starOn: { color: colors.lime, fontSize: 16 },
+    starOff: { color: colors.paperFaint, fontSize: 16 },
     sourceLabel: {
       color: colors.paperFaint,
       fontSize: 10,

@@ -24,6 +24,12 @@ import { SetLogEntry, DayProgress, toDateKey, pruneOldSetLogs } from '@/engines/
 import { uuidv7 } from '@/features/workout/data/ids';
 import { MUSCLE_LABELS, type MuscleKey } from '@/domain/muscleKeys';
 import type { ImportedActivity } from '@forma/core';
+import {
+  LoggedFoodSummary,
+  FAVORITE_FOODS_LIMIT,
+  upsertRecentFood,
+  toggleFavoriteFood as toggleFavoriteFoodEntry
+} from '@/features/nutrition/recentFoods';
 
 export type { SetLogEntry, DayProgress } from '@/engines/WorkoutStats';
 
@@ -205,6 +211,10 @@ interface AppStore {
   todayMeals: DayMeals;
   customFoods: CustomFoodDef[];
   savedMeals: SavedMeal[];
+  /** Недавно залогированные продукты (one-tap re-log, дедуп по имени). */
+  recentFoods: LoggedFoodSummary[];
+  /** Продукты, добавленные пользователем в избранное (★). */
+  favoriteFoods: LoggedFoodSummary[];
   waterGlasses: number;
   weightHistory: number[];
   bodyMeasurements: BodyMeasurementEntry[];
@@ -223,6 +233,7 @@ interface AppStore {
   saveMealAsTemplate: (name: string, items: FoodItem[]) => SavedMeal;
   logSavedMeal: (mealType: keyof DayMeals, savedMealId: string) => void;
   deleteSavedMeal: (id: string) => void;
+  toggleFavoriteFood: (food: LoggedFoodSummary) => boolean;
   setWater: (count: number) => void;
   logWeight: (weight: number) => void;
   logBodyMeasurement: (type: BodyMeasurementType, valueCm: number) => void;
@@ -247,6 +258,8 @@ interface AppStore {
         | 'todayMeals'
         | 'customFoods'
         | 'savedMeals'
+        | 'recentFoods'
+        | 'favoriteFoods'
         | 'waterGlasses'
         | 'weightHistory'
         | 'bodyMeasurements'
@@ -280,6 +293,8 @@ export function mergePersistedAppState(persisted: unknown, current: AppStore): A
     profile: mergeProfile(current.profile, p.profile ?? {}),
     customFoods: Array.isArray(p.customFoods) ? p.customFoods : current.customFoods,
     savedMeals: Array.isArray(p.savedMeals) ? p.savedMeals : current.savedMeals,
+    recentFoods: Array.isArray(p.recentFoods) ? p.recentFoods : current.recentFoods,
+    favoriteFoods: Array.isArray(p.favoriteFoods) ? p.favoriteFoods : current.favoriteFoods,
     setLogs: Array.isArray(p.setLogs) ? p.setLogs : current.setLogs,
     importedActivities: Array.isArray(p.importedActivities)
       ? p.importedActivities
@@ -313,6 +328,8 @@ export const useFitPulseStore = create<AppStore>()(
       todayMeals: { breakfast: [], lunch: [], snack: [], dinner: [] },
       customFoods: [],
       savedMeals: [],
+      recentFoods: [],
+      favoriteFoods: [],
       waterGlasses: 0,
       weightHistory: [],
       bodyMeasurements: [],
@@ -343,7 +360,8 @@ export const useFitPulseStore = create<AppStore>()(
               ...state.todayMeals[mealType],
               { ...item, id: generateId(), loggedAt: Date.now() }
             ]
-          }
+          },
+          recentFoods: upsertRecentFood(state.recentFoods, item)
         })),
 
       removeFoodItem: (mealType, id) =>
@@ -366,7 +384,8 @@ export const useFitPulseStore = create<AppStore>()(
                 loggedAt: Date.now()
               }))
             ]
-          }
+          },
+          recentFoods: items.reduce((acc, i) => upsertRecentFood(acc, i), state.recentFoods)
         })),
 
       addCustomFood: (item) => {
@@ -405,12 +424,23 @@ export const useFitPulseStore = create<AppStore>()(
                 loggedAt: Date.now()
               }))
             ]
-          }
+          },
+          recentFoods: meal.items.reduce((acc, i) => upsertRecentFood(acc, i), state.recentFoods)
         }));
       },
 
       deleteSavedMeal: (id) =>
         set((state) => ({ savedMeals: state.savedMeals.filter((m) => m.id !== id) })),
+
+      toggleFavoriteFood: (food) => {
+        const [next, isFavorite] = toggleFavoriteFoodEntry(
+          get().favoriteFoods,
+          food,
+          FAVORITE_FOODS_LIMIT
+        );
+        set({ favoriteFoods: next });
+        return isFavorite;
+      },
 
       setWater: (count) => set({ waterGlasses: Math.max(0, count) }),
 
