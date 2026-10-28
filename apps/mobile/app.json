@@ -37,6 +37,12 @@
       "./plugins/withPnpmAppBuildGradle.js",
       "expo-document-picker",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "FitPulse использует камеру, чтобы сканировать штрихкоды продуктов для дневника питания."
+        }
+      ],
+      [
         "expo-build-properties",
         {
           "ios": { "deploymentTarget": "13.4" },

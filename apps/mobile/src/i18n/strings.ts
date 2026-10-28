@@ -312,6 +312,18 @@ const RU = {
   foodItemsWord: 'поз.',
   foodDishName: 'Название блюда',
 
+  // Сканер штрихкодов (BarcodeScannerSheet)
+  scanBarcode: 'Сканер штрихкодов',
+  scanBtn: '⌗ Скан',
+  scanButtonA11y: 'Сканировать штрихкод камерой',
+  scanHint: 'Наведите камеру на штрихкод продукта (EAN/UPC)',
+  scanPermissionAsking: 'Запрашиваем доступ к камере…',
+  scanPermissionTitle: 'Нужен доступ к камере',
+  scanPermissionBody: 'Разрешите FitPulse использовать камеру в системных настройках — без этого сканировать штрихкоды не получится.',
+  scanOpenSettings: 'Открыть настройки',
+  scanTorchOn: 'Фонарик: вкл',
+  scanTorchOff: 'Фонарик: выкл',
+
   // Прогресс (ProgressScreen)
   progressRecoveryA11y: 'Восстановление {score} процентов, {status}',
   progressMuscles: 'Мышцы',
@@ -895,6 +907,17 @@ const EN: Record<StringKey, string> = {
   foodSaveAndAdd: 'Save and add',
   foodItemsWord: 'items',
   foodDishName: 'Dish name',
+
+  scanBarcode: 'Barcode scanner',
+  scanBtn: '⌗ Scan',
+  scanButtonA11y: 'Scan a barcode with the camera',
+  scanHint: 'Point the camera at a product barcode (EAN/UPC)',
+  scanPermissionAsking: 'Requesting camera access…',
+  scanPermissionTitle: 'Camera access needed',
+  scanPermissionBody: 'Allow FitPulse to use the camera in system settings — scanning will not work without it.',
+  scanOpenSettings: 'Open settings',
+  scanTorchOn: 'Flashlight: on',
+  scanTorchOff: 'Flashlight: off',
 
   progressRecoveryA11y: 'Recovery {score} percent, {status}',
   progressMuscles: 'Muscles',

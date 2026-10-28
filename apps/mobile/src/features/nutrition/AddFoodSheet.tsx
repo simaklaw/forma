@@ -8,6 +8,7 @@ import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useT } from '@/i18n/strings';
 import { useFitPulseStore, selectTodayMeals, DayMeals } from '@/state/useFitPulseStore';
 import { OpenFoodFactsService, NormalizedFood } from '@/services/OpenFoodFactsService';
+import BarcodeScannerSheet from './BarcodeScannerSheet';
 
 /** Offline-first RU presets — always visible when sheet opens / query empty. Values per 100g unless noted in name. */
 const LOCAL_PRESETS: NormalizedFood[] = [
@@ -95,6 +96,7 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
   const [carbs100, setCarbs100] = useState('10');
   const [templateName, setTemplateName] = useState('');
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
+  const [scannerVisible, setScannerVisible] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -232,15 +234,25 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
 
       {tab === 'database' ? (
         <ScrollView keyboardShouldPersistTaps="handled">
-          <TextInput
-            style={styles.searchInput}
-            placeholder={t('foodSearchPlaceholder')}
-            placeholderTextColor={colors.paperFaint}
-            value={query}
-            onChangeText={setQuery}
-            autoCorrect={false}
-            autoCapitalize="none"
-          />
+          <View style={styles.searchRow}>
+            <TextInput
+              style={[styles.searchInput, styles.searchInputFlex]}
+              placeholder={t('foodSearchPlaceholder')}
+              placeholderTextColor={colors.paperFaint}
+              value={query}
+              onChangeText={setQuery}
+              autoCorrect={false}
+              autoCapitalize="none"
+            />
+            <TouchableOpacity
+              style={styles.scanBtn}
+              onPress={() => setScannerVisible(true)}
+              accessibilityRole="button"
+              accessibilityLabel={t('scanButtonA11y')}
+            >
+              <Text style={styles.scanBtnText}>{t('scanBtn')}</Text>
+            </TouchableOpacity>
+          </View>
           <Text style={styles.sourceLabel}>
             {loading ? t('foodSearchingOff', { source: sourceLabel }) : sourceLabel}
           </Text>
@@ -376,6 +388,14 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
           )}
         </View>
       ) : null}
+      <BarcodeScannerSheet
+        visible={scannerVisible}
+        onClose={() => setScannerVisible(false)}
+        onScanned={(code) => {
+          setScannerVisible(false);
+          setQuery(code);
+        }}
+      />
     </AppBottomSheet>
   );
 });
@@ -406,6 +426,20 @@ function createStyles(colors: ColorTokens) {
       fontSize: 13.5,
       marginBottom: 4
     },
+    searchRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    searchInputFlex: { flex: 1, marginBottom: 0 },
+    scanBtn: {
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      borderRadius: radius.control,
+      borderWidth: 1,
+      borderColor: colors.lime,
+      backgroundColor: colors.limeDim,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 4
+    },
+    scanBtnText: { color: colors.lime, fontFamily: fonts.bodySemi, fontSize: 13 },
     sourceLabel: {
       color: colors.paperFaint,
       fontSize: 10,
