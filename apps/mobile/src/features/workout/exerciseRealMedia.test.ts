@@ -22,12 +22,14 @@ jest.mock('./exerciseMedia', () => ({
 jest.mock('./exerciseDatasetAssets.generated', () => ({
   DATASET_GIF_MODULES: {
     'lib-pushups': 101,
+    'lib-push-ups-close-triceps-position': 105,
     'lib-dead-bug': 102,
     'lib-butt-lift-bridge': 103,
     'lib-shoulder-press-with-bands': 104
   },
   DATASET_THUMB_MODULES: {
     'lib-pushups': 201,
+    'lib-push-ups-close-triceps-position': 205,
     'lib-dead-bug': 202,
     'lib-butt-lift-bridge': 203,
     'lib-shoulder-press-with-bands': 204
