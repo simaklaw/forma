@@ -25,8 +25,8 @@ import { applySessionProjection } from './data/applySessionProjection';
 import { getSessionService } from './data';
 import { formatLoadLabel, isBodyweightExercise, resolveWorkingLoadKg } from './catalog';
 import { EXERCISE_PROFILE_POSTERS, EXERCISE_PROFILE_VIDEOS, EXERCISE_THUMBNAILS, EXERCISE_VIDEOS } from './exerciseMedia';
-import { resolveProfileExerciseMedia } from './exerciseMediaSelection';
-import { realGifForMediaKey } from './exerciseRealMedia';
+import { isCanonicalProfileAnimationExercise, resolveProfileExerciseMedia } from './exerciseMediaSelection';
+import { planExerciseMediaOverride, realGifForMediaKey } from './exerciseRealMedia';
 import { importedByNumericId, IMPORTED_NUMERIC_ID_BASE } from './importedExerciseBridge';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT } from '@/i18n/strings';
@@ -427,19 +427,21 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       sessionSnap.status !== 'abandoned';
     const ctaDisabled = finished || restRemaining !== null || blockedBySequence || sessionPaused;
     const cues = techniqueCuesFromNote(exercise.note);
-    const videoSource = resolveProfileExerciseMedia(
-      exercise.mediaKey,
-      profileSex,
-      EXERCISE_PROFILE_VIDEOS,
-      EXERCISE_VIDEOS
-    );
-    const videoPoster = resolveProfileExerciseMedia(
-      exercise.mediaKey,
-      profileSex,
-      EXERCISE_PROFILE_POSTERS,
-      EXERCISE_THUMBNAILS
-    );
-    const gifAsset = realGifForMediaKey(exercise.mediaKey);
+    const mediaOverride = planExerciseMediaOverride(exercise.id, exercise.mediaKey);
+    const useProfileVideo = isCanonicalProfileAnimationExercise(exercise.id, exercise.mediaKey);
+    const videoSource = mediaOverride?.suppressSharedVideo
+      ? undefined
+      : useProfileVideo
+        ? resolveProfileExerciseMedia(exercise.mediaKey, profileSex, EXERCISE_PROFILE_VIDEOS, {})
+        : resolveProfileExerciseMedia(exercise.mediaKey, profileSex, {}, EXERCISE_VIDEOS);
+    const videoPoster = mediaOverride?.suppressSharedVideo
+      ? mediaOverride.posterAsset
+      : useProfileVideo
+        ? resolveProfileExerciseMedia(exercise.mediaKey, profileSex, EXERCISE_PROFILE_POSTERS, {})
+        : resolveProfileExerciseMedia(exercise.mediaKey, profileSex, {}, EXERCISE_THUMBNAILS);
+    const gifAsset = mediaOverride?.suppressSharedVideo
+      ? mediaOverride.gifAsset
+      : realGifForMediaKey(exercise.mediaKey);
     const figureKind = figureKindForMediaKey(exercise.mediaKey);
 
     return (
