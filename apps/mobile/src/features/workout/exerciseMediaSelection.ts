@@ -16,14 +16,6 @@ export function isCanonicalProfileAnimationExercise(
   return false;
 }
 
-/** Variations whose technique must not inherit the shared base push-up demo. */
-export function suppressSharedPushUpMediaForPlanVariant(
-  exerciseId: number,
-  mediaKey: string | null | undefined
-): boolean {
-  return mediaKey === 'pushup' && (exerciseId === 48 || exerciseId === 49);
-}
-
 /** Resolve profile-specific media, defaulting an unset/unknown profile to male. */
 export function resolveProfileExerciseMedia<T>(
   mediaKey: string | null | undefined,
