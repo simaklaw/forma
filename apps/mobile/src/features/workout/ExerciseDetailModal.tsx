@@ -26,9 +26,9 @@ import {
   type ReplaceTarget
 } from './replaceTarget';
 import { EXERCISE_PROFILE_POSTERS, EXERCISE_PROFILE_VIDEOS, EXERCISE_THUMBNAILS, EXERCISE_VIDEOS } from './exerciseMedia';
-import { resolveProfileExerciseMedia } from './exerciseMediaSelection';
+import { isCanonicalProfileAnimationExercise, resolveProfileExerciseMedia } from './exerciseMediaSelection';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
-import { realGifForMediaKey } from './exerciseRealMedia';
+import { planExerciseMediaOverride, realGifForMediaKey } from './exerciseRealMedia';
 import { swapsForPlanExercise, type ExerciseSwap } from './exerciseSwaps';
 import { formatPlanAmount } from './exerciseMeasures';
 import { isTimedMeasure, resolveSetMeasure } from '@forma/core';
@@ -113,19 +113,21 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
     replaceTarget.mode === item.mode &&
     replaceTarget.currentExerciseId !== item.id;
   const cues = techniqueCuesFromNote(item.note);
-  const videoSource = resolveProfileExerciseMedia(
-    item.mediaKey,
-    profileSex,
-    EXERCISE_PROFILE_VIDEOS,
-    EXERCISE_VIDEOS
-  );
-  const videoPoster = resolveProfileExerciseMedia(
-    item.mediaKey,
-    profileSex,
-    EXERCISE_PROFILE_POSTERS,
-    EXERCISE_THUMBNAILS
-  );
-  const gifAsset = realGifForMediaKey(item.mediaKey);
+  const mediaOverride = planExerciseMediaOverride(item.id, item.mediaKey);
+  const useProfileVideo = isCanonicalProfileAnimationExercise(item.id, item.mediaKey);
+  const videoSource = mediaOverride?.suppressSharedVideo
+    ? undefined
+    : useProfileVideo
+      ? resolveProfileExerciseMedia(item.mediaKey, profileSex, EXERCISE_PROFILE_VIDEOS, {})
+      : resolveProfileExerciseMedia(item.mediaKey, profileSex, {}, EXERCISE_VIDEOS);
+  const videoPoster = mediaOverride?.suppressSharedVideo
+    ? mediaOverride.posterAsset
+    : useProfileVideo
+      ? resolveProfileExerciseMedia(item.mediaKey, profileSex, EXERCISE_PROFILE_POSTERS, {})
+      : resolveProfileExerciseMedia(item.mediaKey, profileSex, {}, EXERCISE_THUMBNAILS);
+  const gifAsset = mediaOverride?.suppressSharedVideo
+    ? mediaOverride.gifAsset
+    : realGifForMediaKey(item.mediaKey);
 
   return (
     <Modal
