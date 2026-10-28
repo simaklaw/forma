@@ -75,12 +75,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Migrations 001-006
+      - name: Migrations 001-007
         run: |
           set -o pipefail
           ./scripts/apply-db-migrations.sh 2>&1 | tee migrate_all.log
           ./scripts/apply-db-migrations.sh 2>&1 | tee migrate_repeat.log
-          test "$(psql "$DATABASE_URL" -X -Atc 'SELECT count(*) FROM public.forma_schema_migration')" = 6
+          test "$(psql "$DATABASE_URL" -X -Atc 'SELECT count(*) FROM public.forma_schema_migration')" = 7
 
       - name: RLS strict check
         run: |
@@ -110,6 +110,14 @@ jobs:
 
       - name: /health reports jwt auth
         run: curl -s http://localhost:8787/health | grep '"auth":"jwt"'
+
+      - name: nutrition cache is served from Postgres (seeded row)
+        run: |
+          psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -c "INSERT INTO nutrition.product_cache (barcode, product, expires_at) VALUES ('4680036910028', jsonb_build_object('barcode','4680036910028','name','E2E cached product','source','open-food-facts'), now() + interval '1 hour') ON CONFLICT (barcode) DO NOTHING;"
+          code=$(curl -s -o nutr.json -w '%{http_code}' http://localhost:8787/api/v1/nutrition/product/4680036910028)
+          echo "status=$code"; cat nutr.json
+          [ "$code" = "200" ]
+          grep -q '"name":"E2E cached product"' nutr.json
 
       - name: register user A
         run: |
@@ -263,8 +271,9 @@ jobs:
             echo ""
             echo "| Проверка | Результат |"
             echo "|---|---|"
-            echo "| Миграции 001–006 | ${{ job.status }} |"
-            echo "| Строгий RLS (FORCE) | $(cat rls_check.log 2>/dev/null || echo n/a) таблиц |"
+            echo "| Миграции 001–007 | ${{ job.status }} |"
+            echo "| Строгий RLS (FORCE) | $(cat rls_check.log 2>/dev/null || echo n/a) таблиц |
+| Nutrition-кэш из Postgres | $(grep -o '"name":"[^"]*"' nutr.json 2>/dev/null || echo fail) |"
             echo "| регистрация A/B | стабильные user_id |"
             echo "| push без токена | 401 |"
             echo "| push с чужим user_id | 403 |"
@@ -286,7 +295,7 @@ jobs:
           git checkout -B ci-logs origin/ci-logs 2>/dev/null || git checkout -B ci-logs
           DIR="ci-logs/${{ github.run_id }}"
           mkdir -p "$DIR"
-          for f in migrate_*.log rls_check.log api.log reg_*.json mismatch*.json push*.json resp*.json pull*.json credits_count.log; do
+          for f in migrate_*.log rls_check.log api.log reg_*.json mismatch*.json push*.json resp*.json pull*.json credits_count.log nutr.json; do
             [ -f "$f" ] && cp "$f" "$DIR/"
           done
           echo "failed run: ${{ github.run_id }} commit ${{ github.sha }} date $(date -u +%FT%TZ)" >> "$DIR/README.txt"

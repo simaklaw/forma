@@ -2,7 +2,11 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { createApp } from './index.ts';
 import { MemoryIdempotencyStore, MemoryChangeFeed } from './idempotency.ts';
-import { NutritionService } from './nutrition.ts';
+import {
+  NutritionService,
+  type NutritionCacheEntry,
+  type NutritionCacheStore,
+} from './nutrition.ts';
 import { buildOpenApiDocument } from './openapi.ts';
 
 interface OffCall {
@@ -139,5 +143,82 @@ describe('GET /api/v1/nutrition/product/:barcode', () => {
     const doc = buildOpenApiDocument() as Record<string, any>;
     assert.ok(doc.paths['/api/v1/nutrition/product/{barcode}']);
     assert.ok(doc.tags.some((t: any) => t.name === 'nutrition'));
+  });
+});
+
+class MapCacheStore implements NutritionCacheStore {
+  readonly map = new Map<string, NutritionCacheEntry>();
+
+  async get(barcode: string): Promise<NutritionCacheEntry | undefined> {
+    return this.map.get(barcode);
+  }
+
+  async set(barcode: string, entry: NutritionCacheEntry): Promise<void> {
+    this.map.set(barcode, entry);
+  }
+}
+
+describe('NutritionService persistent store', () => {
+  it('shares cache across service instances through the store', async () => {
+    const stub = stubOff(200, foundBody);
+    const store = new MapCacheStore();
+    const first = new NutritionService({ fetch: stub.fetch as any, store });
+    const second = new NutritionService({ fetch: stub.fetch as any, store });
+    const a = await first.lookup(BARCODE);
+    const b = await second.lookup(BARCODE);
+    assert.equal(a.status, 'found');
+    assert.equal(b.status, 'found');
+    assert.equal(stub.calls.length, 1);
+    assert.equal(store.map.size, 1);
+  });
+
+  it('persists not-found misses in the store', async () => {
+    const stub = stubOff(200, JSON.stringify({ status: 0 }));
+    const store = new MapCacheStore();
+    const svc = new NutritionService({ fetch: stub.fetch as any, store });
+    const first = await svc.lookup('0000000000000');
+    assert.equal(first.status, 'not_found');
+    const entry = store.map.get('0000000000000');
+    assert.ok(entry);
+    assert.equal(entry.product, null);
+    const second = await svc.lookup('0000000000000');
+    assert.equal(second.status, 'not_found');
+    assert.equal(stub.calls.length, 1);
+  });
+
+  it('refetches when a stored entry has expired', async () => {
+    let clock = 1_000_000;
+    const stub = stubOff(200, foundBody);
+    const store = new MapCacheStore();
+    const svc = new NutritionService({
+      fetch: stub.fetch as any,
+      store,
+      ttlMs: 1_000,
+      now: () => clock,
+    });
+    const first = await svc.lookup(BARCODE);
+    assert.equal(first.status, 'found');
+    clock += 2_000;
+    const second = await svc.lookup(BARCODE);
+    assert.equal(second.status, 'found');
+    assert.equal(stub.calls.length, 2);
+  });
+
+  it('degrades to a miss when the store read fails', async () => {
+    const stub = stubOff(200, foundBody);
+    const broken: NutritionCacheStore = {
+      get: async () => {
+        throw new Error('store down');
+      },
+      set: async () => {
+        throw new Error('store down');
+      },
+    };
+    const svc = new NutritionService({ fetch: stub.fetch as any, store: broken });
+    const res = await svc.lookup(BARCODE);
+    assert.equal(res.status, 'found');
+    const res2 = await svc.lookup(BARCODE);
+    assert.equal(res2.status, 'found');
+    assert.equal(stub.calls.length, 2);
   });
 });

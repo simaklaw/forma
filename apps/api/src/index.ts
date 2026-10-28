@@ -530,6 +530,7 @@ export async function createAppFromEnv(): Promise<ReturnType<typeof createApp>> 
     PostgresIdempotencyStore,
     PostgresChangeFeed,
     PostgresSyncUnitOfWork,
+    PostgresNutritionCacheStore,
   } = await import('./postgres.ts');
   const { PostgresProjectionService } = await import('./projections.ts');
   const { PostgresUserRegistry } = await import('./auth.ts');
@@ -539,6 +540,9 @@ export async function createAppFromEnv(): Promise<ReturnType<typeof createApp>> 
     feed: new PostgresChangeFeed(sql),
     projections: new PostgresProjectionService(sql),
     uow: new PostgresSyncUnitOfWork(sql),
+    nutrition: new NutritionService({
+      store: new PostgresNutritionCacheStore(sql),
+    }),
     requireUuid: true,
     apiToken,
     jwtSecret,
