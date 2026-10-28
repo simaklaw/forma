@@ -272,8 +272,8 @@ jobs:
             echo "| Проверка | Результат |"
             echo "|---|---|"
             echo "| Миграции 001–007 | ${{ job.status }} |"
-            echo "| Строгий RLS (FORCE) | $(cat rls_check.log 2>/dev/null || echo n/a) таблиц |
-| Nutrition-кэш из Postgres | $(grep -o '"name":"[^"]*"' nutr.json 2>/dev/null || echo fail) |"
+            echo "| Строгий RLS (FORCE) | $(cat rls_check.log 2>/dev/null || echo n/a) таблиц |"
+            echo "| Nutrition-кэш из Postgres | $(grep -o '"name":"[^"]*"' nutr.json 2>/dev/null || echo fail) |"
             echo "| регистрация A/B | стабильные user_id |"
             echo "| push без токена | 401 |"
             echo "| push с чужим user_id | 403 |"
