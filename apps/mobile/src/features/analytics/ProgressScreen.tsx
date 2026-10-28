@@ -49,6 +49,7 @@ import {
 } from '@/features/nutrition/nutritionTrends';
 import ActivityCalendar from '@/components/ActivityCalendar';
 import EcoCard from '@/components/EcoCard';
+import WorkoutShareCard from '@/components/WorkoutShareCard';
 import WeightChart from '@/components/WeightChart';
 import MuscleLoadMap from '@/components/MuscleLoadMap';
 import {
@@ -447,6 +448,8 @@ export default function ProgressScreen() {
         <ActivityCalendar setLogs={setLogs} allMeals={allMeals} frozenDates={frozenDates} />
 
         <EcoCard loggedActivities={loggedActivities} importedActivities={importedActivities} />
+
+        <WorkoutShareCard setLogs={setLogs} />
 
         {nutritionDaily.length > 0 ? (
           <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
@@ -899,4 +902,5 @@ function createStyles(colors: ColorTokens) {
     }
   });
 }
+
 

@@ -388,6 +388,17 @@ const RU = {
   ecoDistanceKm: '{km} км за последние {days} дн. пешком / бегом / на велосипеде',
   ecoHint: 'Столько CO₂ выбросила бы машина на этой дистанции (≈250 г/км).',
 
+  // Шаринг итога тренировки (WorkoutShareCard, идея — NeverSkip, AGPL ideas-only)
+  shareCardKicker: 'ПОДЕЛИТЬСЯ',
+  shareCardTitle: 'Итог тренировки · {date}',
+  shareCardButton: 'Поделиться',
+  shareCardA11y: 'Поделиться итогом тренировки',
+  shareWorkoutTitle: '🏋️ FitPulse · тренировка {date}',
+  shareWorkoutLine: '• {name} — {sets} подх. × {reps} повт. (макс {max} кг)',
+  shareWorkoutLineBody: '• {name} — {sets} подх. × {reps} повт.',
+  shareWorkoutTotal: 'Итого: {sets} подх. · объём {volume} кг',
+  shareWorkoutTotalSets: 'Итого: {sets} подх.',
+
   // Прогресс (ProgressScreen)
   progressRecoveryA11y: 'Восстановление {score} процентов, {status}',
   progressMuscles: 'Мышцы',
@@ -1042,6 +1053,16 @@ const EN: Record<StringKey, string> = {
   ecoDistanceKm: '{km} km in the last {days} days on foot / running / cycling',
   ecoHint: 'CO₂ a car would have emitted over this distance (~250 g/km).',
 
+  shareCardKicker: 'SHARE',
+  shareCardTitle: 'Workout summary · {date}',
+  shareCardButton: 'Share',
+  shareCardA11y: 'Share workout summary',
+  shareWorkoutTitle: '🏋️ FitPulse · workout {date}',
+  shareWorkoutLine: '• {name} — {sets} sets × {reps} reps (max {max} kg)',
+  shareWorkoutLineBody: '• {name} — {sets} sets × {reps} reps',
+  shareWorkoutTotal: 'Total: {sets} sets · volume {volume} kg',
+  shareWorkoutTotalSets: 'Total: {sets} sets.',
+
   progressRecoveryA11y: 'Recovery {score} percent, {status}',
   progressMuscles: 'Muscles',
   progressEnergy: 'Energy',
@@ -1494,5 +1515,6 @@ export function streakDayWord(count: number, lang: Language): string {
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'дня';
   return 'дней';
 }
+
 
 
