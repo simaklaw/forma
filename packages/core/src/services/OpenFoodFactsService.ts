@@ -8,6 +8,10 @@ export interface Nutriments {
   proteins_100g?: number;
   fat_100g?: number;
   carbohydrates_100g?: number;
+  fiber_100g?: number;
+  sugars_100g?: number;
+  "saturated-fat_100g"?: number;
+  sodium_100g?: number;
 }
 
 export interface OFFProduct {
@@ -29,6 +33,12 @@ export interface NormalizedFood {
   protein: number;
   fat: number;
   carbs: number;
+  /** Микронутриенты на 100 г — только когда OFF ими поделился. */
+  fiber?: number;
+  sugars?: number;
+  saturatedFat?: number;
+  /** OFF отдаёт натрий в граммах на 100 г — здесь уже в мг. */
+  sodiumMg?: number;
 }
 
 export class OpenFoodFactsService {
@@ -39,13 +49,20 @@ export class OpenFoodFactsService {
 
   private static normalize(p: OFFProduct): NormalizedFood | null {
     if (!p.product_name || !p.nutriments || p.nutriments["energy-kcal_100g"] == null) return null;
-    return {
+    const n = p.nutriments;
+    const round1 = (v: number) => Math.round(v * 10) / 10;
+    const food: NormalizedFood = {
       name: p.brands ? `${p.product_name} (${p.brands.split(",")[0]})` : p.product_name,
-      kcal: Math.round(p.nutriments["energy-kcal_100g"] || 0),
-      protein: Math.round((p.nutriments.proteins_100g || 0) * 10) / 10,
-      fat: Math.round((p.nutriments.fat_100g || 0) * 10) / 10,
-      carbs: Math.round((p.nutriments.carbohydrates_100g || 0) * 10) / 10,
+      kcal: Math.round(n["energy-kcal_100g"] || 0),
+      protein: round1(n.proteins_100g || 0),
+      fat: round1(n.fat_100g || 0),
+      carbs: round1(n.carbohydrates_100g || 0)
     };
+    if (n.fiber_100g != null) food.fiber = round1(n.fiber_100g);
+    if (n.sugars_100g != null) food.sugars = round1(n.sugars_100g);
+    if (n["saturated-fat_100g"] != null) food.saturatedFat = round1(n["saturated-fat_100g"]);
+    if (n.sodium_100g != null) food.sodiumMg = Math.round(n.sodium_100g * 1000);
+    return food;
   }
 
   public static async getProductByBarcode(barcode: string): Promise<OFFProductResponse | null> {

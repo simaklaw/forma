@@ -42,6 +42,11 @@ export interface FoodItem {
   protein: number;
   fat: number;
   carbs: number;
+  /** Микронутриенты порции (масштабированы от 100 г; есть не у всех позиций). */
+  fiber?: number;
+  sugars?: number;
+  saturatedFat?: number;
+  sodiumMg?: number;
   loggedAt?: number;
 }
 

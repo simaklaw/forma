@@ -8,9 +8,13 @@ interface Props {
   value: number;
   target: number;
   color: string;
+  /** Единица отображения (по умолчанию «г») — например «мг» для натрия. */
+  unit?: string;
+  /** Ширина колонки подписи (по умолчанию 52) — шире для длинных подписей. */
+  tagWidth?: number;
 }
 
-export default function MacroBar({ label, value, target, color }: Props) {
+export default function MacroBar({ label, value, target, color, unit, tagWidth }: Props) {
   const colors = useThemeColors();
   const styles = createStyles(colors);
   const valueR = Math.max(0, Math.round(value));
@@ -19,13 +23,14 @@ export default function MacroBar({ label, value, target, color }: Props) {
   const pct = Math.min(100, Math.round((valueR / safeTarget) * 100));
   const remaining = targetR - valueR;
   const over = remaining < 0;
+  const unitText = unit ?? 'г';
 
   const a11y =
     targetR <= 0
-      ? `${label}: ${valueR} г, цель не задана`
+      ? `${label}: ${valueR} ${unitText}, цель не задана`
       : over
-        ? `${label}: ${valueR} из ${targetR} г, сверх на ${Math.abs(remaining)} г`
-        : `${label}: ${valueR} из ${targetR} г, осталось ${remaining} г`;
+        ? `${label}: ${valueR} из ${targetR} ${unitText}, сверх на ${Math.abs(remaining)} ${unitText}`
+        : `${label}: ${valueR} из ${targetR} ${unitText}, осталось ${remaining} ${unitText}`;
 
   return (
     <View
@@ -36,7 +41,7 @@ export default function MacroBar({ label, value, target, color }: Props) {
       accessibilityValue={targetR > 0 ? { min: 0, max: 100, now: pct } : undefined}
     >
       <View style={[styles.dot, { backgroundColor: color }]} />
-      <Text style={styles.tag} numberOfLines={1}>
+      <Text style={[styles.tag, { width: tagWidth ?? 52 }]} numberOfLines={1}>
         {label}
       </Text>
       <View style={styles.track}>
@@ -51,7 +56,7 @@ export default function MacroBar({ label, value, target, color }: Props) {
         <Text style={[styles.val, over && styles.valOver]}>
           {valueR}/{targetR}
         </Text>
-        <Text style={[styles.unit, over && styles.valOver]}>г</Text>
+        <Text style={[styles.unit, over && styles.valOver]}>{unitText}</Text>
       </View>
     </View>
   );
