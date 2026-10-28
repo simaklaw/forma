@@ -225,6 +225,8 @@ interface AppStore {
   /** Продукты, добавленные пользователем в избранное (★). */
   favoriteFoods: LoggedFoodSummary[];
   waterGlasses: number;
+  /** Начало голодания (мс), null — таймер не идёт. Просто отметка времени, без рекомендаций. */
+  fastingStartedAt: number | null;
   weightHistory: number[];
   bodyMeasurements: BodyMeasurementEntry[];
   setLogs: SetLogEntry[];
@@ -244,6 +246,8 @@ interface AppStore {
   deleteSavedMeal: (id: string) => void;
   toggleFavoriteFood: (food: LoggedFoodSummary) => boolean;
   setWater: (count: number) => void;
+  startFasting: () => void;
+  stopFasting: () => void;
   logWeight: (weight: number) => void;
   logBodyMeasurement: (type: BodyMeasurementType, valueCm: number) => void;
   deleteBodyMeasurement: (id: string) => void;
@@ -340,6 +344,7 @@ export const useFitPulseStore = create<AppStore>()(
       recentFoods: [],
       favoriteFoods: [],
       waterGlasses: 0,
+      fastingStartedAt: null,
       weightHistory: [],
       bodyMeasurements: [],
       setLogs: [],
@@ -453,6 +458,10 @@ export const useFitPulseStore = create<AppStore>()(
       },
 
       setWater: (count) => set({ waterGlasses: Math.max(0, count) }),
+
+      startFasting: () => set({ fastingStartedAt: Date.now() }),
+
+      stopFasting: () => set({ fastingStartedAt: null }),
 
       logWeight: (weight) => {
         if (!Number.isFinite(weight) || weight <= 0) return;
