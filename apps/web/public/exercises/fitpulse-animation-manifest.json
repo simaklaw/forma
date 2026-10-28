@@ -7,14 +7,14 @@
       "gender": "male",
       "video": "/exercises/pullup-male.mp4",
       "poster": "/exercises/pullup-male.png",
-      "videoBytes": 76357,
-      "videoSha256": "00a9bffeb102b3a201e0ff77c04a2157bf3c834a17c6f2f33243d72bdfd1d638",
-      "posterBytes": 85313,
-      "posterSha256": "0383e0c10a4e0773c42eaa66202b71637b7c5205d9666b527c0523afeb0f7b01",
+      "videoBytes": 76840,
+      "videoSha256": "eac6509366fc732002f67c610b80f9d07c19a6cd28f2739a07f8fca55e21c82d",
+      "posterBytes": 85889,
+      "posterSha256": "46c6c9b99a09b50ba23db16a9ce8feeab75526fedc36f4df495ff8c4ede72548",
       "generatedFrom": {
         "repository": "simaklaw/fitpulse-godot-animation-studio",
-        "commit": "ad778c3637192c2e7c0cd7504d864c93ef257db2",
-        "workflowRunId": 40461983918
+        "commit": "1c67e67b7d464122c904a25dacf462d17206f768",
+        "workflowRunId": 40668509852
       }
     },
     "pullup-female": {
@@ -22,14 +22,14 @@
       "gender": "female",
       "video": "/exercises/pullup-female.mp4",
       "poster": "/exercises/pullup-female.png",
-      "videoBytes": 69146,
-      "videoSha256": "668bd8e5431e46423a4e25a986f24ad280e08befecd9434fb9a63a6efd2256ad",
-      "posterBytes": 86995,
-      "posterSha256": "f1c161ffc8eab01c0826e485302cac38733141b9ca6e57f3b7ae90460b0d9b0b",
+      "videoBytes": 69899,
+      "videoSha256": "3376822e1158c8a0caf824bd77cf7212db29a22507ad8f786c97fe26ba3a9ff6",
+      "posterBytes": 87069,
+      "posterSha256": "6ba2f17a4bce0196d6990c4cc435821c527f0f16a5e73642e301bce9d82271c3",
       "generatedFrom": {
         "repository": "simaklaw/fitpulse-godot-animation-studio",
-        "commit": "ad778c3637192c2e7c0cd7504d864c93ef257db2",
-        "workflowRunId": 40461983918
+        "commit": "1c67e67b7d464122c904a25dacf462d17206f768",
+        "workflowRunId": 40668509852
       }
     },
     "pushup-male": {
@@ -37,14 +37,14 @@
       "gender": "male",
       "video": "/exercises/pushup-male.mp4",
       "poster": "/exercises/pushup-male.png",
-      "videoBytes": 142677,
-      "videoSha256": "69ec50d7682035ed929d1cc97ab4440eca3f736db2b5319bbe9107ef9204f0ee",
-      "posterBytes": 81657,
-      "posterSha256": "d0dcead29c3e326d49d344ce586e11933a01388b11538d610c502ae2b401e397",
+      "videoBytes": 142668,
+      "videoSha256": "d688b0115c7b9f4a391093a093eadd1e2bd25c7ae06febe2b52ccee94ba35b5a",
+      "posterBytes": 81132,
+      "posterSha256": "ba61661f3b3d7f2a24357d1203c598d9434e83c978e8ee7ea9319d16b2a48cd9",
       "generatedFrom": {
         "repository": "simaklaw/fitpulse-godot-animation-studio",
-        "commit": "ad778c3637192c2e7c0cd7504d864c93ef257db2",
-        "workflowRunId": 40461983874
+        "commit": "1c67e67b7d464122c904a25dacf462d17206f768",
+        "workflowRunId": 40668509966
       }
     },
     "pushup-female": {
@@ -52,14 +52,14 @@
       "gender": "female",
       "video": "/exercises/pushup-female.mp4",
       "poster": "/exercises/pushup-female.png",
-      "videoBytes": 113046,
-      "videoSha256": "b9a1908e65bd7815d64e7ada2dc13e5a8f19b7af22efaf63ee29824074579172",
-      "posterBytes": 79020,
-      "posterSha256": "82fc278ccec6c98fd9d4a4a93747e5f62aa1f625be8fc797277e1090f3896fdc",
+      "videoBytes": 112106,
+      "videoSha256": "3ba61f7ef3aeabbb2768c0f31f61de2a95d2bcd5f98df92c5d42fa2529dd9763",
+      "posterBytes": 78631,
+      "posterSha256": "d6dbd68fbd7127a2ffe5f9a6a1089890374458e1a4ad42ea537f2b64358c1e55",
       "generatedFrom": {
         "repository": "simaklaw/fitpulse-godot-animation-studio",
-        "commit": "ad778c3637192c2e7c0cd7504d864c93ef257db2",
-        "workflowRunId": 40461983874
+        "commit": "1c67e67b7d464122c904a25dacf462d17206f768",
+        "workflowRunId": 40668509966
       }
     }
   },
