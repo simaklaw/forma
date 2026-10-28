@@ -357,6 +357,24 @@ const RU = {
     'Голодание не рекомендуется при беременности, диабете, расстройствах пищевого поведения и ряде других состояний. Таймер — просто инструмент, а не медицинская рекомендация.',
   fastingElapsedDays: '{days} д {time}',
 
+  // Активности (MET-каталог) + ИМТ
+  activityCardTitle: 'Активности дня',
+  activityEmptyHint:
+    'Кардио и прогулки — вручную; силовые и часы считаются сами',
+  activityLogEyebrow: 'Активность',
+  activityLogTitle: 'Добавить активность',
+  activitySearchPlaceholder: 'Поиск: бег, велосипед, плавание…',
+  activityDurationLabel: 'Длительность · {min} мин',
+  activityKcalPreview: '≈ {kcal} ккал',
+  activityPickHint: 'Выберите активность из списка',
+  activityMinShort: 'мин',
+  nutritionRepeatDayFull: 'Повторить весь вчерашний день',
+  bmiLabel: 'ИМТ',
+  bmiCategoryUnder: 'ниже нормы',
+  bmiCategoryNormal: 'норма',
+  bmiCategoryOver: 'избыточный',
+  bmiCategoryObese: 'ожирение',
+
   // Прогресс (ProgressScreen)
   progressRecoveryA11y: 'Восстановление {score} процентов, {status}',
   progressMuscles: 'Мышцы',
@@ -982,6 +1000,23 @@ const EN: Record<StringKey, string> = {
   fastingWarningBody:
     'Fasting is not recommended during pregnancy, with diabetes, eating disorders or certain other conditions. The timer is a tool, not medical advice.',
   fastingElapsedDays: '{days} d {time}',
+
+  activityCardTitle: 'Activities today',
+  activityEmptyHint:
+    'Cardio and walks — manual; workouts and watch imports count themselves',
+  activityLogEyebrow: 'Activity',
+  activityLogTitle: 'Add activity',
+  activitySearchPlaceholder: 'Search: running, cycling, swimming…',
+  activityDurationLabel: 'Duration · {min} min',
+  activityKcalPreview: '≈ {kcal} kcal',
+  activityPickHint: 'Pick an activity from the list',
+  activityMinShort: 'min',
+  nutritionRepeatDayFull: 'Repeat all of yesterday',
+  bmiLabel: 'BMI',
+  bmiCategoryUnder: 'underweight',
+  bmiCategoryNormal: 'normal',
+  bmiCategoryOver: 'overweight',
+  bmiCategoryObese: 'obese',
 
   progressRecoveryA11y: 'Recovery {score} percent, {status}',
   progressMuscles: 'Muscles',

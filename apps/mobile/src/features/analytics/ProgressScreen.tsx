@@ -124,6 +124,23 @@ export default function ProgressScreen() {
     age: profile.age,
     gender: profile.sex
   });
+  // ИМТ по росту/весу профиля; категория — справочная, не мед. рекомендация.
+  const bmi =
+    typeof profile.weight === 'number' &&
+    typeof profile.height === 'number' &&
+    profile.height > 0
+      ? Math.round((profile.weight / Math.pow(profile.height / 100, 2)) * 10) / 10
+      : null;
+  const bmiCategory =
+    bmi == null
+      ? null
+      : bmi < 18.5
+        ? t('bmiCategoryUnder')
+        : bmi < 25
+          ? t('bmiCategoryNormal')
+          : bmi < 30
+            ? t('bmiCategoryOver')
+            : t('bmiCategoryObese');
   const targetSnapshot = useMemo(
     () => (profileComplete ? calcTargets() : null),
     [profileComplete, calcTargets, profile, metabolic]
@@ -349,6 +366,13 @@ export default function ProgressScreen() {
             </Text>
             <Text style={[styles.statLbl, { color: colors.paperFaint }]}>{t('progressStatKcal')}</Text>
           </View>
+          {bmi != null && bmiCategory != null ? (
+            <View style={[styles.statCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+              <Text style={[styles.statVal, { color: colors.paper }]}>{bmi}</Text>
+              <Text style={[styles.statLbl, { color: colors.paperFaint }]}>{t('bmiLabel')}</Text>
+              <Text style={[styles.statFreeze, { color: colors.paperFaint }]}>{bmiCategory}</Text>
+            </View>
+          ) : null}
         </View>
 
         <View

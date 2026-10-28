@@ -35,6 +35,9 @@ export type { SetLogEntry, DayProgress } from '@/engines/WorkoutStats';
 
 const SET_LOG_RETENTION_DAYS = 180;
 
+/** Хвост истории ручных активностей (как у importedActivities — slice(-300)). */
+const LOGGED_ACTIVITIES_LIMIT = 500;
+
 export interface FoodItem {
   id: string;
   name: string;
@@ -76,6 +79,24 @@ export interface DayMeals {
   lunch: FoodItem[];
   snack: FoodItem[];
   dinner: FoodItem[];
+}
+
+/**
+ * Ручной лог кардио/бытовой активности из MET-каталога (Compendium 2011):
+ * расход за интервал добавляется в бюджет дня. Силовые и импорт с часов
+ * считаются отдельно (estimateWorkoutBurnKcal / importedActivities).
+ */
+export interface UserActivity {
+  id: string;
+  /** Код из MET-каталога (metActivities.ts). */
+  code: string;
+  /** Имя на момент лога — запись не зависит от текущего языка. */
+  name: string;
+  mets: number;
+  durationMin: number;
+  burnedKcal: number;
+  dateKey: string;
+  loggedAt: number;
 }
 
 export type BodyMeasurementType = 'waist' | 'chest' | 'hips' | 'bicep' | 'thigh' | 'neck';
@@ -232,6 +253,8 @@ interface AppStore {
   setLogs: SetLogEntry[];
   /** Activities imported from FIT/TCX/GPX (watch / GPS). */
   importedActivities: ImportedActivity[];
+  /** Ручной лог кардио/бытовой активности (MET-каталог, ккал за интервал). */
+  loggedActivities: UserActivity[];
   dayProgress: DayProgress;
   personalRecords: Record<number, number>;
   updateProfile: (newProfile: Partial<StoredProfile>) => void;
@@ -248,6 +271,8 @@ interface AppStore {
   setWater: (count: number) => void;
   startFasting: () => void;
   stopFasting: () => void;
+  logUserActivity: (activity: Omit<UserActivity, 'id' | 'dateKey' | 'loggedAt'>) => void;
+  removeUserActivity: (id: string) => void;
   logWeight: (weight: number) => void;
   logBodyMeasurement: (type: BodyMeasurementType, valueCm: number) => void;
   deleteBodyMeasurement: (id: string) => void;
@@ -278,6 +303,7 @@ interface AppStore {
         | 'bodyMeasurements'
         | 'setLogs'
         | 'importedActivities'
+        | 'loggedActivities'
         | 'dayProgress'
         | 'personalRecords'
       >
@@ -312,6 +338,9 @@ export function mergePersistedAppState(persisted: unknown, current: AppStore): A
     importedActivities: Array.isArray(p.importedActivities)
       ? p.importedActivities
       : current.importedActivities,
+    loggedActivities: Array.isArray(p.loggedActivities)
+      ? p.loggedActivities
+      : current.loggedActivities,
     weightHistory: Array.isArray(p.weightHistory) ? p.weightHistory : current.weightHistory,
     bodyMeasurements: asBodyMeasurements(p.bodyMeasurements) ?? current.bodyMeasurements,
     dayProgress:
@@ -349,6 +378,7 @@ export const useFitPulseStore = create<AppStore>()(
       bodyMeasurements: [],
       setLogs: [],
       importedActivities: [],
+      loggedActivities: [],
       dayProgress: {},
       personalRecords: {},
 
@@ -462,6 +492,24 @@ export const useFitPulseStore = create<AppStore>()(
       startFasting: () => set({ fastingStartedAt: Date.now() }),
 
       stopFasting: () => set({ fastingStartedAt: null }),
+
+      logUserActivity: (activity) =>
+        set((state) => ({
+          loggedActivities: [
+            ...state.loggedActivities,
+            {
+              ...activity,
+              id: generateId(),
+              dateKey: toDateKey(new Date()),
+              loggedAt: Date.now()
+            }
+          ].slice(-LOGGED_ACTIVITIES_LIMIT)
+        })),
+
+      removeUserActivity: (id) =>
+        set((state) => ({
+          loggedActivities: state.loggedActivities.filter((a) => a.id !== id)
+        })),
 
       logWeight: (weight) => {
         if (!Number.isFinite(weight) || weight <= 0) return;
