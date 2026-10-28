@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { isProfileComplete, toDateKey } from '@forma/core';
@@ -39,6 +39,18 @@ function formatClockTime(ms?: number): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
+/** Прошло с начала голодания: полные дни и часы:минуты. */
+function fastingClock(startedAt: number, nowMs: number): { days: number; hhmm: string } {
+  const totalMin = Math.max(0, Math.floor((nowMs - startedAt) / 60000));
+  const days = Math.floor(totalMin / 1440);
+  const hours = Math.floor((totalMin % 1440) / 60);
+  const minutes = totalMin % 60;
+  return {
+    days,
+    hhmm: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+  };
+}
+
 export default function NutritionScreen() {
   const colors = useThemeColors();
   const styles = createStyles(colors);
@@ -56,6 +68,9 @@ export default function NutritionScreen() {
   const logSavedMeal = useFitPulseStore((s) => s.logSavedMeal);
   const waterGlasses = useFitPulseStore((s) => s.waterGlasses);
   const setWater = useFitPulseStore((s) => s.setWater);
+  const fastingStartedAt = useFitPulseStore((s) => s.fastingStartedAt);
+  const startFasting = useFitPulseStore((s) => s.startFasting);
+  const stopFasting = useFitPulseStore((s) => s.stopFasting);
   const profile = useFitPulseStore((s) => s.profile);
   const setLogs = useFitPulseStore((s) => s.setLogs);
   const calculateTargets = useFitPulseStore((s) => s.calculateTargets);
@@ -110,6 +125,24 @@ export default function NutritionScreen() {
     const next = waterGlasses === idx + 1 ? idx : idx + 1;
     setWater(Math.max(0, Math.min(WATER_MAX, next)));
     RestTimerEngine.hapticTabSwitch();
+  }
+
+  // Тикающие часы таймера голодания — обновляем раз в 30 с, только пока идёт.
+  const [fastingNow, setFastingNow] = React.useState(() => Date.now());
+  React.useEffect(() => {
+    if (fastingStartedAt == null) return;
+    setFastingNow(Date.now());
+    const id = setInterval(() => setFastingNow(Date.now()), 30000);
+    return () => clearInterval(id);
+  }, [fastingStartedAt]);
+
+  /** Старт — только после диалога-предупреждения о здоровье. */
+  function confirmStartFasting() {
+    RestTimerEngine.hapticTabSwitch();
+    Alert.alert(t('fastingWarningTitle'), t('fastingWarningBody'), [
+      { text: t('cancel'), style: 'cancel' },
+      { text: t('fastingConfirm'), style: 'default', onPress: startFasting }
+    ]);
   }
 
   return (
@@ -239,6 +272,42 @@ export default function NutritionScreen() {
               );
             })}
           </View>
+        </View>
+
+        <View style={styles.fastingCard}>
+          <View style={styles.waterHead}>
+            <Text style={styles.waterTitle}>{t('fastingTitle')}</Text>
+            {fastingStartedAt != null ? (
+              <Text style={styles.fastingClock}>
+                {(() => {
+                  const { days, hhmm } = fastingClock(fastingStartedAt, fastingNow);
+                  return days > 0 ? t('fastingElapsedDays', { days, time: hhmm }) : hhmm;
+                })()}
+              </Text>
+            ) : null}
+          </View>
+          {fastingStartedAt != null ? (
+            <TouchableOpacity
+              style={styles.fastingStopBtn}
+              onPress={() => {
+                stopFasting();
+                RestTimerEngine.hapticTabSwitch();
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={t('fastingStop')}
+            >
+              <Text style={styles.fastingStopText}>{t('fastingStop')}</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.fastingStartBtn}
+              onPress={confirmStartFasting}
+              accessibilityRole="button"
+              accessibilityLabel={t('fastingStart')}
+            >
+              <Text style={styles.fastingStartText}>{t('fastingStart')}</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {savedMeals.length > 0 ? (
@@ -464,6 +533,33 @@ function createStyles(colors: ColorTokens) {
       opacity: 0.85,
       borderColor: colors.cyan
     },
+    fastingCard: {
+      marginHorizontal: spacing.xl,
+      marginTop: spacing.md,
+      padding: spacing.lg,
+      backgroundColor: colors.panel,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: colors.line
+    },
+    fastingClock: { color: colors.lime, fontFamily: fonts.mono, fontSize: 13 },
+    fastingStartBtn: {
+      paddingVertical: 10,
+      borderRadius: radius.control,
+      borderWidth: 1,
+      borderColor: colors.lime,
+      backgroundColor: colors.limeDim,
+      alignItems: 'center'
+    },
+    fastingStartText: { color: colors.lime, fontSize: 12, fontFamily: fonts.bodySemi },
+    fastingStopBtn: {
+      paddingVertical: 10,
+      borderRadius: radius.control,
+      borderWidth: 1,
+      borderColor: colors.lineStrong,
+      alignItems: 'center'
+    },
+    fastingStopText: { color: colors.paperDim, fontSize: 12, fontFamily: fonts.bodySemi },
     sectionHead: {
       flexDirection: 'row',
       justifyContent: 'space-between',

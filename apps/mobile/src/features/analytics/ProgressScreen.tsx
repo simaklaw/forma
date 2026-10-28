@@ -41,6 +41,12 @@ import {
 import { allExercisePatterns } from '@/features/workout/exercisePatterns';
 import { MUSCLE_LABELS, type MuscleKey } from '@/domain/muscleKeys';
 import { importedByNumericId } from '@/features/workout/importedExerciseBridge';
+import {
+  dailyNutritionTotals,
+  nutritionWindowSummary,
+  windowDailyNutrition,
+  type TrendWindow
+} from '@/features/nutrition/nutritionTrends';
 import ActivityCalendar from '@/components/ActivityCalendar';
 import WeightChart from '@/components/WeightChart';
 import MuscleLoadMap from '@/components/MuscleLoadMap';
@@ -145,6 +151,18 @@ export default function ProgressScreen() {
         exerciseMeta: exerciseBurnMeta
       }),
     [profile.weight, setLogs, weekKeys, exerciseMetKeys, exerciseBurnMeta]
+  );
+
+  // Тренды питания: средние ккал/белок за окно 7/30/90 дней (по мотивам OpenNutriTracker).
+  const nutritionDaily = useMemo(() => dailyNutritionTotals(allMeals), [allMeals]);
+  const [nutritionWindowDays, setNutritionWindowDays] = useState<TrendWindow>(7);
+  const nutritionSummary = useMemo(
+    () => nutritionWindowSummary(nutritionDaily, nutritionWindowDays),
+    [nutritionDaily, nutritionWindowDays]
+  );
+  const nutritionChart = useMemo(
+    () => windowDailyNutrition(nutritionDaily, nutritionWindowDays),
+    [nutritionDaily, nutritionWindowDays]
   );
 
   const recovery = useMemo(() => {
@@ -400,6 +418,65 @@ export default function ProgressScreen() {
         </View>
 
         <ActivityCalendar setLogs={setLogs} allMeals={allMeals} frozenDates={frozenDates} />
+
+        {nutritionDaily.length > 0 ? (
+          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+            <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>
+              {t('progressNutritionKicker')}
+            </Text>
+            <View style={styles.chipRow}>
+              {([7, 30, 90] as const).map((days) => {
+                const active = days === nutritionWindowDays;
+                return (
+                  <TouchableOpacity
+                    key={days}
+                    style={[styles.chartChip, { borderColor: active ? colors.lime : colors.lineStrong }]}
+                    onPress={() => setNutritionWindowDays(days)}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('progressNutritionChipA11y', { days })}
+                  >
+                    <Text style={[styles.chartChipText, { color: active ? colors.lime : colors.paperDim }]}>
+                      {t('progressNutritionChip', { days })}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            <View style={styles.prRow}>
+              <Text style={[styles.prName, { color: colors.paperDim }]}>
+                {t('progressNutritionAvgKcal')}
+              </Text>
+              <Text style={[styles.prVal, { color: colors.paper }]}>
+                {nutritionSummary.avgKcal.toLocaleString(lang === 'en' ? 'en-US' : 'ru-RU')}
+              </Text>
+            </View>
+            <View style={styles.prRow}>
+              <Text style={[styles.prName, { color: colors.paperDim }]}>
+                {t('progressNutritionAvgProtein')}
+              </Text>
+              <Text style={[styles.prVal, { color: colors.paper }]}>{nutritionSummary.avgProtein}</Text>
+            </View>
+            <Text style={{ color: colors.paperFaint, fontSize: 11, fontFamily: fonts.mono, marginTop: 2 }}>
+              {t('progressNutritionDays', { days: nutritionSummary.daysLogged })}
+            </Text>
+            {nutritionChart.length >= 2 ? (
+              <View>
+                <WeightChart history={nutritionChart.map((d) => d.kcal)} />
+                <Text
+                  style={{
+                    color: colors.paperFaint,
+                    fontSize: 11,
+                    fontFamily: fonts.mono,
+                    marginTop: 4
+                  }}
+                >
+                  {nutritionChart[0].dateKey.slice(5)} →{' '}
+                  {nutritionChart[nutritionChart.length - 1].dateKey.slice(5)}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
 
         <View style={styles.importSection}>
           <Text style={[styles.sectionLabel, { color: colors.paperDim }]}>{t('progressImportSection')}</Text>
