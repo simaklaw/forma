@@ -1,0 +1,680 @@
+
+> @forma/api@0.1.0 test /home/runner/work/forma/forma/apps/api
+> node --experimental-strip-types --test src/sync.test.ts src/projections.test.ts src/auth.test.ts src/oidc.test.ts src/validation.test.ts src/openapi.test.ts src/docs.test.ts src/nutrition.test.ts
+
+TAP version 13
+# Subtest: auth primitives
+    # Subtest: subjectUserId is a deterministic UUIDv5
+    ok 1 - subjectUserId is a deterministic UUIDv5
+      ---
+      duration_ms: 2.06795
+      type: 'test'
+      ...
+    # Subtest: JWT sign/verify roundtrip
+    ok 2 - JWT sign/verify roundtrip
+      ---
+      duration_ms: 2.924213
+      type: 'test'
+      ...
+    # Subtest: JWT rejects tampering, wrong secret and expiry
+    ok 3 - JWT rejects tampering, wrong secret and expiry
+      ---
+      duration_ms: 0.62006
+      type: 'test'
+      ...
+    1..3
+ok 1 - auth primitives
+  ---
+  duration_ms: 7.196138
+  type: 'suite'
+  ...
+# Subtest: sync API in JWT mode
+    # Subtest: health reports jwt auth
+    ok 1 - health reports jwt auth
+      ---
+      duration_ms: 44.436062
+      type: 'test'
+      ...
+    # Subtest: register returns a stable user_id and a working token
+    ok 2 - register returns a stable user_id and a working token
+      ---
+      duration_ms: 6.799425
+      type: 'test'
+      ...
+    # Subtest: register rejects short subjects
+    ok 3 - register rejects short subjects
+      ---
+      duration_ms: 2.966813
+      type: 'test'
+      ...
+    # Subtest: sync rejects missing/invalid token with 401
+    ok 4 - sync rejects missing/invalid token with 401
+      ---
+      duration_ms: 4.560114
+      type: 'test'
+      ...
+    # Subtest: push with matching user_id is accepted; mismatch is 403
+    ok 5 - push with matching user_id is accepted; mismatch is 403
+      ---
+      duration_ms: 7.311583
+      type: 'test'
+      ...
+    # Subtest: pull isolates users and rejects spoofed user_id
+    ok 6 - pull isolates users and rejects spoofed user_id
+      ---
+      duration_ms: 25.845831
+      type: 'test'
+      ...
+    # Subtest: pull without user_id uses the token subject
+    ok 7 - pull without user_id uses the token subject
+      ---
+      duration_ms: 9.361761
+      type: 'test'
+      ...
+    1..7
+ok 2 - sync API in JWT mode
+  ---
+  duration_ms: 102.560614
+  type: 'suite'
+  ...
+# Subtest: GET /api/docs
+    # Subtest: serves an HTML page that points at the OpenAPI document
+    ok 1 - serves an HTML page that points at the OpenAPI document
+      ---
+      duration_ms: 59.962821
+      type: 'test'
+      ...
+    # Subtest: docsHtml is deterministic and self-contained
+    ok 2 - docsHtml is deterministic and self-contained
+      ---
+      duration_ms: 0.28318
+      type: 'test'
+      ...
+    1..2
+ok 3 - GET /api/docs
+  ---
+  duration_ms: 61.785944
+  type: 'suite'
+  ...
+# [fitpulse-api] nutrition cache read failed Error: store down
+#     at Object.get (file:///home/runner/work/forma/forma/apps/api/src/nutrition.test.ts:211:15)
+#     at NutritionService.readCache (file:///home/runner/work/forma/forma/apps/api/src/nutrition.ts:230:33)
+#     at NutritionService.lookup (file:///home/runner/work/forma/forma/apps/api/src/nutrition.ts:142:28)
+#     at TestContext.<anonymous> (file:///home/runner/work/forma/forma/apps/api/src/nutrition.test.ts:218:27)
+#     at Test.runInAsyncScope (node:async_hooks:214:14)
+#     at Test.run (node:internal/test_runner/test:1047:25)
+#     at Suite.processPendingSubtests (node:internal/test_runner/test:744:18)
+#     at Test.postRun (node:internal/test_runner/test:1173:19)
+#     at Test.run (node:internal/test_runner/test:1101:12)
+#     at async Suite.processPendingSubtests (node:internal/test_runner/test:744:7)
+# [fitpulse-api] nutrition cache write failed Error: store down
+#     at Object.set (file:///home/runner/work/forma/forma/apps/api/src/nutrition.test.ts:214:15)
+#     at NutritionService.writeCache (file:///home/runner/work/forma/forma/apps/api/src/nutrition.ts:246:26)
+#     at NutritionService.lookup (file:///home/runner/work/forma/forma/apps/api/src/nutrition.ts:210:16)
+#     at async TestContext.<anonymous> (file:///home/runner/work/forma/forma/apps/api/src/nutrition.test.ts:218:17)
+#     at async Test.run (node:internal/test_runner/test:1054:7)
+#     at async Suite.processPendingSubtests (node:internal/test_runner/test:744:7)
+# [fitpulse-api] nutrition cache read failed Error: store down
+#     at Object.get (file:///home/runner/work/forma/forma/apps/api/src/nutrition.test.ts:211:15)
+#     at NutritionService.readCache (file:///home/runner/work/forma/forma/apps/api/src/nutrition.ts:230:33)
+#     at NutritionService.lookup (file:///home/runner/work/forma/forma/apps/api/src/nutrition.ts:142:28)
+#     at TestContext.<anonymous> (file:///home/runner/work/forma/forma/apps/api/src/nutrition.test.ts:220:28)
+#     at async Test.run (node:internal/test_runner/test:1054:7)
+#     at async Suite.processPendingSubtests (node:internal/test_runner/test:744:7)
+# [fitpulse-api] nutrition cache write failed Error: store down
+#     at Object.set (file:///home/runner/work/forma/forma/apps/api/src/nutrition.test.ts:214:15)
+#     at NutritionService.writeCache (file:///home/runner/work/forma/forma/apps/api/src/nutrition.ts:246:26)
+#     at NutritionService.lookup (file:///home/runner/work/forma/forma/apps/api/src/nutrition.ts:210:16)
+#     at async TestContext.<anonymous> (file:///home/runner/work/forma/forma/apps/api/src/nutrition.test.ts:220:18)
+#     at async Test.run (node:internal/test_runner/test:1054:7)
+#     at async Suite.processPendingSubtests (node:internal/test_runner/test:744:7)
+# Subtest: GET /api/v1/nutrition/product/:barcode
+    # Subtest: rejects invalid barcodes with 400 + issues
+    ok 1 - rejects invalid barcodes with 400 + issues
+      ---
+      duration_ms: 45.958322
+      type: 'test'
+      ...
+    # Subtest: returns a mapped product and identifies itself to OFF
+    ok 2 - returns a mapped product and identifies itself to OFF
+      ---
+      duration_ms: 7.913971
+      type: 'test'
+      ...
+    # Subtest: caches found products for repeat lookups
+    ok 3 - caches found products for repeat lookups
+      ---
+      duration_ms: 2.130447
+      type: 'test'
+      ...
+    # Subtest: returns 404 for unknown barcodes and caches the miss
+    ok 4 - returns 404 for unknown barcodes and caches the miss
+      ---
+      duration_ms: 2.327846
+      type: 'test'
+      ...
+    # Subtest: returns 502 when OFF is unavailable and does not cache it
+    ok 5 - returns 502 when OFF is unavailable and does not cache it
+      ---
+      duration_ms: 1.807172
+      type: 'test'
+      ...
+    # Subtest: re-fetches after the cache TTL expires
+    ok 6 - re-fetches after the cache TTL expires
+      ---
+      duration_ms: 3.751802
+      type: 'test'
+      ...
+    # Subtest: is documented in the OpenAPI document
+    ok 7 - is documented in the OpenAPI document
+      ---
+      duration_ms: 15.994453
+      type: 'test'
+      ...
+    1..7
+ok 4 - GET /api/v1/nutrition/product/:barcode
+  ---
+  duration_ms: 81.716875
+  type: 'suite'
+  ...
+# Subtest: NutritionService persistent store
+    # Subtest: shares cache across service instances through the store
+    ok 1 - shares cache across service instances through the store
+      ---
+      duration_ms: 1.05801
+      type: 'test'
+      ...
+    # Subtest: persists not-found misses in the store
+    ok 2 - persists not-found misses in the store
+      ---
+      duration_ms: 0.860069
+      type: 'test'
+      ...
+    # Subtest: refetches when a stored entry has expired
+    ok 3 - refetches when a stored entry has expired
+      ---
+      duration_ms: 0.964836
+      type: 'test'
+      ...
+    # Subtest: degrades to a miss when the store read fails
+    ok 4 - degrades to a miss when the store read fails
+      ---
+      duration_ms: 2.799719
+      type: 'test'
+      ...
+    1..4
+ok 5 - NutritionService persistent store
+  ---
+  duration_ms: 11.932843
+  type: 'suite'
+  ...
+# Subtest: claimsToAuthSubject
+    # Subtest: prefers email for mailru
+    ok 1 - prefers email for mailru
+      ---
+      duration_ms: 0.934118
+      type: 'test'
+      ...
+    # Subtest: falls back to oidc:provider:sub
+    ok 2 - falls back to oidc:provider:sub
+      ---
+      duration_ms: 0.294151
+      type: 'test'
+      ...
+    1..2
+ok 6 - claimsToAuthSubject
+  ---
+  duration_ms: 2.098888
+  type: 'suite'
+  ...
+# Subtest: verifyIdToken mailru
+    # Subtest: accepts a valid Mail.ru ID token
+    ok 1 - accepts a valid Mail.ru ID token
+      ---
+      duration_ms: 5.266507
+      type: 'test'
+      ...
+    # Subtest: rejects wrong audience
+    ok 2 - rejects wrong audience
+      ---
+      duration_ms: 3.198456
+      type: 'test'
+      ...
+    1..2
+ok 7 - verifyIdToken mailru
+  ---
+  duration_ms: 8.751849
+  type: 'suite'
+  ...
+# Subtest: verifyIdToken vk
+    # Subtest: accepts a valid VK ID token (iis + app)
+    ok 1 - accepts a valid VK ID token (iis + app)
+      ---
+      duration_ms: 3.074023
+      type: 'test'
+      ...
+    # Subtest: rejects wrong app id
+    ok 2 - rejects wrong app id
+      ---
+      duration_ms: 2.576472
+      type: 'test'
+      ...
+    # Subtest: rejects alg=none before verify
+    ok 3 - rejects alg=none before verify
+      ---
+      duration_ms: 0.627274
+      type: 'test'
+      ...
+    # Subtest: rejects expired
+    ok 4 - rejects expired
+      ---
+      duration_ms: 2.417725
+      type: 'test'
+      ...
+    1..4
+ok 8 - verifyIdToken vk
+  ---
+  duration_ms: 9.623881
+  type: 'suite'
+  ...
+# Subtest: POST /api/v1/auth/oidc
+    # Subtest: exchanges Mail.ru ID token for app JWT
+    ok 1 - exchanges Mail.ru ID token for app JWT
+      ---
+      duration_ms: 63.69679
+      type: 'test'
+      ...
+    # Subtest: exchanges VK ID token for app JWT
+    ok 2 - exchanges VK ID token for app JWT
+      ---
+      duration_ms: 5.218827
+      type: 'test'
+      ...
+    # Subtest: accepts Mail.ru authorization code only with PKCE
+    ok 3 - accepts Mail.ru authorization code only with PKCE
+      ---
+      duration_ms: 6.403214
+      type: 'test'
+      ...
+    # Subtest: rejects Mail.ru authorization code without PKCE at the HTTP boundary
+    ok 4 - rejects Mail.ru authorization code without PKCE at the HTTP boundary
+      ---
+      duration_ms: 3.136139
+      type: 'test'
+      ...
+    # Subtest: returns 400 for google/apple
+    ok 5 - returns 400 for google/apple
+      ---
+      duration_ms: 37.032907
+      type: 'test'
+      ...
+    1..5
+ok 9 - POST /api/v1/auth/oidc
+  ---
+  duration_ms: 116.064317
+  type: 'suite'
+  ...
+# Subtest: exchangeMailruAuthorizationCode
+    # Subtest: rejects non-allowlisted redirect_uri
+    ok 1 - rejects non-allowlisted redirect_uri
+      ---
+      duration_ms: 0.647532
+      type: 'test'
+      ...
+    # Subtest: isAllowedOidcRedirectUri only fitpulse scheme
+    ok 2 - isAllowedOidcRedirectUri only fitpulse scheme
+      ---
+      duration_ms: 0.169938
+      type: 'test'
+      ...
+    # Subtest: posts code + verifier and returns id_token
+    ok 3 - posts code + verifier and returns id_token
+      ---
+      duration_ms: 1.390062
+      type: 'test'
+      ...
+    # Subtest: rejects missing or malformed PKCE verifier
+    ok 4 - rejects missing or malformed PKCE verifier
+      ---
+      duration_ms: 0.544339
+      type: 'test'
+      ...
+    # Subtest: requires client secret
+    ok 5 - requires client secret
+      ---
+      duration_ms: 0.304941
+      type: 'test'
+      ...
+    1..5
+ok 10 - exchangeMailruAuthorizationCode
+  ---
+  duration_ms: 3.415152
+  type: 'suite'
+  ...
+# Subtest: OpenAPI document
+    # Subtest: is JSON-serializable and describes every endpoint
+    ok 1 - is JSON-serializable and describes every endpoint
+      ---
+      duration_ms: 6.506037
+      type: 'test'
+      ...
+    # Subtest: push request body references the SyncPushOperation schema
+    ok 2 - push request body references the SyncPushOperation schema
+      ---
+      duration_ms: 1.327184
+      type: 'test'
+      ...
+    # Subtest: documents bearer security and the validation error response
+    ok 3 - documents bearer security and the validation error response
+      ---
+      duration_ms: 1.348344
+      type: 'test'
+      ...
+    1..3
+ok 11 - OpenAPI document
+  ---
+  duration_ms: 10.738678
+  type: 'suite'
+  ...
+# [fitpulse-api] activity_credit skipped: no local_date in payload { aggregate_id: 'sess-no-date' }
+# Subtest: shouldGrantActivityCredit
+    # Subtest: true for completed workout_session
+    ok 1 - true for completed workout_session
+      ---
+      duration_ms: 3.067802
+      type: 'test'
+      ...
+    # Subtest: true for abandon_session event
+    ok 2 - true for abandon_session event
+      ---
+      duration_ms: 0.284873
+      type: 'test'
+      ...
+    # Subtest: false for complete_set
+    ok 3 - false for complete_set
+      ---
+      duration_ms: 0.209422
+      type: 'test'
+      ...
+    # Subtest: false for non-session aggregate
+    ok 4 - false for non-session aggregate
+      ---
+      duration_ms: 0.202308
+      type: 'test'
+      ...
+    1..4
+ok 12 - shouldGrantActivityCredit
+  ---
+  duration_ms: 5.366173
+  type: 'suite'
+  ...
+# Subtest: extractLocalDate
+    # Subtest: reads local_date
+    ok 1 - reads local_date
+      ---
+      duration_ms: 0.490628
+      type: 'test'
+      ...
+    # Subtest: returns null when no local date is present (no UTC fallback)
+    ok 2 - returns null when no local date is present (no UTC fallback)
+      ---
+      duration_ms: 0.195716
+      type: 'test'
+      ...
+    1..2
+ok 13 - extractLocalDate
+  ---
+  duration_ms: 0.978281
+  type: 'suite'
+  ...
+# Subtest: NoopProjectionService
+    # Subtest: onAccepted resolves
+    ok 1 - onAccepted resolves
+      ---
+      duration_ms: 0.725188
+      type: 'test'
+      ...
+    1..1
+ok 14 - NoopProjectionService
+  ---
+  duration_ms: 1.183465
+  type: 'suite'
+  ...
+# Subtest: MemoryProjectionService
+    # Subtest: grants one credit per session on complete
+    ok 1 - grants one credit per session on complete
+      ---
+      duration_ms: 1.325561
+      type: 'test'
+      ...
+    # Subtest: skips credit when payload has no local date
+    ok 2 - skips credit when payload has no local date
+      ---
+      duration_ms: 2.14845
+      type: 'test'
+      ...
+    # Subtest: ignores intermediate complete_set
+    ok 3 - ignores intermediate complete_set
+      ---
+      duration_ms: 0.510245
+      type: 'test'
+      ...
+    # Subtest: tracks max_load soft records from payload.sets
+    ok 4 - tracks max_load soft records from payload.sets
+      ---
+      duration_ms: 0.506748
+      type: 'test'
+      ...
+    1..4
+ok 15 - MemoryProjectionService
+  ---
+  duration_ms: 4.954913
+  type: 'suite'
+  ...
+# Subtest: extractMaxLoadCandidates
+    # Subtest: reads max load from projection.setLogs
+    ok 1 - reads max load from projection.setLogs
+      ---
+      duration_ms: 0.6251
+      type: 'test'
+      ...
+    # Subtest: returns empty when no sets
+    ok 2 - returns empty when no sets
+      ---
+      duration_ms: 0.238476
+      type: 'test'
+      ...
+    1..2
+ok 16 - extractMaxLoadCandidates
+  ---
+  duration_ms: 1.107774
+  type: 'suite'
+  ...
+# Subtest: sync API
+    # Subtest: health
+    ok 1 - health
+      ---
+      duration_ms: 41.786824
+      type: 'test'
+      ...
+    # Subtest: push accepts valid op and publishes change
+    ok 2 - push accepts valid op and publishes change
+      ---
+      duration_ms: 8.880731
+      type: 'test'
+      ...
+    # Subtest: push accepts empty operations array
+    ok 3 - push accepts empty operations array
+      ---
+      duration_ms: 2.701365
+      type: 'test'
+      ...
+    # Subtest: push returns duplicate on replay
+    ok 4 - push returns duplicate on replay
+      ---
+      duration_ms: 4.443075
+      type: 'test'
+      ...
+    # Subtest: push answers duplicate when the insert loses the race
+    ok 5 - push answers duplicate when the insert loses the race
+      ---
+      duration_ms: 4.146069
+      type: 'test'
+      ...
+    # Subtest: push rejects hash mismatch on same client_operation_id
+    ok 6 - push rejects hash mismatch on same client_operation_id
+      ---
+      duration_ms: 2.545654
+      type: 'test'
+      ...
+    # Subtest: push rejects short payload_hash
+    ok 7 - push rejects short payload_hash
+      ---
+      duration_ms: 1.510567
+      type: 'test'
+      ...
+    # Subtest: pull returns empty page without user_id
+    ok 8 - pull returns empty page without user_id
+      ---
+      duration_ms: 3.971179
+      type: 'test'
+      ...
+    # Subtest: pull defaults after_change_id to 0 when omitted
+    ok 9 - pull defaults after_change_id to 0 when omitted
+      ---
+      duration_ms: 1.256451
+      type: 'test'
+      ...
+    1..9
+ok 17 - sync API
+  ---
+  duration_ms: 73.764288
+  type: 'suite'
+  ...
+# Subtest: sync API bearer token
+    # Subtest: rejects sync routes without a token
+    ok 1 - rejects sync routes without a token
+      ---
+      duration_ms: 1.827319
+      type: 'test'
+      ...
+    # Subtest: rejects a wrong token
+    ok 2 - rejects a wrong token
+      ---
+      duration_ms: 0.77975
+      type: 'test'
+      ...
+    # Subtest: accepts a valid token
+    ok 3 - accepts a valid token
+      ---
+      duration_ms: 1.392386
+      type: 'test'
+      ...
+    # Subtest: keeps /health open
+    ok 4 - keeps /health open
+      ---
+      duration_ms: 0.787554
+      type: 'test'
+      ...
+    1..4
+ok 18 - sync API bearer token
+  ---
+  duration_ms: 5.136663
+  type: 'suite'
+  ...
+# Subtest: zod schemas
+    # Subtest: authRegisterSchema accepts a valid subject and rejects a short one
+    ok 1 - authRegisterSchema accepts a valid subject and rejects a short one
+      ---
+      duration_ms: 3.725252
+      type: 'test'
+      ...
+    # Subtest: oidcAuthSchema accepts provider + id_token strings, rejects non-strings
+    ok 2 - oidcAuthSchema accepts provider + id_token strings, rejects non-strings
+      ---
+      duration_ms: 3.307049
+      type: 'test'
+      ...
+    # Subtest: syncPushRequestSchema keeps partial operations valid (per-op rejection happens in the handler)
+    ok 3 - syncPushRequestSchema keeps partial operations valid (per-op rejection happens in the handler)
+      ---
+      duration_ms: 1.278492
+      type: 'test'
+      ...
+    # Subtest: syncPushRequestSchema rejects a missing operations array and non-string user_id
+    ok 4 - syncPushRequestSchema rejects a missing operations array and non-string user_id
+      ---
+      duration_ms: 0.337352
+      type: 'test'
+      ...
+    # Subtest: syncPushOperationSchema documents the full operation shape
+    ok 5 - syncPushOperationSchema documents the full operation shape
+      ---
+      duration_ms: 2.344688
+      type: 'test'
+      ...
+    1..5
+ok 19 - zod schemas
+  ---
+  duration_ms: 12.858084
+  type: 'suite'
+  ...
+# Subtest: parseOr400
+    # Subtest: returns data on success
+    ok 1 - returns data on success
+      ---
+      duration_ms: 0.441196
+      type: 'test'
+      ...
+    # Subtest: returns the error code and per-field issues on failure
+    ok 2 - returns the error code and per-field issues on failure
+      ---
+      duration_ms: 1.43192
+      type: 'test'
+      ...
+    1..2
+ok 20 - parseOr400
+  ---
+  duration_ms: 2.481364
+  type: 'suite'
+  ...
+# Subtest: HTTP boundary uses the schemas
+    # Subtest: push without operations returns invalid_body with issues
+    ok 1 - push without operations returns invalid_body with issues
+      ---
+      duration_ms: 30.983075
+      type: 'test'
+      ...
+    # Subtest: push with a non-string user_id is rejected instead of accepted
+    ok 2 - push with a non-string user_id is rejected instead of accepted
+      ---
+      duration_ms: 1.915615
+      type: 'test'
+      ...
+    # Subtest: push with a null operation element returns 400 instead of a 500
+    ok 3 - push with a null operation element returns 400 instead of a 500
+      ---
+      duration_ms: 1.822711
+      type: 'test'
+      ...
+    # Subtest: openapi.json is served and lists all routes
+    ok 4 - openapi.json is served and lists all routes
+      ---
+      duration_ms: 9.519348
+      type: 'test'
+      ...
+    1..4
+ok 21 - HTTP boundary uses the schemas
+  ---
+  duration_ms: 44.852245
+  type: 'suite'
+  ...
+1..21
+# tests 81
+# suites 21
+# pass 81
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1224.53589
