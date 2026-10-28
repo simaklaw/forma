@@ -1,8 +1,24 @@
 name: Build Android APK
 
 on:
-  # Мерж в main больше не собирает APK автоматически — только вручную:
-  # Actions → Build Android APK → Run workflow (пока не пройдена приёмка на устройстве, #170).
+  # Общие изменения кода по-прежнему не запускают APK автоматически.
+  # Проверенные мужские/женские ролики и постеры запускают тестовую сборку,
+  # чтобы можно было проверить воспроизведение на Android после синхронизации медиа.
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/mobile/assets/exercises/pushup-*.mp4"
+      - "apps/mobile/assets/exercises/pushup-*.png"
+      - "apps/mobile/assets/exercises/pullup-*.mp4"
+      - "apps/mobile/assets/exercises/pullup-*.png"
+      # Mobile bundles reference these public files through symlinks, so watch
+      # the actual target files too (the symlink text itself may not change).
+      - "apps/web/public/exercises/pushup-*.mp4"
+      - "apps/web/public/exercises/pushup-*.png"
+      - "apps/web/public/exercises/pullup-*.mp4"
+      - "apps/web/public/exercises/pullup-*.png"
+      - "apps/web/public/exercises/fitpulse-animation-manifest.json"
   workflow_dispatch:
     inputs:
       sync_api_url:
