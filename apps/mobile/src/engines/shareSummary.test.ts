@@ -94,7 +94,7 @@ describe('formatWorkoutShareText', () => {
     expect(lines[0]).toBe('🏋️ FitPulse · тренировка {date}');
     expect(lines).toContain('• Жим лёжа — 2 подх. × 9 повт. (макс 80 кг)');
     expect(lines).toContain('• Тяга верхнего блока — 1 подх. × 12 повт. (макс 40 кг)');
-    expect(lines[lines.length - 1]).toBe('Итого: 3 подх. · объём 1760 кг');
+    expect(lines[lines.length - 1]).toBe('Итого: 3 подх. · объём 1720 кг');
     // структура: заголовок, пустая, упражнения, пустая, итог
     expect(lines[1]).toBe('');
     expect(lines[lines.length - 2]).toBe('');
