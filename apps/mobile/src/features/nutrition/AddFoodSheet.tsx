@@ -5,15 +5,18 @@ import Slider from '@react-native-community/slider';
 import AppBottomSheet from '@/components/BottomSheet';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
+import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT } from '@/i18n/strings';
 import {
   useFitPulseStore,
   selectTodayMeals,
   DayMeals,
-  type FoodItem
+  type FoodItem,
+  type SavedMeal
 } from '@/state/useFitPulseStore';
 import { OpenFoodFactsService, NormalizedFood } from '@/services/OpenFoodFactsService';
 import BarcodeScannerSheet from './BarcodeScannerSheet';
+import { barcodeEquals } from './ownFoods';
 import { foodFingerprint, type LoggedFoodSummary } from './recentFoods';
 
 /** Offline-first RU presets — always visible when sheet opens / query empty. Values per 100g unless noted in name. */
@@ -86,6 +89,14 @@ function matchesQuery(name: string, query: string): boolean {
 
 type Tab = 'database' | 'custom';
 
+/** Результат поиска: продукт (на 100 г) или своё блюдо, найденное по штрихкоду. */
+type FoodResult =
+  | { kind: 'food'; food: NormalizedFood }
+  | { kind: 'ownMeal'; meal: SavedMeal };
+
+/** Режим сканера: поиск по коду или привязка кода к своему продукту/блюду. */
+type ScanMode = 'search' | 'attachCustom' | 'attachTemplate';
+
 interface Props {
   mealKey: keyof DayMeals;
   mealLabel: string;
@@ -96,10 +107,13 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
   const colors = useThemeColors();
   const styles = createStyles(colors);
   const t = useT();
+  const lang = useLanguageStore((s) => s.lang);
   const addFoodItem = useFitPulseStore((s) => s.addFoodItem);
   const customFoods = useFitPulseStore((s) => s.customFoods);
   const addCustomFood = useFitPulseStore((s) => s.addCustomFood);
   const saveMealAsTemplate = useFitPulseStore((s) => s.saveMealAsTemplate);
+  const logSavedMeal = useFitPulseStore((s) => s.logSavedMeal);
+  const savedMeals = useFitPulseStore((s) => s.savedMeals);
   const recentFoods = useFitPulseStore((s) => s.recentFoods);
   const favoriteFoods = useFitPulseStore((s) => s.favoriteFoods);
   const toggleFavoriteFood = useFitPulseStore((s) => s.toggleFavoriteFood);
@@ -112,7 +126,9 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
 
   const [tab, setTab] = useState<Tab>('database');
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<NormalizedFood[]>(LOCAL_PRESETS);
+  const [results, setResults] = useState<FoodResult[]>(
+    LOCAL_PRESETS.map((food) => ({ kind: 'food' as const, food }))
+  );
   const [sourceLabel, setSourceLabel] = useState(() => t('foodLocalBase'));
   const [loading, setLoading] = useState(false);
   const [portion, setPortion] = useState(100);
@@ -125,6 +141,9 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
   const [templateName, setTemplateName] = useState('');
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
   const [scannerVisible, setScannerVisible] = useState(false);
+  const [scanMode, setScanMode] = useState<ScanMode>('search');
+  const [customBarcode, setCustomBarcode] = useState('');
+  const [templateBarcode, setTemplateBarcode] = useState('');
   const [quickName, setQuickName] = useState('');
   const [quickKcal, setQuickKcal] = useState('');
 
@@ -146,7 +165,9 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
     (q: string) => {
       const catalog = catalogPresets();
       const filtered = catalog.filter((f) => matchesQuery(f.name, q));
-      setResults(filtered.length > 0 ? filtered : catalog);
+      const asResults = (list: NormalizedFood[]): FoodResult[] =>
+        list.map((food) => ({ kind: 'food' as const, food }));
+      setResults(filtered.length > 0 ? asResults(filtered) : asResults(catalog));
       setSourceLabel(
         q.trim()
           ? filtered.length > 0
@@ -175,20 +196,54 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
       try {
         const q = query.trim();
         if (/^\d{8,14}$/.test(q)) {
+          // Свои привязки важнее OFF: блюдо или продукт по этому штрихкоду.
+          const ownMeal = savedMeals.find((m) => barcodeEquals(m.barcode, q));
+          if (ownMeal) {
+            setResults([{ kind: 'ownMeal', meal: ownMeal }]);
+            setSourceLabel(t('foodOwnDishHit'));
+            setLoading(false);
+            return;
+          }
+          const ownCustom = customFoods.find((f) => barcodeEquals(f.barcode, q));
+          if (ownCustom) {
+            setResults([
+              {
+                kind: 'food',
+                food: {
+                  name: ownCustom.name,
+                  kcal: ownCustom.kcal,
+                  protein: ownCustom.protein,
+                  fat: ownCustom.fat,
+                  carbs: ownCustom.carbs
+                }
+              }
+            ]);
+            setSourceLabel(t('foodOwnProductHit'));
+            setLoading(false);
+            return;
+          }
           const byCode = await OpenFoodFactsService.getNormalizedByBarcode(q);
           if (byCode) {
-            setResults([byCode]);
+            setResults([{ kind: 'food', food: byCode }]);
             setSourceLabel(t('foodBarcode'));
             setLoading(false);
             return;
           }
         }
-        const remote = await OpenFoodFactsService.searchProducts(q);
+        // lc просит OFF отдавать локализованные названия продуктов.
+        const remote = await OpenFoodFactsService.searchProducts(
+          q,
+          8,
+          lang === 'en' ? 'en' : 'ru'
+        );
         if (remote.length > 0) {
           const local = catalogPresets().filter((f) => matchesQuery(f.name, query));
           const localNames = new Set(local.map((f) => f.name.trim().toLowerCase()));
-          const merged = [...local, ...remote.filter((r) => !localNames.has(r.name.trim().toLowerCase()))];
-          setResults(merged);
+          const merged = [
+            ...local,
+            ...remote.filter((r) => !localNames.has(r.name.trim().toLowerCase()))
+          ];
+          setResults(merged.map((food) => ({ kind: 'food' as const, food })));
           setSourceLabel(t('foodLocalAndOff'));
         } else {
           runLocalFilter(query);
@@ -205,7 +260,7 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [query, tab, runLocalFilter, catalogPresets, t]);
+  }, [query, tab, runLocalFilter, catalogPresets, t, savedMeals, customFoods, lang]);
 
   function logFromFood(item: NormalizedFood) {
     const mult = portion / 100;
@@ -251,7 +306,8 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
       kcal: parseFloat(kcal100) || 0,
       protein: parseFloat(protein100) || 0,
       fat: parseFloat(fat100) || 0,
-      carbs: parseFloat(carbs100) || 0
+      carbs: parseFloat(carbs100) || 0,
+      ...(customBarcode ? { barcode: customBarcode } : {})
     };
     addCustomFood(def);
     logFromFood(def);
@@ -260,6 +316,7 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
     setProtein100('10');
     setFat100('5');
     setCarbs100('10');
+    setCustomBarcode('');
   }
 
   return (
@@ -300,7 +357,10 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
             />
             <TouchableOpacity
               style={styles.scanBtn}
-              onPress={() => setScannerVisible(true)}
+              onPress={() => {
+                setScanMode('search');
+                setScannerVisible(true);
+              }}
               accessibilityRole="button"
               accessibilityLabel={t('scanButtonA11y')}
             >
@@ -420,18 +480,42 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
             {results.length === 0 ? (
               <Text style={styles.empty}>{t('foodNothingFound')}</Text>
             ) : (
-              results.slice(0, 24).map((item, i) => (
-                <TouchableOpacity
-                  key={`${item.name}-${i}`}
-                  style={styles.presetRow}
-                  onPress={() => logFromFood(item)}
-                >
-                  <Text style={styles.presetName} numberOfLines={1}>
-                    {item.name}
-                  </Text>
-                  <Text style={styles.presetKcal}>{t('foodKcalPer100', { kcal: item.kcal })}</Text>
-                </TouchableOpacity>
-              ))
+              results.slice(0, 24).map((r, i) =>
+                r.kind === 'ownMeal' ? (
+                  <TouchableOpacity
+                    key={`own-${r.meal.id}`}
+                    style={styles.presetRow}
+                    onPress={() => {
+                      logSavedMeal(mealKey, r.meal.id);
+                      setQuery('');
+                      onClose();
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('nutritionAddToMealShort', { meal: mealLabel })}
+                  >
+                    <Text style={styles.presetName} numberOfLines={1}>
+                      {r.meal.name}
+                    </Text>
+                    <Text style={styles.presetKcal}>
+                      {r.meal.items.reduce((s, it) => s + it.kcal, 0)} {t('kcal')} ·{' '}
+                      {r.meal.items.length} {t('foodItemsWord')}
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    key={`${r.food.name}-${i}`}
+                    style={styles.presetRow}
+                    onPress={() => logFromFood(r.food)}
+                  >
+                    <Text style={styles.presetName} numberOfLines={1}>
+                      {r.food.name}
+                    </Text>
+                    <Text style={styles.presetKcal}>
+                      {t('foodKcalPer100', { kcal: r.food.kcal })}
+                    </Text>
+                  </TouchableOpacity>
+                )
+              )
             )}
           </View>
         </ScrollView>
@@ -464,6 +548,33 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
           <View style={styles.formRow}>
             <Text style={styles.label}>{t('foodCarbs')}</Text>
             <TextInput style={styles.input} value={carbs100} onChangeText={setCarbs100} keyboardType="numeric" />
+          </View>
+          <View style={styles.formRow}>
+            <Text style={styles.label}>{t('foodBarcodeAttach')}</Text>
+            <View style={styles.barcodeRow}>
+              <Text style={styles.barcodeValue}>{customBarcode || '—'}</Text>
+              {customBarcode ? (
+                <TouchableOpacity
+                  style={styles.barcodeClear}
+                  onPress={() => setCustomBarcode('')}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('foodBarcodeDetach')}
+                >
+                  <Text style={styles.barcodeClearText}>×</Text>
+                </TouchableOpacity>
+              ) : null}
+              <TouchableOpacity
+                style={styles.scanBtn}
+                onPress={() => {
+                  setScanMode('attachCustom');
+                  setScannerVisible(true);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={t('scanButtonA11y')}
+              >
+                <Text style={styles.scanBtnText}>{t('scanBtn')}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
           <View style={styles.formRow}>
             <Text style={styles.label}>{t('foodPortion', { portion })}</Text>
@@ -508,12 +619,38 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
                 placeholder={t('foodMyDish')}
                 placeholderTextColor={colors.paperFaint}
               />
+              <Text style={[styles.label, styles.barcodeLabel]}>{t('foodBarcodeAttach')}</Text>
+              <View style={styles.barcodeRow}>
+                <Text style={styles.barcodeValue}>{templateBarcode || '—'}</Text>
+                {templateBarcode ? (
+                  <TouchableOpacity
+                    style={styles.barcodeClear}
+                    onPress={() => setTemplateBarcode('')}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('foodBarcodeDetach')}
+                  >
+                    <Text style={styles.barcodeClearText}>×</Text>
+                  </TouchableOpacity>
+                ) : null}
+                <TouchableOpacity
+                  style={styles.scanBtn}
+                  onPress={() => {
+                    setScanMode('attachTemplate');
+                    setScannerVisible(true);
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('scanButtonA11y')}
+                >
+                  <Text style={styles.scanBtnText}>{t('scanBtn')}</Text>
+                </TouchableOpacity>
+              </View>
               <View style={styles.saveTemplateActions}>
                 <TouchableOpacity
                   style={styles.saveTemplateCancel}
                   onPress={() => {
                     setShowSaveTemplate(false);
                     setTemplateName('');
+                    setTemplateBarcode('');
                   }}
                   accessibilityRole="button"
                 >
@@ -522,9 +659,10 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
                 <TouchableOpacity
                   style={styles.saveTemplateConfirm}
                   onPress={() => {
-                    saveMealAsTemplate(templateName, mealItems);
+                    saveMealAsTemplate(templateName, mealItems, templateBarcode || undefined);
                     setShowSaveTemplate(false);
                     setTemplateName('');
+                    setTemplateBarcode('');
                     onClose();
                   }}
                   accessibilityRole="button"
@@ -542,7 +680,13 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
         onClose={() => setScannerVisible(false)}
         onScanned={(code) => {
           setScannerVisible(false);
-          setQuery(code);
+          if (scanMode === 'attachCustom') {
+            setCustomBarcode(code);
+          } else if (scanMode === 'attachTemplate') {
+            setTemplateBarcode(code);
+          } else {
+            setQuery(code);
+          }
         }}
       />
     </AppBottomSheet>
@@ -628,6 +772,18 @@ function createStyles(colors: ColorTokens) {
     formGrid: { flexDirection: 'row', gap: 8, marginBottom: 4 },
     formCol: { flex: 1 },
     label: { fontSize: 11, color: colors.paperFaint, marginBottom: 4 },
+    barcodeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 },
+    barcodeLabel: { marginTop: 10 },
+    barcodeValue: { flex: 1, color: colors.paperDim, fontFamily: fonts.mono, fontSize: 12 },
+    barcodeClear: {
+      width: 28,
+      height: 28,
+      borderWidth: 1,
+      borderColor: colors.lineStrong,
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    barcodeClearText: { color: colors.paperDim, fontFamily: fonts.mono, fontSize: 14 },
     input: {
       backgroundColor: colors.panel,
       borderWidth: 1,

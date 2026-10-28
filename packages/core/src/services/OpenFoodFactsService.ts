@@ -96,15 +96,26 @@ export class OpenFoodFactsService {
     return this.normalize(res.product);
   }
 
-  public static async searchProducts(query: string, pageSize = 8): Promise<NormalizedFood[]> {
+  /**
+   * Search products by name. `lc` (language code, e.g. "ru") asks OFF for
+   * localized product names when available — it never leaves the app otherwise.
+   */
+  public static async searchProducts(
+    query: string,
+    pageSize = 8,
+    lc?: string
+  ): Promise<NormalizedFood[]> {
     const trimmed = query.trim();
     if (!trimmed) return [];
 
-    const key = `${trimmed.toLowerCase()}::${pageSize}`;
+    const key = `${trimmed.toLowerCase()}::${pageSize}::${lc ?? ""}`;
     if (this.searchCache.has(key)) return this.searchCache.get(key)!;
 
     const encoded = encodeURIComponent(trimmed);
-    const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encoded}&search_simple=1&action=process&json=1&page_size=${pageSize}`;
+    const url =
+      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encoded}` +
+      `&search_simple=1&action=process&json=1&page_size=${pageSize}` +
+      (lc ? `&lc=${encodeURIComponent(lc)}` : "");
 
     try {
       const response = await fetch(url, {
