@@ -1,4 +1,4 @@
-import { resolveProfileExerciseMedia } from './exerciseMediaSelection';
+import { isCanonicalProfileAnimationExercise, resolveProfileExerciseMedia, suppressSharedPushUpMediaForPlanVariant } from './exerciseMediaSelection';
 
 const variants = {
   pullup: { male: 11, female: 12 },
@@ -23,5 +23,21 @@ describe('resolveProfileExerciseMedia', () => {
     expect(resolveProfileExerciseMedia('squat', 'female', variants, fallback)).toBe(3);
     expect(resolveProfileExerciseMedia('unknown', 'female', variants, fallback)).toBeUndefined();
     expect(resolveProfileExerciseMedia(undefined, 'female', variants, fallback)).toBeUndefined();
+  });
+  it('uses generated FitPulse movies only for canonical base movements', () => {
+    expect(isCanonicalProfileAnimationExercise(10, 'pushup')).toBe(true);
+    expect(isCanonicalProfileAnimationExercise(59, 'pushup')).toBe(true);
+    expect(isCanonicalProfileAnimationExercise(11, 'pullup')).toBe(true);
+    expect(isCanonicalProfileAnimationExercise(48, 'pushup')).toBe(false);
+    expect(isCanonicalProfileAnimationExercise(49, 'pushup')).toBe(false);
+    expect(isCanonicalProfileAnimationExercise(50, 'pullup')).toBe(false);
+  });
+
+  it('keeps close-grip and feet-elevated push-ups away from shared FitPulse media', () => {
+    expect(suppressSharedPushUpMediaForPlanVariant(48, 'pushup')).toBe(true);
+    expect(suppressSharedPushUpMediaForPlanVariant(49, 'pushup')).toBe(true);
+    expect(suppressSharedPushUpMediaForPlanVariant(10, 'pushup')).toBe(false);
+    expect(suppressSharedPushUpMediaForPlanVariant(59, 'pushup')).toBe(false);
+    expect(suppressSharedPushUpMediaForPlanVariant(48, 'pullup')).toBe(false);
   });
 });
