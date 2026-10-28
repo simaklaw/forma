@@ -12,6 +12,13 @@ on:
       - "apps/mobile/assets/exercises/pushup-*.png"
       - "apps/mobile/assets/exercises/pullup-*.mp4"
       - "apps/mobile/assets/exercises/pullup-*.png"
+      # Mobile bundles reference these public files through symlinks, so watch
+      # the actual target files too (the symlink text itself may not change).
+      - "apps/web/public/exercises/pushup-*.mp4"
+      - "apps/web/public/exercises/pushup-*.png"
+      - "apps/web/public/exercises/pullup-*.mp4"
+      - "apps/web/public/exercises/pullup-*.png"
+      - "apps/web/public/exercises/fitpulse-animation-manifest.json"
   workflow_dispatch:
     inputs:
       sync_api_url:
