@@ -50,6 +50,7 @@ import {
 import ActivityCalendar from '@/components/ActivityCalendar';
 import EcoCard from '@/components/EcoCard';
 import WorkoutShareCard from '@/components/WorkoutShareCard';
+import ExerciseGoalCard from '@/components/ExerciseGoalCard';
 import WeightChart from '@/components/WeightChart';
 import MuscleLoadMap from '@/components/MuscleLoadMap';
 import {
@@ -450,6 +451,8 @@ export default function ProgressScreen() {
         <EcoCard loggedActivities={loggedActivities} importedActivities={importedActivities} />
 
         <WorkoutShareCard setLogs={setLogs} />
+
+        <ExerciseGoalCard setLogs={setLogs} />
 
         {nutritionDaily.length > 0 ? (
           <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
@@ -902,5 +905,6 @@ function createStyles(colors: ColorTokens) {
     }
   });
 }
+
 
 
