@@ -2,24 +2,29 @@ import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
+import { useT } from '@/i18n/strings';
+import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { selectMonthActivity, type DayActivity } from '@/engines/WorkoutStats';
 import type { DayMeals } from '@/state/useFitPulseStore';
 
-const MONTH_NAMES_RU = [
-  'Январь',
-  'Февраль',
-  'Март',
-  'Апрель',
-  'Май',
-  'Июнь',
-  'Июль',
-  'Август',
-  'Сентябрь',
-  'Октябрь',
-  'Ноябрь',
-  'Декабрь'
-];
-const WEEKDAY_HEAD_RU = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+/** 2023-01-02 — понедельник; опорная неделя для коротких имён дней под локаль. */
+const MONDAY_BASE_DAY = 2;
+
+/** Короткие дни недели под локаль, с понедельника: «Пн…Вс» / «Mo…Su». */
+function weekdayShortLabels(locale: string): string[] {
+  return Array.from({ length: 7 }, (_, i) => {
+    const raw = new Date(2023, 0, MONDAY_BASE_DAY + i).toLocaleDateString(locale, {
+      weekday: 'short'
+    });
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  });
+}
+
+/** Название месяца под локаль, с заглавной буквы: «Октябрь» / «October». */
+function monthLabel(year: number, month: number, locale: string): string {
+  const raw = new Date(year, month, 1).toLocaleDateString(locale, { month: 'long' });
+  return raw.charAt(0).toUpperCase() + raw.slice(1);
+}
 
 interface Props {
   setLogs: { dateKey: string }[];
@@ -37,6 +42,10 @@ function leadingBlanks(year: number, month: number): number {
 export default function ActivityCalendar({ setLogs, allMeals, frozenDates = [] }: Props) {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const t = useT();
+  const lang = useLanguageStore((s) => s.lang);
+  const locale = lang === 'en' ? 'en-US' : 'ru-RU';
+  const weekdays = useMemo(() => weekdayShortLabels(locale), [locale]);
 
   const [cursor, setCursor] = useState(() => {
     const now = new Date();
@@ -70,18 +79,18 @@ export default function ActivityCalendar({ setLogs, allMeals, frozenDates = [] }
         <TouchableOpacity
           onPress={() => shiftMonth(-1)}
           accessibilityRole="button"
-          accessibilityLabel="Предыдущий месяц"
+          accessibilityLabel={t('calPrevMonth')}
           hitSlop={8}
         >
           <Text style={[styles.navArrow, { color: colors.paperDim }]}>‹</Text>
         </TouchableOpacity>
         <Text style={[styles.monthLabel, { color: colors.paper }]}>
-          {MONTH_NAMES_RU[cursor.month]} {cursor.year}
+          {monthLabel(cursor.year, cursor.month, locale)} {cursor.year}
         </Text>
         <TouchableOpacity
           onPress={() => shiftMonth(1)}
           accessibilityRole="button"
-          accessibilityLabel="Следующий месяц"
+          accessibilityLabel={t('calNextMonth')}
           hitSlop={8}
         >
           <Text style={[styles.navArrow, { color: colors.paperDim }]}>›</Text>
@@ -89,7 +98,7 @@ export default function ActivityCalendar({ setLogs, allMeals, frozenDates = [] }
       </View>
 
       <View style={styles.weekHeadRow}>
-        {WEEKDAY_HEAD_RU.map((w) => (
+        {weekdays.map((w) => (
           <Text key={w} style={[styles.weekHeadCell, { color: colors.paperFaint }]}>
             {w}
           </Text>
@@ -128,17 +137,15 @@ export default function ActivityCalendar({ setLogs, allMeals, frozenDates = [] }
       <View style={styles.legend}>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: colors.lime }]} />
-          <Text style={[styles.legendText, { color: colors.paperFaint }]}>
-            Тренировка + питание
-          </Text>
+          <Text style={[styles.legendText, { color: colors.paperFaint }]}>{t('calLegendFull')}</Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: colors.cyan }]} />
-          <Text style={[styles.legendText, { color: colors.paperFaint }]}>Одно из двух</Text>
+          <Text style={[styles.legendText, { color: colors.paperFaint }]}>{t('calLegendLight')}</Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: colors.macroCarb }]} />
-          <Text style={[styles.legendText, { color: colors.paperFaint }]}>Заморозка серии</Text>
+          <Text style={[styles.legendText, { color: colors.paperFaint }]}>{t('calLegendFrozen')}</Text>
         </View>
       </View>
     </View>
