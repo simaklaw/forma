@@ -39,7 +39,8 @@ import { EXERCISE_THUMBNAILS } from './exerciseMedia';
 import {
   REAL_GIF_BY_MEDIA_KEY,
   realGifForMediaKey,
-  realThumbForMediaKey
+  realThumbForMediaKey,
+  planExerciseMediaOverride
 } from './exerciseRealMedia';
 
 describe('exerciseRealMedia', () => {
@@ -73,5 +74,18 @@ describe('exerciseRealMedia', () => {
       expect(realGifForMediaKey(key)).toBeUndefined();
       expect(realThumbForMediaKey(key)).toBeUndefined();
     }
+  });
+  it('uses a matching close-grip demo but never shares the base push-up clip with variants', () => {
+    expect(planExerciseMediaOverride(48, 'pushup')).toEqual({
+      suppressSharedVideo: true,
+      gifAsset: 105,
+      posterAsset: 205
+    });
+    expect(planExerciseMediaOverride(49, 'pushup')).toEqual({
+      suppressSharedVideo: true
+    });
+    expect(planExerciseMediaOverride(10, 'pushup')).toBeUndefined();
+    expect(planExerciseMediaOverride(59, 'pushup')).toBeUndefined();
+    expect(planExerciseMediaOverride(48, 'pullup')).toBeUndefined();
   });
 });
