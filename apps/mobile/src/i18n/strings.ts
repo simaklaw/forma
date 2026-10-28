@@ -338,6 +338,10 @@ const RU = {
   microSodium: 'Натрий',
   microUnitMg: 'мг',
   microHint: 'Данные — Open Food Facts · ориентиры на день: клетчатка 30 г, сахара ≤50 г, насыщ. жиры ≤20 г, натрий ≤2300 мг',
+  foodOwnDishHit: 'Своё блюдо · по штрихкоду',
+  foodOwnProductHit: 'Свой продукт · по штрихкоду',
+  foodBarcodeAttach: 'Штрихкод (необязательно) — сканер найдёт продукт мгновенно',
+  foodBarcodeDetach: 'Убрать штрихкод',
 
   // Прогресс (ProgressScreen)
   progressRecoveryA11y: 'Восстановление {score} процентов, {status}',
@@ -946,6 +950,10 @@ const EN: Record<StringKey, string> = {
   microSodium: 'Sodium',
   microUnitMg: 'mg',
   microHint: 'Data from Open Food Facts · daily reference: fiber 30 g, sugars ≤50 g, sat. fat ≤20 g, sodium ≤2300 mg',
+  foodOwnDishHit: 'Own dish · by barcode',
+  foodOwnProductHit: 'Own product · by barcode',
+  foodBarcodeAttach: 'Barcode (optional) — the scanner finds it instantly',
+  foodBarcodeDetach: 'Remove barcode',
 
   progressRecoveryA11y: 'Recovery {score} percent, {status}',
   progressMuscles: 'Muscles',

@@ -58,6 +58,8 @@ export interface CustomFoodDef {
   protein: number;
   fat: number;
   carbs: number;
+  /** Штрихкод, по которому сканер мгновенно находит этот продукт (EAN/UPC). */
+  barcode?: string;
 }
 
 /** User-defined reusable meal — a saved bundle of food items logged together. */
@@ -65,6 +67,8 @@ export interface SavedMeal {
   id: string;
   name: string;
   items: Omit<FoodItem, 'id' | 'loggedAt'>[];
+  /** Штрихкод: сканируем упаковку — логается всё блюдо целиком. */
+  barcode?: string;
 }
 
 export interface DayMeals {
@@ -235,7 +239,7 @@ interface AppStore {
   removeFoodItem: (mealType: keyof DayMeals, id: string) => void;
   copyFoodItems: (mealType: keyof DayMeals, items: FoodItem[]) => void;
   addCustomFood: (item: Omit<CustomFoodDef, 'id'>) => CustomFoodDef;
-  saveMealAsTemplate: (name: string, items: FoodItem[]) => SavedMeal;
+  saveMealAsTemplate: (name: string, items: FoodItem[], barcode?: string) => SavedMeal;
   logSavedMeal: (mealType: keyof DayMeals, savedMealId: string) => void;
   deleteSavedMeal: (id: string) => void;
   toggleFavoriteFood: (food: LoggedFoodSummary) => boolean;
@@ -399,10 +403,11 @@ export const useFitPulseStore = create<AppStore>()(
         return created;
       },
 
-      saveMealAsTemplate: (name, items) => {
+      saveMealAsTemplate: (name, items, barcode) => {
         const created: SavedMeal = {
           id: generateId(),
           name,
+          ...(barcode ? { barcode } : {}),
           items: items.map(({ name: n, kcal, protein, fat, carbs }) => ({
             name: n,
             kcal,
