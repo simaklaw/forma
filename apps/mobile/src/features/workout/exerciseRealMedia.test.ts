@@ -22,12 +22,14 @@ jest.mock('./exerciseMedia', () => ({
 jest.mock('./exerciseDatasetAssets.generated', () => ({
   DATASET_GIF_MODULES: {
     'lib-pushups': 101,
+    'lib-push-ups-close-triceps-position': 105,
     'lib-dead-bug': 102,
     'lib-butt-lift-bridge': 103,
     'lib-shoulder-press-with-bands': 104
   },
   DATASET_THUMB_MODULES: {
     'lib-pushups': 201,
+    'lib-push-ups-close-triceps-position': 205,
     'lib-dead-bug': 202,
     'lib-butt-lift-bridge': 203,
     'lib-shoulder-press-with-bands': 204
@@ -39,7 +41,8 @@ import { EXERCISE_THUMBNAILS } from './exerciseMedia';
 import {
   REAL_GIF_BY_MEDIA_KEY,
   realGifForMediaKey,
-  realThumbForMediaKey
+  realThumbForMediaKey,
+  planExerciseMediaOverride
 } from './exerciseRealMedia';
 
 describe('exerciseRealMedia', () => {
@@ -73,5 +76,18 @@ describe('exerciseRealMedia', () => {
       expect(realGifForMediaKey(key)).toBeUndefined();
       expect(realThumbForMediaKey(key)).toBeUndefined();
     }
+  });
+  it('uses a matching close-grip demo but never shares the base push-up clip with variants', () => {
+    expect(planExerciseMediaOverride(48, 'pushup')).toEqual({
+      suppressSharedVideo: true,
+      gifAsset: 105,
+      posterAsset: 205
+    });
+    expect(planExerciseMediaOverride(49, 'pushup')).toEqual({
+      suppressSharedVideo: true
+    });
+    expect(planExerciseMediaOverride(10, 'pushup')).toBeUndefined();
+    expect(planExerciseMediaOverride(59, 'pushup')).toBeUndefined();
+    expect(planExerciseMediaOverride(48, 'pullup')).toBeUndefined();
   });
 });
