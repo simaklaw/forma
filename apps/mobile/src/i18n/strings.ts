@@ -375,6 +375,13 @@ const RU = {
   bmiCategoryOver: 'избыточный',
   bmiCategoryObese: 'ожирение',
 
+  // Календарь активности (ActivityCalendar)
+  calLegendFull: 'Тренировка + питание',
+  calLegendLight: 'Одно из двух',
+  calLegendFrozen: 'Заморозка серии',
+  calPrevMonth: 'Предыдущий месяц',
+  calNextMonth: 'Следующий месяц',
+
   // Прогресс (ProgressScreen)
   progressRecoveryA11y: 'Восстановление {score} процентов, {status}',
   progressMuscles: 'Мышцы',
@@ -1017,6 +1024,12 @@ const EN: Record<StringKey, string> = {
   bmiCategoryNormal: 'normal',
   bmiCategoryOver: 'overweight',
   bmiCategoryObese: 'obese',
+
+  calLegendFull: 'Workout + food',
+  calLegendLight: 'Only one logged',
+  calLegendFrozen: 'Streak freeze',
+  calPrevMonth: 'Previous month',
+  calNextMonth: 'Next month',
 
   progressRecoveryA11y: 'Recovery {score} percent, {status}',
   progressMuscles: 'Muscles',
