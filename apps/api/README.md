@@ -9,7 +9,7 @@ FitPulse sync API — Hono on Node 22, TypeScript, zero-build (tsx + node:test).
 | GET | `/health` | — | Liveness + active auth/store mode |
 | GET | `/api/openapi.json` | — | OpenAPI 3.1 document (from zod schemas) |
 | GET | `/api/docs` | — | Interactive Swagger UI (renders openapi.json) |
-| GET | `/api/v1/nutrition/product/:barcode` | — | Open Food Facts proxy (cached, ODbL) |
+| GET | `/api/v1/nutrition/product/:barcode` | — | Open Food Facts proxy (ODbL; TTL cache: Postgres or in-memory) |
 | POST | `/api/v1/auth/register` | — | auth_subject → JWT (when JWT_SECRET set) |
 | POST | `/api/v1/auth/oidc` | — | Mail.ru / VK ID token or code+PKCE → JWT |
 | POST | `/api/v1/sync/push` | Bearer | Idempotent batch of client operations |

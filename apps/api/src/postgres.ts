@@ -10,6 +10,10 @@ import type {
 } from './store.ts';
 import { PostgresProjectionService } from './projections.ts';
 import type { SyncChange } from '@forma/sync-contract';
+import type {
+  NutritionCacheEntry,
+  NutritionCacheStore,
+} from './nutrition.ts';
 
 export type Sql = ReturnType<typeof postgres>;
 
@@ -273,5 +277,50 @@ export class PostgresSyncUnitOfWork implements SyncUnitOfWork {
         projections: new PostgresProjectionService(tx),
       });
     });
+  }
+}
+
+/**
+ * Persistent TTL cache for the Open Food Facts proxy. Shared public
+ * (ODbL) data — the RLS policy on nutrition.product_cache is
+ * intentionally permissive (see migration 007).
+ */
+export class PostgresNutritionCacheStore implements NutritionCacheStore {
+  private readonly sql: DbClient;
+
+  constructor(sql: DbClient) {
+    this.sql = sql;
+  }
+
+  async get(barcode: string): Promise<NutritionCacheEntry | undefined> {
+    const rows = (await this.sql`
+      SELECT product, expires_at
+      FROM nutrition.product_cache
+      WHERE barcode = ${barcode}
+      LIMIT 1
+    `) as { product: NutritionCacheEntry['product']; expires_at: Date }[];
+    const row = rows[0];
+    if (!row) return undefined;
+    return {
+      expires: new Date(row.expires_at).getTime(),
+      product: row.product,
+    };
+  }
+
+  async set(barcode: string, entry: NutritionCacheEntry): Promise<void> {
+    const product = entry.product
+      ? asJson(this.sql, entry.product as unknown as Record<string, unknown>)
+      : this.sql`null`;
+    await this.sql`
+      INSERT INTO nutrition.product_cache (barcode, product, expires_at)
+      VALUES (${barcode}, ${product}, ${new Date(entry.expires)})
+      ON CONFLICT (barcode) DO UPDATE SET
+        product = EXCLUDED.product,
+        fetched_at = now(),
+        expires_at = EXCLUDED.expires_at
+    `;
+    // shortcut: no LRU cap on the Postgres backend — expired rows are
+    // pruned on every write, bounding the table by the live TTL window.
+    await this.sql`DELETE FROM nutrition.product_cache WHERE expires_at < now()`;
   }
 }

@@ -82,6 +82,8 @@ export interface NutritionServiceOptions {
   ttlMs?: number;
   /** Injectable clock for deterministic cache tests. */
   now?: () => number;
+  /** Persistent cache backend (Postgres in production; Map by default). */
+  store?: NutritionCacheStore;
 }
 
 export type NutritionLookupResult =
@@ -101,9 +103,19 @@ function stringFrom(value: unknown): string | undefined {
   return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
 
-interface CacheEntry {
+/** One cache record: a found product, or null for a remembered miss. */
+export interface NutritionCacheEntry {
   readonly expires: number;
   readonly product: NutritionProductSummary | null;
+}
+
+/**
+ * Pluggable persistence for the TTL cache. Postgres-backed in
+ * production (PostgresNutritionCacheStore); absent = in-memory Map.
+ */
+export interface NutritionCacheStore {
+  get(barcode: string): Promise<NutritionCacheEntry | undefined>;
+  set(barcode: string, entry: NutritionCacheEntry): Promise<void>;
 }
 
 export class NutritionService {
@@ -111,13 +123,15 @@ export class NutritionService {
   private readonly baseUrl: string;
   private readonly ttlMs: number;
   private readonly now: () => number;
-  private readonly cache = new Map<string, CacheEntry>();
+  private readonly store: NutritionCacheStore | undefined;
+  private readonly cache = new Map<string, NutritionCacheEntry>();
 
   constructor(options: NutritionServiceOptions = {}) {
     this.doFetch = options.fetch ?? globalFetch();
     this.baseUrl = options.baseUrl ?? OFF_BASE_URL;
     this.ttlMs = options.ttlMs ?? NUTRITION_CACHE_TTL_MS;
     this.now = options.now ?? (() => Date.now());
+    this.store = options.store;
   }
 
   /**
@@ -125,7 +139,7 @@ export class NutritionService {
    * Found and not-found results are cached; upstream errors are not.
    */
   async lookup(barcode: string): Promise<NutritionLookupResult> {
-    const hit = this.cache.get(barcode);
+    const hit = await this.readCache(barcode);
     if (hit && hit.expires > this.now()) {
       return hit.product
         ? { status: 'found', product: hit.product }
@@ -154,7 +168,7 @@ export class NutritionService {
 
     const parsed = offResponseSchema.safeParse(raw);
     if (!parsed.success || parsed.data.status === 0) {
-      this.rememberMiss(barcode);
+      await this.rememberMiss(barcode);
       return { status: 'not_found' };
     }
 
@@ -163,7 +177,7 @@ export class NutritionService {
     if (!name) {
       // OFF returns status 1 even for empty stub records; treat those
       // as not found so clients do not render nameless products.
-      this.rememberMiss(barcode);
+      await this.rememberMiss(barcode);
       return { status: 'not_found' };
     }
 
@@ -193,18 +207,52 @@ export class NutritionService {
       source: 'open-food-facts',
     };
 
-    this.cache.set(barcode, { expires: this.now() + this.ttlMs, product });
+    await this.writeCache(barcode, {
+      expires: this.now() + this.ttlMs,
+      product,
+    });
+    return { status: 'found', product };
+  }
+
+  private async rememberMiss(barcode: string): Promise<void> {
+    await this.writeCache(barcode, {
+      expires: this.now() + Math.min(this.ttlMs, MISS_CACHE_TTL_MS),
+      product: null,
+    });
+  }
+
+  /** Read through the persistent store when present, else the Map. */
+  private async readCache(
+    barcode: string,
+  ): Promise<NutritionCacheEntry | undefined> {
+    if (this.store) {
+      try {
+        return await this.store.get(barcode);
+      } catch (err) {
+        // A broken cache must never break lookups — degrade to a miss.
+        console.error('[fitpulse-api] nutrition cache read failed', err);
+        return undefined;
+      }
+    }
+    return this.cache.get(barcode);
+  }
+
+  private async writeCache(
+    barcode: string,
+    entry: NutritionCacheEntry,
+  ): Promise<void> {
+    if (this.store) {
+      try {
+        await this.store.set(barcode, entry);
+      } catch (err) {
+        console.error('[fitpulse-api] nutrition cache write failed', err);
+      }
+      return;
+    }
+    this.cache.set(barcode, entry);
     if (this.cache.size > MAX_CACHE_ENTRIES) {
       const oldest = this.cache.keys().next().value;
       if (oldest !== undefined) this.cache.delete(oldest);
     }
-    return { status: 'found', product };
-  }
-
-  private rememberMiss(barcode: string): void {
-    this.cache.set(barcode, {
-      expires: this.now() + Math.min(this.ttlMs, MISS_CACHE_TTL_MS),
-      product: null,
-    });
   }
 }
