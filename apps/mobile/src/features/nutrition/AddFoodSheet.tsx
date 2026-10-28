@@ -6,7 +6,12 @@ import AppBottomSheet from '@/components/BottomSheet';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useT } from '@/i18n/strings';
-import { useFitPulseStore, selectTodayMeals, DayMeals } from '@/state/useFitPulseStore';
+import {
+  useFitPulseStore,
+  selectTodayMeals,
+  DayMeals,
+  type FoodItem
+} from '@/state/useFitPulseStore';
 import { OpenFoodFactsService, NormalizedFood } from '@/services/OpenFoodFactsService';
 import BarcodeScannerSheet from './BarcodeScannerSheet';
 import { foodFingerprint, type LoggedFoodSummary } from './recentFoods';
@@ -58,7 +63,18 @@ const LOCAL_PRESETS: NormalizedFood[] = [
 ];
 
 function summaryToFood(f: LoggedFoodSummary): NormalizedFood {
-  return { name: f.name, kcal: f.kcal, protein: f.protein, fat: f.fat, carbs: f.carbs };
+  return {
+    name: f.name,
+    kcal: f.kcal,
+    protein: f.protein,
+    fat: f.fat,
+    carbs: f.carbs,
+    // Микронутриенты сохранены в недавних/избранном — возвращаем их в карточку.
+    ...(f.fiber != null ? { fiber: f.fiber } : {}),
+    ...(f.sugars != null ? { sugars: f.sugars } : {}),
+    ...(f.saturatedFat != null ? { saturatedFat: f.saturatedFat } : {}),
+    ...(f.sodiumMg != null ? { sodiumMg: f.sodiumMg } : {})
+  };
 }
 
 function matchesQuery(name: string, query: string): boolean {
@@ -193,13 +209,21 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
 
   function logFromFood(item: NormalizedFood) {
     const mult = portion / 100;
-    addFoodItem(mealKey, {
+    const entry: Omit<FoodItem, 'id'> = {
       name: item.name,
       kcal: Math.round((item.kcal || 0) * mult),
       protein: Math.round((item.protein || 0) * mult),
       fat: Math.round((item.fat || 0) * mult),
       carbs: Math.round((item.carbs || 0) * mult)
-    });
+    };
+    // Микронутриенты масштабируются порцией; чего OFF не отдал — не записываем.
+    if (item.fiber != null) entry.fiber = Math.round(item.fiber * mult * 10) / 10;
+    if (item.sugars != null) entry.sugars = Math.round(item.sugars * mult * 10) / 10;
+    if (item.saturatedFat != null) {
+      entry.saturatedFat = Math.round(item.saturatedFat * mult * 10) / 10;
+    }
+    if (item.sodiumMg != null) entry.sodiumMg = Math.round(item.sodiumMg * mult);
+    addFoodItem(mealKey, entry);
     setQuery('');
     setPortion(100);
     onClose();

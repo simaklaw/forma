@@ -9,6 +9,11 @@ export interface LoggedFoodSummary {
   protein: number;
   fat: number;
   carbs: number;
+  /** Микронутриенты порции — протаскиваются из OFF через недавние/избранное. */
+  fiber?: number;
+  sugars?: number;
+  saturatedFat?: number;
+  sodiumMg?: number;
 }
 
 export const RECENT_FOODS_LIMIT = 30;

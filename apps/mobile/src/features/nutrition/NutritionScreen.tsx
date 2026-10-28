@@ -22,6 +22,7 @@ import MacroBar from '@/components/MacroBar';
 import ProfileGateBanner from '@/components/ProfileGateBanner';
 import ScreenHeader from '@/components/ScreenHeader';
 import AddFoodSheet from './AddFoodSheet';
+import { MICRO_REFERENCE, hasAnyMicros, sumDailyMicros } from './dailyMicros';
 
 const MEAL_LABEL_KEYS: Record<keyof DayMeals, StringKey> = {
   breakfast: 'mealBreakfast',
@@ -59,6 +60,14 @@ export default function NutritionScreen() {
   const setLogs = useFitPulseStore((s) => s.setLogs);
   const calculateTargets = useFitPulseStore((s) => s.calculateTargets);
   const totals = selectDailyTotals(meals);
+  // Микронутриенты приходят из OFF; карточку прячем, пока данных нет.
+  const micros = sumDailyMicros([
+    ...meals.breakfast,
+    ...meals.lunch,
+    ...meals.snack,
+    ...meals.dinner
+  ]);
+  const showMicros = hasAnyMicros(micros);
 
   const complete = isProfileComplete({
     weightKg: profile.weight,
@@ -169,6 +178,42 @@ export default function NutritionScreen() {
             )}
           </View>
         </View>
+
+        {showMicros ? (
+          <View style={styles.microCard}>
+            <Text style={styles.microTitle}>{t('microCardTitle')}</Text>
+            <MacroBar
+              label={t('microFiber')}
+              value={micros.fiber}
+              target={MICRO_REFERENCE.fiber}
+              color={colors.lime}
+              tagWidth={92}
+            />
+            <MacroBar
+              label={t('microSugars')}
+              value={micros.sugars}
+              target={MICRO_REFERENCE.sugars}
+              color={colors.macroCarb}
+              tagWidth={92}
+            />
+            <MacroBar
+              label={t('microSatFat')}
+              value={micros.saturatedFat}
+              target={MICRO_REFERENCE.saturatedFat}
+              color={colors.macroFat}
+              tagWidth={92}
+            />
+            <MacroBar
+              label={t('microSodium')}
+              value={micros.sodiumMg}
+              target={MICRO_REFERENCE.sodiumMg}
+              color={colors.cyan}
+              unit={t('microUnitMg')}
+              tagWidth={92}
+            />
+            <Text style={styles.microHint}>{t('microHint')}</Text>
+          </View>
+        ) : null}
 
         <DailyTipCard inset />
 
@@ -376,6 +421,22 @@ function createStyles(colors: ColorTokens) {
       fontFamily: fonts.mono,
       fontSize: 12,
       marginTop: 1
+    },
+    microCard: {
+      marginHorizontal: spacing.xl,
+      marginTop: spacing.md,
+      padding: spacing.lg,
+      backgroundColor: colors.panel,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: colors.line
+    },
+    microTitle: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.bodySemi },
+    microHint: {
+      marginTop: 2,
+      color: colors.paperFaint,
+      fontSize: 10.5,
+      fontFamily: fonts.body
     },
     waterCard: {
       marginHorizontal: spacing.xl,

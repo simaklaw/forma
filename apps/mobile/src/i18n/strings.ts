@@ -330,6 +330,15 @@ const RU = {
   foodQuickAddA11y: 'Добавить в приём, указав только калории',
   foodQuickAddUntitled: 'Перекус',
 
+  // Микронутриенты (NutritionScreen)
+  microCardTitle: 'Микронутриенты',
+  microFiber: 'Клетчатка',
+  microSugars: 'Сахара',
+  microSatFat: 'Насыщ. жиры',
+  microSodium: 'Натрий',
+  microUnitMg: 'мг',
+  microHint: 'Данные — Open Food Facts · ориентиры на день: клетчатка 30 г, сахара ≤50 г, насыщ. жиры ≤20 г, натрий ≤2300 мг',
+
   // Прогресс (ProgressScreen)
   progressRecoveryA11y: 'Восстановление {score} процентов, {status}',
   progressMuscles: 'Мышцы',
@@ -929,6 +938,14 @@ const EN: Record<StringKey, string> = {
   foodQuickAddName: 'Name (quick)',
   foodQuickAddA11y: 'Add to meal with calories only',
   foodQuickAddUntitled: 'Snack',
+
+  microCardTitle: 'Micronutrients',
+  microFiber: 'Fiber',
+  microSugars: 'Sugars',
+  microSatFat: 'Sat. fat',
+  microSodium: 'Sodium',
+  microUnitMg: 'mg',
+  microHint: 'Data from Open Food Facts · daily reference: fiber 30 g, sugars ≤50 g, sat. fat ≤20 g, sodium ≤2300 mg',
 
   progressRecoveryA11y: 'Recovery {score} percent, {status}',
   progressMuscles: 'Muscles',
