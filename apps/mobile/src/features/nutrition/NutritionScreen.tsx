@@ -22,6 +22,7 @@ import MacroBar from '@/components/MacroBar';
 import ProfileGateBanner from '@/components/ProfileGateBanner';
 import ScreenHeader from '@/components/ScreenHeader';
 import AddFoodSheet from './AddFoodSheet';
+import ActivityLogSheet from '@/features/activities/ActivityLogSheet';
 import { MICRO_REFERENCE, hasAnyMicros, sumDailyMicros } from './dailyMicros';
 
 const MEAL_LABEL_KEYS: Record<keyof DayMeals, StringKey> = {
@@ -58,6 +59,7 @@ export default function NutritionScreen() {
   const lang = useLanguageStore((s) => s.lang);
   const locale = lang === 'en' ? 'en-US' : 'ru-RU';
   const sheetRef = useRef<GorhomBottomSheet>(null);
+  const activitySheetRef = useRef<GorhomBottomSheet>(null);
   const [activeMeal, setActiveMeal] = React.useState<keyof DayMeals>('breakfast');
 
   const allMeals = useFitPulseStore((s) => s.todayMeals);
@@ -73,6 +75,8 @@ export default function NutritionScreen() {
   const stopFasting = useFitPulseStore((s) => s.stopFasting);
   const profile = useFitPulseStore((s) => s.profile);
   const setLogs = useFitPulseStore((s) => s.setLogs);
+  const loggedActivities = useFitPulseStore((s) => s.loggedActivities);
+  const removeUserActivity = useFitPulseStore((s) => s.removeUserActivity);
   const calculateTargets = useFitPulseStore((s) => s.calculateTargets);
   const totals = selectDailyTotals(meals);
   // Микронутриенты приходят из OFF; карточку прячем, пока данных нет.
@@ -94,8 +98,23 @@ export default function NutritionScreen() {
     ? calculateTargets()
     : { target: 0, proteinTarget: 0, fatTarget: 0, carbTarget: 0, bmr: 0, tdee: 0, protocolActive: false };
 
+  // Ручные активности (кардио по MET-каталогу): только сегодня, ккал — в бюджет.
+  const todayActivities = React.useMemo(
+    () => loggedActivities.filter((a) => a.dateKey === toDateKey(new Date())),
+    [loggedActivities]
+  );
+  const activitiesBurn = todayActivities.reduce((sum, a) => sum + a.burnedKcal, 0);
+  // Весь вчерашний день целиком — для кнопки «повторить день» после приёмов.
+  const yesterdayAll = React.useMemo(
+    () =>
+      (Object.keys(MEAL_LABEL_KEYS) as (keyof DayMeals)[]).flatMap((key) =>
+        selectYesterdayMealItems(allMeals, key)
+      ),
+    [allMeals]
+  );
+
   const burned = complete
-    ? estimateWorkoutBurnKcal(setLogs, toDateKey(new Date()), profile.weight)
+    ? estimateWorkoutBurnKcal(setLogs, toDateKey(new Date()), profile.weight) + activitiesBurn
     : 0;
   const budget = Math.round(targets.target + burned);
   const remainingKcal = complete ? Math.round(budget - totals.kcal) : 0;
@@ -274,6 +293,46 @@ export default function NutritionScreen() {
           </View>
         </View>
 
+        <View style={styles.activityCard}>
+          <View style={styles.waterHead}>
+            <Text style={styles.waterTitle}>{t('activityCardTitle')}</Text>
+            <TouchableOpacity
+              style={styles.addBtn}
+              onPress={() => {
+                RestTimerEngine.hapticTabSwitch();
+                activitySheetRef.current?.expand();
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={t('activityLogTitle')}
+            >
+              <Text style={styles.addBtnText}>{t('nutritionAdd')}</Text>
+            </TouchableOpacity>
+          </View>
+          {todayActivities.length === 0 ? (
+            <Text style={styles.empty}>{t('activityEmptyHint')}</Text>
+          ) : (
+            todayActivities.map((a) => (
+              <View key={a.id} style={styles.activityRow}>
+                <Text style={styles.activityName} numberOfLines={1}>
+                  {a.name}
+                </Text>
+                <Text style={styles.foodMacro}>
+                  {a.durationMin} {t('activityMinShort')} · {a.burnedKcal} {t('kcal')}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => removeUserActivity(a.id)}
+                  style={styles.foodDelBtn}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('delete')}
+                >
+                  <Text style={styles.foodDel}>×</Text>
+                </TouchableOpacity>
+              </View>
+            ))
+          )}
+        </View>
+
         <View style={styles.fastingCard}>
           <View style={styles.waterHead}>
             <Text style={styles.waterTitle}>{t('fastingTitle')}</Text>
@@ -404,6 +463,26 @@ export default function NutritionScreen() {
             )}
           </View>
         ))}
+
+        {yesterdayAll.length > 0 ? (
+          <TouchableOpacity
+            style={styles.dayCopyBtn}
+            onPress={() => {
+              (Object.keys(MEAL_LABEL_KEYS) as (keyof DayMeals)[]).forEach((key) => {
+                const items = selectYesterdayMealItems(allMeals, key);
+                if (items.length > 0) copyFoodItems(key, items);
+              });
+              RestTimerEngine.hapticTabSwitch();
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={t('nutritionRepeatDayFull')}
+          >
+            <Text style={styles.dayCopyBtnText}>
+              ⟲ {t('nutritionRepeatDayFull')} · {yesterdayAll.reduce((sum, i) => sum + i.kcal, 0)}{' '}
+              {t('kcal')}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
       </ScrollView>
 
       <AddFoodSheet
@@ -411,6 +490,12 @@ export default function NutritionScreen() {
         mealKey={activeMeal}
         mealLabel={t(MEAL_LABEL_KEYS[activeMeal])}
         onClose={() => sheetRef.current?.close()}
+      />
+
+      <ActivityLogSheet
+        ref={activitySheetRef}
+        weightKg={typeof profile.weight === 'number' ? profile.weight : 70}
+        onClose={() => activitySheetRef.current?.close()}
       />
     </SafeAreaView>
   );
@@ -533,6 +618,29 @@ function createStyles(colors: ColorTokens) {
       opacity: 0.85,
       borderColor: colors.cyan
     },
+    activityCard: {
+      marginHorizontal: spacing.xl,
+      marginTop: spacing.md,
+      padding: spacing.lg,
+      backgroundColor: colors.panel,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: colors.line
+    },
+    activityRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
+    activityName: { flex: 1, color: colors.paper, fontSize: 13 },
+    dayCopyBtn: {
+      marginHorizontal: spacing.xl,
+      marginTop: spacing.sm,
+      marginBottom: spacing.sm,
+      paddingVertical: 10,
+      borderRadius: radius.control,
+      borderWidth: 1,
+      borderStyle: 'dashed',
+      borderColor: colors.lineStrong,
+      alignItems: 'center'
+    },
+    dayCopyBtnText: { color: colors.paperDim, fontSize: 12, fontFamily: fonts.body },
     fastingCard: {
       marginHorizontal: spacing.xl,
       marginTop: spacing.md,
