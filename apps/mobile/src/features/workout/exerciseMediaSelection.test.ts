@@ -1,4 +1,4 @@
-import { isCanonicalProfileAnimationExercise, resolveProfileExerciseMedia, suppressSharedPushUpMediaForPlanVariant } from './exerciseMediaSelection';
+import { isCanonicalProfileAnimationExercise, resolveProfileExerciseMedia } from './exerciseMediaSelection';
 
 const variants = {
   pullup: { male: 11, female: 12 },
@@ -33,11 +33,4 @@ describe('resolveProfileExerciseMedia', () => {
     expect(isCanonicalProfileAnimationExercise(50, 'pullup')).toBe(false);
   });
 
-  it('keeps close-grip and feet-elevated push-ups away from shared FitPulse media', () => {
-    expect(suppressSharedPushUpMediaForPlanVariant(48, 'pushup')).toBe(true);
-    expect(suppressSharedPushUpMediaForPlanVariant(49, 'pushup')).toBe(true);
-    expect(suppressSharedPushUpMediaForPlanVariant(10, 'pushup')).toBe(false);
-    expect(suppressSharedPushUpMediaForPlanVariant(59, 'pushup')).toBe(false);
-    expect(suppressSharedPushUpMediaForPlanVariant(48, 'pullup')).toBe(false);
-  });
 });
