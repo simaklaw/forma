@@ -324,6 +324,12 @@ const RU = {
   scanTorchOn: 'Фонарик: вкл',
   scanTorchOff: 'Фонарик: выкл',
 
+  // Недавние / избранное / быстрое добавление (AddFoodSheet)
+  foodRecentTitle: 'Недавние',
+  foodQuickAddName: 'Название (быстро)',
+  foodQuickAddA11y: 'Добавить в приём, указав только калории',
+  foodQuickAddUntitled: 'Перекус',
+
   // Прогресс (ProgressScreen)
   progressRecoveryA11y: 'Восстановление {score} процентов, {status}',
   progressMuscles: 'Мышцы',
@@ -918,6 +924,11 @@ const EN: Record<StringKey, string> = {
   scanOpenSettings: 'Open settings',
   scanTorchOn: 'Flashlight: on',
   scanTorchOff: 'Flashlight: off',
+
+  foodRecentTitle: 'Recent',
+  foodQuickAddName: 'Name (quick)',
+  foodQuickAddA11y: 'Add to meal with calories only',
+  foodQuickAddUntitled: 'Snack',
 
   progressRecoveryA11y: 'Recovery {score} percent, {status}',
   progressMuscles: 'Muscles',
