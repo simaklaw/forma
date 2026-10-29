@@ -108,10 +108,8 @@ function createStyles(colors: ColorTokens) {
       marginBottom: spacing.md,
       marginTop: spacing.sm,
       padding: 14,
-      borderWidth: 1,
-      borderColor: colors.line,
       borderRadius: radius.card,
-      backgroundColor: colors.panel
+      backgroundColor: colors.surfaceContainer
     },
     row: {
       flexDirection: 'row',
@@ -152,11 +150,9 @@ function createStyles(colors: ColorTokens) {
     },
     chip: {
       borderRadius: radius.pill,
-      borderWidth: 1,
-      borderColor: colors.lineStrong,
       paddingHorizontal: 10,
       paddingVertical: 5,
-      backgroundColor: colors.panelRaised
+      backgroundColor: colors.surfaceContainerHigh
     },
     chipText: {
       color: colors.paperDim,
