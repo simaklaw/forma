@@ -1,10 +1,12 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { spacing, typeScale, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import type { TabParamList } from '@/navigation/types';
+import Md3Card from './md3/Md3Card';
+import Md3Button from './md3/Md3Button';
 
 type Props = {
   title?: string;
@@ -24,44 +26,25 @@ export default function ProfileGateBanner({
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
 
   return (
-    <View style={[styles.banner, inset && styles.inset]}>
+    <Md3Card variant="flat" padding="lg" style={inset ? styles.inset : null}>
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.body}>{body}</Text>
-      <TouchableOpacity
-        style={styles.cta}
+      <Md3Button
+        variant="tonal"
+        size="md"
+        label="Открыть профиль"
         onPress={() => navigation.navigate('Профиль')}
-        accessibilityRole="button"
-        accessibilityLabel="Открыть профиль"
-      >
-        <Text style={styles.ctaText}>Открыть профиль</Text>
-      </TouchableOpacity>
-    </View>
+        style={styles.cta}
+      />
+    </Md3Card>
   );
 }
 
 function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
-  banner: {
-    padding: spacing.lg,
-    backgroundColor: colors.panelRaised,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: colors.lineStrong
-  },
-  inset: {
-    marginHorizontal: spacing.xl,
-    marginTop: spacing.lg
-  },
-  title: { color: colors.paper, fontFamily: fonts.bodySemi, fontSize: 14, marginBottom: 6 },
-  body: { color: colors.paperDim, fontFamily: fonts.body, fontSize: 13, lineHeight: 18 },
-  cta: {
-    marginTop: 12,
-    alignSelf: 'flex-start',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: radius.control,
-    backgroundColor: colors.lime
-  },
-  ctaText: { color: colors.ink, fontFamily: fonts.bodySemi, fontSize: 13 }
-});
+    inset: { marginHorizontal: spacing.xl, marginTop: spacing.lg },
+    title: { ...typeScale.titleMedium, color: colors.paper, marginBottom: 6 },
+    body: { ...typeScale.bodyMedium, color: colors.paperDim },
+    cta: { marginTop: spacing.md, alignSelf: 'flex-start' }
+  });
 }

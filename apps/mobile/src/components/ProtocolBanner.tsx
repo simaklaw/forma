@@ -1,9 +1,11 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { StyleSheet, Text, View } from 'react-native';
+import { fonts, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { isProtocolActive, detectWeightPlateau } from '@/engines/MetabolicEngine';
+import Md3Card from './md3/Md3Card';
+import Md3Button from './md3/Md3Button';
 
 export default function ProtocolBanner() {
   const colors = useThemeColors();
@@ -29,31 +31,25 @@ export default function ProtocolBanner() {
 
   return (
     <View>
-      <View style={[styles.status, (active || suspected) && styles.statusActive]}>
+      <Md3Card
+        variant={active || suspected ? 'outlined' : 'flat'}
+        padding="md"
+        style={[styles.statusWrap, (active || suspected) && { borderColor: colors.ember }]}
+      >
         <Text style={styles.eyebrow}>FITPULSE · метаболизм</Text>
         <Text style={[styles.statusText, (active || suspected) && styles.statusTextActive]}>
           {statusText}
         </Text>
-      </View>
+      </Md3Card>
       <View style={styles.actions}>
-        <TouchableOpacity
-          style={[styles.btn, active && styles.btnDisabled]}
-          disabled={active}
-          onPress={triggerRefeed}
-          accessibilityRole="button"
-        >
+        <Md3Button variant="tonal" disabled={active} onPress={triggerRefeed} style={styles.btn}>
           <Text style={styles.btnTitle}>Рефид · 24ч</Text>
           <Text style={styles.btnSub}>Цель → TDEE, углеводы</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.btn, active && styles.btnDisabled]}
-          disabled={active}
-          onPress={triggerDietBreak}
-          accessibilityRole="button"
-        >
+        </Md3Button>
+        <Md3Button variant="tonal" disabled={active} onPress={triggerDietBreak} style={styles.btn}>
           <Text style={styles.btnTitle}>Diet Break · 14 дней</Text>
           <Text style={styles.btnSub}>Цель → TDEE, сброс адаптации</Text>
-        </TouchableOpacity>
+        </Md3Button>
       </View>
     </View>
   );
@@ -61,15 +57,7 @@ export default function ProtocolBanner() {
 
 function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
-  status: {
-    borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: radius.card,
-    backgroundColor: colors.panel,
-    padding: spacing.md,
-    marginBottom: spacing.md
-  },
-  statusActive: { borderColor: colors.ember },
+  statusWrap: { marginBottom: spacing.md },
   eyebrow: {
     color: colors.lime,
     fontSize: 10,
@@ -80,15 +68,7 @@ function createStyles(colors: ColorTokens) {
   statusText: { color: colors.paperDim, fontSize: 12, lineHeight: 17, fontFamily: fonts.body },
   statusTextActive: { color: colors.paper },
   actions: { flexDirection: 'row', gap: 10, marginBottom: spacing.xl },
-  btn: {
-    flex: 1,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: colors.lineStrong,
-    borderRadius: radius.control,
-    backgroundColor: colors.panel
-  },
-  btnDisabled: { opacity: 0.35 },
+  btn: { flex: 1 },
   btnTitle: { color: colors.paper, fontSize: 12.5, fontFamily: fonts.bodySemi, marginBottom: 4 },
   btnSub: { color: colors.paperFaint, fontSize: 10, fontFamily: fonts.body }
 });

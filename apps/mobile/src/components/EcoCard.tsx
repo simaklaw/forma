@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { StyleSheet, Text } from 'react-native';
+import { fonts, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useT } from '@/i18n/strings';
+import Md3Card from './md3/Md3Card';
 import { selectEcoSummary } from '@/engines/ecoStats';
 import type { ImportedActivity } from '@forma/core';
 import type { UserActivity } from '@/state/useFitPulseStore';
@@ -39,10 +40,7 @@ export default function EcoCard({
   if (summary.distanceKm <= 0) return null;
 
   return (
-    <View
-      style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}
-      accessibilityRole="summary"
-    >
+    <Md3Card variant="flat" padding="md" style={styles.card} accessibilityRole="summary">
       <Text style={[styles.kicker, { color: colors.paperFaint }]}>{t('ecoKicker')}</Text>
       <Text style={[styles.value, { color: colors.lime }]}>
         {t('ecoCo2Saved', { kg: summary.co2SavedKg.toFixed(1) })}
@@ -51,18 +49,13 @@ export default function EcoCard({
         {t('ecoDistanceKm', { km: summary.distanceKm.toFixed(1), days: windowDays })}
       </Text>
       <Text style={[styles.hint, { color: colors.paperFaint }]}>{t('ecoHint')}</Text>
-    </View>
+    </Md3Card>
   );
 }
 
 function createStyles(_colors: ColorTokens) {
   return StyleSheet.create({
-    card: {
-      borderWidth: 1,
-      borderRadius: radius.card,
-      padding: spacing.md,
-      marginBottom: spacing.md
-    },
+    card: { marginBottom: spacing.md },
     kicker: {
       fontFamily: fonts.mono,
       fontSize: 11,
