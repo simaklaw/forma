@@ -324,6 +324,21 @@ const RU = {
   scanTorchOn: 'Фонарик: вкл',
   scanTorchOff: 'Фонарик: выкл',
 
+  // Сканер этикетки продукта (LabelScanSheet, идея — FitSage, ideas-only)
+  labelScanTitle: 'Этикетка · скан',
+  labelScanHint: 'Наведите камеру на таблицу «пищевая ценность» на упаковке',
+  labelScanShutter: 'Снять этикетку',
+  labelScanReading: 'Распознаю таблицу…',
+  labelScanEmptyTitle: 'Таблица не распознана',
+  labelScanEmptyBody: 'Снимите ещё раз при хорошем свете — или введите значения вручную.',
+  labelScanRetake: 'Переснять',
+  labelScanUse: 'Подставить значения',
+  labelScanButton: '⌗ Этикетка',
+  labelScanButtonA11y: 'Отсканировать этикетку продукта камерой',
+  labelScanResultTitle: 'С этикетки · на 100 г',
+  labelScanAiNeededTitle: 'Нужен vision-ассистент',
+  labelScanAiNeededBody: 'Распознавание этикеток работает через вашего ИИ-ассистента с vision (BYOK). Настройте его в профиле.',
+
   // Недавние / избранное / быстрое добавление (AddFoodSheet)
   foodRecentTitle: 'Недавние',
   foodQuickAddName: 'Название (быстро)',
@@ -1014,6 +1029,21 @@ const EN: Record<StringKey, string> = {
   scanOpenSettings: 'Open settings',
   scanTorchOn: 'Flashlight: on',
   scanTorchOff: 'Flashlight: off',
+
+  // Label scan (LabelScanSheet, idea from FitSage, ideas-only)
+  labelScanTitle: 'Label scan',
+  labelScanHint: 'Point the camera at the nutrition table on the package',
+  labelScanShutter: 'Capture label',
+  labelScanReading: 'Reading the table…',
+  labelScanEmptyTitle: 'Could not read the table',
+  labelScanEmptyBody: 'Try again in better light — or enter the values manually.',
+  labelScanRetake: 'Retake',
+  labelScanUse: 'Use values',
+  labelScanButton: '⌗ Label',
+  labelScanButtonA11y: 'Scan a product label with the camera',
+  labelScanResultTitle: 'From the label · per 100 g',
+  labelScanAiNeededTitle: 'Vision assistant needed',
+  labelScanAiNeededBody: 'Label reading works through your AI assistant with vision (BYOK). Set it up in the profile.',
 
   foodRecentTitle: 'Recent',
   foodQuickAddName: 'Name (quick)',

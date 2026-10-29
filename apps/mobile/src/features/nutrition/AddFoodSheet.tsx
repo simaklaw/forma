@@ -16,6 +16,7 @@ import {
 } from '@/state/useFitPulseStore';
 import { OpenFoodFactsService, NormalizedFood } from '@/services/OpenFoodFactsService';
 import BarcodeScannerSheet from './BarcodeScannerSheet';
+import LabelScanSheet from './LabelScanSheet';
 import { barcodeEquals } from './ownFoods';
 import { foodFingerprint, type LoggedFoodSummary } from './recentFoods';
 
@@ -140,6 +141,7 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
   const [carbs100, setCarbs100] = useState('10');
   const [templateName, setTemplateName] = useState('');
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
+  const [labelScanVisible, setLabelScanVisible] = useState(false);
   const [scannerVisible, setScannerVisible] = useState(false);
   const [scanMode, setScanMode] = useState<ScanMode>('search');
   const [customBarcode, setCustomBarcode] = useState('');
@@ -576,6 +578,14 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
               </TouchableOpacity>
             </View>
           </View>
+          <TouchableOpacity
+            style={[styles.scanBtn, styles.labelScanBtn]}
+            onPress={() => setLabelScanVisible(true)}
+            accessibilityRole="button"
+            accessibilityLabel={t('labelScanButtonA11y')}
+          >
+            <Text style={styles.scanBtnText}>{t('labelScanButton')}</Text>
+          </TouchableOpacity>
           <View style={styles.formRow}>
             <Text style={styles.label}>{t('foodPortion', { portion })}</Text>
             <Slider
@@ -675,6 +685,17 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
           )}
         </View>
       ) : null}
+      <LabelScanSheet
+        visible={labelScanVisible}
+        onClose={() => setLabelScanVisible(false)}
+        onParsed={(result) => {
+          setLabelScanVisible(false);
+          setKcal100(String(result.kcal));
+          setProtein100(String(result.protein));
+          setFat100(String(result.fat));
+          setCarbs100(String(result.carbs));
+        }}
+      />
       <BarcodeScannerSheet
         visible={scannerVisible}
         onClose={() => setScannerVisible(false)}
@@ -733,6 +754,7 @@ function createStyles(colors: ColorTokens) {
       marginBottom: 4
     },
     scanBtnText: { color: colors.lime, fontFamily: fonts.bodySemi, fontSize: 13 },
+    labelScanBtn: { alignSelf: 'flex-start', marginTop: 4 },
     quickAddRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
     quickAddNameInput: { flex: 1, marginBottom: 0 },
     quickAddKcalInput: { width: 72, marginBottom: 0, textAlign: 'center', fontFamily: fonts.mono },
