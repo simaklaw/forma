@@ -158,7 +158,7 @@ export default function ImportedLibraryPanel() {
         placeholderTextColor={colors.paperFaint}
         style={[
           styles.search,
-          { backgroundColor: colors.panel, borderColor: colors.lineStrong, color: colors.paper }
+          { backgroundColor: colors.surfaceContainer, color: colors.paper }
         ]}
         accessibilityLabel={t('panelSearchA11y')}
         returnKeyType="search"
@@ -176,13 +176,13 @@ export default function ImportedLibraryPanel() {
               onPress={() => setCategory(active ? null : item)}
               style={[
                 styles.chip,
-                { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                active && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                { backgroundColor: colors.surfaceContainer },
+                active && { backgroundColor: colors.primaryContainer }
               ]}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
             >
-              <Text style={[styles.chipText, { color: active ? colors.lime : colors.paperDim }]}>
+              <Text style={[styles.chipText, { color: active ? colors.onPrimaryContainer : colors.paperDim }]}>
                 {categoryLabel(item, lang)}
               </Text>
             </TouchableOpacity>
@@ -194,14 +194,14 @@ export default function ImportedLibraryPanel() {
           onPress={() => setLevel(null)}
           style={[
             styles.chip,
-            { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-            level === null && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+            { backgroundColor: colors.surfaceContainer },
+            level === null && { backgroundColor: colors.primaryContainer }
           ]}
           accessibilityRole="button"
           accessibilityState={{ selected: level === null }}
           accessibilityLabel={t('catalogLevelAllChip')}
         >
-          <Text style={[styles.chipText, { color: level === null ? colors.lime : colors.paperDim }]}>
+          <Text style={[styles.chipText, { color: level === null ? colors.onPrimaryContainer : colors.paperDim }]}>
             {t('catalogLevelAllChip')}
           </Text>
         </TouchableOpacity>
@@ -213,14 +213,14 @@ export default function ImportedLibraryPanel() {
               onPress={() => setLevel(active ? null : value)}
               style={[
                 styles.chip,
-                { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                active && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                { backgroundColor: colors.surfaceContainer },
+                active && { backgroundColor: colors.primaryContainer }
               ]}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
               accessibilityLabel={levelLabel(value, lang)}
             >
-              <Text style={[styles.chipText, { color: active ? colors.lime : colors.paperDim }]}>
+              <Text style={[styles.chipText, { color: active ? colors.onPrimaryContainer : colors.paperDim }]}>
                 {levelLabel(value, lang)}
               </Text>
             </TouchableOpacity>
@@ -232,15 +232,15 @@ export default function ImportedLibraryPanel() {
           onPress={() => setEquipment(null)}
           style={[
             styles.chip,
-            { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-            equipment === null && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+            { backgroundColor: colors.surfaceContainer },
+            equipment === null && { backgroundColor: colors.primaryContainer }
           ]}
           accessibilityRole="button"
           accessibilityState={{ selected: equipment === null }}
           accessibilityLabel={t('catalogEquipmentAllChip')}
         >
           <Text
-            style={[styles.chipText, { color: equipment === null ? colors.lime : colors.paperDim }]}
+            style={[styles.chipText, { color: equipment === null ? colors.onPrimaryContainer : colors.paperDim }]}
           >
             {t('catalogEquipmentAllChip')}
           </Text>
@@ -253,14 +253,14 @@ export default function ImportedLibraryPanel() {
               onPress={() => setEquipment(active ? null : value)}
               style={[
                 styles.chip,
-                { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                active && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                { backgroundColor: colors.surfaceContainer },
+                active && { backgroundColor: colors.primaryContainer }
               ]}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
               accessibilityLabel={equipmentLabel(value, lang)}
             >
-              <Text style={[styles.chipText, { color: active ? colors.lime : colors.paperDim }]}>
+              <Text style={[styles.chipText, { color: active ? colors.onPrimaryContainer : colors.paperDim }]}>
                 {equipmentLabel(value, lang)}
               </Text>
             </TouchableOpacity>
@@ -272,10 +272,9 @@ export default function ImportedLibraryPanel() {
           onPress={() => setMusclePickerOpen((v) => !v)}
           style={[
             styles.chip,
-            { borderColor: colors.lineStrong, backgroundColor: colors.panel },
+            { backgroundColor: colors.surfaceContainer },
             (musclePickerOpen || selectedGroups.length > 0) && {
-              borderColor: colors.lime,
-              backgroundColor: colors.limeDim
+              backgroundColor: colors.primaryContainer
             }
           ]}
           accessibilityRole="button"
@@ -285,7 +284,7 @@ export default function ImportedLibraryPanel() {
             style={[
               styles.chipText,
               {
-                color: musclePickerOpen || selectedGroups.length > 0 ? colors.lime : colors.paperDim
+                color: musclePickerOpen || selectedGroups.length > 0 ? colors.onPrimaryContainer : colors.paperDim
               }
             ]}
           >
@@ -297,7 +296,7 @@ export default function ImportedLibraryPanel() {
         {selectedGroups.length > 0 ? (
           <TouchableOpacity
             onPress={() => setSelectedGroups([])}
-            style={[styles.chip, { borderColor: colors.lineStrong, backgroundColor: colors.panel }]}
+            style={[styles.chip, { backgroundColor: colors.surfaceContainer }]}
             accessibilityRole="button"
           >
             <Text style={[styles.chipText, { color: colors.paperDim }]}>
@@ -330,7 +329,7 @@ export default function ImportedLibraryPanel() {
           const src = thumbKey ? IMPORTED_EXERCISE_IMAGES[thumbKey] : undefined;
           return (
             <TouchableOpacity
-              style={[styles.row, { borderColor: colors.line, backgroundColor: colors.panel }]}
+              style={[styles.row, { backgroundColor: colors.surfaceContainer }]}
               onPress={() => setSelected(item)}
               accessibilityRole="button"
               accessibilityLabel={displayName(item)}
@@ -346,7 +345,7 @@ export default function ImportedLibraryPanel() {
                     {displayName(item)}
                   </Text>
                   {!item.nameRu ? (
-                    <View style={[styles.enBadge, { borderColor: colors.lineStrong }]}>
+                    <View style={[styles.enBadge, { backgroundColor: colors.surfaceContainer }]}>
                       <Text style={[styles.enBadgeText, { color: colors.paperFaint }]}>EN</Text>
                     </View>
                   ) : null}
@@ -399,7 +398,7 @@ export default function ImportedLibraryPanel() {
                   {displayName(selected)}
                 </Text>
                 {!selected.nameRu ? (
-                  <View style={[styles.enBadge, { borderColor: colors.lineStrong }]}>
+                  <View style={[styles.enBadge, { backgroundColor: colors.surfaceContainer }]}>
                     <Text style={[styles.enBadgeText, { color: colors.paperFaint }]}>EN</Text>
                   </View>
                 ) : null}
@@ -421,7 +420,7 @@ export default function ImportedLibraryPanel() {
                   {importedMuscleKeys(selected.primaryMuscles).map((key) => (
                     <View
                       key={key}
-                      style={[styles.muscleChip, { borderColor: colors.lineStrong }]}
+                      style={[styles.muscleChip, { backgroundColor: colors.surfaceContainer }]}
                     >
                       <Text style={[styles.muscleChipText, { color: colors.paperDim }]}>
                         {muscleLabel(key, lang)}
@@ -478,7 +477,6 @@ const styles = StyleSheet.create({
   search: {
     marginHorizontal: spacing.xl,
     marginTop: spacing.sm,
-    borderWidth: 1,
     borderRadius: radius.control,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -490,7 +488,6 @@ const styles = StyleSheet.create({
   chipsRow: { flexDirection: 'row', flexWrap: 'wrap' },
   chipWrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   muscleChip: {
-    borderWidth: 1,
     borderRadius: radius.pill,
     paddingHorizontal: 10,
     paddingVertical: 4
@@ -500,7 +497,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: radius.control,
-    borderWidth: 1,
     marginRight: 8
   },
   chipText: { fontSize: 13, fontFamily: fonts.bodySemi },
@@ -526,7 +522,6 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 10,
     borderRadius: radius.card,
-    borderWidth: 1,
     marginBottom: 8
   },
   thumb: { width: 64, height: 64, borderRadius: radius.control },
@@ -535,7 +530,6 @@ const styles = StyleSheet.create({
   name: { flex: 1, fontSize: 15, fontFamily: fonts.bodySemi },
   meta: { fontSize: 12, fontFamily: fonts.body },
   enBadge: {
-    borderWidth: 1,
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2

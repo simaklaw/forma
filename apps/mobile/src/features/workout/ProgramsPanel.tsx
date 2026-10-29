@@ -3,6 +3,7 @@ import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
+import Md3Button from '@/components/md3/Md3Button';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { levelLabel, programTemplateTitle, useT, type StringKey } from '@/i18n/strings';
@@ -77,23 +78,18 @@ export default function ProgramsPanel() {
         const active = program?.templateId === item.id;
         const level = levels[item.id];
         return (
-          <View
-            style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}
-          >
+          <View style={[styles.card, { backgroundColor: colors.surfaceContainer }]}>
             <View style={styles.titleRow}>
               <View
-                style={[
-                  styles.goalChip,
-                  { borderColor: colors.lime, backgroundColor: colors.limeDim }
-                ]}
+                style={[styles.goalChip, { backgroundColor: colors.primaryContainer }]}
               >
-                <Text style={[styles.goalChipText, { color: colors.lime }]}>
+                <Text style={[styles.goalChipText, { color: colors.onPrimaryContainer }]}>
                   {t(GOAL_KEY[item.goal])}
                 </Text>
               </View>
               {active ? (
-                <View style={[styles.activeChip, { borderColor: colors.cyan }]}>
-                  <Text style={[styles.activeChipText, { color: colors.cyan }]}>
+                <View style={[styles.activeChip, { backgroundColor: colors.surfaceContainerHigh }]}>
+                  <Text style={[styles.activeChipText, { color: colors.paper }]}>
                     {t('programsPanelActiveBadge')}
                   </Text>
                 </View>
@@ -116,15 +112,15 @@ export default function ProgramsPanel() {
                     onPress={() => setLevels((prev) => ({ ...prev, [item.id]: value }))}
                     style={[
                       styles.chip,
-                      { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                      selected && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                      { backgroundColor: colors.surfaceContainer },
+                      selected && { backgroundColor: colors.primaryContainer }
                     ]}
                     accessibilityRole="radio"
                     accessibilityState={{ selected }}
                     accessibilityLabel={levelLabel(value, lang)}
                   >
                     <Text
-                      style={[styles.chipText, { color: selected ? colors.lime : colors.paperDim }]}
+                      style={[styles.chipText, { color: selected ? colors.onPrimaryContainer : colors.paperDim }]}
                     >
                       {levelLabel(value, lang)}
                     </Text>
@@ -142,15 +138,15 @@ export default function ProgramsPanel() {
                     onPress={() => setLength(weeks)}
                     style={[
                       styles.chip,
-                      { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                      selected && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                      { backgroundColor: colors.surfaceContainer },
+                      selected && { backgroundColor: colors.primaryContainer }
                     ]}
                     accessibilityRole="radio"
                     accessibilityState={{ selected }}
                     accessibilityLabel={t(LENGTH_KEY[weeks])}
                   >
                     <Text
-                      style={[styles.chipText, { color: selected ? colors.lime : colors.paperDim }]}
+                      style={[styles.chipText, { color: selected ? colors.onPrimaryContainer : colors.paperDim }]}
                     >
                       {t(LENGTH_KEY[weeks])}
                     </Text>
@@ -159,16 +155,12 @@ export default function ProgramsPanel() {
               })}
             </View>
 
-            <TouchableOpacity
-              style={[styles.startCta, { backgroundColor: colors.lime }]}
+            <Md3Button
+              variant="filled"
+              size="md"
+              label={t('programStartCta')}
               onPress={() => onStart(item)}
-              accessibilityRole="button"
-              accessibilityLabel={t('programStartCta')}
-            >
-              <Text style={[styles.startCtaText, { color: colors.ink }]}>
-                ▶  {t('programStartCta')}
-              </Text>
-            </TouchableOpacity>
+            />
           </View>
         );
       }}
@@ -179,21 +171,18 @@ export default function ProgramsPanel() {
 const styles = StyleSheet.create({
   list: { paddingHorizontal: spacing.xl, paddingTop: 4, paddingBottom: 120, gap: 12 },
   card: {
-    borderWidth: 1,
     borderRadius: radius.card,
     padding: spacing.md,
     gap: 10
   },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   goalChip: {
-    borderWidth: 1,
     borderRadius: radius.pill,
     paddingHorizontal: 10,
     paddingVertical: 4
   },
   goalChipText: { fontFamily: fonts.bodySemi, fontSize: 11, letterSpacing: 0.4 },
   activeChip: {
-    borderWidth: 1,
     borderRadius: radius.pill,
     paddingHorizontal: 10,
     paddingVertical: 4
@@ -204,17 +193,9 @@ const styles = StyleSheet.create({
   rowLabel: { fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1, marginTop: 2 },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
-    borderWidth: 1,
     borderRadius: radius.control,
     paddingHorizontal: 12,
     paddingVertical: 8
   },
-  chipText: { fontFamily: fonts.bodySemi, fontSize: 12 },
-  startCta: {
-    marginTop: 4,
-    borderRadius: radius.control,
-    paddingVertical: 12,
-    alignItems: 'center'
-  },
-  startCtaText: { fontFamily: fonts.bodySemi, fontSize: 14, textAlign: 'center' }
+  chipText: { fontFamily: fonts.bodySemi, fontSize: 12 }
 });

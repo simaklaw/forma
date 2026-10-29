@@ -96,7 +96,7 @@ export default function CustomWorkoutsPanel() {
   return (
     <ScrollView contentContainerStyle={styles.list}>
       <TouchableOpacity
-        style={[styles.createBtn, { borderColor: colors.lime, backgroundColor: colors.limeDim }]}
+        style={[styles.createBtn, { backgroundColor: colors.primaryContainer }]}
         onPress={() => {
           const id = useCustomWorkoutStore.getState().createWorkout('');
           setEditingId(id);
@@ -104,7 +104,7 @@ export default function CustomWorkoutsPanel() {
         accessibilityRole="button"
         accessibilityLabel={t('customCreateCta')}
       >
-        <Text style={[styles.createBtnText, { color: colors.lime }]}>{t('customCreateCta')}</Text>
+        <Text style={[styles.createBtnText, { color: colors.onPrimaryContainer }]}>{t('customCreateCta')}</Text>
       </TouchableOpacity>
 
       {workouts.length === 0 ? (
@@ -117,7 +117,7 @@ export default function CustomWorkoutsPanel() {
           return (
             <View
               key={w.id}
-              style={[styles.card, { borderColor: colors.line, backgroundColor: colors.panel }]}
+              style={[styles.card, { backgroundColor: colors.surfaceContainer }]}
             >
               <Text style={[styles.cardName, { color: colors.paper }]} numberOfLines={1}>
                 {w.name || t('customUntitled')}
@@ -144,7 +144,7 @@ export default function CustomWorkoutsPanel() {
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.miniBtn, { borderColor: colors.lineStrong }]}
+                  style={[styles.miniBtn, { backgroundColor: colors.surfaceContainer }]}
                   onPress={() => setEditingId(w.id)}
                   accessibilityRole="button"
                   accessibilityLabel={t('customEditCta')}
@@ -152,7 +152,7 @@ export default function CustomWorkoutsPanel() {
                   <Text style={[styles.miniBtnText, { color: colors.paperDim }]}>✎</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.miniBtn, { borderColor: colors.lineStrong }]}
+                  style={[styles.miniBtn, { backgroundColor: colors.surfaceContainer }]}
                   onPress={() => {
                     useCustomWorkoutStore
                       .getState()
@@ -164,7 +164,7 @@ export default function CustomWorkoutsPanel() {
                   <Text style={[styles.miniBtnText, { color: colors.paperDim }]}>⧉</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.miniBtn, { borderColor: colors.lineStrong }]}
+                  style={[styles.miniBtn, { backgroundColor: colors.surfaceContainer }]}
                   onPress={() => remove(w.id, w.name || t('customUntitled'))}
                   accessibilityRole="button"
                   accessibilityLabel={t('delete')}
@@ -309,13 +309,13 @@ function CustomWorkoutEditor({
             onSubmitEditing={commitName}
             placeholder={t('customNamePlaceholder')}
             placeholderTextColor={colors.paperFaint}
-            style={[styles.nameInput, { color: colors.paper, borderColor: colors.lineStrong, backgroundColor: colors.panel }]}
+            style={[styles.nameInput, { backgroundColor: colors.surfaceContainer, color: colors.paper }]}
             accessibilityLabel={t('customNamePlaceholder')}
             returnKeyType="done"
           />
 
           <View
-            style={[styles.schemeCard, { borderColor: colors.line, backgroundColor: colors.panel }]}
+            style={[styles.schemeCard, { backgroundColor: colors.surfaceContainer }]}
           >
             <Text style={[styles.schemeTitle, { color: colors.paper }]}>
               {t('customSchemeTitle')}
@@ -329,7 +329,7 @@ function CustomWorkoutEditor({
                   key={key}
                   style={[
                     styles.schemeChip,
-                    { borderColor: colors.lineStrong, backgroundColor: colors.panelRaised }
+                    { backgroundColor: colors.surfaceContainerHigh }
                   ]}
                   onPress={() => applyScheme(key)}
                   accessibilityRole="button"
@@ -359,7 +359,7 @@ function CustomWorkoutEditor({
               const name = def?.name ?? `#${item.exerciseId}`;
               const open = expanded === index;
               return (
-                <View style={[styles.itemCard, { borderColor: colors.line, backgroundColor: colors.panel }]}>
+                <View style={[styles.itemCard, { backgroundColor: colors.surfaceContainer }]}>
                   <TouchableOpacity
                     onPress={() => setExpanded(open ? null : index)}
                     accessibilityRole="button"
@@ -419,8 +419,8 @@ function CustomWorkoutEditor({
                         <TouchableOpacity
                           style={[
                             styles.ssToggle,
-                            { borderColor: colors.line },
-                            item.supersetWithPrev && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                            { backgroundColor: colors.surfaceContainer },
+                            item.supersetWithPrev && { backgroundColor: colors.primaryContainer }
                           ]}
                           onPress={() =>
                             updateItem(index, { supersetWithPrev: !item.supersetWithPrev })
@@ -432,7 +432,7 @@ function CustomWorkoutEditor({
                           <Text
                             style={[
                               styles.ssToggleText,
-                              { color: item.supersetWithPrev ? colors.lime : colors.paperDim }
+                              { color: item.supersetWithPrev ? colors.onPrimaryContainer : colors.paperDim }
                             ]}
                           >
                             {t('customSupersetChip')}
@@ -441,7 +441,7 @@ function CustomWorkoutEditor({
                       ) : null}
                       <View style={styles.itemActions}>
                         <TouchableOpacity
-                          style={[styles.miniBtn, { borderColor: colors.lineStrong }]}
+                          style={[styles.miniBtn, { backgroundColor: colors.surfaceContainer }]}
                           disabled={index === 0}
                           onPress={() => moveItem(index, -1)}
                           accessibilityRole="button"
@@ -450,7 +450,7 @@ function CustomWorkoutEditor({
                           <Text style={[styles.miniBtnText, { color: colors.paperDim }]}>▲</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                          style={[styles.miniBtn, { borderColor: colors.lineStrong }]}
+                          style={[styles.miniBtn, { backgroundColor: colors.surfaceContainer }]}
                           disabled={index === items.length - 1}
                           onPress={() => moveItem(index, 1)}
                           accessibilityRole="button"
@@ -459,7 +459,7 @@ function CustomWorkoutEditor({
                           <Text style={[styles.miniBtnText, { color: colors.paperDim }]}>▼</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                          style={[styles.miniBtn, { borderColor: colors.ember }]}
+                          style={[styles.miniBtn, { backgroundColor: colors.surfaceContainer }]}
                           onPress={() => removeItem(index)}
                           accessibilityRole="button"
                           accessibilityLabel={t('customRemoveItem')}
@@ -475,7 +475,7 @@ function CustomWorkoutEditor({
           />
 
           <TouchableOpacity
-            style={[styles.addBtn, { borderColor: colors.lime }]}
+            style={[styles.addBtn, { backgroundColor: colors.surfaceContainer }]}
             onPress={() => setPickerOpen(true)}
             accessibilityRole="button"
             accessibilityLabel={t('customAddExercise')}
@@ -586,7 +586,7 @@ function ExercisePickerModal({
             onChangeText={onQuery}
             placeholder={t('customSearchPlaceholder')}
             placeholderTextColor={colors.paperFaint}
-            style={[styles.nameInput, { color: colors.paper, borderColor: colors.lineStrong, backgroundColor: colors.panel }]}
+            style={[styles.nameInput, { backgroundColor: colors.surfaceContainer, color: colors.paper }]}
             accessibilityLabel={t('customSearchPlaceholder')}
           />
           <FlatList
@@ -625,14 +625,12 @@ function createStyles(_colors: ColorTokens) {
   return StyleSheet.create({
     list: { paddingHorizontal: spacing.lg, paddingBottom: 32, gap: 10, paddingTop: spacing.md },
     createBtn: {
-      borderWidth: 1,
-      borderStyle: 'dashed',
       borderRadius: radius.card,
       paddingVertical: 14,
       alignItems: 'center'
     },
     createBtnText: { fontFamily: fonts.bodySemi, fontSize: 14 },
-    card: { borderWidth: 1, borderRadius: radius.card, padding: spacing.md, gap: 8 },
+    card: { borderRadius: radius.card, padding: spacing.md, gap: 8 },
     cardName: { fontFamily: fonts.bodySemi, fontSize: 15 },
     cardMeta: { fontFamily: fonts.body, fontSize: 12 },
     cardHint: { fontFamily: fonts.body, fontSize: 12 },
@@ -646,7 +644,6 @@ function createStyles(_colors: ColorTokens) {
     },
     startBtnText: { fontFamily: fonts.bodySemi, fontSize: 13 },
     miniBtn: {
-      borderWidth: 1,
       borderRadius: radius.control,
       width: 38,
       height: 38,
@@ -661,26 +658,24 @@ function createStyles(_colors: ColorTokens) {
     modalClose: { fontFamily: fonts.bodySemi, fontSize: 15 },
     modalBody: { flex: 1, paddingHorizontal: spacing.lg, paddingBottom: 24, gap: 10 },
     nameInput: {
-      borderWidth: 1,
       borderRadius: radius.control,
       paddingHorizontal: 12,
       paddingVertical: 10,
       fontFamily: fonts.body,
       fontSize: 15
     },
-    schemeCard: { borderWidth: 1, borderRadius: radius.card, padding: spacing.md, gap: 8 },
+    schemeCard: { borderRadius: radius.card, padding: spacing.md, gap: 8 },
     schemeTitle: { fontFamily: fonts.bodySemi, fontSize: 14 },
     schemeHint: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17 },
     schemeChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
     schemeChip: {
-      borderWidth: 1,
       borderRadius: radius.control,
       paddingHorizontal: 10,
       paddingVertical: 6
     },
     schemeChipText: { fontFamily: fonts.bodySemi, fontSize: 12, textTransform: 'capitalize' },
     schemeNote: { fontFamily: fonts.body, fontSize: 12 },
-    itemCard: { borderWidth: 1, borderRadius: radius.card, padding: spacing.md, gap: 8 },
+    itemCard: { borderRadius: radius.card, padding: spacing.md, gap: 8 },
     itemRow: { flexDirection: 'row', alignItems: 'center' },
     itemName: { fontFamily: fonts.bodySemi, fontSize: 14 },
     itemMeta: { fontFamily: fonts.body, fontSize: 12, marginTop: 2 },
@@ -691,7 +686,6 @@ function createStyles(_colors: ColorTokens) {
     stepperLabel: { fontFamily: fonts.body, fontSize: 12 },
     stepperControls: { flexDirection: 'row', alignItems: 'center', gap: 10 },
     stepperBtn: {
-      borderWidth: 1,
       borderRadius: radius.control,
       width: 34,
       height: 34,
@@ -703,7 +697,6 @@ function createStyles(_colors: ColorTokens) {
     itemActions: { flexDirection: 'row', gap: 8, justifyContent: 'flex-end', marginTop: 4 },
     ssToggle: {
       alignSelf: 'flex-start',
-      borderWidth: 1,
       borderRadius: radius.pill,
       paddingVertical: 6,
       paddingHorizontal: 12,
@@ -711,7 +704,6 @@ function createStyles(_colors: ColorTokens) {
     },
     ssToggleText: { fontFamily: fonts.bodySemi, fontSize: 12 },
     addBtn: {
-      borderWidth: 1,
       borderRadius: radius.control,
       paddingVertical: 12,
       alignItems: 'center'

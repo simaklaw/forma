@@ -143,7 +143,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
             onPress={onClose}
             accessibilityRole="button"
             accessibilityLabel={t('close')}
-            style={[styles.barBtn, { borderColor: colors.lineStrong }]}
+            style={[styles.barBtn, { backgroundColor: colors.surfaceContainer }]}
           >
             <Text style={[styles.barBtnText, { color: colors.lime }]}>{t('close')}</Text>
           </TouchableOpacity>
@@ -154,13 +154,10 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
             accessibilityState={{ selected: favorited }}
             style={[
               styles.barBtn,
-              {
-                borderColor: favorited ? colors.lime : colors.lineStrong,
-                backgroundColor: favorited ? colors.limeDim : 'transparent'
-              }
+              { backgroundColor: favorited ? colors.primaryContainer : 'transparent' }
             ]}
           >
-            <Text style={[styles.barBtnText, { color: favorited ? colors.lime : colors.paperDim }]}>
+            <Text style={[styles.barBtnText, { color: favorited ? colors.onPrimaryContainer : colors.paperDim }]}>
               {favorited ? t('favoriteOn') : t('favoriteOff')}
             </Text>
           </TouchableOpacity>
@@ -197,11 +194,11 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
           />
 
           <View style={styles.statsRow}>
-            <View style={[styles.stat, { borderColor: colors.line, backgroundColor: colors.panel }]}>
+            <View style={[styles.stat, { backgroundColor: colors.surfaceContainer }]}>
               <Text style={[styles.statLabel, { color: colors.paperFaint }]}>{t('statSets')}</Text>
               <Text style={[styles.statValue, { color: colors.paper }]}>{item.totalSets}</Text>
             </View>
-            <View style={[styles.stat, { borderColor: colors.line, backgroundColor: colors.panel }]}>
+            <View style={[styles.stat, { backgroundColor: colors.surfaceContainer }]}>
               <Text style={[styles.statLabel, { color: colors.paperFaint }]}>
                 {timed ? t('statSeconds') : t('statReps')}
               </Text>
@@ -209,11 +206,11 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
                 {formatPlanAmount(resolveSetMeasure(item.measure), item.workingReps, secondsUnit)}
               </Text>
             </View>
-            <View style={[styles.stat, { borderColor: colors.line, backgroundColor: colors.panel }]}>
+            <View style={[styles.stat, { backgroundColor: colors.surfaceContainer }]}>
               <Text style={[styles.statLabel, { color: colors.paperFaint }]}>{t('statRest')}</Text>
               <Text style={[styles.statValue, { color: colors.paper }]}>{item.restSeconds}{t('secShort')}</Text>
             </View>
-            <View style={[styles.stat, { borderColor: colors.line, backgroundColor: colors.panel }]}>
+            <View style={[styles.stat, { backgroundColor: colors.surfaceContainer }]}>
               <Text style={[styles.statLabel, { color: colors.paperFaint }]}>{t('statLoad')}</Text>
               <Text style={[styles.statValue, { color: colors.paper }]}>{loadLabel}</Text>
             </View>
@@ -224,7 +221,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
           </Text>
           <View style={styles.chipWrapRow}>
             {item.targetMuscles.map((key) => (
-              <View key={key} style={[styles.metaChip, { borderColor: colors.lineStrong }]}>
+              <View key={key} style={[styles.metaChip, { backgroundColor: colors.surfaceContainer }]}>
                 <Text style={[styles.metaChipText, { color: colors.paperDim }]}>
                   {muscleLabel(key, lang)}
                 </Text>
@@ -233,7 +230,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
           </View>
 
           {item.note ? (
-            <View style={[styles.noteBox, { borderColor: colors.line, backgroundColor: colors.panel }]}>
+            <View style={[styles.noteBox, { backgroundColor: colors.surfaceContainer }]}>
               <Text style={[styles.noteLabel, { color: colors.lime }]}>{t('tip')}</Text>
               <Text style={[styles.noteBody, { color: colors.paper }]}>{item.note}</Text>
             </View>
@@ -245,7 +242,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
             const swapChip = (swap: ExerciseSwap, kind: 'easier' | 'harder') => (
               <TouchableOpacity
                 key={`${kind}-${swap.id}`}
-                style={[styles.metaChip, { borderColor: colors.lineStrong }]}
+                style={[styles.metaChip, { backgroundColor: colors.surfaceContainer }]}
                 onPress={canReplace ? () => void onConfirmReplace(swap.id) : undefined}
                 disabled={!canReplace || replacing}
                 accessibilityRole="button"
@@ -292,7 +289,6 @@ const styles = StyleSheet.create({
     gap: 8
   },
   barBtn: {
-    borderWidth: 1,
     borderRadius: radius.pill,
     paddingHorizontal: 14,
     paddingVertical: 8
@@ -310,7 +306,6 @@ const styles = StyleSheet.create({
   replaceCtaText: { fontFamily: fonts.bodySemi, fontSize: 14, textAlign: 'center' },
   statsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   stat: {
-    borderWidth: 1,
     borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -323,7 +318,6 @@ const styles = StyleSheet.create({
   sectionLabel: { fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1 },
   chipWrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   metaChip: {
-    borderWidth: 1,
     borderRadius: radius.pill,
     paddingHorizontal: 10,
     paddingVertical: 4
@@ -332,7 +326,6 @@ const styles = StyleSheet.create({
   swapSection: { gap: 8 },
   swapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   noteBox: {
-    borderWidth: 1,
     borderRadius: radius.card,
     padding: spacing.md,
     gap: 6
