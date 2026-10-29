@@ -75,7 +75,7 @@ export function WarmupCard({ muscles }: Props) {
     <View
       style={[
         styles.card,
-        { backgroundColor: colors.panel, borderColor: allDone ? colors.lime : colors.line }
+        { backgroundColor: allDone ? colors.limeDim : colors.surfaceContainer }
       ]}
     >
       <TouchableOpacity
@@ -140,7 +140,7 @@ export function WarmupCard({ muscles }: Props) {
                 </View>
                 {running ? (
                   <TouchableOpacity
-                    style={[styles.stepBtn, { borderColor: colors.lineStrong }]}
+                    style={[styles.stepBtn, { backgroundColor: colors.surfaceContainer }]}
                     onPress={stopStep}
                     accessibilityRole="button"
                     accessibilityLabel={t('warmupStop')}
@@ -156,7 +156,7 @@ export function WarmupCard({ muscles }: Props) {
                     <TouchableOpacity
                       style={[
                         styles.stepBtn,
-                        { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                        { backgroundColor: colors.limeDim }
                       ]}
                       onPress={() => startStep(step.id, step.durationSec)}
                       accessibilityRole="button"
@@ -190,7 +190,6 @@ export function WarmupCard({ muscles }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    borderWidth: 1,
     borderRadius: radius.card,
     marginBottom: spacing.sm
   },
@@ -220,7 +219,6 @@ const styles = StyleSheet.create({
   stepCountdown: { fontSize: 14, fontFamily: fonts.mono, marginTop: 4 },
   stepActions: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   stepBtn: {
-    borderWidth: 1,
     borderRadius: radius.control,
     paddingHorizontal: 12,
     minHeight: 32,

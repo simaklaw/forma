@@ -59,9 +59,7 @@ export function RecoveryBanner() {
         marginHorizontal: 16,
         marginTop: 10,
         borderRadius: 12,
-        borderWidth: 1,
-        borderColor: colors.line,
-        backgroundColor: colors.panel,
+        backgroundColor: colors.surfaceContainer,
         flexDirection: 'row',
         alignItems: 'stretch',
         overflow: 'hidden'

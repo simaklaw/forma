@@ -7,6 +7,7 @@ import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { estimateBurnFromSetLogs, resolveSetMeasure, toDateKey as coreToDateKey } from '@forma/core';
 import { fonts } from '@/core/theme/tokens';
+import Md3Button from '@/components/md3/Md3Button';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { levelLabel, programTemplateTitle, streakDayWord, useT } from '@/i18n/strings';
@@ -371,7 +372,7 @@ export default function WorkoutScreen() {
         : t('profileGoalMaintain');
 
   const ticket = (
-    <View style={[styles.ticket, { backgroundColor: colors.panelRaised, borderColor: colors.lineStrong }]}>
+    <View style={[styles.ticket, { backgroundColor: colors.surfaceContainerHigh }]}>
       <View style={styles.ticketMain}>
         <View style={{ flex: 1, paddingRight: 12 }}>
           <Text style={[styles.ticketLabel, { color: colors.paperFaint }]}>
@@ -445,8 +446,8 @@ export default function WorkoutScreen() {
                 <Pressable
                   style={({ pressed }) => [
                     styles.restartPill,
-                    { borderColor: colors.lineStrong },
-                    pressed && { backgroundColor: colors.surfacePressed },
+                    { backgroundColor: colors.surfaceContainer },
+                    pressed && { opacity: 0.8 },
                     sessionActionBusy && { opacity: 0.6 }
                   ]}
                   accessibilityRole="button"
@@ -472,8 +473,8 @@ export default function WorkoutScreen() {
                 <Pressable
                   style={({ pressed }) => [
                     styles.restartPill,
-                    { borderColor: colors.ember },
-                    pressed && { backgroundColor: colors.surfacePressed },
+                    { backgroundColor: colors.surfaceContainer },
+                    pressed && { opacity: 0.8 },
                     sessionActionBusy && { opacity: 0.6 }
                   ]}
                   accessibilityRole="button"
@@ -536,7 +537,7 @@ export default function WorkoutScreen() {
           <Text style={[styles.title, { color: colors.paper }]}>{t('myWorkoutTitle')}</Text>
           <TouchableOpacity
             onPress={() => navigation.navigate('Каталог')}
-            style={[styles.catalogButton, { borderColor: colors.lineStrong, backgroundColor: colors.panel }]}
+            style={[styles.catalogButton, { backgroundColor: colors.surfaceContainer }]}
             accessibilityRole="button"
             accessibilityLabel={t('workoutOpenCatalog')}
           >
@@ -552,12 +553,9 @@ export default function WorkoutScreen() {
             })}
           >
             <View
-              style={[
-                styles.programChip,
-                { borderColor: colors.lime, backgroundColor: colors.limeDim }
-              ]}
+              style={[styles.programChip, { backgroundColor: colors.primaryContainer }]}
             >
-              <Text style={[styles.programChipText, { color: colors.lime }]}>
+              <Text style={[styles.programChipText, { color: colors.onPrimaryContainer }]}>
                 {t('programWeekLine', {
                   week: programInfo.weekIndex + 1,
                   total: programInfo.lengthWeeks
@@ -569,7 +567,7 @@ export default function WorkoutScreen() {
               <View
                 style={[
                   styles.programChip,
-                  { borderColor: colors.cyan, backgroundColor: colors.panel }
+                  { backgroundColor: colors.surfaceContainer }
                 ]}
               >
                 <Text style={[styles.programChipText, { color: colors.cyan }]} numberOfLines={1}>
@@ -583,7 +581,7 @@ export default function WorkoutScreen() {
             <View
               style={[
                 styles.programChip,
-                { borderColor: colors.lineStrong, backgroundColor: colors.panel }
+                { backgroundColor: colors.surfaceContainer }
               ]}
             >
               <Text style={[styles.programChipText, { color: colors.paperDim }]}>
@@ -595,7 +593,7 @@ export default function WorkoutScreen() {
               </Text>
             </View>
             <TouchableOpacity
-              style={[styles.programSkip, { borderColor: colors.lineStrong }]}
+              style={[styles.programSkip, { backgroundColor: colors.surfaceContainer }]}
               onPress={confirmSkipDay}
               accessibilityRole="button"
               accessibilityLabel={t('programSkipDay')}
@@ -615,13 +613,13 @@ export default function WorkoutScreen() {
             return (
               <TouchableOpacity
                 key={m.id}
-                style={[styles.modeTab, { borderColor: colors.lineStrong, backgroundColor: colors.panel }, active && { borderColor: colors.lime, backgroundColor: colors.limeDim }]}
+                style={[styles.modeTab, { backgroundColor: colors.surfaceContainer }, active && { backgroundColor: colors.primaryContainer }]}
                 onPress={() => switchMode(m.id)}
                 accessibilityRole="tab"
                 accessibilityState={{ selected: active }}
                 accessibilityLabel={m.label}
               >
-                <Text style={[styles.modeTabText, { color: colors.paperDim }, active && { color: colors.lime }]}>{m.label}</Text>
+                <Text style={[styles.modeTabText, { color: colors.paperDim }, active && { color: colors.onPrimaryContainer }]}>{m.label}</Text>
               </TouchableOpacity>
             );
           })}
@@ -635,7 +633,7 @@ export default function WorkoutScreen() {
           <View
             style={[
               styles.programCard,
-              { backgroundColor: colors.panelRaised, borderColor: colors.lineStrong }
+              { backgroundColor: colors.surfaceContainerHigh }
             ]}
           >
             <Text style={[styles.programCardTitle, { color: colors.paper }]}>
@@ -658,8 +656,8 @@ export default function WorkoutScreen() {
                     key={weeks}
                     style={[
                       styles.programLengthBtn,
-                      { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                      active && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                      { backgroundColor: colors.surfaceContainer },
+                      active && { backgroundColor: colors.primaryContainer }
                     ]}
                     onPress={() => setSelectedProgramLength(weeks)}
                     accessibilityRole="radio"
@@ -670,7 +668,7 @@ export default function WorkoutScreen() {
                       style={[
                         styles.programLengthText,
                         { color: colors.paperDim },
-                        active && { color: colors.lime }
+                        active && { color: colors.onPrimaryContainer }
                       ]}
                     >
                       {label}
@@ -679,27 +677,15 @@ export default function WorkoutScreen() {
                 );
               })}
             </View>
-            <Pressable
-              style={({ pressed }) => [
-                styles.programStartBtn,
-                {
-                  backgroundColor: 'transparent',
-                  borderWidth: 1,
-                  borderColor: colors.lime
-                },
-                pressed && { backgroundColor: colors.surfacePressed }
-              ]}
+            <Md3Button
+              variant="filled"
+              size="md"
+              label={t('programStartCta')}
               onPress={() => {
                 RestTimerEngine.hapticTabSwitch();
                 startProgram(selectedProgramLength);
               }}
-              accessibilityRole="button"
-              accessibilityLabel={t('programStartCta')}
-            >
-              <Text style={[styles.programStartText, { color: colors.lime }]}>
-                {t('programStartCta')}
-              </Text>
-            </Pressable>
+            />
           </View>
         </View>
       )}
@@ -709,7 +695,7 @@ export default function WorkoutScreen() {
           <View
             style={[
               styles.programCard,
-              { backgroundColor: colors.panelRaised, borderColor: colors.lime }
+              { backgroundColor: colors.surfaceContainerHigh }
             ]}
           >
             <Text style={[styles.programCardTitle, { color: colors.paper }]}>
@@ -721,16 +707,12 @@ export default function WorkoutScreen() {
                 total: programInfo.overallTotal
               })}
             </Text>
-            <TouchableOpacity
-              style={[styles.programDoneBtn, { borderColor: colors.lime }]}
+            <Md3Button
+              variant="tonal"
+              size="sm"
+              label={t('programNewCta')}
               onPress={() => resetProgram()}
-              accessibilityRole="button"
-              accessibilityLabel={t('programNewCta')}
-            >
-              <Text style={[styles.programDoneBtnText, { color: colors.lime }]}>
-                {t('programNewCta')}
-              </Text>
-            </TouchableOpacity>
+            />
           </View>
         </View>
       )}
@@ -743,14 +725,14 @@ export default function WorkoutScreen() {
           return (
             <TouchableOpacity
               key={day.id}
-              style={[styles.dayTab, { borderColor: colors.lineStrong, backgroundColor: colors.panel }, active && { borderColor: colors.lime, backgroundColor: colors.limeDim }]}
+              style={[styles.dayTab, { backgroundColor: colors.surfaceContainer }, active && { backgroundColor: colors.primaryContainer }]}
               onPress={() => selectDay(day.id)}
               accessibilityRole="tab"
               accessibilityState={{ selected: active }}
               accessibilityLabel={isToday ? t('workoutDayToday', { day: day.name }) : day.name}
             >
               <Text
-                style={[styles.dayTabText, { color: colors.paperDim }, active && { color: colors.lime }]}
+                style={[styles.dayTabText, { color: colors.paperDim }, active && { color: colors.onPrimaryContainer }]}
                 numberOfLines={1}
               >
                 {isToday ? '· ' : ''}
@@ -762,7 +744,7 @@ export default function WorkoutScreen() {
         </ScrollView>
       ) : (
         <TouchableOpacity
-          style={[styles.dayTab, { borderColor: colors.lineStrong, backgroundColor: colors.panel }]}
+          style={[styles.dayTab, { backgroundColor: colors.surfaceContainer }]}
           onPress={() => navigation.setParams({ customWorkoutId: undefined })}
           accessibilityRole="button"
           accessibilityLabel={t('customBackToPlan')}
@@ -775,7 +757,7 @@ export default function WorkoutScreen() {
 
       <ScrollView contentContainerStyle={styles.body}>
         <View
-          style={[styles.streakRow, { backgroundColor: colors.panel, borderColor: colors.line }]}
+          style={[styles.streakRow, { backgroundColor: colors.surfaceContainer }]}
           accessibilityLabel={
             currentStreak > 0
               ? t('workoutStreakActive', {
@@ -831,7 +813,7 @@ export default function WorkoutScreen() {
           </Text>
           {overrideIds != null && overrideIds.length > 0 ? (
             <TouchableOpacity
-              style={[styles.resetOverride, { borderColor: colors.lineStrong }]}
+              style={[styles.resetOverride, { backgroundColor: colors.surfaceContainer }]}
               onPress={() => {
                 void clearDayOverride(trainingMode, activeDay.id).then(() => setOverrideTick((t) => t + 1));
               }}
@@ -861,9 +843,9 @@ export default function WorkoutScreen() {
               key={ex.id}
               style={[
                 styles.logRow,
-                { backgroundColor: colors.panel, borderColor: colors.line },
-                isCurrent && { borderColor: colors.lime },
-                matchesFocus && !isCurrent && { borderColor: colors.cyan }
+                { backgroundColor: colors.surfaceContainer },
+                isCurrent && { backgroundColor: colors.primaryContainer },
+                matchesFocus && !isCurrent && { backgroundColor: colors.surfaceContainerHigh }
               ]}
               onPress={() => {
                 RestTimerEngine.hapticTabSwitch();
