@@ -27,7 +27,6 @@ const MAX_POSTER_EXERCISES = 3;
 const POSTER = {
   ink: '#0B0F14',
   panel: '#121820',
-  panelRaised: '#182028',
   border: '#26313A',
   text: '#F8FAFC',
   muted: '#9AA6B2',
@@ -80,7 +79,10 @@ export default function WorkoutShareCard({ setLogs }: Props) {
   const handleShare = async () => {
     try {
       const uri = await captureRef(posterRef, { format: 'png', quality: 1 });
-      await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: t('shareCardTitle', { date: dateLabel }) });
+      await Sharing.shareAsync(uri, {
+        mimeType: 'image/png',
+        dialogTitle: t('shareCardTitle', { date: dateLabel })
+      });
     } catch {
       await Share.share({ message: shareText });
     }
@@ -164,7 +166,10 @@ export default function WorkoutShareCard({ setLogs }: Props) {
 
         <View style={styles.posterExerciseList}>
           {posterLines.map((line, index) => (
-            <View key={`${summary.exercises[index]?.exerciseId ?? index}-${index}`} style={styles.posterExerciseRow}>
+            <View
+              key={`${summary.exercises[index]?.exerciseId ?? index}-${index}`}
+              style={styles.posterExerciseRow}
+            >
               <Text style={styles.posterExerciseIndex}>{String(index + 1).padStart(2, '0')}</Text>
               <Text style={styles.posterExerciseText} numberOfLines={2}>
                 {line.replace(/^•\s*/, '')}
@@ -172,7 +177,9 @@ export default function WorkoutShareCard({ setLogs }: Props) {
             </View>
           ))}
           {hiddenExerciseCount > 0 ? (
-            <Text style={styles.posterMore}>{t('sharePosterMore', { count: hiddenExerciseCount })}</Text>
+            <Text style={styles.posterMore}>
+              {t('sharePosterMore', { count: hiddenExerciseCount })}
+            </Text>
           ) : null}
         </View>
 
