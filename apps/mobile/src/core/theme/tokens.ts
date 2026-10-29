@@ -49,6 +49,11 @@ export type ColorTokens = {
   macroProtein: string;
   macroFat: string;
   macroCarb: string;
+  /* M3-роли (миграция на Material 3, фаза 1 — аддитивно) */
+  surfaceContainer: string;
+  surfaceContainerHigh: string;
+  primaryContainer: string;
+  onPrimaryContainer: string;
   /* состояния кнопок */
   onAccent: string;
   accentPressed: string;
@@ -85,7 +90,11 @@ export const darkColors: ColorTokens = {
   accentPressed: '#00C892',
   surfacePressed: 'rgba(248,250,252,0.06)',
   controlDisabled: 'rgba(248,250,252,0.08)',
-  controlDisabledText: 'rgba(248,250,252,0.30)'
+  controlDisabledText: 'rgba(248,250,252,0.30)',
+  surfaceContainer: '#151B23',
+  surfaceContainerHigh: '#1B232E',
+  primaryContainer: '#03392B',
+  onPrimaryContainer: '#A9F5D6'
 };
 
 /**
@@ -121,7 +130,11 @@ export const lightColors: ColorTokens = {
   accentPressed: '#0F3A2C',
   surfacePressed: 'rgba(32,37,31,0.06)',
   controlDisabled: 'rgba(32,37,31,0.08)',
-  controlDisabledText: 'rgba(32,37,31,0.45)'
+  controlDisabledText: 'rgba(32,37,31,0.45)',
+  surfaceContainer: '#FFFFFF',
+  surfaceContainerHigh: '#F1EEE6',
+  primaryContainer: '#BEEBD2',
+  onPrimaryContainer: '#0B3D2E'
 };
 
 /** @deprecated Prefer resolveColors / useThemeColors — alias of dark for legacy imports */
@@ -133,8 +146,10 @@ export function resolveColors(mode: ThemeMode): ColorTokens {
 
 export const radius = {
   card: 16,
+  cardXl: 24,
   pill: 999,
   control: 12,
+  btn: 18,
   sheet: 22
 } as const;
 
@@ -152,6 +167,19 @@ export const fonts = {
   monoSemi: 'BarlowCondensed_600SemiBold',
   body: 'Inter_400Regular',
   bodySemi: 'Inter_600SemiBold'
+} as const;
+
+/**
+ * M3-шкала типов (фаза 1): якорные стили — display/headline/title/body/label.
+ * Экраны переводятся на неё в фазах 2–3; значения заморожены контрактом
+ * tokens.test.ts.
+ */
+export const typeScale = {
+  displayLarge: { fontFamily: fonts.mono, fontSize: 40, lineHeight: 44 },
+  headlineMedium: { fontFamily: fonts.mono, fontSize: 24, lineHeight: 30 },
+  titleMedium: { fontFamily: fonts.bodySemi, fontSize: 15, lineHeight: 20 },
+  bodyMedium: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18 },
+  labelMedium: { fontFamily: fonts.bodySemi, fontSize: 11, lineHeight: 14, letterSpacing: 0.6 }
 } as const;
 
 export const theme = { colors, radius, spacing, fonts };
