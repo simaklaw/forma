@@ -4,6 +4,7 @@ import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import Slider from '@react-native-community/slider';
 import AppBottomSheet from '@/components/BottomSheet';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import Md3Button from '@/components/md3/Md3Button';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT } from '@/i18n/strings';
@@ -599,9 +600,14 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
               thumbTintColor={colors.lime}
             />
           </View>
-          <TouchableOpacity style={styles.cta} onPress={confirmCustom} accessibilityRole="button">
-            <Text style={styles.ctaText}>{t('foodSaveAndAdd')}</Text>
-          </TouchableOpacity>
+          <View style={styles.ctaWrap}>
+            <Md3Button
+              variant="filled"
+              size="md"
+              label={t('foodSaveAndAdd')}
+              onPress={confirmCustom}
+            />
+          </View>
         </ScrollView>
       )}
 
@@ -655,19 +661,20 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
                 </TouchableOpacity>
               </View>
               <View style={styles.saveTemplateActions}>
-                <TouchableOpacity
-                  style={styles.saveTemplateCancel}
+                <Md3Button
+                  variant="outlined"
+                  size="md"
+                  label={t('cancel')}
                   onPress={() => {
                     setShowSaveTemplate(false);
                     setTemplateName('');
                     setTemplateBarcode('');
                   }}
-                  accessibilityRole="button"
-                >
-                  <Text style={styles.saveTemplateCancelText}>{t('cancel')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.saveTemplateConfirm}
+                />
+                <Md3Button
+                  variant="filled"
+                  size="md"
+                  label={t('save')}
                   onPress={() => {
                     saveMealAsTemplate(templateName, mealItems, templateBarcode || undefined);
                     setShowSaveTemplate(false);
@@ -675,11 +682,7 @@ const AddFoodSheet = forwardRef<GorhomBottomSheet, Props>(({ mealKey, mealLabel,
                     setTemplateBarcode('');
                     onClose();
                   }}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('foodSaveDish')}
-                >
-                  <Text style={styles.saveTemplateConfirmText}>{t('save')}</Text>
-                </TouchableOpacity>
+                />
               </View>
             </View>
           )}
@@ -721,20 +724,18 @@ function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
     tabs: {
       flexDirection: 'row',
-      backgroundColor: colors.panel,
+      backgroundColor: colors.surfaceContainer,
       borderRadius: radius.control,
       padding: 4,
       marginBottom: 12,
       gap: 4
     },
     tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 8 },
-    tabOn: { backgroundColor: colors.lime },
+    tabOn: { backgroundColor: colors.primaryContainer },
     tabText: { color: colors.paperDim, fontFamily: fonts.bodySemi, fontSize: 13 },
-    tabTextOn: { color: colors.ink },
+    tabTextOn: { color: colors.onPrimaryContainer },
     searchInput: {
-      backgroundColor: colors.panel,
-      borderWidth: 1,
-      borderColor: colors.lineStrong,
+      backgroundColor: colors.surfaceContainer,
       color: colors.paper,
       padding: 10,
       fontSize: 13.5,
@@ -746,14 +747,12 @@ function createStyles(colors: ColorTokens) {
       paddingHorizontal: 12,
       paddingVertical: 10,
       borderRadius: radius.control,
-      borderWidth: 1,
-      borderColor: colors.lime,
-      backgroundColor: colors.limeDim,
+      backgroundColor: colors.primaryContainer,
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: 4
     },
-    scanBtnText: { color: colors.lime, fontFamily: fonts.bodySemi, fontSize: 13 },
+    scanBtnText: { color: colors.onPrimaryContainer, fontFamily: fonts.bodySemi, fontSize: 13 },
     labelScanBtn: { alignSelf: 'flex-start', marginTop: 4 },
     quickAddRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
     quickAddNameInput: { flex: 1, marginBottom: 0 },
@@ -800,23 +799,20 @@ function createStyles(colors: ColorTokens) {
     barcodeClear: {
       width: 28,
       height: 28,
-      borderWidth: 1,
-      borderColor: colors.lineStrong,
+      borderRadius: 6,
+      backgroundColor: colors.surfaceContainer,
       alignItems: 'center',
       justifyContent: 'center'
     },
     barcodeClearText: { color: colors.paperDim, fontFamily: fonts.mono, fontSize: 14 },
     input: {
-      backgroundColor: colors.panel,
-      borderWidth: 1,
-      borderColor: colors.lineStrong,
+      backgroundColor: colors.surfaceContainer,
       color: colors.paper,
       padding: 8,
       fontFamily: fonts.mono,
       fontSize: 14
     },
-    cta: { marginTop: 10, marginBottom: 30, padding: 14, backgroundColor: colors.lime, alignItems: 'center' },
-    ctaText: { color: colors.ink, fontSize: 16, fontFamily: fonts.mono },
+    ctaWrap: { marginTop: 10, marginBottom: 30 },
     saveTemplateBox: {
       marginTop: 8,
       marginBottom: 24,
@@ -828,29 +824,10 @@ function createStyles(colors: ColorTokens) {
       paddingVertical: 10,
       paddingHorizontal: 12,
       borderRadius: radius.control,
-      borderWidth: 1,
-      borderStyle: 'dashed',
-      borderColor: colors.lineStrong,
+      backgroundColor: colors.surfaceContainer,
       alignItems: 'center'
     },
     saveTemplateBtnText: { color: colors.paperDim, fontSize: 12, fontFamily: fonts.bodySemi },
-    saveTemplateActions: { flexDirection: 'row', gap: 8, marginTop: 8 },
-    saveTemplateCancel: {
-      flex: 1,
-      paddingVertical: 10,
-      alignItems: 'center',
-      borderRadius: radius.control,
-      borderWidth: 1,
-      borderColor: colors.lineStrong
-    },
-    saveTemplateCancelText: { color: colors.paperDim, fontFamily: fonts.bodySemi, fontSize: 13 },
-    saveTemplateConfirm: {
-      flex: 1,
-      paddingVertical: 10,
-      alignItems: 'center',
-      borderRadius: radius.control,
-      backgroundColor: colors.lime
-    },
-    saveTemplateConfirmText: { color: colors.ink, fontFamily: fonts.bodySemi, fontSize: 13 }
+    saveTemplateActions: { flexDirection: 'row', gap: 8, marginTop: 8 }
   });
 }
