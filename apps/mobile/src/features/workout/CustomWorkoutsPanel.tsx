@@ -244,7 +244,10 @@ function CustomWorkoutEditor({
     useCustomWorkoutStore.getState().renameWorkout(workout!.id, name);
   }
 
-  function updateItem(index: number, patch: Partial<{ sets: number; reps: number; restSeconds: number }>) {
+  function updateItem(
+    index: number,
+    patch: Partial<{ sets: number; reps: number; restSeconds: number; supersetWithPrev: boolean }>
+  ) {
     const next = items.map((it, i) => (i === index ? { ...it, ...patch } : it));
     useCustomWorkoutStore.getState().setWorkoutItems(workout!.id, next);
   }
@@ -375,6 +378,11 @@ function CustomWorkoutEditor({
                         <Text style={[styles.itemMeta, { color: colors.paperDim }]}>
                           {item.sets}×{item.reps} · {t('statRest')} {item.restSeconds} {t('secShort')}
                         </Text>
+                        {item.supersetWithPrev ? (
+                          <Text style={[styles.ssBadge, { color: colors.lime }]}>
+                            {t('supersetBadge')}
+                          </Text>
+                        ) : null}
                       </View>
                       <Text style={[styles.chevron, { color: colors.paperFaint }]}>{open ? '▾' : '▸'}</Text>
                     </View>
@@ -407,6 +415,30 @@ function CustomWorkoutEditor({
                         unit={t('secShort')}
                         onChange={(v) => updateItem(index, { restSeconds: v })}
                       />
+                      {index > 0 ? (
+                        <TouchableOpacity
+                          style={[
+                            styles.ssToggle,
+                            { borderColor: colors.line },
+                            item.supersetWithPrev && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                          ]}
+                          onPress={() =>
+                            updateItem(index, { supersetWithPrev: !item.supersetWithPrev })
+                          }
+                          accessibilityRole="switch"
+                          accessibilityState={{ checked: Boolean(item.supersetWithPrev) }}
+                          accessibilityLabel={t('customSupersetChipA11y')}
+                        >
+                          <Text
+                            style={[
+                              styles.ssToggleText,
+                              { color: item.supersetWithPrev ? colors.lime : colors.paperDim }
+                            ]}
+                          >
+                            {t('customSupersetChip')}
+                          </Text>
+                        </TouchableOpacity>
+                      ) : null}
                       <View style={styles.itemActions}>
                         <TouchableOpacity
                           style={[styles.miniBtn, { borderColor: colors.lineStrong }]}
@@ -652,6 +684,7 @@ function createStyles(_colors: ColorTokens) {
     itemRow: { flexDirection: 'row', alignItems: 'center' },
     itemName: { fontFamily: fonts.bodySemi, fontSize: 14 },
     itemMeta: { fontFamily: fonts.body, fontSize: 12, marginTop: 2 },
+    ssBadge: { fontFamily: fonts.mono, fontSize: 11, marginTop: 2 },
     chevron: { fontFamily: fonts.mono, fontSize: 14 },
     steppers: { gap: 6, marginTop: 4 },
     stepperRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
@@ -668,6 +701,15 @@ function createStyles(_colors: ColorTokens) {
     stepperBtnText: { fontFamily: fonts.bodySemi, fontSize: 16 },
     stepperValue: { fontFamily: fonts.mono, fontSize: 14, minWidth: 52, textAlign: 'center' },
     itemActions: { flexDirection: 'row', gap: 8, justifyContent: 'flex-end', marginTop: 4 },
+    ssToggle: {
+      alignSelf: 'flex-start',
+      borderWidth: 1,
+      borderRadius: radius.pill,
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      marginTop: 6
+    },
+    ssToggleText: { fontFamily: fonts.bodySemi, fontSize: 12 },
     addBtn: {
       borderWidth: 1,
       borderRadius: radius.control,

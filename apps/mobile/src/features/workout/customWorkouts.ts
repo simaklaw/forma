@@ -18,6 +18,8 @@ export interface CustomWorkoutItem {
   restSeconds: number;
   /** Опциональный фикс рабочего веса; иначе вес из базового определения. */
   weightKg?: number;
+  /** Суперсет с предыдущим элементом (подходы по кругу). */
+  supersetWithPrev?: boolean;
 }
 
 export interface CustomWorkout {
@@ -81,7 +83,9 @@ export function normalizeCustomItems(value: unknown): CustomWorkoutItem[] {
       sets: clampInt(r.sets, 1, 20, 3),
       reps: clampInt(r.reps, 1, 100, 10),
       restSeconds: clampInt(r.restSeconds, 15, 600, 60),
-      weightKg
+      weightKg,
+      // Суперсет имеет смысл только со второго элемента: первому некого «предыдущего».
+      supersetWithPrev: out.length > 0 && r.supersetWithPrev === true ? true : undefined
     });
     if (out.length >= MAX_CUSTOM_ITEMS) break;
   }
@@ -144,7 +148,8 @@ export function resolveCustomWorkoutExercises(
       totalSets: item.sets,
       workingReps: item.reps,
       restSeconds: item.restSeconds,
-      workingWeight: item.weightKg ?? base.workingWeight
+      workingWeight: item.weightKg ?? base.workingWeight,
+      supersetWithPrev: item.supersetWithPrev === true ? true : undefined
     });
   }
   return out;

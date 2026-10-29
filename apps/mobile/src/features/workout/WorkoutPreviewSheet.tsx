@@ -51,6 +51,7 @@ const WorkoutPreviewSheet = forwardRef<GorhomBottomSheet, Props>(
                 )}
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.rowName, { color: colors.paper }]} numberOfLines={1}>
+                    {ex.supersetWithPrev ? '⇄ ' : ''}
                     {ex.name}
                   </Text>
                   <Text style={[styles.rowSub, { color: colors.paperFaint }]}>

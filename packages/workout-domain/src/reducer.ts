@@ -168,14 +168,29 @@ export function applyCommand(
         throw new DomainError('still_resting', 'Finish or skip rest before next set');
       }
 
-      const stepIndex = session.currentStepIndex;
       const steps = session.steps ?? [];
+      const stepIndex = command.stepIndex ?? session.currentStepIndex;
       const step = steps[stepIndex];
       if (!step || step.skipped) {
         throw new DomainError('step_out_of_range', 'No active step');
       }
       if (step.completedSets.length >= step.snapshot.targetSets) {
         throw new DomainError('set_already_complete', 'All sets for this step are done');
+      }
+      // Суперсет: не-текущий шаг разрешён только внутри активной суперсет-группы.
+      if (stepIndex !== session.currentStepIndex) {
+        const current = steps[session.currentStepIndex];
+        const group = step.snapshot.supersetGroup;
+        if (
+          group === undefined ||
+          !current ||
+          current.snapshot.supersetGroup !== group
+        ) {
+          throw new DomainError(
+            'step_out_of_range',
+            'Step is outside the active superset group'
+          );
+        }
       }
 
       const setNo = step.completedSets.length + 1;
@@ -217,20 +232,49 @@ export function applyCommand(
       const stepDone = completedSets.length >= step.snapshot.targetSets;
       const moreSteps = stepIndex + 1 < nextSteps.length;
 
-      if (stepDone && moreSteps) {
-        next = { ...next, currentStepIndex: stepIndex + 1 };
-      }
+      // currentStepIndex = первый незавершённый шаг. Для обычной
+      // последовательности это эквивалент старого «+1 по готовности шага»;
+      // в суперсете — остаётся на незакрытом участнике группы.
+      const firstIncomplete = nextSteps.findIndex(
+        (s) => !s.skipped && s.completedSets.length < s.snapshot.targetSets
+      );
+      next = {
+        ...next,
+        currentStepIndex:
+          firstIncomplete === -1 ? session.currentStepIndex : firstIncomplete
+      };
 
       const restSeconds =
         command.restSecondsOverride !== undefined
           ? command.restSecondsOverride
           : step.snapshot.restSeconds;
       const stillWorkOnStep = completedSets.length < step.snapshot.targetSets;
+      // Суперсет: отдых стартует, когда сет закрыл круг группы (все участники
+      // дошли до этого номера подхода), либо когда группа закрыта целиком
+      // и впереди есть ещё шаги. Одиночная группа эквивалентна старой формуле.
+      const supersetGroup = step.snapshot.supersetGroup;
+      let workRemainsBeforeRest: boolean;
+      if (supersetGroup === undefined) {
+        workRemainsBeforeRest = stillWorkOnStep || moreSteps;
+      } else {
+        const groupMembers = nextSteps.filter(
+          (s) => s.snapshot.supersetGroup === supersetGroup
+        );
+        const roundFinished = groupMembers.every(
+          (s) => s.skipped || s.completedSets.length >= setNo
+        );
+        const groupClosed =
+          stepDone &&
+          groupMembers.every(
+            (s) => s.skipped || s.completedSets.length >= s.snapshot.targetSets
+          );
+        workRemainsBeforeRest = roundFinished || (groupClosed && moreSteps);
+      }
       const shouldRest =
         command.autoStartRest !== false &&
         restSeconds != null &&
         restSeconds > 0 &&
-        (stillWorkOnStep || moreSteps) &&
+        workRemainsBeforeRest &&
         !allRequiredDone({ ...next, steps: next.steps });
 
       // Rest between sets of one step AND after the last set when another step remains.
@@ -311,10 +355,11 @@ export function applyCommand(
       const nextSteps = steps.map((s, i) =>
         i === stepIndex ? { ...s, skipped: true, skipReason: command.reason } : s
       );
-      let currentStepIndex = stepIndex;
-      if (stepIndex + 1 < nextSteps.length) {
-        currentStepIndex = stepIndex + 1;
-      }
+      // Первый незавершённый шаг: в суперсете — следующий незакрытый участник группы.
+      const firstIncomplete = nextSteps.findIndex(
+        (s) => !s.skipped && s.completedSets.length < s.snapshot.targetSets
+      );
+      const currentStepIndex = firstIncomplete === -1 ? stepIndex : firstIncomplete;
 
       const next = bump(
         {

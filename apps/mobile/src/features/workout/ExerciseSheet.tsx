@@ -51,6 +51,8 @@ export interface ExerciseDef {
   note: string;
   wgerSearchTerm?: string;
   mediaKey?: import('./exerciseMedia').ExerciseMediaKey;
+  /** Суперсет с предыдущим упражнением — подходы идут по кругу. */
+  supersetWithPrev?: boolean;
 }
 
 interface Props {
@@ -464,6 +466,11 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
             <Text style={styles.currentChipText}>{t('sheetCurrentStep')}</Text>
           </View>
         )}
+        {exercise.supersetWithPrev && (
+          <View style={[styles.currentChip, styles.supersetChip]}>
+            <Text style={styles.supersetChipText}>{t('supersetBadge')}</Text>
+          </View>
+        )}
         {blockedBySequence && (
           <View style={styles.seqBanner} accessibilityRole="text">
             <Text style={styles.seqBannerTitle}>{t('sheetSeqBlockedTitle')}</Text>
@@ -857,6 +864,8 @@ function createStyles(colors: ColorTokens) {
       borderColor: colors.lime
     },
     currentChipText: { color: colors.lime, fontFamily: fonts.mono, fontSize: 11 },
+    supersetChip: { borderColor: colors.cyan, backgroundColor: colors.cyanDim },
+    supersetChipText: { color: colors.cyan, fontFamily: fonts.mono, fontSize: 11 },
     seqBanner: {
       marginBottom: spacing.md,
       padding: 12,

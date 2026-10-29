@@ -31,6 +31,9 @@ export type WorkoutCommand =
        * null = rest off, undefined = use step.restSeconds from the plan.
        */
       restSecondsOverride?: number | null;
+      /** Шаг, в который логается подход; по умолчанию текущий. Не-текущий шаг
+       * редьюсер принимает только внутри активной суперсет-группы. */
+      stepIndex?: number;
     }
   | { type: 'skip_rest' }
   | { type: 'skip_step'; reason: SkipReason }

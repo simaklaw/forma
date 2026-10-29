@@ -3,7 +3,7 @@ import { sequentialStepInfo, sessionForViewedDay } from './sequentialStep';
 
 function fakeSession(partial: {
   currentStepIndex: number;
-  steps: { exerciseId: string; name: string }[];
+  steps: { exerciseId: string; name: string; supersetGroup?: number }[];
   status?: WorkoutSession['status'];
 }): WorkoutSession {
   return {
@@ -24,7 +24,8 @@ function fakeSession(partial: {
         name: s.name,
         targetSets: 3,
         targetReps: 8,
-        restSeconds: 60
+        restSeconds: 60,
+        supersetGroup: s.supersetGroup
       },
       completedSets: [],
       skipped: false
@@ -75,5 +76,19 @@ describe('sequentialStepInfo', () => {
     expect(sessionForViewedDay(session, 'chest')).toBeNull();
     expect(sessionForViewedDay(session, 'legs')).toBe(session);
     expect(sessionForViewedDay(null, 'chest')).toBeNull();
+  });
+
+  it('superset: участник активной группы тоже текущий', () => {
+    const session = fakeSession({
+      currentStepIndex: 0,
+      steps: [
+        { exerciseId: '1', name: 'Squat', supersetGroup: 0 },
+        { exerciseId: '2', name: 'RDL', supersetGroup: 0 },
+        { exerciseId: '3', name: 'Row' }
+      ]
+    });
+    expect(sequentialStepInfo(session, 2, names).isCurrent).toBe(true);
+    expect(sequentialStepInfo(session, 3, names).isCurrent).toBe(false);
+    expect(sequentialStepInfo(session, 3, names).expectedName).toBe('Squat');
   });
 });
