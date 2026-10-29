@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
+import Md3Card from '@/components/md3/Md3Card';
 import { useT } from '@/i18n/strings';
 import { selectActiveProvider, useAiAssistantStore } from './useAiAssistantStore';
 import AiAssistantModal from './AiAssistantModal';
@@ -19,11 +20,11 @@ export default function AiCard() {
   return (
     <>
       <TouchableOpacity
-        style={[styles.row, { backgroundColor: colors.panel, borderColor: colors.line }]}
         onPress={() => setOpen(true)}
         accessibilityRole="button"
         accessibilityLabel={t('aiCardName')}
       >
+        <Md3Card variant="flat" padding="lg" style={styles.row}>
         <Text style={[styles.name, { color: colors.paper }]}>{t('aiCardName')}</Text>
         <Text style={[styles.desc, { color: colors.paperFaint }]}>{t('aiCardDesc')}</Text>
         <Text
@@ -36,6 +37,7 @@ export default function AiCard() {
             ? t('aiProviderActive', { name: active.label || active.model })
             : t('aiCardNotConfigured')}
         </Text>
+        </Md3Card>
       </TouchableOpacity>
       <AiAssistantModal visible={open} onClose={() => setOpen(false)} />
     </>
@@ -44,9 +46,7 @@ export default function AiCard() {
 
 const styles = StyleSheet.create({
   row: {
-    padding: spacing.lg,
     borderRadius: radius.card,
-    borderWidth: 1,
     marginBottom: spacing.sm
   },
   name: { fontSize: 15, fontFamily: fonts.bodySemi },

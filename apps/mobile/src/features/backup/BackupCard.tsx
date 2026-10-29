@@ -5,6 +5,7 @@ import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
+import Md3Card from '@/components/md3/Md3Card';
 import { useT, type StringKey } from '@/i18n/strings';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import {
@@ -88,7 +89,7 @@ export default function BackupCard({ onAfterRestore }: { onAfterRestore?: () => 
   }
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+    <Md3Card variant="flat" padding="lg" style={styles.card}>
       <Text style={[styles.title, { color: colors.paper }]}>{t('backupTitle')}</Text>
       <View style={styles.chipRow}>
         {MODULE_OPTIONS.map((opt) => {
@@ -98,8 +99,8 @@ export default function BackupCard({ onAfterRestore }: { onAfterRestore?: () => 
               key={opt.id}
               style={[
                 styles.chip,
-                { borderColor: colors.lineStrong, backgroundColor: colors.ink },
-                on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                { backgroundColor: colors.surfaceContainerHigh },
+                on && { backgroundColor: colors.primaryContainer }
               ]}
               onPress={() => toggle(opt.id)}
               accessibilityRole="checkbox"
@@ -110,7 +111,7 @@ export default function BackupCard({ onAfterRestore }: { onAfterRestore?: () => 
                 style={[
                   styles.chipText,
                   { color: colors.paperDim },
-                  on && { color: colors.lime }
+                  on && { color: colors.onPrimaryContainer }
                 ]}
               >
                 {t(opt.titleKey)}
@@ -130,7 +131,7 @@ export default function BackupCard({ onAfterRestore }: { onAfterRestore?: () => 
           <Text style={[styles.btnText, { color: colors.ink }]}>{t('backupExportBtn')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.importBtn, { borderColor: colors.lineStrong, backgroundColor: colors.ink }]}
+          style={[styles.importBtn, { backgroundColor: colors.surfaceContainerHigh }]}
           onPress={() => void importBackup()}
           accessibilityRole="button"
           accessibilityLabel={t('backupImportBtn')}
@@ -138,15 +139,13 @@ export default function BackupCard({ onAfterRestore }: { onAfterRestore?: () => 
           <Text style={[styles.btnText, { color: colors.paper }]}>{t('backupImportBtn')}</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </Md3Card>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    padding: spacing.lg,
     borderRadius: radius.card,
-    borderWidth: 1,
     marginBottom: spacing.sm
   },
   title: { fontSize: 15, fontFamily: fonts.bodySemi, marginBottom: 12 },
@@ -154,8 +153,7 @@ const styles = StyleSheet.create({
   chip: {
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: radius.control,
-    borderWidth: 1
+    borderRadius: radius.control
   },
   chipText: { fontSize: 12, fontFamily: fonts.bodySemi },
   btnRow: { flexDirection: 'row', gap: 8, marginTop: 14 },
@@ -169,7 +167,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: radius.control,
-    borderWidth: 1,
     alignItems: 'center'
   },
   btnText: { fontSize: 13, fontFamily: fonts.bodySemi }
