@@ -119,7 +119,7 @@ export default function ProfileScreen() {
           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionTheme')}</Text>
           <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>{t('sectionThemeCount')}</Text>
         </View>
-        <View style={[styles.themeCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+        <View style={[styles.themeCard, { backgroundColor: colors.surfaceContainer }]}>
           <Text style={[styles.settingName, { color: colors.paper }]}>{t('themeSchemeName')}</Text>
           <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>
             {t('themeSchemeDesc')}
@@ -138,8 +138,8 @@ export default function ProfileScreen() {
                   key={opt.id}
                   style={[
                     styles.themeBtn,
-                    { borderColor: colors.lineStrong, backgroundColor: colors.ink },
-                    on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                    { backgroundColor: colors.surfaceContainer },
+                    on && { backgroundColor: colors.primaryContainer }
                   ]}
                   onPress={() => setThemePreference(opt.id)}
                   accessibilityRole="radio"
@@ -150,7 +150,7 @@ export default function ProfileScreen() {
                     style={[
                       styles.themeBtnText,
                       { color: colors.paperDim },
-                      on && { color: colors.lime }
+                      on && { color: colors.onPrimaryContainer }
                     ]}
                   >
                     {opt.label}
@@ -164,7 +164,7 @@ export default function ProfileScreen() {
         <View style={styles.sectionHead}>
           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('languageTitle')}</Text>
         </View>
-        <View style={[styles.themeCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+        <View style={[styles.themeCard, { backgroundColor: colors.surfaceContainer }]}>
           <View style={styles.themeRow}>
             {(
               [
@@ -178,8 +178,8 @@ export default function ProfileScreen() {
                   key={opt.id}
                   style={[
                     styles.themeBtn,
-                    { borderColor: colors.lineStrong, backgroundColor: colors.ink },
-                    on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                    { backgroundColor: colors.surfaceContainer },
+                    on && { backgroundColor: colors.primaryContainer }
                   ]}
                   onPress={() => setLang(opt.id)}
                   accessibilityRole="radio"
@@ -190,7 +190,7 @@ export default function ProfileScreen() {
                     style={[
                       styles.themeBtnText,
                       { color: colors.paperDim },
-                      on && { color: colors.lime }
+                      on && { color: colors.onPrimaryContainer }
                     ]}
                   >
                     {opt.label}
@@ -205,7 +205,7 @@ export default function ProfileScreen() {
           <View
             style={[
               styles.gateBanner,
-              { backgroundColor: colors.panelRaised, borderColor: colors.lineStrong }
+              { backgroundColor: colors.surfaceContainerHigh }
             ]}
           >
             <Text style={[styles.gateTitle, { color: colors.paper }]}>{t('profileGateTitle')}</Text>
@@ -216,16 +216,16 @@ export default function ProfileScreen() {
         <View
           style={[
             styles.identityCard,
-            { backgroundColor: colors.panel, borderColor: colors.line }
+            { backgroundColor: colors.surfaceContainer }
           ]}
         >
           <View
             style={[
               styles.avatar,
-              { borderColor: colors.lime, backgroundColor: colors.limeDim }
+              { backgroundColor: colors.primaryContainer }
             ]}
           >
-            <Text style={[styles.avatarText, { color: colors.lime }]}>{initials}</Text>
+            <Text style={[styles.avatarText, { color: colors.onPrimaryContainer }]}>{initials}</Text>
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.identityTitle, { color: colors.paper }]}>
@@ -251,7 +251,7 @@ export default function ProfileScreen() {
           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionVoice')}</Text>
           <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>{t('sectionVoiceCount')}</Text>
         </View>
-        <View style={[styles.themeCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+        <View style={[styles.themeCard, { backgroundColor: colors.surfaceContainer }]}>
           <Text style={[styles.settingName, { color: colors.paper }]}>{t('voiceCuesName')}</Text>
           <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>{t('voiceCuesDesc')}</Text>
           <View style={styles.themeRow}>
@@ -267,8 +267,8 @@ export default function ProfileScreen() {
                   key={String(opt.id)}
                   style={[
                     styles.themeBtn,
-                    { borderColor: colors.lineStrong, backgroundColor: colors.ink },
-                    on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                    { backgroundColor: colors.surfaceContainer },
+                    on && { backgroundColor: colors.primaryContainer }
                   ]}
                   onPress={() => setVoiceCuesEnabled(opt.id)}
                   accessibilityRole="radio"
@@ -279,7 +279,7 @@ export default function ProfileScreen() {
                     style={[
                       styles.themeBtnText,
                       { color: colors.paperDim },
-                      on && { color: colors.lime }
+                      on && { color: colors.onPrimaryContainer }
                     ]}
                   >
                     {opt.label}
@@ -291,7 +291,7 @@ export default function ProfileScreen() {
         </View>
 
         {voiceCuesEnabled && (
-          <View style={[styles.themeCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <View style={[styles.themeCard, { backgroundColor: colors.surfaceContainer }]}>
             <Text style={[styles.settingName, { color: colors.paper }]}>
               {t('voiceCuesEventsName')}
             </Text>
@@ -318,8 +318,8 @@ export default function ProfileScreen() {
                         key={String(opt.id)}
                         style={[
                           styles.voiceEventBtn,
-                          { borderColor: colors.lineStrong, backgroundColor: colors.ink },
-                          on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                          { backgroundColor: colors.surfaceContainer },
+                          on && { backgroundColor: colors.primaryContainer }
                         ]}
                         onPress={() => setVoiceCueEvent(event, opt.id)}
                         accessibilityRole="radio"
@@ -330,7 +330,7 @@ export default function ProfileScreen() {
                           style={[
                             styles.voiceEventBtnText,
                             { color: colors.paperDim },
-                            on && { color: colors.lime }
+                            on && { color: colors.onPrimaryContainer }
                           ]}
                         >
                           {opt.label}
@@ -344,7 +344,7 @@ export default function ProfileScreen() {
           </View>
         )}
 
-        <View style={[styles.themeCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+        <View style={[styles.themeCard, { backgroundColor: colors.surfaceContainer }]}>
           <Text style={[styles.settingName, { color: colors.paper }]}>{t('restPresetName')}</Text>
           <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>{t('restPresetDesc')}</Text>
           <View style={styles.segmentRow}>
@@ -361,8 +361,8 @@ export default function ProfileScreen() {
                   key={String(opt)}
                   style={[
                     styles.segmentBtn,
-                    { borderColor: colors.lineStrong, backgroundColor: colors.ink },
-                    on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                    { backgroundColor: colors.surfaceContainer },
+                    on && { backgroundColor: colors.primaryContainer }
                   ]}
                   onPress={() => setRestOverride(opt)}
                   accessibilityRole="radio"
@@ -373,7 +373,7 @@ export default function ProfileScreen() {
                     style={[
                       styles.segmentText,
                       { color: colors.paperDim },
-                      on && { color: colors.lime }
+                      on && { color: colors.onPrimaryContainer }
                     ]}
                   >
                     {label}
@@ -389,7 +389,7 @@ export default function ProfileScreen() {
           <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>{t('sectionParamsCount')}</Text>
         </View>
 
-        <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+        <View style={[styles.card, { backgroundColor: colors.surfaceContainer }]}>
           <View style={styles.calcGrid}>
             <View style={[styles.calcField, { width: '100%' }]}>
               <Text style={[styles.label, { color: colors.paperFaint }]}>{t('labelSex')}</Text>
@@ -406,8 +406,8 @@ export default function ProfileScreen() {
                       key={opt.value}
                       style={[
                         styles.segmentBtn,
-                        { borderColor: colors.lineStrong, backgroundColor: colors.ink },
-                        on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                        { backgroundColor: colors.surfaceContainer },
+                        on && { backgroundColor: colors.primaryContainer }
                       ]}
                       onPress={() => updateProfile({ sex: opt.value })}
                       accessibilityRole="radio"
@@ -418,7 +418,7 @@ export default function ProfileScreen() {
                         style={[
                           styles.segmentText,
                           { color: colors.paperDim },
-                          on && { color: colors.lime }
+                          on && { color: colors.onPrimaryContainer }
                         ]}
                       >
                         {opt.label}
@@ -434,8 +434,7 @@ export default function ProfileScreen() {
                 style={[
                   styles.input,
                   {
-                    backgroundColor: colors.ink,
-                    borderColor: colors.lineStrong,
+                    backgroundColor: colors.surfaceContainer,
                     color: colors.paper
                   }
                 ]}
@@ -451,8 +450,7 @@ export default function ProfileScreen() {
                 style={[
                   styles.input,
                   {
-                    backgroundColor: colors.ink,
-                    borderColor: colors.lineStrong,
+                    backgroundColor: colors.surfaceContainer,
                     color: colors.paper
                   }
                 ]}
@@ -468,8 +466,7 @@ export default function ProfileScreen() {
                 style={[
                   styles.input,
                   {
-                    backgroundColor: colors.ink,
-                    borderColor: colors.lineStrong,
+                    backgroundColor: colors.surfaceContainer,
                     color: colors.paper
                   }
                 ]}
@@ -495,8 +492,8 @@ export default function ProfileScreen() {
                       key={String(opt.value)}
                       style={[
                         styles.segmentBtn,
-                        { borderColor: colors.lineStrong, backgroundColor: colors.ink },
-                        on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                        { backgroundColor: colors.surfaceContainer },
+                        on && { backgroundColor: colors.primaryContainer }
                       ]}
                       onPress={() => updateProfile({ pal: opt.value })}
                       accessibilityRole="radio"
@@ -507,7 +504,7 @@ export default function ProfileScreen() {
                         style={[
                           styles.segmentText,
                           { color: colors.paperDim },
-                          on && { color: colors.lime }
+                          on && { color: colors.onPrimaryContainer }
                         ]}
                       >
                         {opt.label}
@@ -533,8 +530,8 @@ export default function ProfileScreen() {
                       key={opt.value}
                       style={[
                         styles.segmentBtn,
-                        { borderColor: colors.lineStrong, backgroundColor: colors.ink },
-                        on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                        { backgroundColor: colors.surfaceContainer },
+                        on && { backgroundColor: colors.primaryContainer }
                       ]}
                       onPress={() => updateProfile({ goal: opt.value })}
                       accessibilityRole="radio"
@@ -545,7 +542,7 @@ export default function ProfileScreen() {
                         style={[
                           styles.segmentText,
                           { color: colors.paperDim },
-                          on && { color: colors.lime }
+                          on && { color: colors.onPrimaryContainer }
                         ]}
                       >
                         {opt.label}
@@ -592,7 +589,7 @@ export default function ProfileScreen() {
           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionMeasurements')}</Text>
           <Text style={[styles.sectionCount, { color: colors.paperFaint }]}>{t('sectionMeasurementsCount')}</Text>
         </View>
-        <View style={[styles.themeCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+        <View style={[styles.themeCard, { backgroundColor: colors.surfaceContainer }]}>
           <View style={styles.measureTypeRow}>
             {(Object.keys(BODY_MEASUREMENT_LABELS) as BodyMeasurementType[]).map((type) => {
               const on = measureType === type;
@@ -601,8 +598,8 @@ export default function ProfileScreen() {
                   key={type}
                   style={[
                     styles.measureTypeChip,
-                    { borderColor: colors.lineStrong, backgroundColor: colors.ink },
-                    on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                    { backgroundColor: colors.surfaceContainer },
+                    on && { backgroundColor: colors.primaryContainer }
                   ]}
                   onPress={() => setMeasureType(type)}
                   accessibilityRole="radio"
@@ -613,7 +610,7 @@ export default function ProfileScreen() {
                     style={[
                       styles.measureTypeChipText,
                       { color: colors.paperDim },
-                      on && { color: colors.lime }
+                      on && { color: colors.onPrimaryContainer }
                     ]}
                   >
                     {measurementLabel(type, lang)}
@@ -627,8 +624,7 @@ export default function ProfileScreen() {
               style={[
                 styles.measureInput,
                 {
-                  backgroundColor: colors.ink,
-                  borderColor: colors.lineStrong,
+                  backgroundColor: colors.surfaceContainer,
                   color: colors.paper
                 }
               ]}
@@ -690,7 +686,7 @@ export default function ProfileScreen() {
         <View style={styles.sectionHead}>
           <Text style={[styles.sectionTitle, { color: colors.paperDim }]}>{t('sectionWorkout')}</Text>
         </View>
-        <View style={[styles.themeCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+        <View style={[styles.themeCard, { backgroundColor: colors.surfaceContainer }]}>
           <Text style={[styles.settingName, { color: colors.paper }]}>{t('autoProgressName')}</Text>
           <Text style={[styles.settingDesc, { color: colors.paperFaint }]}>
             {t('autoProgressDesc')}
@@ -708,8 +704,8 @@ export default function ProfileScreen() {
                   key={String(opt.id)}
                   style={[
                     styles.themeBtn,
-                    { borderColor: colors.lineStrong, backgroundColor: colors.ink },
-                    on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                    { backgroundColor: colors.surfaceContainer },
+                    on && { backgroundColor: colors.primaryContainer }
                   ]}
                   onPress={() => {
                     setAutoProgressEnabled(opt.id);
@@ -723,7 +719,7 @@ export default function ProfileScreen() {
                     style={[
                       styles.themeBtnText,
                       { color: colors.paperDim },
-                      on && { color: colors.lime }
+                      on && { color: colors.onPrimaryContainer }
                     ]}
                   >
                     {opt.label}
@@ -778,7 +774,6 @@ const styles = StyleSheet.create({
   themeCard: {
     padding: spacing.lg,
     borderRadius: radius.card,
-    borderWidth: 1,
     marginBottom: spacing.md
   },
   themeRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
@@ -786,14 +781,12 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: radius.control,
-    borderWidth: 1,
     alignItems: 'center'
   },
   themeBtnText: { fontSize: 14, fontFamily: fonts.bodySemi },
   gateBanner: {
     padding: spacing.lg,
     borderRadius: radius.card,
-    borderWidth: 1,
     marginBottom: spacing.md
   },
   gateTitle: { fontSize: 16, fontFamily: fonts.mono, marginBottom: 6 },
@@ -804,14 +797,12 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     padding: spacing.lg,
     borderRadius: radius.card,
-    borderWidth: 1,
     marginBottom: spacing.lg
   },
   avatar: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center'
   },
@@ -830,14 +821,12 @@ const styles = StyleSheet.create({
   card: {
     padding: spacing.lg,
     borderRadius: radius.card,
-    borderWidth: 1,
     marginBottom: spacing.md
   },
   calcGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   calcField: { width: '47%' },
   label: { fontSize: 11, marginBottom: 6, fontFamily: fonts.bodySemi },
   input: {
-    borderWidth: 1,
     borderRadius: radius.control,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -848,8 +837,7 @@ const styles = StyleSheet.create({
   segmentBtn: {
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: radius.control,
-    borderWidth: 1
+    borderRadius: radius.control
   },
   segmentText: { fontSize: 13, fontFamily: fonts.bodySemi },
   calcResult: {
@@ -870,7 +858,6 @@ const styles = StyleSheet.create({
   settingRow: {
     padding: spacing.lg,
     borderRadius: radius.card,
-    borderWidth: 1,
     marginBottom: spacing.sm
   },
   settingName: { fontSize: 15, fontFamily: fonts.bodySemi },
@@ -881,7 +868,6 @@ const styles = StyleSheet.create({
     minWidth: 72,
     paddingVertical: 8,
     borderRadius: radius.control,
-    borderWidth: 1,
     alignItems: 'center'
   },
   voiceEventBtnText: { fontSize: 12, fontFamily: fonts.bodySemi },
@@ -890,7 +876,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 7,
     borderRadius: radius.control,
-    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center'
   },
@@ -900,7 +885,6 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 44,
     paddingVertical: 10,
-    borderWidth: 1,
     borderRadius: radius.control,
     paddingHorizontal: 12,
     fontFamily: fonts.mono,

@@ -100,7 +100,7 @@ export function WorkoutRemindersPanel() {
   const stepper = (label: string, onMinus: () => void, onPlus: () => void) => (
     <View style={styles.stepper} accessibilityLabel={label}>
       <TouchableOpacity
-        style={[styles.stepperBtn, { borderColor: colors.lineStrong, backgroundColor: colors.ink }]}
+        style={[styles.stepperBtn, { backgroundColor: colors.surfaceContainer }]}
         onPress={onMinus}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         accessibilityRole="button"
@@ -109,7 +109,7 @@ export function WorkoutRemindersPanel() {
         <Text style={[styles.stepperBtnText, { color: colors.paperDim }]}>−</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={[styles.stepperBtn, { borderColor: colors.lineStrong, backgroundColor: colors.ink }]}
+        style={[styles.stepperBtn, { backgroundColor: colors.surfaceContainer }]}
         onPress={onPlus}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         accessibilityRole="button"
@@ -121,7 +121,7 @@ export function WorkoutRemindersPanel() {
   );
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+    <View style={[styles.card, { backgroundColor: colors.surfaceContainer }]}>
       <View style={styles.nameRow}>
         <View style={styles.nameTexts}>
           <Text style={[styles.name, { color: colors.paper }]}>{t('remindersName')}</Text>
@@ -146,8 +146,8 @@ export function WorkoutRemindersPanel() {
                   key={key}
                   style={[
                     styles.dayChip,
-                    { borderColor: colors.lineStrong, backgroundColor: colors.ink },
-                    on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                    { backgroundColor: colors.surfaceContainer },
+                    on && { backgroundColor: colors.primaryContainer }
                   ]}
                   onPress={() => toggleDay(day)}
                   accessibilityRole="radio"
@@ -158,7 +158,7 @@ export function WorkoutRemindersPanel() {
                     style={[
                       styles.dayChipText,
                       { color: colors.paperDim },
-                      on && { color: colors.lime }
+                      on && { color: colors.onPrimaryContainer }
                     ]}
                   >
                     {t(key)}
@@ -186,7 +186,6 @@ export function WorkoutRemindersPanel() {
 
 const styles = StyleSheet.create({
   card: {
-    borderWidth: 1,
     borderRadius: radius.card,
     padding: spacing.lg,
     marginBottom: spacing.sm
@@ -198,7 +197,6 @@ const styles = StyleSheet.create({
   config: { marginTop: spacing.md },
   dayRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   dayChip: {
-    borderWidth: 1,
     borderRadius: radius.control,
     paddingHorizontal: 10,
     paddingVertical: 7,
@@ -215,7 +213,6 @@ const styles = StyleSheet.create({
   timeControls: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   stepper: { flexDirection: 'row', gap: 6 },
   stepperBtn: {
-    borderWidth: 1,
     borderRadius: radius.control,
     width: 34,
     minHeight: 34,
