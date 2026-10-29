@@ -43,6 +43,7 @@ import {
 } from './workoutContext';
 import { contextHash } from './contextHash';
 import { useAiAssistantStore } from './useAiAssistantStore';
+import { AI_PROVIDER_PRESETS, providerPresetById } from './providerPresets';
 import type { AiChatMessage, AiImageAttachment, AiRoleId } from './types';
 
 interface Props {
@@ -100,6 +101,8 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
   const [photos, setPhotos] = useState<AiImageAttachment[]>([]);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [presetId, setPresetId] = useState<string | null>(null);
+  const preset = presetId ? providerPresetById(presetId) : null;
 
   const role = roleById(roleId);
   const showForm = !active || editing;
@@ -126,6 +129,19 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
         : EMPTY_FORM
     );
     setEditing(true);
+  }
+
+  function applyPreset(id: string) {
+    const next = providerPresetById(id);
+    if (!next) return;
+    setPresetId(id);
+    setForm((prev) => ({
+      ...prev,
+      label: prev.label.trim() ? prev.label : next.label,
+      baseUrl: next.baseUrl,
+      model: next.models[0] ?? prev.model,
+      supportsVision: next.supportsVision
+    }));
   }
 
   function saveProvider() {
@@ -383,6 +399,39 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
               <Text style={[styles.fieldTitle, { color: colors.paper }]}>{t('aiProviderTitle')}</Text>
 
               <View style={styles.fieldGap}>
+                <Text style={[styles.label, { color: colors.paperFaint }]}>{t('aiPresetsLabel')}</Text>
+                <View style={styles.chipRow}>
+                  {AI_PROVIDER_PRESETS.map((p) => {
+                    const on = presetId === p.id;
+                    return (
+                      <TouchableOpacity
+                        key={p.id}
+                        style={[
+                          styles.presetChip,
+                          { backgroundColor: colors.surfaceContainerHigh },
+                          on && { backgroundColor: colors.primaryContainer }
+                        ]}
+                        onPress={() => applyPreset(p.id)}
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: on }}
+                        accessibilityLabel={p.label}
+                      >
+                        <Text
+                          style={[
+                            styles.chipText,
+                            { color: colors.paperDim },
+                            on && { color: colors.onPrimaryContainer }
+                          ]}
+                        >
+                          {p.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+
+              <View style={styles.fieldGap}>
                 <Text style={[styles.label, { color: colors.paperFaint }]}>{t('aiProviderLabel')}</Text>
                 <TextInput
                   style={inputStyle}
@@ -432,6 +481,37 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
                   autoCapitalize="none"
                   autoCorrect={false}
                 />
+                {preset ? (
+                  <View style={[styles.chipRow, styles.subTabRow]}>
+                    {preset.models.map((m) => {
+                      const on = form.model === m;
+                      return (
+                        <TouchableOpacity
+                          key={m}
+                          style={[
+                            styles.presetChip,
+                            { backgroundColor: colors.surfaceContainerHigh },
+                            on && { backgroundColor: colors.primaryContainer }
+                          ]}
+                          onPress={() => setForm({ ...form, model: m })}
+                          accessibilityRole="radio"
+                          accessibilityState={{ checked: on }}
+                          accessibilityLabel={m}
+                        >
+                          <Text
+                            style={[
+                              styles.chipText,
+                              { color: colors.paperDim },
+                              on && { color: colors.onPrimaryContainer }
+                            ]}
+                          >
+                            {m}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                ) : null}
               </View>
 
               <View style={styles.fieldGap}>
@@ -824,6 +904,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: radius.control,
     borderWidth: 1
+  },
+  presetChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: radius.control
   },
   chipText: { fontSize: 12, fontFamily: fonts.bodySemi },
   btnRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },
