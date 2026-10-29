@@ -1,5 +1,6 @@
 import React, { useMemo, useRef } from 'react';
 import { Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Md3Card from './md3/Md3Card';
 import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
@@ -98,10 +99,7 @@ export default function WorkoutShareCard({ setLogs }: Props) {
     .join(' · ');
 
   return (
-    <View
-      style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}
-      accessibilityRole="summary"
-    >
+    <Md3Card variant="flat" padding="md" style={styles.card} accessibilityRole="summary">
       <Text style={[styles.kicker, { color: colors.paperFaint }]}>{t('shareCardKicker')}</Text>
       <Text style={[styles.title, { color: colors.lime }]}>
         {t('shareCardTitle', { date: dateLabel })}
@@ -112,14 +110,14 @@ export default function WorkoutShareCard({ setLogs }: Props) {
         </Text>
       ) : null}
       <TouchableOpacity
-        style={[styles.button, { borderColor: colors.lime }]}
+        style={[styles.button, { backgroundColor: colors.primaryContainer }]}
         accessibilityRole="button"
         accessibilityLabel={t('shareCardA11y')}
         onPress={() => {
           void handleShare();
         }}
       >
-        <Text style={[styles.buttonLabel, { color: colors.lime }]}>{t('shareCardButton')}</Text>
+        <Text style={[styles.buttonLabel, { color: colors.onPrimaryContainer }]}>{t('shareCardButton')}</Text>
       </TouchableOpacity>
 
       {/*
@@ -195,18 +193,13 @@ export default function WorkoutShareCard({ setLogs }: Props) {
           <Text style={styles.posterFooterText}>{t('sharePosterFooter')}</Text>
         </View>
       </View>
-    </View>
+    </Md3Card>
   );
 }
 
 function createStyles(_colors: ColorTokens) {
   return StyleSheet.create({
-    card: {
-      borderWidth: 1,
-      borderRadius: radius.card,
-      padding: spacing.md,
-      marginBottom: spacing.md
-    },
+    card: { borderRadius: radius.card, marginBottom: spacing.md },
     kicker: {
       fontFamily: fonts.mono,
       fontSize: 11,
@@ -217,7 +210,6 @@ function createStyles(_colors: ColorTokens) {
     preview: { fontFamily: fonts.body, fontSize: 12.5, marginTop: 6 },
     button: {
       alignSelf: 'flex-start',
-      borderWidth: 1,
       borderRadius: radius.control,
       paddingHorizontal: 14,
       paddingVertical: 8,

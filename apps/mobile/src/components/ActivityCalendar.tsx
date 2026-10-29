@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Md3Card from './md3/Md3Card';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useT } from '@/i18n/strings';
@@ -74,7 +75,7 @@ export default function ActivityCalendar({ setLogs, allMeals, frozenDates = [] }
   }
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+    <Md3Card variant="flat" padding="md" style={styles.card}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => shiftMonth(-1)}
@@ -148,18 +149,13 @@ export default function ActivityCalendar({ setLogs, allMeals, frozenDates = [] }
           <Text style={[styles.legendText, { color: colors.paperFaint }]}>{t('calLegendFrozen')}</Text>
         </View>
       </View>
-    </View>
+    </Md3Card>
   );
 }
 
 function createStyles(_colors: ColorTokens) {
   return StyleSheet.create({
-    card: {
-      borderWidth: 1,
-      borderRadius: radius.card,
-      padding: spacing.md,
-      marginBottom: spacing.md
-    },
+    card: { borderRadius: radius.card, marginBottom: spacing.md },
     header: {
       flexDirection: 'row',
       alignItems: 'center',

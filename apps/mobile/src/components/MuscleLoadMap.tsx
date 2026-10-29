@@ -65,7 +65,7 @@ export default function MuscleLoadMap({ loads }: Props) {
             <Path
               key={'body-' + i}
               d={p.d}
-              fill={colors.panel}
+              fill={colors.surfaceContainer}
               stroke={colors.lineStrong}
               strokeWidth={1}
             />
