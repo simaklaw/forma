@@ -9,6 +9,7 @@ export {
   MAX_VISION_IMAGES
 } from './openAiClient';
 export { AI_ROLES, roleById } from './roles';
+export { AI_PROVIDER_PRESETS, providerPresetById, type AiProviderPreset } from './providerPresets';
 export { buildNutritionDaySnapshot, renderNutritionContext } from './nutritionContext';
 export { buildWorkoutDaySnapshot, renderWorkoutContext } from './workoutContext';
 export { contextHash, stableStringify } from './contextHash';
