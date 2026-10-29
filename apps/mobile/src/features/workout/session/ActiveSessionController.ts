@@ -372,10 +372,23 @@ class ActiveSessionControllerImpl {
     const session = await this.ensureDaySession(input.dayId, input.exercises);
     if (!session) return null;
     const steps = session.steps ?? [];
-    const step = steps[session.currentStepIndex];
-    if (!step || step.snapshot.exerciseId !== String(input.exerciseId)) {
+    const current = steps[session.currentStepIndex];
+    const stepIndex = steps.findIndex(
+      (s) => s.snapshot.exerciseId === String(input.exerciseId)
+    );
+    // Суперсет: участник активной группы логается напрямую (круг A1→A2),
+    // прочие не-текущие шаги по-прежнему блокируются.
+    const sameSupersetGroup =
+      current?.snapshot.supersetGroup !== undefined &&
+      stepIndex >= 0 &&
+      steps[stepIndex]?.snapshot.supersetGroup === current.snapshot.supersetGroup;
+    if (
+      !current ||
+      stepIndex === -1 ||
+      (stepIndex !== session.currentStepIndex && !sameSupersetGroup)
+    ) {
       log.debug('recordSet rejected: out of order or missing step', {
-        expected: step?.snapshot.exerciseId,
+        expected: current?.snapshot.exerciseId,
         got: input.exerciseId
       });
       return null;
@@ -393,6 +406,7 @@ class ActiveSessionControllerImpl {
 
     const result = await svc.dispatch(session.sessionId, {
       type: 'complete_set',
+      stepIndex,
       weightKg: input.weightKg,
       reps: input.reps,
       rir: input.rir,

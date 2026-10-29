@@ -43,7 +43,14 @@ export function sequentialStepInfo(
   }
 
   const expectedId = Number(step.snapshot.exerciseId);
-  const isCurrent = expectedId === exerciseId;
+  // Суперсет: участник активной группы тоже «текущий» — его можно логать по кругу.
+  const group = step.snapshot.supersetGroup;
+  const inActiveSupersetGroup =
+    group !== undefined &&
+    steps.some(
+      (s) => s.snapshot.supersetGroup === group && Number(s.snapshot.exerciseId) === exerciseId
+    );
+  const isCurrent = expectedId === exerciseId || inActiveSupersetGroup;
 
   return {
     isCurrent,

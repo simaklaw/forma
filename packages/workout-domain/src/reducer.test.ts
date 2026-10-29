@@ -266,3 +266,122 @@ describe('workout-domain applyCommand', () => {
     );
   });
 });
+
+describe('workout-domain supersets', () => {
+  const ssSteps: SessionStepSnapshot[] = [
+    {
+      stepIndex: 0,
+      exerciseId: 'ex-a1',
+      exerciseRevisionId: 'rev-a1',
+      name: 'A1',
+      targetSets: 2,
+      targetReps: 10,
+      targetWeightKg: 50,
+      restSeconds: 90,
+      supersetGroup: 0
+    },
+    {
+      stepIndex: 1,
+      exerciseId: 'ex-a2',
+      exerciseRevisionId: 'rev-a2',
+      name: 'A2',
+      targetSets: 2,
+      targetReps: 12,
+      targetWeightKg: 30,
+      restSeconds: 90,
+      supersetGroup: 0
+    },
+    {
+      stepIndex: 2,
+      exerciseId: 'ex-b',
+      exerciseRevisionId: 'rev-b',
+      name: 'B',
+      targetSets: 1,
+      targetReps: 8,
+      targetWeightKg: 60,
+      restSeconds: 120
+    }
+  ];
+
+  function prepareSS() {
+    return applyCommand(
+      null,
+      {
+        type: 'prepare_session',
+        sessionId: 'sess-ss',
+        userId: 'user-1',
+        templateRevisionId: 'tpl-rev-ss',
+        contentHash: 'ss',
+        steps: ssSteps,
+        localStartDate: '2026-10-29',
+        timezone: 'Europe/Moscow'
+      },
+      ctx(1)
+    );
+  }
+
+  function startedSS() {
+    const s = prepareSS().session;
+    return applyCommand(s, { type: 'start_session' }, ctx(2)).session;
+  }
+
+  it('разрешает логать не-текущего участника активной суперсет-группы', () => {
+    const s = startedSS();
+    const result = applyCommand(
+      s,
+      { type: 'complete_set', stepIndex: 1, weightKg: 30, reps: 12, autoStartRest: true },
+      ctx(3)
+    );
+    assert.equal(result.session.steps[1]?.completedSets.length, 1);
+    // Круг не закрыт (A1 ещё без подходов) — без отдыха, текущим остаётся A1.
+    assert.equal(result.session.restEndsAtMs, null);
+    assert.equal(result.session.currentStepIndex, 0);
+  });
+
+  it('отвергает лог в шаг вне активной группы', () => {
+    const s = startedSS();
+    assert.throws(
+      () => applyCommand(s, { type: 'complete_set', stepIndex: 2, weightKg: 60, reps: 8 }, ctx(3)),
+      (e: unknown) => e instanceof DomainError && e.code === 'step_out_of_range'
+    );
+  });
+
+  it('отдых стартует только по закрытию круга группы', () => {
+    const s = startedSS();
+    const a2 = applyCommand(
+      s,
+      { type: 'complete_set', stepIndex: 1, weightKg: 30, reps: 12, autoStartRest: true },
+      ctx(3)
+    );
+    assert.equal(a2.session.restEndsAtMs, null);
+    const a1 = applyCommand(
+      a2.session,
+      { type: 'complete_set', stepIndex: 0, weightKg: 50, reps: 10, autoStartRest: true },
+      ctx(4)
+    );
+    assert.ok(a1.session.restEndsAtMs !== null);
+  });
+
+  it('после полного закрытия группы текущим становится следующий шаг', () => {
+    let s = startedSS();
+    s = applyCommand(s, { type: 'complete_set', stepIndex: 0, weightKg: 50, reps: 10, autoStartRest: false }, ctx(3)).session;
+    s = applyCommand(s, { type: 'complete_set', stepIndex: 1, weightKg: 30, reps: 12, autoStartRest: false }, ctx(4)).session;
+    s = applyCommand(s, { type: 'complete_set', stepIndex: 0, weightKg: 52, reps: 10, autoStartRest: false }, ctx(5)).session;
+    // A1 закрыт (2/2), A2 остаётся текущим.
+    assert.equal(s.currentStepIndex, 1);
+    const done = applyCommand(
+      s,
+      { type: 'complete_set', stepIndex: 1, weightKg: 30, reps: 12, autoStartRest: true },
+      ctx(6)
+    );
+    assert.equal(done.session.currentStepIndex, 2);
+    assert.ok(done.session.restEndsAtMs !== null);
+  });
+
+  it('skip_step внутри группы переводит текущий на её следующего участника', () => {
+    const s = startedSS();
+    const skipped = applyCommand(s, { type: 'skip_step', reason: 'equipment' }, ctx(3));
+    assert.equal(skipped.session.steps[0]?.skipped, true);
+    assert.equal(skipped.session.currentStepIndex, 1);
+  });
+});

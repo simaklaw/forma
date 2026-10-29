@@ -34,4 +34,23 @@ describe('planToSnapshots', () => {
   it('is stable for identical inputs', () => {
     expect(contentHashForExercises(sample, 78)).toBe(contentHashForExercises(sample, 78));
   });
+
+  it('superset: группы нумеруются, флаг входит в content hash', () => {
+    const withSS: ExerciseDef[] = [
+      { ...sample[0]!, id: 1 },
+      { ...sample[0]!, id: 2, supersetWithPrev: true },
+      { ...sample[0]!, id: 3 }
+    ];
+    const steps = exercisesToSnapshots(withSS, 78);
+    expect(steps[0]?.supersetGroup).toBe(0);
+    expect(steps[1]?.supersetGroup).toBe(0);
+    expect(steps[2]?.supersetGroup).toBe(1);
+
+    const noSS: ExerciseDef[] = [
+      { ...sample[0]!, id: 1 },
+      { ...sample[0]!, id: 2 },
+      { ...sample[0]!, id: 3 }
+    ];
+    expect(contentHashForExercises(withSS, 78)).not.toBe(contentHashForExercises(noSS, 78));
+  });
 });

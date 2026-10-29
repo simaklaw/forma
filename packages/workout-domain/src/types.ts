@@ -25,6 +25,11 @@ export interface SessionStepSnapshot {
   /** Planned working weight in kg; 0 for bodyweight. */
   targetWeightKg: number;
   restSeconds: number;
+  /**
+   * Суперсет-группа: соседние шаги с одинаковой группой выполняются по кругу
+   * (сет A1 → сет A2 → отдых). undefined — обычная последовательность (legacy).
+   */
+  supersetGroup?: number;
 }
 
 /** One logged set inside a step (projection of set_completed events). */

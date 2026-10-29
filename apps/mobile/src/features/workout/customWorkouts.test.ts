@@ -142,4 +142,37 @@ describe('customWorkouts (свои тренировки)', () => {
     const untitled = buildCustomWorkoutDay({ ...workout, name: '' }, 'Без названия', 'мета');
     expect(untitled!.name).toBe('Без названия');
   });
+
+  test('normalizeCustomItems: supersetWithPrev только со второго элемента', () => {
+    expect(
+      normalizeCustomItems([
+        { exerciseId: 7, sets: 3, reps: 10, restSeconds: 60, supersetWithPrev: true },
+        { exerciseId: 8, sets: 3, reps: 10, restSeconds: 60, supersetWithPrev: true },
+        { exerciseId: 9, sets: 3, reps: 10, restSeconds: 60, supersetWithPrev: false }
+      ])
+    ).toEqual([
+      { exerciseId: 7, sets: 3, reps: 10, restSeconds: 60, weightKg: undefined },
+      {
+        exerciseId: 8,
+        sets: 3,
+        reps: 10,
+        restSeconds: 60,
+        weightKg: undefined,
+        supersetWithPrev: true
+      },
+      { exerciseId: 9, sets: 3, reps: 10, restSeconds: 60, weightKg: undefined }
+    ]);
+  });
+
+  test('resolveCustomWorkoutExercises переносит supersetWithPrev в defs', () => {
+    const defs = resolveCustomWorkoutExercises(
+      [
+        { exerciseId: 1, sets: 3, reps: 10, restSeconds: 60 },
+        { exerciseId: 2, sets: 3, reps: 10, restSeconds: 60, supersetWithPrev: true }
+      ],
+      (id) => def(id, `Упр ${id}`)
+    );
+    expect(defs[0]?.supersetWithPrev).toBeUndefined();
+    expect(defs[1]?.supersetWithPrev).toBe(true);
+  });
 });
