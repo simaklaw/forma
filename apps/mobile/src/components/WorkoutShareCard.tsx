@@ -84,7 +84,11 @@ export default function WorkoutShareCard({ setLogs }: Props) {
         dialogTitle: t('shareCardTitle', { date: dateLabel })
       });
     } catch {
-      await Share.share({ message: shareText });
+      try {
+        await Share.share({ message: shareText });
+      } catch {
+        // системный шеринг недоступен (например, веб) — тихо выходим
+      }
     }
   };
 
@@ -121,11 +125,14 @@ export default function WorkoutShareCard({ setLogs }: Props) {
       {/*
         Отдельная нативная View для captureRef. collapsable={false} не даёт
         Android схлопнуть её; содержимое карточки не зависит от темы экрана.
+        Для скринридеров вью скрыта — декорация, не контент.
       */}
       <View
         ref={posterRef}
         collapsable={false}
         pointerEvents="none"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
         style={styles.poster}
       >
         <View pointerEvents="none" style={styles.posterOrnament} />
