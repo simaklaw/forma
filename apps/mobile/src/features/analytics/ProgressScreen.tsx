@@ -354,25 +354,25 @@ export default function ProgressScreen() {
         <Text style={[styles.title, { color: colors.paper }]}>{t('tabProgress')}</Text>
 
         <View style={styles.statsRow}>
-          <View style={[styles.statCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <View style={[styles.statCard, { backgroundColor: colors.surfaceContainer }]}>
             <Text style={[styles.statVal, { color: colors.paper }]}>{streak}</Text>
             <Text style={[styles.statLbl, { color: colors.paperFaint }]}>{t('progressStatStreak')}</Text>
             <Text style={[styles.statFreeze, { color: colors.paperFaint }]}>
               🧊 {freezesLeft}/{FREEZES_PER_MONTH}
             </Text>
           </View>
-          <View style={[styles.statCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <View style={[styles.statCard, { backgroundColor: colors.surfaceContainer }]}>
             <Text style={[styles.statVal, { color: colors.paper }]}>{weekSets}</Text>
             <Text style={[styles.statLbl, { color: colors.paperFaint }]}>{t('progressStatSets')}</Text>
           </View>
-          <View style={[styles.statCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <View style={[styles.statCard, { backgroundColor: colors.surfaceContainer }]}>
             <Text style={[styles.statVal, { color: colors.paper }]}>
               {todayBurn > 0 ? `~${todayBurn}` : '—'}
             </Text>
             <Text style={[styles.statLbl, { color: colors.paperFaint }]}>{t('progressStatKcal')}</Text>
           </View>
           {bmi != null && bmiCategory != null ? (
-            <View style={[styles.statCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+            <View style={[styles.statCard, { backgroundColor: colors.surfaceContainer }]}>
               <Text style={[styles.statVal, { color: colors.paper }]}>{bmi}</Text>
               <Text style={[styles.statLbl, { color: colors.paperFaint }]}>{t('bmiLabel')}</Text>
               <Text style={[styles.statFreeze, { color: colors.paperFaint }]}>{bmiCategory}</Text>
@@ -381,7 +381,7 @@ export default function ProgressScreen() {
         </View>
 
         <View
-          style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}
+          style={[styles.card, { backgroundColor: colors.surfaceContainer }]}
           accessibilityRole="summary"
           accessibilityLabel={t('progressRecoveryA11y', {
             score: recovery.recoveryScore,
@@ -419,7 +419,7 @@ export default function ProgressScreen() {
                 [t('progressCns'), recovery.cnsFreshness]
               ] as const
             ).map(([lbl, val]) => (
-              <View key={lbl} style={[styles.pillar, { borderColor: colors.line }]}>
+              <View key={lbl} style={[styles.pillar, { backgroundColor: colors.surfaceContainerHigh }]}>
                 <Text style={[styles.pillarVal, { color: colors.paper }]}>{val}</Text>
                 <Text style={[styles.pillarLbl, { color: colors.paperFaint }]}>{lbl}</Text>
               </View>
@@ -432,11 +432,9 @@ export default function ProgressScreen() {
                   key={item}
                   style={{
                     borderRadius: radius.pill,
-                    borderWidth: 1,
-                    borderColor: colors.lineStrong,
                     paddingHorizontal: 10,
                     paddingVertical: 5,
-                    backgroundColor: colors.panelRaised
+                    backgroundColor: colors.surfaceContainerHigh
                   }}
                 >
                   <Text style={{ color: colors.paperDim, fontSize: 11, fontFamily: fonts.mono }}>{item}</Text>
@@ -455,7 +453,7 @@ export default function ProgressScreen() {
         <ExerciseGoalCard setLogs={setLogs} />
 
         {nutritionDaily.length > 0 ? (
-          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <View style={[styles.card, { backgroundColor: colors.surfaceContainer }]}>
             <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>
               {t('progressNutritionKicker')}
             </Text>
@@ -465,12 +463,12 @@ export default function ProgressScreen() {
                 return (
                   <TouchableOpacity
                     key={days}
-                    style={[styles.chartChip, { borderColor: active ? colors.lime : colors.lineStrong }]}
+                    style={[styles.chartChip, { backgroundColor: active ? colors.primaryContainer : colors.surfaceContainer }]}
                     onPress={() => setNutritionWindowDays(days)}
                     accessibilityRole="button"
                     accessibilityLabel={t('progressNutritionChipA11y', { days })}
                   >
-                    <Text style={[styles.chartChipText, { color: active ? colors.lime : colors.paperDim }]}>
+                    <Text style={[styles.chartChipText, { color: active ? colors.onPrimaryContainer : colors.paperDim }]}>
                       {t('progressNutritionChip', { days })}
                     </Text>
                   </TouchableOpacity>
@@ -521,7 +519,7 @@ export default function ProgressScreen() {
         </View>
 
         {badges.length > 0 ? (
-          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <View style={[styles.card, { backgroundColor: colors.surfaceContainer }]}>
             <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('progressAchievements')}</Text>
             <View style={styles.badgeGrid}>
               {badges.map((b) => (
@@ -530,12 +528,11 @@ export default function ProgressScreen() {
                   style={[
                     styles.badge,
                     {
-                      backgroundColor: colors.ink,
-                      borderColor: b.unlocked ? colors.lime : colors.line
+                      backgroundColor: b.unlocked ? colors.primaryContainer : colors.surfaceContainer
                     }
                   ]}
                 >
-                  <Text style={[styles.badgeTitle, { color: b.unlocked ? colors.lime : colors.paperDim }]}>
+                  <Text style={[styles.badgeTitle, { color: b.unlocked ? colors.onPrimaryContainer : colors.paperDim }]}>
                     {b.title}
                   </Text>
                   <Text style={[styles.badgeHint, { color: colors.paperFaint }]}>{b.hint}</Text>
@@ -546,7 +543,7 @@ export default function ProgressScreen() {
         ) : null}
 
         {strengthTop.length > 0 ? (
-          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <View style={[styles.card, { backgroundColor: colors.surfaceContainer }]}>
             <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('progressStrengthKicker')}</Text>
             {strengthTop.map((s) => {
               const delta =
@@ -607,7 +604,7 @@ export default function ProgressScreen() {
           </View>
         ) : null}
         {chartExercises.length > 0 ? (
-          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <View style={[styles.card, { backgroundColor: colors.surfaceContainer }]}>
             <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>
               {t('progressE1rmChartKicker')}
             </Text>
@@ -619,14 +616,14 @@ export default function ProgressScreen() {
                     key={s.exerciseId}
                     style={[
                       styles.chartChip,
-                      { borderColor: active ? colors.lime : colors.lineStrong }
+                      { backgroundColor: active ? colors.primaryContainer : colors.surfaceContainer }
                     ]}
                     onPress={() => setSelectedExerciseId(s.exerciseId)}
                     accessibilityRole="button"
                     accessibilityLabel={resolveStrengthName(s.exerciseId)}
                   >
                     <Text
-                      style={[styles.chartChipText, { color: active ? colors.lime : colors.paperDim }]}
+                      style={[styles.chartChipText, { color: active ? colors.onPrimaryContainer : colors.paperDim }]}
                       numberOfLines={1}
                     >
                       {resolveStrengthName(s.exerciseId)}
@@ -659,7 +656,7 @@ export default function ProgressScreen() {
           </View>
         ) : null}
         {plateauList.length > 0 ? (
-          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <View style={[styles.card, { backgroundColor: colors.surfaceContainer }]}>
             <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('progressStatusKicker')}</Text>
             {plateauList.map((p) => (
               <View key={p.exerciseId} style={styles.statusRow}>
@@ -689,7 +686,7 @@ export default function ProgressScreen() {
           </View>
         ) : null}
         {recordFeed.feed.length > 0 || recordFeed.droughts.length > 0 ? (
-          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <View style={[styles.card, { backgroundColor: colors.surfaceContainer }]}>
             <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('recordsKicker')}</Text>
             {recordFeed.feed.map((e) => (
               <View key={`${e.exerciseId}-${e.dateKey}-${e.type}`} style={styles.statusRow}>
@@ -722,7 +719,7 @@ export default function ProgressScreen() {
           </View>
         ) : null}
         {muscleVolume.length > 0 ? (
-          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <View style={[styles.card, { backgroundColor: colors.surfaceContainer }]}>
             <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('volumeKicker')}</Text>
             <MuscleLoadMap loads={muscleVolumeAll} />
             {muscleVolume.map((m) => (
@@ -745,13 +742,13 @@ export default function ProgressScreen() {
           </View>
         ) : null}
         {patternVolume.length > 0 ? (
-          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <View style={[styles.card, { backgroundColor: colors.surfaceContainer }]}>
             <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('patternKicker')}</Text>
             <View style={styles.chipRow}>
               {patternVolume.map((p) => (
                 <View
                   key={p.pattern}
-                  style={[styles.chartChip, { borderColor: colors.lineStrong }]}
+                  style={[styles.chartChip, { backgroundColor: colors.surfaceContainer }]}
                 >
                   <Text style={[styles.chartChipText, { color: colors.paperDim }]}>
                     {movementPatternLabel(p.pattern as MovementPattern, lang)} · {p.weeklySets}
@@ -779,7 +776,7 @@ export default function ProgressScreen() {
           </View>
         ) : null}
         {lastReview !== null ? (
-          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <View style={[styles.card, { backgroundColor: colors.surfaceContainer }]}>
             <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('reviewKicker')}</Text>
             <Text style={{ color: colors.paperFaint, fontSize: 11, marginTop: 2 }}>
               {lastReview.dateKey.slice(5)} ·{' '}
@@ -809,7 +806,7 @@ export default function ProgressScreen() {
           </View>
         ) : null}
         {weekBurns.some((d) => d.kcal > 0) ? (
-          <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+          <View style={[styles.card, { backgroundColor: colors.surfaceContainer }]}>
             <Text style={[styles.cardKicker, { color: colors.paperFaint }]}>{t('progressBurnWeek')}</Text>
             {weekBurns.map((d) => (
               <View key={d.dateKey} style={styles.prRow}>
@@ -833,7 +830,6 @@ function createStyles(colors: ColorTokens) {
     eyebrow: { fontFamily: fonts.mono, fontSize: 11, letterSpacing: 1, marginBottom: 4 },
     title: { fontFamily: fonts.mono, fontSize: 28, marginBottom: spacing.md },
     card: {
-      borderWidth: 1,
       borderRadius: radius.card,
       padding: spacing.md,
       marginBottom: spacing.md
@@ -846,7 +842,6 @@ function createStyles(colors: ColorTokens) {
     pillars: { flexDirection: 'row', marginTop: spacing.md, gap: 8 },
     pillar: {
       flex: 1,
-      borderWidth: 1,
       borderRadius: radius.control,
       paddingVertical: 10,
       alignItems: 'center'
@@ -856,7 +851,6 @@ function createStyles(colors: ColorTokens) {
     statsRow: { flexDirection: 'row', gap: 8, marginBottom: spacing.md },
     statCard: {
       flex: 1,
-      borderWidth: 1,
       borderRadius: radius.card,
       padding: spacing.sm,
       alignItems: 'center'
@@ -868,7 +862,6 @@ function createStyles(colors: ColorTokens) {
     badge: {
       width: '30%',
       flexGrow: 1,
-      borderWidth: 1,
       borderRadius: radius.control,
       padding: 10,
       minHeight: 72
@@ -891,7 +884,6 @@ function createStyles(colors: ColorTokens) {
     },
     chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
     chartChip: {
-      borderWidth: 1,
       borderRadius: radius.pill,
       paddingHorizontal: 10,
       paddingVertical: 5
