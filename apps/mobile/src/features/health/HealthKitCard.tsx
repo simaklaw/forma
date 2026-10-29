@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
+import Md3Card from '@/components/md3/Md3Card';
 import { HealthKitService } from './HealthKitService';
 import { isHealthExportEnabled, setHealthExportEnabled } from './healthSyncPrefs';
 import type { HealthSyncStatus } from './types';
@@ -71,7 +72,7 @@ export default function HealthKitCard() {
   }
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+    <Md3Card variant="flat" padding="lg" style={styles.card}>
       <Text style={[styles.title, { color: colors.paper }]}>Apple Здоровье (HealthKit)</Text>
       <Text style={[styles.desc, { color: colors.paperFaint }]}>
         FitPulse пишет тренировки, активные калории и вес в{' '}
@@ -86,8 +87,7 @@ export default function HealthKitCard() {
         style={[
           styles.btn,
           {
-            borderColor: enabled ? colors.lime : colors.lineStrong,
-            backgroundColor: enabled ? colors.limeDim : colors.ink
+            backgroundColor: enabled ? colors.primaryContainer : colors.surfaceContainerHigh
           }
         ]}
         onPress={() => void toggle()}
@@ -96,22 +96,20 @@ export default function HealthKitCard() {
         accessibilityState={{ checked: enabled }}
       >
         {busy ? (
-          <ActivityIndicator color={colors.lime} />
+          <ActivityIndicator color={enabled ? colors.onPrimaryContainer : colors.paperDim} />
         ) : (
-          <Text style={[styles.btnText, { color: enabled ? colors.lime : colors.paperDim }]}>
+          <Text style={[styles.btnText, { color: enabled ? colors.onPrimaryContainer : colors.paperDim }]}>
             {enabled ? 'Экспорт включён' : 'Включить экспорт'}
           </Text>
         )}
       </TouchableOpacity>
-    </View>
+    </Md3Card>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    padding: spacing.lg,
     borderRadius: radius.card,
-    borderWidth: 1,
     marginBottom: spacing.md
   },
   title: { fontFamily: fonts.bodySemi, fontSize: 15, marginBottom: 6 },
@@ -120,7 +118,6 @@ const styles = StyleSheet.create({
   btn: {
     paddingVertical: 12,
     borderRadius: radius.control,
-    borderWidth: 1,
     alignItems: 'center'
   },
   btnText: { fontFamily: fonts.bodySemi, fontSize: 13 }

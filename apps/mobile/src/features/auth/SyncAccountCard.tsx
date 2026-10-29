@@ -11,6 +11,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
+import Md3Card from '@/components/md3/Md3Card';
 import {
   buildMailruAuthorizeUrl,
   OAUTH_REDIRECT_URI,
@@ -324,12 +325,7 @@ export default function SyncAccountCard() {
         : null;
 
   return (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: colors.panel, borderColor: colors.line },
-      ]}
-    >
+    <Md3Card variant="flat" padding="md" style={styles.card}>
       <Text style={[styles.kicker, { color: colors.paperDim }]}>
         СИНХРОНИЗАЦИЯ
       </Text>
@@ -363,7 +359,7 @@ export default function SyncAccountCard() {
                 disabled={busy}
                 style={[
                   styles.btnSecondary,
-                  { borderColor: colors.line, opacity: busy ? 0.5 : 1 },
+                  { backgroundColor: colors.surfaceContainerHigh, opacity: busy ? 0.5 : 1 },
                 ]}
               >
                 <Text style={[styles.btnText, { color: colors.paper }]}>VK ID</Text>
@@ -375,7 +371,7 @@ export default function SyncAccountCard() {
                 disabled={busy}
                 style={[
                   styles.btnSecondary,
-                  { borderColor: colors.line, opacity: busy ? 0.5 : 1 },
+                  { backgroundColor: colors.surfaceContainerHigh, opacity: busy ? 0.5 : 1 },
                 ]}
               >
                 <Text style={[styles.btnText, { color: colors.paper }]}>
@@ -408,8 +404,7 @@ export default function SyncAccountCard() {
           styles.input,
           {
             color: colors.paper,
-            borderColor: colors.line,
-            backgroundColor: colors.ink,
+            backgroundColor: colors.surfaceContainerHigh,
           },
         ]}
       />
@@ -455,15 +450,13 @@ export default function SyncAccountCard() {
       {error ? (
         <Text style={[styles.msg, { color: colors.paperDim }]}>{error}</Text>
       ) : null}
-    </View>
+    </Md3Card>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderWidth: 1,
     borderRadius: radius.card,
-    padding: spacing.md,
     gap: spacing.xs,
   },
   kicker: {
@@ -490,7 +483,6 @@ const styles = StyleSheet.create({
   },
   input: {
     marginTop: spacing.sm,
-    borderWidth: 1,
     borderRadius: radius.control,
     paddingHorizontal: spacing.md,
     paddingVertical: 12,
@@ -507,7 +499,6 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 44,
     borderRadius: radius.control,
-    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
