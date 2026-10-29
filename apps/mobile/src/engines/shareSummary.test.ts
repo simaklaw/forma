@@ -1,6 +1,8 @@
 import {
   buildLastWorkoutSummary,
   formatWorkoutShareText,
+  workoutLines,
+  workoutTotalLine,
   type ShareSetLog
 } from './shareSummary';
 
@@ -132,5 +134,29 @@ describe('formatWorkoutShareText', () => {
     expect(text).toContain('• Жим лёжа — 1 подх. × 10 повт. (макс 60 кг)');
     expect(text).toContain('• Отжимания — 1 подх. × 20 повт.');
     expect(text.split('\n').pop()).toBe('Итого: 2 подх. · объём 600 кг');
+  });
+});
+
+describe('workoutLines / workoutTotalLine (постер)', () => {
+  it('workoutLines: по строке на упражнение, «макс» только у весовых', () => {
+    const s = buildLastWorkoutSummary(
+      [log(10, '2026-10-28', 60, 10), log(3, '2026-10-28', 0, 20)],
+      { 10: 'Жим лёжа', 3: 'Отжимания' }
+    )!;
+    const lines = workoutLines(s, TPL);
+    expect(lines).toEqual([
+      '• Жим лёжа — 1 подх. × 10 повт. (макс 60 кг)',
+      '• Отжимания — 1 подх. × 20 повт.'
+    ]);
+  });
+
+  it('workoutTotalLine: с объёмом при весовой тренировке', () => {
+    const s = buildLastWorkoutSummary([log(10, '2026-10-28', 60, 10)], { 10: 'Жим лёжа' })!;
+    expect(workoutTotalLine(s, TPL)).toBe('Итого: 1 подх. · объём 600 кг');
+  });
+
+  it('workoutTotalLine: без объёма при «свой вес»', () => {
+    const s = buildLastWorkoutSummary([log(3, '2026-10-28', 0, 20)], { 3: 'Отжимания' })!;
+    expect(workoutTotalLine(s, TPL)).toBe('Итого: 1 подх.');
   });
 });

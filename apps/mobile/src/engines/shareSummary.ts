@@ -94,20 +94,35 @@ function fill(template: string, vars: Record<string, string | number>): string {
   );
 }
 
-/** Текст для системного шер-шита: заголовок, пустая строка, упражнения, итог. */
-export function formatWorkoutShareText(
+/** Строки упражнений — по одной на упражнение (для текста и PNG-постера). */
+export function workoutLines(
   summary: LastWorkoutSummary,
   tpl: ShareTextTemplates
-): string {
-  const lines = summary.exercises.map((e) => {
+): string[] {
+  return summary.exercises.map((e) => {
     const avgReps = Math.round(e.repsTotal / e.setCount);
     return e.topWeightKg > 0
       ? fill(tpl.line, { name: e.name, sets: e.setCount, reps: avgReps, max: e.topWeightKg })
       : fill(tpl.lineBody, { name: e.name, sets: e.setCount, reps: avgReps });
   });
-  const total =
-    summary.totalVolumeKg > 0
-      ? fill(tpl.total, { sets: summary.totalSets, volume: summary.totalVolumeKg })
-      : fill(tpl.totalSets, { sets: summary.totalSets });
+}
+
+/** Итоговая строка: с объёмом; для «свой вес» — только подходы. */
+export function workoutTotalLine(
+  summary: LastWorkoutSummary,
+  tpl: ShareTextTemplates
+): string {
+  return summary.totalVolumeKg > 0
+    ? fill(tpl.total, { sets: summary.totalSets, volume: summary.totalVolumeKg })
+    : fill(tpl.totalSets, { sets: summary.totalSets });
+}
+
+/** Текст для системного шер-шита: заголовок, пустая строка, упражнения, итог. */
+export function formatWorkoutShareText(
+  summary: LastWorkoutSummary,
+  tpl: ShareTextTemplates
+): string {
+  const lines = workoutLines(summary, tpl);
+  const total = workoutTotalLine(summary, tpl);
   return [tpl.title, '', ...lines, '', total].join('\n');
 }
