@@ -58,7 +58,6 @@ export default function WorkoutShareCard({ setLogs }: Props) {
   if (!summary) return null;
 
   const locale = lang === 'en' ? 'en-US' : 'ru-RU';
-
   const dateLabel = new Date(`${summary.dateKey}T00:00:00`).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'short',
@@ -120,8 +119,7 @@ export default function WorkoutShareCard({ setLogs }: Props) {
           void handleShare();
         }}
       >
-        <Text style={[st
-yles.buttonLabel, { color: colors.lime }]}>{t('shareCardButton')}</Text>
+        <Text style={[styles.buttonLabel, { color: colors.lime }]}>{t('shareCardButton')}</Text>
       </TouchableOpacity>
 
       {/*
@@ -174,8 +172,7 @@ yles.buttonLabel, { color: colors.lime }]}>{t('shareCardButton')}</Text>
         </View>
 
         <View style={styles.posterExerciseList}>
-   
-       {posterLines.map((line, index) => (
+          {posterLines.map((line, index) => (
             <View
               key={`${summary.exercises[index]?.exerciseId ?? index}-${index}`}
               style={styles.posterExerciseRow}
@@ -243,8 +240,7 @@ function createStyles(_colors: ColorTokens) {
     posterOrnament: {
       position: 'absolute',
       top: -78,
-      right: -6
-8,
+      right: -68,
       width: 210,
       height: 210,
       borderRadius: 105,
@@ -333,8 +329,7 @@ function createStyles(_colors: ColorTokens) {
       color: POSTER.muted,
       fontFamily: fonts.monoSemi,
       fontSize: 9,
-  
-    letterSpacing: 0.8,
+      letterSpacing: 0.8,
       marginTop: 4
     },
     posterSectionHeader: {
