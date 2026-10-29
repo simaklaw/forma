@@ -181,12 +181,9 @@ export default function CatalogScreen() {
 
       {replaceTarget ? (
         <View
-          style={[
-            styles.replaceBanner,
-            { borderColor: colors.lime, backgroundColor: colors.limeDim }
-          ]}
+          style={[styles.replaceBanner, { backgroundColor: colors.primaryContainer }]}
         >
-          <Text style={[styles.replaceBannerTitle, { color: colors.lime }]}>
+          <Text style={[styles.replaceBannerTitle, { color: colors.onPrimaryContainer }]}>
             {t('catalogReplaceTitle', { day: replaceTarget.dayName })}
           </Text>
           <Text style={[styles.replaceBannerBody, { color: colors.paper }]}>
@@ -234,14 +231,14 @@ export default function CatalogScreen() {
               disabled={disabled}
               style={[
                 styles.segmentTab,
-                { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                active && { borderColor: colors.lime, backgroundColor: colors.limeDim },
+                { backgroundColor: colors.surfaceContainer },
+                active && { backgroundColor: colors.primaryContainer },
                 disabled && { opacity: 0.5 }
               ]}
               accessibilityRole="tab"
               accessibilityState={{ selected: active, disabled }}
             >
-              <Text style={[styles.modeText, { color: active ? colors.lime : colors.paperDim }]}>
+              <Text style={[styles.modeText, { color: active ? colors.onPrimaryContainer : colors.paperDim }]}>
                 {item.label}
               </Text>
             </TouchableOpacity>
@@ -274,21 +271,21 @@ export default function CatalogScreen() {
                     onPress={() => changeMode(item.id)}
                     style={[
                       styles.modeTab,
-                      { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                      active && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                      { backgroundColor: colors.surfaceContainer },
+                      active && { backgroundColor: colors.primaryContainer }
                     ]}
                     accessibilityRole="tab"
                     accessibilityState={{ selected: active }}
                   >
                     <Text
-                      style={[styles.modeText, { color: active ? colors.lime : colors.paperDim }]}
+                      style={[styles.modeText, { color: active ? colors.onPrimaryContainer : colors.paperDim }]}
                     >
                       {item.label}
                     </Text>
                     <Text
                       style={[
                         styles.modeCount,
-                        { color: active ? colors.lime : colors.paperFaint }
+                        { color: active ? colors.onPrimaryContainer : colors.paperFaint }
                       ]}
                     >
                       {item.count}
@@ -305,7 +302,7 @@ export default function CatalogScreen() {
             placeholderTextColor={colors.paperFaint}
             style={[
               styles.search,
-              { backgroundColor: colors.panel, borderColor: colors.lineStrong, color: colors.paper }
+              { backgroundColor: colors.surfaceContainer, color: colors.paper }
             ]}
             accessibilityLabel={t('catalogSearchA11y')}
             returnKeyType="search"
@@ -315,8 +312,8 @@ export default function CatalogScreen() {
               onPress={() => setShowFavoritesOnly((value) => !value)}
               style={[
                 styles.chip,
-                { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                showFavoritesOnly && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                { backgroundColor: colors.surfaceContainer },
+                showFavoritesOnly && { backgroundColor: colors.primaryContainer }
               ]}
               accessibilityRole="button"
               accessibilityState={{ selected: showFavoritesOnly }}
@@ -325,7 +322,7 @@ export default function CatalogScreen() {
               <Text
                 style={[
                   styles.chipText,
-                  { color: showFavoritesOnly ? colors.lime : colors.paperDim }
+                  { color: showFavoritesOnly ? colors.onPrimaryContainer : colors.paperDim }
                 ]}
               >
                 {t('favoritesChip')}{favoriteItems.length ? ` (${favoriteItems.length})` : ''}
@@ -346,10 +343,7 @@ export default function CatalogScreen() {
                   <TouchableOpacity
                     key={`recent-${item.mode}-${item.id}`}
                     onPress={() => setSelected(item)}
-                    style={[
-                      styles.recentChip,
-                      { borderColor: colors.lineStrong, backgroundColor: colors.panel }
-                    ]}
+                    style={[styles.recentChip, { backgroundColor: colors.surfaceContainer }]}
                     accessibilityRole="button"
                     accessibilityLabel={t('catalogRecentA11y', { name: item.name })}
                   >
@@ -375,11 +369,8 @@ export default function CatalogScreen() {
               }}
               style={[
                 styles.chip,
-                { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                equipment === null && {
-                  borderColor: colors.lime,
-                  backgroundColor: colors.limeDim
-                }
+                { backgroundColor: colors.surfaceContainer },
+                equipment === null && { backgroundColor: colors.primaryContainer }
               ]}
               accessibilityRole="button"
               accessibilityState={{ selected: equipment === null }}
@@ -388,7 +379,7 @@ export default function CatalogScreen() {
               <Text
                 style={[
                   styles.chipText,
-                  { color: equipment === null ? colors.lime : colors.paperDim }
+                  { color: equipment === null ? colors.onPrimaryContainer : colors.paperDim }
                 ]}
               >
                 {t('catalogEquipmentAllChip')}
@@ -405,14 +396,14 @@ export default function CatalogScreen() {
                   }}
                   style={[
                     styles.chip,
-                    { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                    active && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                    { backgroundColor: colors.surfaceContainer },
+                    active && { backgroundColor: colors.primaryContainer }
                   ]}
                   accessibilityRole="button"
                   accessibilityState={{ selected: active }}
                   accessibilityLabel={equipmentLabel(item, lang)}
                 >
-                  <Text style={[styles.chipText, { color: active ? colors.lime : colors.paperDim }]}>
+                  <Text style={[styles.chipText, { color: active ? colors.onPrimaryContainer : colors.paperDim }]}>
                     {equipmentLabel(item, lang)}
                   </Text>
                 </TouchableOpacity>
@@ -436,13 +427,13 @@ export default function CatalogScreen() {
                   }}
                   style={[
                     styles.chip,
-                    { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-                    active && { borderColor: colors.cyan, backgroundColor: colors.limeDim }
+                    { backgroundColor: colors.surfaceContainer },
+                    active && { backgroundColor: colors.surfaceContainerHigh }
                   ]}
                   accessibilityRole="button"
                   accessibilityState={{ selected: active }}
                 >
-                  <Text style={[styles.chipText, { color: active ? colors.cyan : colors.paperDim }]}>
+                  <Text style={[styles.chipText, { color: active ? colors.paper : colors.paperDim }]}>
                     {muscleLabel(item, lang)}
                   </Text>
                 </TouchableOpacity>
@@ -461,7 +452,7 @@ export default function CatalogScreen() {
                     RestTimerEngine.hapticTabSwitch();
                     setPlanDayId(day.id);
                   }}
-                  style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}
+                  style={[styles.card, { backgroundColor: colors.surfaceContainer }]}
                   accessibilityRole="button"
                   accessibilityLabel={day.name}
                 >
@@ -507,10 +498,7 @@ export default function CatalogScreen() {
                   return (
                     <TouchableOpacity
                       onPress={() => setSelected(item)}
-                      style={[
-                        styles.card,
-                        { backgroundColor: colors.panel, borderColor: colors.line }
-                      ]}
+                      style={[styles.card, { backgroundColor: colors.surfaceContainer }]}
                       accessibilityRole="button"
                       accessibilityLabel={t('catalogOpenDetailsA11y', { name: item.name })}
                     >
@@ -571,7 +559,6 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.lg,
     marginTop: spacing.sm,
     marginBottom: spacing.xs,
-    borderWidth: 1,
     borderRadius: radius.card,
     padding: spacing.md,
     gap: 4
@@ -592,14 +579,12 @@ const styles = StyleSheet.create({
   backToDays: { paddingHorizontal: spacing.lg, paddingBottom: 4 },
   modeTab: {
     flex: 1,
-    borderWidth: 1,
     borderRadius: radius.control,
     paddingVertical: 10,
     alignItems: 'center',
     gap: 2
   },
   segmentTab: {
-    borderWidth: 1,
     borderRadius: radius.control,
     paddingVertical: 10,
     paddingHorizontal: 14,
@@ -611,7 +596,6 @@ const styles = StyleSheet.create({
   search: {
     marginHorizontal: spacing.lg,
     marginBottom: spacing.sm,
-    borderWidth: 1,
     borderRadius: radius.control,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -629,7 +613,6 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   chip: {
-    borderWidth: 1,
     borderRadius: radius.pill,
     paddingHorizontal: 12,
     paddingVertical: 7
@@ -645,7 +628,6 @@ const styles = StyleSheet.create({
     marginBottom: 2
   },
   recentChip: {
-    borderWidth: 1,
     borderRadius: radius.pill,
     paddingHorizontal: 12,
     paddingVertical: 7,
@@ -653,7 +635,6 @@ const styles = StyleSheet.create({
   },
   list: { paddingHorizontal: spacing.lg, paddingBottom: 32, gap: 10 },
   card: {
-    borderWidth: 1,
     borderRadius: radius.card,
     padding: spacing.md,
     gap: 8

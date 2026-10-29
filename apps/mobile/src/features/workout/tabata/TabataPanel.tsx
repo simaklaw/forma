@@ -99,7 +99,7 @@ export default function TabataPanel() {
         />
       </View>
 
-      <View style={[styles.clockCard, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+      <View style={[styles.clockCard, { backgroundColor: colors.surfaceContainer }]}>
         <Text style={[styles.phase, { color: phaseColor }]}>{PHASE_RU[snap.phase]}</Text>
         <Text style={[styles.clock, { color: colors.paper }]}>
           {snap.phase === 'idle' ? formatMmSs(total) : formatMmSs(snap.remainingSec)}
@@ -124,10 +124,7 @@ export default function TabataPanel() {
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
-            style={[
-              styles.primary,
-              { backgroundColor: colors.panel, borderColor: colors.line, borderWidth: 1 }
-            ]}
+            style={[styles.primary, { backgroundColor: colors.surfaceContainer }]}
             onPress={() => engineRef.current.pause()}
             accessibilityRole="button"
           >
@@ -135,7 +132,7 @@ export default function TabataPanel() {
           </TouchableOpacity>
         )}
         <TouchableOpacity
-          style={[styles.secondary, { borderColor: colors.lineStrong }]}
+          style={[styles.secondary, { backgroundColor: colors.surfaceContainer }]}
           onPress={() => engineRef.current.reset()}
           accessibilityRole="button"
         >
@@ -164,9 +161,8 @@ export default function TabataPanel() {
               style={[
                 styles.input,
                 {
+                  backgroundColor: colors.surfaceContainer,
                   color: colors.paper,
-                  borderColor: colors.lineStrong,
-                  backgroundColor: colors.panel,
                   opacity: snap.running ? 0.5 : 1
                 }
               ]}
@@ -218,14 +214,14 @@ function PresetChip({
       disabled={disabled}
       style={[
         styles.chip,
-        { borderColor: colors.lineStrong, backgroundColor: colors.panel },
-        active && { borderColor: colors.lime, backgroundColor: colors.limeDim },
+        { backgroundColor: colors.surfaceContainer },
+        active && { backgroundColor: colors.primaryContainer },
         disabled && { opacity: 0.5 }
       ]}
       accessibilityRole="button"
       accessibilityState={{ selected: active, disabled }}
     >
-      <Text style={[styles.chipText, { color: active ? colors.lime : colors.paperDim }]}>{label}</Text>
+      <Text style={[styles.chipText, { color: active ? colors.onPrimaryContainer : colors.paperDim }]}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -237,12 +233,10 @@ const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: radius.control,
-    borderWidth: 1
+    borderRadius: radius.control
   },
   chipText: { fontSize: 13, fontFamily: fonts.bodySemi },
   clockCard: {
-    borderWidth: 1,
     borderRadius: radius.card,
     paddingVertical: 28,
     paddingHorizontal: 16,
@@ -264,7 +258,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 14,
     borderRadius: radius.control,
-    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center'
   },
@@ -274,7 +267,6 @@ const styles = StyleSheet.create({
   field: { width: '47%', gap: 4 },
   fieldLabel: { fontSize: 11, fontFamily: fonts.mono },
   input: {
-    borderWidth: 1,
     borderRadius: radius.control,
     paddingHorizontal: 12,
     paddingVertical: 10,
