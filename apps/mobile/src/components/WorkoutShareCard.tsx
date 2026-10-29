@@ -167,7 +167,7 @@ export default function WorkoutShareCard({ setLogs }: Props) {
             <View key={`${summary.exercises[index]?.exerciseId ?? index}-${index}`} style={styles.posterExerciseRow}>
               <Text style={styles.posterExerciseIndex}>{String(index + 1).padStart(2, '0')}</Text>
               <Text style={styles.posterExerciseText} numberOfLines={2}>
-                {line.replace(/^•\\s*/, '')}
+                {line.replace(/^•\s*/, '')}
               </Text>
             </View>
           ))}
