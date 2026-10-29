@@ -90,7 +90,6 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
   const clearConversation = useAiAssistantStore((s) => s.clearConversation);
 
   const active = providers.find((p) => p.id === activeProviderId) ?? null;
-  const preset = presetId ? providerPresetById(presetId) : null;
 
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
@@ -103,6 +102,7 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [presetId, setPresetId] = useState<string | null>(null);
+  const preset = presetId ? providerPresetById(presetId) : null;
 
   const role = roleById(roleId);
   const showForm = !active || editing;
