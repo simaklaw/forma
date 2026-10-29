@@ -40,7 +40,7 @@ export default function MusclePickerMap({ selected, onToggleGroup }: MusclePicke
             <Path
               key={'body-' + i}
               d={p.d}
-              fill={colors.panel}
+              fill={colors.surfaceContainer}
               stroke={colors.lineStrong}
               strokeWidth={1}
             />

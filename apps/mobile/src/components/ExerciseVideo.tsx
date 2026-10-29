@@ -266,9 +266,7 @@ function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
     hero: {
       height: 180,
-      borderWidth: 1,
-      borderColor: colors.lineStrong,
-      backgroundColor: colors.panel,
+      backgroundColor: colors.surfaceContainer,
       overflow: 'hidden',
       justifyContent: 'flex-end',
       borderRadius: radius.control

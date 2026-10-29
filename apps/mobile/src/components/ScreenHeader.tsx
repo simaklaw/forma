@@ -49,14 +49,12 @@ function createStyles(colors: ColorTokens) {
       width: 40,
       height: 40,
       borderRadius: 10,
-      backgroundColor: colors.limeDim,
-      borderWidth: 1.5,
-      borderColor: colors.lime,
+      backgroundColor: colors.primaryContainer,
       alignItems: 'center',
       justifyContent: 'center'
     },
     markText: {
-      color: colors.lime,
+      color: colors.onPrimaryContainer,
       fontFamily: fonts.mono,
       fontSize: 16,
       letterSpacing: 0.5

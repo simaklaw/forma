@@ -81,11 +81,9 @@ export default AppBottomSheet;
 function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
   background: {
-    backgroundColor: colors.panelRaised,
+    backgroundColor: colors.surfaceContainerHigh,
     borderTopLeftRadius: radius.sheet,
-    borderTopRightRadius: radius.sheet,
-    borderTopWidth: 1,
-    borderColor: colors.line
+    borderTopRightRadius: radius.sheet
   },
   handle: { backgroundColor: colors.lineStrong, width: 40, height: 4 },
   content: { flex: 1, paddingHorizontal: spacing.xl },
@@ -104,11 +102,9 @@ function createStyles(colors: ColorTokens) {
     width: 32,
     height: 32,
     borderRadius: radius.control,
-    borderWidth: 1,
-    borderColor: colors.lineStrong,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.panel
+    backgroundColor: colors.surfaceContainer
   },
   closeText: { color: colors.paperDim, fontSize: 18, lineHeight: 20 }
 });
