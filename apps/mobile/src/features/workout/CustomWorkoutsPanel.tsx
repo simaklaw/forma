@@ -21,7 +21,7 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
-import { useT } from '@/i18n/strings';
+import { muscleLabel, useT } from '@/i18n/strings';
 import { RestTimerEngine } from '@/engines/RestTimerEngine';
 import type { TabParamList } from '@/navigation/types';
 import { useCustomWorkoutStore } from '@/state/useCustomWorkoutStore';
@@ -33,8 +33,13 @@ import {
   type CustomWorkout
 } from './customWorkouts';
 import { IMPORTED_EXERCISE_LIBRARY } from './importedExerciseLibrary.generated';
-import { importedToExerciseDef } from './importedExerciseBridge';
+import { importedExerciseDefByNumericId, importedToExerciseDef } from './importedExerciseBridge';
 import { matchesAllTokens } from '@/lib/normalizeSearch';
+import { useLanguageStore } from '@/i18n/useLanguageStore';
+import { MUSCLE_LABELS, type MuscleKey } from '@/domain/muscleKeys';
+import { useFitPulseStore } from '@/state/useFitPulseStore';
+import { isBodyweightExercise } from './catalog';
+import { formatSchemeDate, lastSchemeForMuscle } from './lastScheme';
 
 /** Единый список для пикера: gym → home → импортированная библиотека (как в resolve). */
 interface PickerEntry {
@@ -192,6 +197,9 @@ function CustomWorkoutEditor({
   const [expanded, setExpanded] = useState<number | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const lang = useLanguageStore((s) => s.lang);
+  const setLogs = useFitPulseStore((s) => s.setLogs);
+  const [schemeNote, setSchemeNote] = useState<string | null>(null);
 
   useEffect(() => {
     setName(workout?.name ?? '');
@@ -201,6 +209,36 @@ function CustomWorkoutEditor({
   if (!workout) return null;
 
   const items = workout.items;
+
+  /** Определение для схемы: gym → home → импортированная библиотека. */
+  const schemeDefOf = (id: number) =>
+    customExerciseById(id) ?? importedExerciseDefByNumericId(id);
+
+  /** Автозаполнение (идея fit_tracker): схема последней тренировки группы мышц. */
+  function applyScheme(muscle: MuscleKey) {
+    const scheme = lastSchemeForMuscle(setLogs, muscle, {
+      musclesOf: (id) => schemeDefOf(id)?.targetMuscles ?? null,
+      restOf: (id) => schemeDefOf(id)?.restSeconds ?? null,
+      isWeighted: (id) => {
+        const def = schemeDefOf(id);
+        return def ? !isBodyweightExercise(def) : true;
+      }
+    });
+    if (!scheme) {
+      setSchemeNote(t('customSchemeNoHistory'));
+      return;
+    }
+    const existingIds = new Set(items.map((it) => it.exerciseId));
+    const fresh = scheme.items.filter((it) => !existingIds.has(it.exerciseId));
+    if (fresh.length === 0) {
+      setSchemeNote(t('customSchemeAllHere', { date: formatSchemeDate(scheme.dateKey) }));
+      return;
+    }
+    useCustomWorkoutStore.getState().setWorkoutItems(workout!.id, [...items, ...fresh]);
+    setSchemeNote(
+      t('customSchemeLoaded', { date: formatSchemeDate(scheme.dateKey), count: fresh.length })
+    );
+  }
 
   function commitName() {
     useCustomWorkoutStore.getState().renameWorkout(workout!.id, name);
@@ -272,6 +310,40 @@ function CustomWorkoutEditor({
             accessibilityLabel={t('customNamePlaceholder')}
             returnKeyType="done"
           />
+
+          <View
+            style={[styles.schemeCard, { borderColor: colors.line, backgroundColor: colors.panel }]}
+          >
+            <Text style={[styles.schemeTitle, { color: colors.paper }]}>
+              {t('customSchemeTitle')}
+            </Text>
+            <Text style={[styles.schemeHint, { color: colors.paperDim }]}>
+              {t('customSchemeHint')}
+            </Text>
+            <View style={styles.schemeChips}>
+              {(Object.keys(MUSCLE_LABELS) as MuscleKey[]).map((key) => (
+                <TouchableOpacity
+                  key={key}
+                  style={[
+                    styles.schemeChip,
+                    { borderColor: colors.lineStrong, backgroundColor: colors.panelRaised }
+                  ]}
+                  onPress={() => applyScheme(key)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('customSchemeChipA11y', {
+                    muscle: muscleLabel(key, lang)
+                  })}
+                >
+                  <Text style={[styles.schemeChipText, { color: colors.lime }]}>
+                    {muscleLabel(key, lang)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            {schemeNote ? (
+              <Text style={[styles.schemeNote, { color: colors.paperFaint }]}>{schemeNote}</Text>
+            ) : null}
+          </View>
 
           <FlatList
             data={items}
@@ -564,6 +636,18 @@ function createStyles(_colors: ColorTokens) {
       fontFamily: fonts.body,
       fontSize: 15
     },
+    schemeCard: { borderWidth: 1, borderRadius: radius.card, padding: spacing.md, gap: 8 },
+    schemeTitle: { fontFamily: fonts.bodySemi, fontSize: 14 },
+    schemeHint: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17 },
+    schemeChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+    schemeChip: {
+      borderWidth: 1,
+      borderRadius: radius.control,
+      paddingHorizontal: 10,
+      paddingVertical: 6
+    },
+    schemeChipText: { fontFamily: fonts.bodySemi, fontSize: 12, textTransform: 'capitalize' },
+    schemeNote: { fontFamily: fonts.body, fontSize: 12 },
     itemCard: { borderWidth: 1, borderRadius: radius.card, padding: spacing.md, gap: 8 },
     itemRow: { flexDirection: 'row', alignItems: 'center' },
     itemName: { fontFamily: fonts.bodySemi, fontSize: 14 },
