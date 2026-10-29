@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import Md3Card from './md3/Md3Card';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useT } from '@/i18n/strings';
@@ -66,10 +67,7 @@ export default function ExerciseGoalCard({ setLogs }: Props) {
     new Date(`${key}T00:00:00`).toLocaleDateString(locale);
 
   return (
-    <View
-      style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}
-      accessibilityRole="summary"
-    >
+    <Md3Card variant="flat" padding="md" style={styles.card} accessibilityRole="summary">
       <Text style={[styles.kicker, { color: colors.paperFaint }]}>{t('goalKicker')}</Text>
 
       {rows.length === 0 ? (
@@ -119,12 +117,12 @@ export default function ExerciseGoalCard({ setLogs }: Props) {
       )}
 
       <TouchableOpacity
-        style={[styles.addBtn, { borderColor: colors.lime }]}
+        style={[styles.addBtn, { backgroundColor: colors.primaryContainer }]}
         accessibilityRole="button"
         accessibilityLabel={t('goalAdd')}
         onPress={() => setPickerVisible(true)}
       >
-        <Text style={[styles.addBtnLabel, { color: colors.lime }]}>{t('goalAdd')}</Text>
+        <Text style={[styles.addBtnLabel, { color: colors.onPrimaryContainer }]}>{t('goalAdd')}</Text>
       </TouchableOpacity>
 
       <GoalPickerModal
@@ -137,7 +135,7 @@ export default function ExerciseGoalCard({ setLogs }: Props) {
           setPickerVisible(false);
         }}
       />
-    </View>
+    </Md3Card>
   );
 }
 
@@ -195,9 +193,9 @@ function GoalPickerModal({ visible, names, goals, onClose, onSave }: PickerProps
             onPress={onClose}
             accessibilityRole="button"
             accessibilityLabel={t('close')}
-            style={[styles.pickerBarBtn, { borderColor: colors.lineStrong }]}
+            style={[styles.pickerBarBtn, { backgroundColor: colors.surfaceContainer }]}
           >
-            <Text style={[styles.pickerBarBtnText, { color: colors.lime }]}>{t('close')}</Text>
+            <Text style={[styles.pickerBarBtnText, { color: colors.paper }]}>{t('close')}</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.pickerBody}>
@@ -206,7 +204,7 @@ function GoalPickerModal({ visible, names, goals, onClose, onSave }: PickerProps
           <Text style={[styles.pickerLabel, { color: colors.paperFaint }]}>
             {t('goalPickExercise')}
           </Text>
-          <View style={[styles.pickerList, { borderColor: colors.line }]}>
+          <View style={[styles.pickerList, { backgroundColor: colors.surfaceContainer }]}>
             <FlatList
               data={items}
               keyExtractor={(item) => String(item.id)}
@@ -218,8 +216,8 @@ function GoalPickerModal({ visible, names, goals, onClose, onSave }: PickerProps
                     style={[
                       styles.pickerRow,
                       selected
-                        ? { borderColor: colors.lime, backgroundColor: colors.limeDim }
-                        : { borderColor: colors.line }
+                        ? { backgroundColor: colors.primaryContainer }
+                        : { backgroundColor: colors.surfaceContainerHigh }
                     ]}
                     accessibilityRole="button"
                     accessibilityLabel={item.name}
@@ -252,7 +250,7 @@ function GoalPickerModal({ visible, names, goals, onClose, onSave }: PickerProps
             keyboardType="decimal-pad"
             placeholder={t('goalTargetPlaceholder')}
             placeholderTextColor={colors.paperFaint}
-            style={[styles.weightInput, { borderColor: colors.line, color: colors.paper }]}
+            style={[styles.weightInput, { backgroundColor: colors.surfaceContainer, color: colors.paper }]}
           />
           {weightInput.length > 0 && parsed == null ? (
             <Text style={[styles.weightError, { color: colors.paperFaint }]}>
@@ -269,7 +267,7 @@ function GoalPickerModal({ visible, names, goals, onClose, onSave }: PickerProps
             }}
             style={[
               styles.saveBtn,
-              canSave ? { backgroundColor: colors.lime } : { borderColor: colors.line }
+              canSave ? { backgroundColor: colors.lime } : { backgroundColor: colors.surfaceContainer }
             ]}
           >
             <Text
@@ -289,12 +287,7 @@ function GoalPickerModal({ visible, names, goals, onClose, onSave }: PickerProps
 
 function createStyles(_colors: ColorTokens) {
   return StyleSheet.create({
-    card: {
-      borderWidth: 1,
-      borderRadius: radius.card,
-      padding: spacing.md,
-      marginBottom: spacing.md
-    },
+    card: { borderRadius: radius.card, marginBottom: spacing.md },
     kicker: {
       fontFamily: fonts.mono,
       fontSize: 11,
@@ -323,7 +316,6 @@ function createStyles(_colors: ColorTokens) {
     goalCaption: { fontFamily: fonts.body, fontSize: 11, marginTop: 5 },
     addBtn: {
       alignSelf: 'flex-start',
-      borderWidth: 1,
       borderRadius: radius.control,
       paddingHorizontal: 14,
       paddingVertical: 8,
@@ -340,7 +332,6 @@ function createStyles(_colors: ColorTokens) {
       borderBottomWidth: 1
     },
     pickerBarBtn: {
-      borderWidth: 1,
       borderRadius: radius.pill,
       paddingHorizontal: 14,
       paddingVertical: 8
@@ -351,12 +342,10 @@ function createStyles(_colors: ColorTokens) {
     pickerLabel: { fontSize: 11, fontFamily: fonts.bodySemi, letterSpacing: 1, marginTop: 6 },
     pickerList: {
       flex: 1,
-      borderWidth: 1,
       borderRadius: radius.card,
       overflow: 'hidden'
     },
     pickerRow: {
-      borderWidth: 1,
       borderRadius: radius.control,
       marginHorizontal: 8,
       marginVertical: 4,
@@ -370,7 +359,6 @@ function createStyles(_colors: ColorTokens) {
     pickerRowText: { fontFamily: fonts.body, fontSize: 13, flex: 1 },
     pickerRowTarget: { fontFamily: fonts.mono, fontSize: 12 },
     weightInput: {
-      borderWidth: 1,
       borderRadius: radius.control,
       paddingHorizontal: 12,
       paddingVertical: 10,
