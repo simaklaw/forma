@@ -58,6 +58,7 @@ export default function WorkoutShareCard({ setLogs }: Props) {
   if (!summary) return null;
 
   const locale = lang === 'en' ? 'en-US' : 'ru-RU';
+
   const dateLabel = new Date(`${summary.dateKey}T00:00:00`).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'short',
@@ -84,7 +85,11 @@ export default function WorkoutShareCard({ setLogs }: Props) {
         dialogTitle: t('shareCardTitle', { date: dateLabel })
       });
     } catch {
-      await Share.share({ message: shareText });
+      try {
+        await Share.share({ message: shareText });
+      } catch {
+        // системный шеринг недоступен (например, веб) — тихо выходим
+      }
     }
   };
 
@@ -115,17 +120,21 @@ export default function WorkoutShareCard({ setLogs }: Props) {
           void handleShare();
         }}
       >
-        <Text style={[styles.buttonLabel, { color: colors.lime }]}>{t('shareCardButton')}</Text>
+        <Text style={[st
+yles.buttonLabel, { color: colors.lime }]}>{t('shareCardButton')}</Text>
       </TouchableOpacity>
 
       {/*
         Отдельная нативная View для captureRef. collapsable={false} не даёт
         Android схлопнуть её; содержимое карточки не зависит от темы экрана.
+        Для скринридеров вью скрыта — декорация, не контент.
       */}
       <View
         ref={posterRef}
         collapsable={false}
         pointerEvents="none"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
         style={styles.poster}
       >
         <View pointerEvents="none" style={styles.posterOrnament} />
@@ -165,7 +174,8 @@ export default function WorkoutShareCard({ setLogs }: Props) {
         </View>
 
         <View style={styles.posterExerciseList}>
-          {posterLines.map((line, index) => (
+   
+       {posterLines.map((line, index) => (
             <View
               key={`${summary.exercises[index]?.exerciseId ?? index}-${index}`}
               style={styles.posterExerciseRow}
@@ -233,7 +243,8 @@ function createStyles(_colors: ColorTokens) {
     posterOrnament: {
       position: 'absolute',
       top: -78,
-      right: -68,
+      right: -6
+8,
       width: 210,
       height: 210,
       borderRadius: 105,
@@ -322,7 +333,8 @@ function createStyles(_colors: ColorTokens) {
       color: POSTER.muted,
       fontFamily: fonts.monoSemi,
       fontSize: 9,
-      letterSpacing: 0.8,
+  
+    letterSpacing: 0.8,
       marginTop: 4
     },
     posterSectionHeader: {
