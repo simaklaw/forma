@@ -512,10 +512,8 @@ function createStyles(colors: ColorTokens) {
       marginHorizontal: spacing.xl,
       marginTop: spacing.lg,
       padding: spacing.lg,
-      backgroundColor: colors.panel,
-      borderRadius: radius.card,
-      borderWidth: 1,
-      borderColor: colors.line
+      backgroundColor: colors.surfaceContainer,
+      borderRadius: radius.card
     },
     macroCol: { flex: 1, minWidth: 0 },
     remainHint: {
@@ -534,17 +532,13 @@ function createStyles(colors: ColorTokens) {
       paddingHorizontal: 8,
       paddingVertical: 4,
       borderRadius: radius.control,
-      backgroundColor: colors.ink,
-      borderWidth: 1,
-      borderColor: colors.lineStrong
+      backgroundColor: colors.surfaceContainer
     },
     budgetChipBurn: {
-      borderColor: colors.cyan,
-      backgroundColor: colors.cyanDim
+      backgroundColor: colors.surfaceContainerHigh
     },
     budgetChipTotal: {
-      borderColor: colors.lime,
-      backgroundColor: colors.limeDim
+      backgroundColor: colors.primaryContainer
     },
     budgetChipLabel: {
       color: colors.paperFaint,
@@ -553,7 +547,7 @@ function createStyles(colors: ColorTokens) {
       letterSpacing: 0.3
     },
     budgetChipLabelBurn: {
-      color: colors.cyan,
+      color: colors.paper,
       fontSize: 9,
       fontFamily: fonts.body,
       letterSpacing: 0.3
@@ -565,13 +559,13 @@ function createStyles(colors: ColorTokens) {
       marginTop: 1
     },
     budgetChipValBurn: {
-      color: colors.cyan,
+      color: colors.paper,
       fontFamily: fonts.mono,
       fontSize: 12,
       marginTop: 1
     },
     budgetChipValLime: {
-      color: colors.lime,
+      color: colors.onPrimaryContainer,
       fontFamily: fonts.mono,
       fontSize: 12,
       marginTop: 1
@@ -580,10 +574,8 @@ function createStyles(colors: ColorTokens) {
       marginHorizontal: spacing.xl,
       marginTop: spacing.md,
       padding: spacing.lg,
-      backgroundColor: colors.panel,
-      borderRadius: radius.card,
-      borderWidth: 1,
-      borderColor: colors.line
+      backgroundColor: colors.surfaceContainer,
+      borderRadius: radius.card
     },
     microTitle: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.bodySemi },
     microHint: {
@@ -596,10 +588,8 @@ function createStyles(colors: ColorTokens) {
       marginHorizontal: spacing.xl,
       marginTop: spacing.md,
       padding: spacing.lg,
-      backgroundColor: colors.panel,
-      borderRadius: radius.card,
-      borderWidth: 1,
-      borderColor: colors.line
+      backgroundColor: colors.surfaceContainer,
+      borderRadius: radius.card
     },
     waterHead: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
     waterTitle: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.bodySemi },
@@ -609,23 +599,18 @@ function createStyles(colors: ColorTokens) {
       flex: 1,
       height: 32,
       borderRadius: radius.control,
-      borderWidth: 1,
-      borderColor: colors.lineStrong,
-      backgroundColor: colors.ink
+      backgroundColor: colors.surfaceContainer
     },
     waterCellFilled: {
       backgroundColor: colors.cyan,
-      opacity: 0.85,
-      borderColor: colors.cyan
+      opacity: 0.85
     },
     activityCard: {
       marginHorizontal: spacing.xl,
       marginTop: spacing.md,
       padding: spacing.lg,
-      backgroundColor: colors.panel,
-      borderRadius: radius.card,
-      borderWidth: 1,
-      borderColor: colors.line
+      backgroundColor: colors.surfaceContainer,
+      borderRadius: radius.card
     },
     activityRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
     activityName: { flex: 1, color: colors.paper, fontSize: 13 },
@@ -635,9 +620,7 @@ function createStyles(colors: ColorTokens) {
       marginBottom: spacing.sm,
       paddingVertical: 10,
       borderRadius: radius.control,
-      borderWidth: 1,
-      borderStyle: 'dashed',
-      borderColor: colors.lineStrong,
+      backgroundColor: colors.surfaceContainer,
       alignItems: 'center'
     },
     dayCopyBtnText: { color: colors.paperDim, fontSize: 12, fontFamily: fonts.body },
@@ -645,26 +628,21 @@ function createStyles(colors: ColorTokens) {
       marginHorizontal: spacing.xl,
       marginTop: spacing.md,
       padding: spacing.lg,
-      backgroundColor: colors.panel,
-      borderRadius: radius.card,
-      borderWidth: 1,
-      borderColor: colors.line
+      backgroundColor: colors.surfaceContainer,
+      borderRadius: radius.card
     },
     fastingClock: { color: colors.lime, fontFamily: fonts.mono, fontSize: 13 },
     fastingStartBtn: {
       paddingVertical: 10,
       borderRadius: radius.control,
-      borderWidth: 1,
-      borderColor: colors.lime,
-      backgroundColor: colors.limeDim,
+      backgroundColor: colors.primaryContainer,
       alignItems: 'center'
     },
-    fastingStartText: { color: colors.lime, fontSize: 12, fontFamily: fonts.bodySemi },
+    fastingStartText: { color: colors.onPrimaryContainer, fontSize: 12, fontFamily: fonts.bodySemi },
     fastingStopBtn: {
       paddingVertical: 10,
       borderRadius: radius.control,
-      borderWidth: 1,
-      borderColor: colors.lineStrong,
+      backgroundColor: colors.surfaceContainer,
       alignItems: 'center'
     },
     fastingStopText: { color: colors.paperDim, fontSize: 12, fontFamily: fonts.bodySemi },
@@ -683,9 +661,7 @@ function createStyles(colors: ColorTokens) {
       paddingHorizontal: 12,
       paddingVertical: 8,
       borderRadius: radius.control,
-      borderWidth: 1,
-      borderColor: colors.lineStrong,
-      backgroundColor: colors.panel,
+      backgroundColor: colors.surfaceContainer,
       maxWidth: 160
     },
     savedMealChipText: { color: colors.paper, fontSize: 12, fontFamily: fonts.bodySemi },
@@ -694,10 +670,8 @@ function createStyles(colors: ColorTokens) {
       marginHorizontal: spacing.xl,
       marginBottom: spacing.sm,
       padding: spacing.md,
-      backgroundColor: colors.panel,
-      borderRadius: radius.card,
-      borderWidth: 1,
-      borderColor: colors.line
+      backgroundColor: colors.surfaceContainer,
+      borderRadius: radius.card
     },
     mealHead: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
     mealName: { flex: 1, color: colors.paper, fontSize: 15, fontFamily: fonts.bodySemi },
@@ -707,21 +681,17 @@ function createStyles(colors: ColorTokens) {
       minHeight: 32,
       paddingVertical: 6,
       borderRadius: radius.control,
-      borderWidth: 1,
-      borderColor: colors.lime,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: colors.limeDim
+      backgroundColor: colors.primaryContainer
     },
-    addBtnText: { color: colors.lime, fontSize: 12, fontFamily: fonts.bodySemi },
+    addBtnText: { color: colors.onPrimaryContainer, fontSize: 12, fontFamily: fonts.bodySemi },
     repeatBtn: {
       marginBottom: 8,
       paddingVertical: 8,
       paddingHorizontal: 10,
       borderRadius: radius.control,
-      borderWidth: 1,
-      borderStyle: 'dashed',
-      borderColor: colors.lineStrong,
+      backgroundColor: colors.surfaceContainer,
       alignItems: 'center'
     },
     repeatBtnText: { color: colors.paperDim, fontSize: 12, fontFamily: fonts.body },

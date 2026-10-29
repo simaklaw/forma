@@ -136,8 +136,7 @@ function createStyles(colors: ColorTokens) {
       paddingVertical: 6,
       paddingHorizontal: 12,
       borderRadius: radius.control,
-      borderWidth: 1,
-      borderColor: colors.lineStrong
+      backgroundColor: colors.surfaceContainer
     },
     closeText: { color: colors.paperDim, fontFamily: fonts.bodySemi, fontSize: 14 },
     cameraWrap: { flex: 1 },
@@ -147,11 +146,9 @@ function createStyles(colors: ColorTokens) {
       left: 16,
       right: 16,
       bottom: 96,
-      backgroundColor: colors.panel,
+      backgroundColor: colors.surfaceContainer,
       borderRadius: radius.control,
-      padding: 12,
-      borderWidth: 1,
-      borderColor: colors.line
+      padding: 12
     },
     hintText: { color: colors.paperDim, fontFamily: fonts.bodySemi, fontSize: 13, textAlign: 'center' },
     torchBtn: {
@@ -161,9 +158,7 @@ function createStyles(colors: ColorTokens) {
       paddingVertical: 10,
       paddingHorizontal: 14,
       borderRadius: radius.control,
-      backgroundColor: colors.panelRaised,
-      borderWidth: 1,
-      borderColor: colors.lineStrong
+      backgroundColor: colors.surfaceContainerHigh
     },
     torchText: { color: colors.paper, fontFamily: fonts.bodySemi, fontSize: 13 },
     messageBox: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
