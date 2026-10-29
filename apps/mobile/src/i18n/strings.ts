@@ -103,6 +103,12 @@ const RU = {
   customTicketMeta: 'собрана вручную',
   customBackToPlan: 'К плану',
   customEmptyItemsHint: 'Добавьте хотя бы одно упражнение',
+  customSchemeTitle: 'Из истории тренировок',
+  customSchemeHint: 'Нажмите группу мышц — подставим схему из последней тренировки, где вы её качали (подходы и веса — как было).',
+  customSchemeChipA11y: 'Подставить последнюю схему: {muscle}',
+  customSchemeNoHistory: 'По этой группе ещё нет подходов — схема появится после первой тренировки.',
+  customSchemeLoaded: 'Из истории за {date}: добавлено {count} упр.',
+  customSchemeAllHere: 'Схема за {date} уже в тренировке.',
 
   // Разминка перед тренировкой (WarmupCard)
   warmupTitle: 'Разминка',
@@ -819,6 +825,12 @@ const EN: Record<StringKey, string> = {
   customTicketMeta: 'hand-built',
   customBackToPlan: 'Back to plan',
   customEmptyItemsHint: 'Add at least one exercise',
+  customSchemeTitle: 'From workout history',
+  customSchemeHint: 'Tap a muscle group — we will pull the scheme from your last workout for it (sets and weights as logged).',
+  customSchemeChipA11y: 'Load the last scheme: {muscle}',
+  customSchemeNoHistory: 'No sets for this muscle group yet — the scheme appears after your first workout.',
+  customSchemeLoaded: 'From history on {date}: added {count} exercises.',
+  customSchemeAllHere: 'The scheme from {date} is already in this workout.',
 
   warmupTitle: 'Warm-up',
   warmupMinutesShort: '{min} min',
