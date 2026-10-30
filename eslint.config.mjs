@@ -11,7 +11,7 @@ import tseslint from 'typescript-eslint';
 // Правила, временно остающиеся advisory. Пуст — все recommended-правила
 // блокирующие; осознанные временные исключения добавлять сюда и убирать
 // по мере чистки кода.
-const WARN_RULES = new Set<string>([]);
+const WARN_RULES = new Set([]);
 
 // Recommended-наборы: error по умолчанию, из WARN_RULES — warn
 // (off остаётся off).
