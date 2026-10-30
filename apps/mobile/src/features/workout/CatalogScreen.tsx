@@ -186,7 +186,7 @@ export default function CatalogScreen() {
           <Text style={[styles.replaceBannerTitle, { color: colors.onPrimaryContainer }]}>
             {t('catalogReplaceTitle', { day: replaceTarget.dayName })}
           </Text>
-          <Text style={[styles.replaceBannerBody, { color: colors.paper }]}>
+          <Text style={[styles.replaceBannerBody, { color: colors.onPrimaryContainer }]}>
             {t('catalogReplaceBody', {
               name: replaceTarget.currentName,
               slot: replaceTarget.slotIndex + 1
@@ -197,7 +197,7 @@ export default function CatalogScreen() {
             accessibilityRole="button"
             accessibilityLabel={t('catalogReplaceBanner')}
           >
-            <Text style={[styles.replaceBannerCancel, { color: colors.paperDim }]}>{t('cancel')}</Text>
+            <Text style={[styles.replaceBannerCancel, { color: colors.onPrimaryContainer }]}>{t('cancel')}</Text>
           </TouchableOpacity>
         </View>
       ) : null}
@@ -428,12 +428,12 @@ export default function CatalogScreen() {
                   style={[
                     styles.chip,
                     { backgroundColor: colors.surfaceContainer },
-                    active && { backgroundColor: colors.surfaceContainerHigh }
+                    active && { backgroundColor: colors.primaryContainer }
                   ]}
                   accessibilityRole="button"
                   accessibilityState={{ selected: active }}
                 >
-                  <Text style={[styles.chipText, { color: active ? colors.paper : colors.paperDim }]}>
+                  <Text style={[styles.chipText, { color: active ? colors.onPrimaryContainer : colors.paperDim }]}>
                     {muscleLabel(item, lang)}
                   </Text>
                 </TouchableOpacity>

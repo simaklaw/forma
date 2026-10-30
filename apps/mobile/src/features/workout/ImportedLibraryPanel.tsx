@@ -345,7 +345,7 @@ export default function ImportedLibraryPanel() {
                     {displayName(item)}
                   </Text>
                   {!item.nameRu ? (
-                    <View style={[styles.enBadge, { backgroundColor: colors.surfaceContainer }]}>
+                    <View style={[styles.enBadge, { backgroundColor: colors.surfaceContainerHigh }]}>
                       <Text style={[styles.enBadgeText, { color: colors.paperFaint }]}>EN</Text>
                     </View>
                   ) : null}
