@@ -1,12 +1,24 @@
 name: Sync lockfile
 
 on:
+  # Любой push, меняющий манифесты, автоматически досинхронизирует
+  # pnpm-lock.yaml на той же ветке — lockfile нельзя «забыть».
   push:
-    branches: [ai/lockfile-sync, fix/react-overrides]
+    branches: ['**']
+    paths:
+      - '**/package.json'
+      - 'pnpm-workspace.yaml'
+      - '.npmrc'
   workflow_dispatch:
+  # Страховка от дрейфа (issue #2: prettier/api/sync-contract когда-то
+  # отсутствовали в lockfile): еженедельная регенерация от main;
+  # если lockfile разошёлся с манифестами — авто-PR.
+  schedule:
+    - cron: '0 3 * * 1'
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: sync-lockfile-${{ github.ref }}
@@ -18,6 +30,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+
+      # Schedule-ран стартует от main: плодим авто-ветку от его головы.
+      - name: Prepare auto-sync branch (schedule only)
+        if: github.event_name == 'schedule'
+        run: git checkout -B chore/auto-lockfile-sync origin/main
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
@@ -32,11 +49,12 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
-      # issue #2: lockfile drift — prettier в корне, apps/api, packages/sync-contract отсутствуют в pnpm-lock.yaml
       - name: Regenerate lockfile
         run: pnpm install --lockfile-only
 
-      - name: Commit synced lockfile
+      - name: Commit, push and (on schedule) open PR
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -45,5 +63,13 @@ jobs:
             echo "lockfile already in sync - nothing to commit"
             exit 0
           fi
-          git commit -m "chore: sync pnpm-lock.yaml with workspace (issue #2)"
-          git push
+          git commit -m "chore: sync pnpm-lock.yaml with workspace"
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
+            git push -f origin chore/auto-lockfile-sync
+            gh pr create --base main --head chore/auto-lockfile-sync \
+              --title "chore: авто-синк pnpm-lock.yaml (nightly)" \
+              --body "Еженедельная проверка lockfile-дрейфа: pnpm-lock.yaml перегенерирован из манифестов воркспейса. Авто-PR от schedule-рана sync-lockfile. Примечание: PR, созданный через GITHUB_TOKEN, не триггерит CI — переоткройте PR, чтобы прогнать проверки." \
+              || echo "auto-sync PR already open"
+          else
+            git push
+          fi
