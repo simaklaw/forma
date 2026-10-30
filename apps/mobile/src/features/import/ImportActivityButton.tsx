@@ -56,16 +56,16 @@ export default function ImportActivityButton() {
 
   return (
     <TouchableOpacity
-      style={[styles.btn, { backgroundColor: colors.panel, borderColor: colors.lineStrong }]}
+      style={[styles.btn, { backgroundColor: colors.surfaceContainerHigh }]}
       onPress={() => void onPress()}
       disabled={busy}
       accessibilityRole="button"
       accessibilityLabel="Импорт тренировки из файла FIT TCX или GPX"
     >
       {busy ? (
-        <ActivityIndicator color={colors.lime} />
+        <ActivityIndicator color={colors.paper} />
       ) : (
-        <Text style={[styles.btnText, { color: colors.lime }]}>Импорт FIT / TCX / GPX</Text>
+        <Text style={[styles.btnText, { color: colors.paper }]}>Импорт FIT / TCX / GPX</Text>
       )}
     </TouchableOpacity>
   );
@@ -77,7 +77,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: radius.control,
-    borderWidth: 1,
     alignItems: 'center',
   },
   btnText: {

@@ -29,7 +29,7 @@ function Row({
     .join(' · ');
 
   return (
-    <View style={[styles.row, { borderColor: colors.line, backgroundColor: colors.panel }]}>
+    <View style={[styles.row, { backgroundColor: colors.surfaceContainerHigh }]}>
       <View style={{ flex: 1 }}>
         <Text style={[styles.title, { color: colors.paper }]}>
           {SPORT_LABEL_RU[item.sport]}
@@ -86,7 +86,6 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 12,
     borderRadius: radius.card,
-    borderWidth: 1,
   },
   title: { fontFamily: fonts.bodySemi, fontSize: 14 },
   meta: { fontFamily: fonts.body, fontSize: 12, marginTop: 2 },

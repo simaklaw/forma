@@ -17,6 +17,7 @@ import * as FileSystem from 'expo-file-system';
 import { isProfileComplete } from '@forma/core';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
+import Md3Card from '@/components/md3/Md3Card';
 import { useT } from '@/i18n/strings';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { toDateKey } from '@/engines/WorkoutStats';
@@ -372,7 +373,7 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
 
   const inputStyle = [
     styles.input,
-    { backgroundColor: colors.ink, borderColor: colors.lineStrong, color: colors.paper }
+    { backgroundColor: colors.surfaceContainerHigh, color: colors.paper }
   ];
 
   return (
@@ -395,7 +396,7 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
           keyboardShouldPersistTaps="handled"
         >
           {showForm ? (
-            <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+            <Md3Card variant="flat" padding="lg" style={styles.card}>
               <Text style={[styles.fieldTitle, { color: colors.paper }]}>{t('aiProviderTitle')}</Text>
 
               <View style={styles.fieldGap}>
@@ -529,8 +530,8 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
                         key={String(opt.id)}
                         style={[
                           styles.chip,
-                          { borderColor: colors.lineStrong, backgroundColor: colors.ink },
-                          on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                          { backgroundColor: colors.surfaceContainerHigh },
+                          on && { backgroundColor: colors.primaryContainer }
                         ]}
                         onPress={() => setForm({ ...form, supportsVision: opt.id })}
                         accessibilityRole="radio"
@@ -541,7 +542,7 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
                           style={[
                             styles.chipText,
                             { color: colors.paperDim },
-                            on && { color: colors.lime }
+                            on && { color: colors.onPrimaryContainer }
                           ]}
                         >
                           {opt.label}
@@ -562,7 +563,7 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
                   <Text style={[styles.primaryBtnText, { color: colors.ink }]}>{t('aiSaveProvider')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.outlineBtn, { borderColor: colors.lineStrong, backgroundColor: colors.ink }]}
+                  style={[styles.outlineBtn, { backgroundColor: colors.surfaceContainerHigh }]}
                   onPress={() => void runTest(false)}
                   disabled={testing}
                   accessibilityRole="button"
@@ -574,7 +575,7 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
                 </TouchableOpacity>
                 {form.supportsVision ? (
                   <TouchableOpacity
-                    style={[styles.outlineBtn, { borderColor: colors.lineStrong, backgroundColor: colors.ink }]}
+                    style={[styles.outlineBtn, { backgroundColor: colors.surfaceContainerHigh }]}
                     onPress={() => void runTest(true)}
                     disabled={testing}
                     accessibilityRole="button"
@@ -585,7 +586,7 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
                 ) : null}
                 {editing && active ? (
                   <TouchableOpacity
-                    style={[styles.outlineBtn, { borderColor: colors.lineStrong, backgroundColor: colors.ink }]}
+                    style={[styles.outlineBtn, { backgroundColor: colors.surfaceContainerHigh }]}
                     onPress={removeProvider}
                     accessibilityRole="button"
                     accessibilityLabel={t('aiDeleteProvider')}
@@ -596,10 +597,10 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
                   </TouchableOpacity>
                 ) : null}
               </View>
-            </View>
+            </Md3Card>
           ) : (
             <View>
-              <View style={[styles.card, { backgroundColor: colors.panel, borderColor: colors.line }]}>
+              <Md3Card variant="flat" padding="lg" style={styles.card}>
                 <View style={styles.chipRow}>
                   {AI_ROLES.map((r) => {
                     const on = r.id === roleId;
@@ -608,8 +609,8 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
                         key={r.id}
                         style={[
                           styles.chip,
-                          { borderColor: colors.lineStrong, backgroundColor: colors.ink },
-                          on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                          { backgroundColor: colors.surfaceContainerHigh },
+                          on && { backgroundColor: colors.primaryContainer }
                         ]}
                         onPress={() => {
                           setRoleId(r.id);
@@ -625,7 +626,7 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
                           style={[
                             styles.chipText,
                             { color: colors.paperDim },
-                            on && { color: colors.lime }
+                            on && { color: colors.onPrimaryContainer }
                           ]}
                         >
                           {t(r.titleKey)}
@@ -649,8 +650,8 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
                           key={String(opt.id)}
                           style={[
                             styles.chip,
-                            { borderColor: colors.lineStrong, backgroundColor: colors.ink },
-                            on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                            { backgroundColor: colors.surfaceContainerHigh },
+                            on && { backgroundColor: colors.primaryContainer }
                           ]}
                           onPress={() => {
                             setDiaryMode(opt.id);
@@ -664,7 +665,7 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
                             style={[
                               styles.chipText,
                               { color: colors.paperDim },
-                              on && { color: colors.lime }
+                              on && { color: colors.onPrimaryContainer }
                             ]}
                           >
                             {opt.label}
@@ -689,8 +690,8 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
                           key={String(opt.id)}
                           style={[
                             styles.chip,
-                            { borderColor: colors.lineStrong, backgroundColor: colors.ink },
-                            on && { borderColor: colors.lime, backgroundColor: colors.limeDim }
+                            { backgroundColor: colors.surfaceContainerHigh },
+                            on && { backgroundColor: colors.primaryContainer }
                           ]}
                           onPress={() => {
                             setWorkoutMode(opt.id);
@@ -704,7 +705,7 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
                             style={[
                               styles.chipText,
                               { color: colors.paperDim },
-                              on && { color: colors.lime }
+                              on && { color: colors.onPrimaryContainer }
                             ]}
                           >
                             {opt.label}
@@ -725,7 +726,7 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
                 >
                   <Text style={[styles.settingsLink, { color: colors.lime }]}>{t('aiSettings')}</Text>
                 </TouchableOpacity>
-              </View>
+              </Md3Card>
 
               {roleId === 'nutritionist' && diaryMode ? (
                 <View style={styles.fieldGap}>
@@ -779,11 +780,18 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
                         style={[
                           styles.bubble,
                           m.role === 'user'
-                            ? { backgroundColor: colors.limeDim, borderColor: colors.lime }
-                            : { backgroundColor: colors.panel, borderColor: colors.line }
+                            ? { backgroundColor: colors.primaryContainer }
+                            : { backgroundColor: colors.surfaceContainerHigh }
                         ]}
                       >
-                        <Text style={[styles.bubbleText, { color: colors.paper }]}>{m.content}</Text>
+                        <Text
+                          style={[
+                            styles.bubbleText,
+                            { color: m.role === 'user' ? colors.onPrimaryContainer : colors.paper }
+                          ]}
+                        >
+                          {m.content}
+                        </Text>
                       </View>
                     </View>
                   ))}
@@ -828,7 +836,7 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
             <View style={styles.inputRow}>
               {active?.supportsVision ? (
                 <TouchableOpacity
-                  style={[styles.photoBtn, { borderColor: colors.lineStrong, backgroundColor: colors.ink }]}
+                  style={[styles.photoBtn, { backgroundColor: colors.surfaceContainerHigh }]}
                   onPress={() => void attachPhotos()}
                   disabled={busy}
                   accessibilityRole="button"
@@ -842,7 +850,7 @@ export default function AiAssistantModal({ visible, onClose }: Props) {
               <TextInput
                 style={[
                   styles.chatInput,
-                  { backgroundColor: colors.panel, borderColor: colors.lineStrong, color: colors.paper }
+                  { backgroundColor: colors.surfaceContainerHigh, color: colors.paper }
                 ]}
                 value={input}
                 onChangeText={setInput}
@@ -881,16 +889,13 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xl },
   card: {
-    padding: spacing.lg,
     borderRadius: radius.card,
-    borderWidth: 1,
     marginBottom: spacing.md
   },
   fieldTitle: { fontSize: 15, fontFamily: fonts.bodySemi, marginBottom: 12 },
   fieldGap: { marginBottom: 12 },
   label: { fontSize: 11, marginBottom: 6, fontFamily: fonts.bodySemi },
   input: {
-    borderWidth: 1,
     borderRadius: radius.control,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -902,8 +907,7 @@ const styles = StyleSheet.create({
   chip: {
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: radius.control,
-    borderWidth: 1
+    borderRadius: radius.control
   },
   presetChip: {
     paddingVertical: 8,
@@ -923,7 +927,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: radius.control,
-    borderWidth: 1,
     alignItems: 'center'
   },
   outlineBtnText: { fontSize: 13, fontFamily: fonts.bodySemi },
@@ -931,7 +934,7 @@ const styles = StyleSheet.create({
   settingsLink: { fontSize: 12, fontFamily: fonts.bodySemi, marginTop: 6 },
   notice: { fontSize: 12, lineHeight: 17, marginTop: 10 },
   bubbleRow: { marginBottom: 10 },
-  bubble: { maxWidth: '88%', padding: 12, borderRadius: radius.card, borderWidth: 1 },
+  bubble: { maxWidth: '88%', padding: 12, borderRadius: radius.card },
   bubbleText: { fontSize: 14, lineHeight: 20 },
   empty: { textAlign: 'center', marginTop: 40, fontSize: 13 },
   busyRow: {
@@ -951,12 +954,10 @@ const styles = StyleSheet.create({
   photoBtn: {
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: radius.control,
-    borderWidth: 1
+    borderRadius: radius.control
   },
   chatInput: {
     flex: 1,
-    borderWidth: 1,
     borderRadius: radius.control,
     paddingHorizontal: 12,
     paddingVertical: 10,
