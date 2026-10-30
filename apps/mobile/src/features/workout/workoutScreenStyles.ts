@@ -124,7 +124,6 @@ export const workoutScreenStyles = StyleSheet.create({
     borderRadius: radius.control
   },
   logThumbFallback: {
-    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center'
   },
