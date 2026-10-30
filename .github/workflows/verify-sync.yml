@@ -285,7 +285,9 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish diagnostics on failure
-        if: failure()
+        # Ревью #9: в ветку ci-logs пишем только из same-repo ранов —
+        # у fork-PR токен read-only: шаг молча падал и краснил CI контрибьютору.
+        if: failure() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.id == github.repository.id)
         run: |
           set +e
           git config user.name "github-actions[bot]"
