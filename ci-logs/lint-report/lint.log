@@ -2,48 +2,10 @@ Scope: 5 of 8 workspace projects
 packages/core lint$ eslint .
 packages/sync-contract lint$ eslint .
 packages/workout-domain lint$ eslint .
-packages/core lint: Oops! Something went wrong! :(
-packages/core lint: ESLint: 9.39.5
-packages/core lint: ReferenceError: string is not defined
-packages/core lint:     at file:///home/runner/work/forma/forma/eslint.config.mjs?mtime=1793381236614:14:28
-packages/core lint:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
-packages/core lint:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
-packages/core lint:     at async dynamicImportConfig (/home/runner/work/forma/forma/node_modules/eslint/lib/config/config-loader.js:186:17)
-packages/core lint:     at async loadConfigFile (/home/runner/work/forma/forma/node_modules/eslint/lib/config/config-loader.js:276:9)
-packages/core lint:     at async ConfigLoader.calculateConfigArray (/home/runner/work/forma/forma/node_modules/eslint/lib/config/config-loader.js:589:23)
-packages/core lint:     at async #calculateConfigArray (/home/runner/work/forma/forma/node_modules/eslint/lib/config/config-loader.js:743:23)
-packages/core lint:     at async directoryFilter (/home/runner/work/forma/forma/node_modules/eslint/lib/eslint/eslint-helpers.js:309:5)
-packages/core lint:     at async NodeHfs.<anonymous> (file:///home/runner/work/forma/forma/node_modules/@humanfs/core/src/hfs.js:586:29)
-packages/core lint:     at async NodeHfs.walk (file:///home/runner/work/forma/forma/node_modules/@humanfs/core/src/hfs.js:614:3)
-packages/sync-contract lint: Oops! Something went wrong! :(
-packages/sync-contract lint: ESLint: 9.39.5
-packages/sync-contract lint: ReferenceError: string is not defined
-packages/sync-contract lint:     at file:///home/runner/work/forma/forma/eslint.config.mjs?mtime=1793381236614:14:28
-packages/sync-contract lint:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
-packages/sync-contract lint:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
-packages/sync-contract lint:     at async dynamicImportConfig (/home/runner/work/forma/forma/node_modules/eslint/lib/config/config-loader.js:186:17)
-packages/sync-contract lint:     at async loadConfigFile (/home/runner/work/forma/forma/node_modules/eslint/lib/config/config-loader.js:276:9)
-packages/sync-contract lint:     at async ConfigLoader.calculateConfigArray (/home/runner/work/forma/forma/node_modules/eslint/lib/config/config-loader.js:589:23)
-packages/sync-contract lint:     at async #calculateConfigArray (/home/runner/work/forma/forma/node_modules/eslint/lib/config/config-loader.js:743:23)
-packages/sync-contract lint:     at async entryFilter (/home/runner/work/forma/forma/node_modules/eslint/lib/eslint/eslint-helpers.js:322:5)
-packages/sync-contract lint:     at async NodeHfs.<anonymous> (file:///home/runner/work/forma/forma/node_modules/@humanfs/core/src/hfs.js:574:24)
-packages/sync-contract lint:     at async NodeHfs.walk (file:///home/runner/work/forma/forma/node_modules/@humanfs/core/src/hfs.js:614:3)
-packages/sync-contract lint: Failed
-/home/runner/work/forma/forma/packages/sync-contract:
- ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @forma/sync-contract@0.1.0 lint: `eslint .`
-Exit status 2
- WARN   Local package.json exists, but node_modules missing, did you mean to install?
-packages/core lint: Failed
-packages/workout-domain lint: Oops! Something went wrong! :(
-packages/workout-domain lint: ESLint: 9.39.5
-packages/workout-domain lint: ReferenceError: string is not defined
-packages/workout-domain lint:     at file:///home/runner/work/forma/forma/eslint.config.mjs?mtime=1793381236614:14:28
-packages/workout-domain lint:     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
-packages/workout-domain lint:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
-packages/workout-domain lint:     at async dynamicImportConfig (/home/runner/work/forma/forma/node_modules/eslint/lib/config/config-loader.js:186:17)
-packages/workout-domain lint:     at async loadConfigFile (/home/runner/work/forma/forma/node_modules/eslint/lib/config/config-loader.js:276:9)
-packages/workout-domain lint:     at async ConfigLoader.calculateConfigArray (/home/runner/work/forma/forma/node_modules/eslint/lib/config/config-loader.js:589:23)
-packages/workout-domain lint:     at async #calculateConfigArray (/home/runner/work/forma/forma/node_modules/eslint/lib/config/config-loader.js:743:23)
-packages/workout-domain lint:     at async entryFilter (/home/runner/work/forma/forma/node_modules/eslint/lib/eslint/eslint-helpers.js:322:5)
-packages/workout-domain lint:     at async NodeHfs.<anonymous> (file:///home/runner/work/forma/forma/node_modules/@humanfs/core/src/hfs.js:574:24)
-packages/workout-domain lint:     at async NodeHfs.walk (file:///home/runner/work/forma/forma/node_modules/@humanfs/core/src/hfs.js:614:3)
+packages/sync-contract lint: Done
+packages/workout-domain lint: Done
+packages/core lint: Done
+apps/api lint$ eslint .
+apps/web lint$ eslint .
+apps/api lint: Done
+apps/web lint: Done
