@@ -70,8 +70,7 @@ import type { ExcalidrawAPI } from "@excalidraw/excalidraw";
 
 interface ExcalidrawCanvasProps {
   initialData?: any;
-  onChange?:
- (data: any) => void;
+  onChange?: (data: any) => void;
   className?: string;
 }
 
@@ -141,8 +140,7 @@ export function WorkoutPlanner({ session }: { session: WorkoutSession }) {
   return (
     <div className="h-[600px] w-full">
       <ExcalidrawCanvas
-    
-    initialData={{ elements }}
+        initialData={{ elements }}
         onChange={(data) => {
           // Handle canvas changes
           const updatedSession = excalidrawToWorkoutSession(data.elements);
@@ -235,8 +233,7 @@ export function CollaborativeCanvas({ roomId }: { roomId: string }) {
 - Domain logic in `@forma/workout-domain`
 
 ### Target State
-- Canvas data stored alongside wo
-rkout sessions
+- Canvas data stored alongside workout sessions
 - Real-time sync via Excalidraw Room
 - Fallback to current sync for offline
 
@@ -308,8 +305,7 @@ rkout sessions
 
 ## License Compliance
 
-Excalidraw is licensed unde
-r the **MIT License**:
+Excalidraw is licensed under the **MIT License**:
 
 ```
 MIT License
