@@ -106,14 +106,13 @@ jobs:
         run: pnpm --filter @forma/web test
 
       # Фаза 2 линта (#4): advisory-отчёт всегда доступен для анализа —
-      # публикуем в ci-logs/lint-report (каталог перезаписывается, история
-      # не копится), только если есть ворнинги и ран same-repo.
+      # публикуем lint.log в ci-logs/lint-report (каталог перезаписывается,
+      # история не копится) из всех same-repo ранов.
       - name: Publish lint report (ci-logs)
         if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.id == github.repository.id)
         run: |
           set +e
           [ -f lint.log ] || exit 0
-          grep -q "warning" lint.log || exit 0
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
