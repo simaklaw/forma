@@ -418,6 +418,11 @@ export function createApp(
           } satisfies SyncPushOperationResult;
         }
 
+        // entity_version is fixed at 1: projections resolve concurrent
+        // edits with last-write-wins, so version checks are not part of
+        // the protocol yet. The column is a reserved slot for a future
+        // optimistic-concurrency design — see «Модель конкурентности»
+        // in apps/api/README.md (review finding #8).
         await deps.feed.append({
           user_id: body.user_id,
           entity_type: op.aggregate_type,
