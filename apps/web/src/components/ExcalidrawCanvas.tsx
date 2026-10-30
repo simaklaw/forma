@@ -15,7 +15,7 @@
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import type { ElementType } from "react";
-import type { ExcalidrawImperativeAPI, ExcalidrawElement } from "@excalidraw/excalidraw";
+import type { ExcalidrawImperativeAPI, ExcalidrawElement, ExcalidrawAppState } from "@excalidraw/excalidraw";
 import { ExerciseReferencePanel, type ExerciseReferenceMeta } from "@/components/ExerciseReferencePanel";
 
 // Lazy load Excalidraw to reduce initial bundle size.
@@ -36,6 +36,9 @@ async function loadExcalidraw() {
   }
 }
 
+/** Наш маркер клика в element.customData (Excalidraw типизирует его как {}). */
+type ClickMarker = { clicked?: boolean };
+
 /**
  * Props for ExcalidrawCanvas component
  */
@@ -43,11 +46,11 @@ export interface ExcalidrawCanvasProps {
   /** Initial data to load into the canvas */
   initialData?: {
     elements: ExcalidrawElement[];
-    appState?: Record<string, unknown>;
+    appState?: ExcalidrawAppState;
   };
   
   /** Callback when canvas elements change */
-  onChange?: (elements: ExcalidrawElement[], state: Record<string, unknown>) => void;
+  onChange?: (elements: ExcalidrawElement[], state: ExcalidrawAppState) => void;
   
   /** Callback when an element is clicked */
   onElementClick?: (element: ExcalidrawElement) => void;
@@ -96,12 +99,12 @@ export const ExcalidrawCanvas = forwardRef<ExcalidrawImperativeAPI, ExcalidrawCa
         onChange?.(elements, state);
         
         // Check for recently added/clicked elements
-        const clickedElements = elements.filter((e) => e.customData?.clicked);
+        const clickedElements = elements.filter((e) => (e.customData as ClickMarker | null)?.clicked);
         clickedElements.forEach((element) => {
           onElementClick(element);
           // Remove click marker
           if (element.customData) {
-            element.customData.clicked = false;
+            (element.customData as ClickMarker).clicked = false;
           }
         });
       });
