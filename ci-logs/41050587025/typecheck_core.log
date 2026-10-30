@@ -1,0 +1,201 @@
+Scope: 4 of 8 workspace projects
+packages/core type-check$ tsc --noEmit
+packages/workout-domain type-check$ tsc --noEmit
+packages/workout-domain type-check: Done
+packages/core type-check: Done
+apps/mobile type-check$ tsc --noEmit
+apps/web type-check$ node ../../scripts/generate-web-route-tree.mjs && tsc --noEmit
+apps/web type-check: routeTree.gen.ts updated
+apps/web type-check: Done
+apps/mobile type-check: src/components/CalorieRing.tsx(56,8): error TS2786: 'Svg' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Svg' is not a valid JSX element type.
+apps/mobile type-check: src/components/CalorieRing.tsx(57,10): error TS2786: 'Circle' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Circle' is not a valid JSX element type.
+apps/mobile type-check: src/components/CalorieRing.tsx(65,10): error TS2786: 'Circle' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Circle' is not a valid JSX element type.
+apps/mobile type-check: src/components/ExerciseVideo.tsx(138,14): error TS2786: 'Video' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Video' is not a valid JSX element type.
+apps/mobile type-check:     Types of construct signatures are incompatible.
+apps/mobile type-check:       Type 'new (props: VideoProps) => Video' is not assignable to type 'new (props: any, deprecatedLegacyContext?: any) => Component<any, any, any>'.
+apps/mobile type-check:         Property 'refs' is missing in type 'Video' but required in type 'Component<any, any, any>'.
+apps/mobile type-check: src/components/ExerciseVideo.tsx(221,16): error TS2786: 'Video' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Video' is not a valid JSX element type.
+apps/mobile type-check: src/components/MuscleLoadMap.tsx(57,8): error TS2786: 'Svg' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Svg' is not a valid JSX element type.
+apps/mobile type-check: src/components/MuscleLoadMap.tsx(65,14): error TS2786: 'Path' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Path' is not a valid JSX element type.
+apps/mobile type-check: src/components/MuscleLoadMap.tsx(73,14): error TS2786: 'Path' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Path' is not a valid JSX element type.
+apps/mobile type-check: src/components/MuscleLoadMap.tsx(84,27): error TS2786: 'Path' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Path' is not a valid JSX element type.
+apps/mobile type-check: src/components/MuscleLoadMap.tsx(88,22): error TS2786: 'Path' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Path' is not a valid JSX element type.
+apps/mobile type-check: src/components/MuscleLoadMap.tsx(92,20): error TS2786: 'Path' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Path' is not a valid JSX element type.
+apps/mobile type-check: src/components/MuscleMap.tsx(76,6): error TS2786: 'AnimatedRect' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'ComponentClass<AnimateProps<RectProps>, any>' is not a valid JSX element type.
+apps/mobile type-check:     Type 'ComponentClass<AnimateProps<RectProps>, any>' is not assignable to type 'new (props: any, deprecatedLegacyContext?: any) => Component<any, any, any>'.
+apps/mobile type-check:       Property 'refs' is missing in type 'Component<AnimateProps<RectProps>, any, any>' but required in type 'Component<any, any, any>'.
+apps/mobile type-check: src/components/MuscleMap.tsx(90,6): error TS2786: 'Rect' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Rect' is not a valid JSX element type.
+apps/mobile type-check:     Types of construct signatures are incompatible.
+apps/mobile type-check:       Type 'new (props: RectProps | Readonly<RectProps>) => Rect' is not assignable to type 'new (props: any, deprecatedLegacyContext?: any) => Component<any, any, any>'.
+apps/mobile type-check:         Property 'refs' is missing in type 'Rect' but required in type 'Component<any, any, any>'.
+apps/mobile type-check: src/components/MuscleMap.tsx(120,8): error TS2786: 'Svg' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Svg' is not a valid JSX element type.
+apps/mobile type-check: src/components/MuscleMap.tsx(124,10): error TS2786: 'Circle' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Circle' is not a valid JSX element type.
+apps/mobile type-check: src/components/MuscleMap.tsx(125,10): error TS2786: 'Rect' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Rect' is not a valid JSX element type.
+apps/mobile type-check: src/components/MuscleMap.tsx(126,10): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check: src/components/MuscleMap.tsx(127,10): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check: src/components/MuscleMap.tsx(128,10): error TS2786: 'Rect' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Rect' is not a valid JSX element type.
+apps/mobile type-check: src/components/MuscleMap.tsx(129,10): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check: src/components/MuscleMap.tsx(130,10): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check: src/components/MusclePickerMap.tsx(32,8): error TS2786: 'Svg' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Svg' is not a valid JSX element type.
+apps/mobile type-check: src/components/MusclePickerMap.tsx(40,14): error TS2786: 'Path' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Path' is not a valid JSX element type.
+apps/mobile type-check:     Types of construct signatures are incompatible.
+apps/mobile type-check:       Type 'new (props: PathProps | Readonly<PathProps>) => Path' is not assignable to type 'new (props: any, deprecatedLegacyContext?: any) => Component<any, any, any>'.
+apps/mobile type-check:         Property 'refs' is missing in type 'Path' but required in type 'Component<any, any, any>'.
+apps/mobile type-check: src/components/MusclePickerMap.tsx(48,14): error TS2786: 'Path' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Path' is not a valid JSX element type.
+apps/mobile type-check: src/components/MusclePickerMap.tsx(59,27): error TS2786: 'Path' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Path' is not a valid JSX element type.
+apps/mobile type-check: src/components/MusclePickerMap.tsx(63,22): error TS2786: 'Path' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Path' is not a valid JSX element type.
+apps/mobile type-check: src/components/MusclePickerMap.tsx(73,20): error TS2786: 'Path' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Path' is not a valid JSX element type.
+apps/mobile type-check: src/components/WeightChart.tsx(33,6): error TS2786: 'Svg' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Svg' is not a valid JSX element type.
+apps/mobile type-check: src/components/WeightChart.tsx(34,8): error TS2786: 'Polyline' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Polyline' is not a valid JSX element type.
+apps/mobile type-check:     Types of construct signatures are incompatible.
+apps/mobile type-check:       Type 'new (props: PolylineProps | Readonly<PolylineProps>) => Polyline' is not assignable to type 'new (props: any, deprecatedLegacyContext?: any) => Component<any, any, any>'.
+apps/mobile type-check:         Property 'refs' is missing in type 'Polyline' but required in type 'Component<any, any, any>'.
+apps/mobile type-check: src/components/WeightChart.tsx(35,8): error TS2786: 'Circle' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Circle' is not a valid JSX element type.
+apps/mobile type-check: src/features/activities/ActivityLogSheet.tsx(117,10): error TS2786: 'Slider' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Slider' is not a valid JSX element type.
+apps/mobile type-check: src/features/analytics/ProgressScreen.tsx(351,6): error TS2786: 'SafeAreaView' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'ForwardRefExoticComponent<NativeSafeAreaViewProps & RefAttributes<Component<NativeProps, {}, any> & Readonly<NativeMethods>>>' is not a valid JSX element type.
+apps/mobile type-check: src/features/nutrition/AddFoodSheet.tsx(403,12): error TS2786: 'Slider' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Slider' is not a valid JSX element type.
+apps/mobile type-check:     Type 'typeof Slider' is not assignable to type 'new (props: any, deprecatedLegacyContext?: any) => Component<any, any, any>'.
+apps/mobile type-check:       Construct signature return types 'Slider' and 'Component<any, any, any>' are incompatible.
+apps/mobile type-check:         The types returned by 'render()' are incompatible between these types.
+apps/mobile type-check:           Type 'import("/home/runner/work/forma/forma/node_modules/@types/react/index").ReactNode' is not assignable to type 'React.ReactNode'.
+apps/mobile type-check: src/features/nutrition/AddFoodSheet.tsx(592,14): error TS2786: 'Slider' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Slider' is not a valid JSX element type.
+apps/mobile type-check: src/features/nutrition/BarcodeScannerSheet.tsx(78,14): error TS2786: 'CameraView' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof CameraView' is not a valid JSX element type.
+apps/mobile type-check:     Type 'typeof CameraView' is not assignable to type 'new (props: any, deprecatedLegacyContext?: any) => Component<any, any, any>'.
+apps/mobile type-check:       Property 'refs' is missing in type 'CameraView' but required in type 'Component<any, any, any>'.
+apps/mobile type-check: src/features/nutrition/LabelScanSheet.tsx(164,14): error TS2786: 'CameraView' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof CameraView' is not a valid JSX element type.
+apps/mobile type-check: src/features/nutrition/NutritionScreen.tsx(168,6): error TS2786: 'SafeAreaView' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'ForwardRefExoticComponent<NativeSafeAreaViewProps & RefAttributes<Component<NativeProps, {}, any> & Readonly<NativeMethods>>>' is not a valid JSX element type.
+apps/mobile type-check: src/features/onboarding/OnboardingScreen.tsx(25,6): error TS2786: 'SafeAreaView' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'ForwardRefExoticComponent<NativeSafeAreaViewProps & RefAttributes<Component<NativeProps, {}, any> & Readonly<NativeMethods>>>' is not a valid JSX element type.
+apps/mobile type-check: src/features/profile/ProfileScreen.tsx(111,6): error TS2786: 'SafeAreaView' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'ForwardRefExoticComponent<NativeSafeAreaViewProps & RefAttributes<Component<NativeProps, {}, any> & Readonly<NativeMethods>>>' is not a valid JSX element type.
+apps/mobile type-check: src/features/workout/ExerciseFigure.tsx(83,8): error TS2786: 'Svg' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Svg' is not a valid JSX element type.
+apps/mobile type-check:     Types of construct signatures are incompatible.
+apps/mobile type-check:       Type 'new (props: SvgProps | Readonly<SvgProps>) => Svg' is not assignable to type 'new (props: any, deprecatedLegacyContext?: any) => Component<any, any, any>'.
+apps/mobile type-check:         Property 'refs' is missing in type 'Svg' but required in type 'Component<any, any, any>'.
+apps/mobile type-check: src/features/workout/ExerciseFigure.tsx(85,10): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check:     Types of construct signatures are incompatible.
+apps/mobile type-check:       Type 'new (props: LineProps | Readonly<LineProps>) => Line' is not assignable to type 'new (props: any, deprecatedLegacyContext?: any) => Component<any, any, any>'.
+apps/mobile type-check:         Property 'refs' is missing in type 'Line' but required in type 'Component<any, any, any>'.
+apps/mobile type-check: src/features/workout/ExerciseFigure.tsx(95,10): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check: src/features/workout/ExerciseFigure.tsx(105,10): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check: src/features/workout/ExerciseFigure.tsx(114,10): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check: src/features/workout/ExerciseFigure.tsx(124,10): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check: src/features/workout/ExerciseFigure.tsx(134,10): error TS2786: 'Circle' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Circle' is not a valid JSX element type.
+apps/mobile type-check:     Types of construct signatures are incompatible.
+apps/mobile type-check:       Type 'new (props: CircleProps | Readonly<CircleProps>) => Circle' is not assignable to type 'new (props: any, deprecatedLegacyContext?: any) => Component<any, any, any>'.
+apps/mobile type-check:         Property 'refs' is missing in type 'Circle' but required in type 'Component<any, any, any>'.
+apps/mobile type-check: src/features/workout/ExerciseFigure.tsx(136,10): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check: src/features/workout/ExerciseFigure.tsx(145,10): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check: src/features/workout/ExerciseFigure.tsx(155,10): error TS2786: 'Circle' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Circle' is not a valid JSX element type.
+apps/mobile type-check: src/features/workout/ExerciseFigure.tsx(156,10): error TS2786: 'Circle' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Circle' is not a valid JSX element type.
+apps/mobile type-check: src/features/workout/ExerciseFigure.tsx(157,10): error TS2786: 'Circle' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Circle' is not a valid JSX element type.
+apps/mobile type-check: src/features/workout/WorkoutScreen.tsx(351,8): error TS2786: 'SafeAreaView' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'ForwardRefExoticComponent<NativeSafeAreaViewProps & RefAttributes<Component<NativeProps, {}, any> & Readonly<NativeMethods>>>' is not a valid JSX element type.
+apps/mobile type-check:     Type 'ForwardRefExoticComponent<NativeSafeAreaViewProps & RefAttributes<Component<NativeProps, {}, any> & Readonly<NativeMethods>>>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+apps/mobile type-check:       Type 'import("/home/runner/work/forma/forma/node_modules/@types/react/index").ReactNode' is not assignable to type 'React.ReactNode'.
+apps/mobile type-check:         Type 'bigint' is not assignable to type 'ReactNode'.
+apps/mobile type-check: src/features/workout/WorkoutScreen.tsx(533,6): error TS2786: 'SafeAreaView' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'ForwardRefExoticComponent<NativeSafeAreaViewProps & RefAttributes<Component<NativeProps, {}, any> & Readonly<NativeMethods>>>' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(69,10): error TS2786: 'Svg' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Svg' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(72,16): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(73,16): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(74,16): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(75,16): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(76,16): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(80,16): error TS2786: 'Rect' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Rect' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(81,16): error TS2786: 'Rect' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Rect' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(82,16): error TS2786: 'Rect' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Rect' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(83,16): error TS2786: 'Rect' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Rect' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(87,16): error TS2786: 'Circle' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Circle' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(88,16): error TS2786: 'Circle' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Circle' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(89,16): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(90,16): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(91,16): error TS2786: 'Line' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Line' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(95,16): error TS2786: 'Path' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Path' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(96,16): error TS2786: 'Path' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Path' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(97,16): error TS2786: 'Path' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Path' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(101,16): error TS2786: 'Circle' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Circle' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(102,16): error TS2786: 'Path' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'typeof Path' is not a valid JSX element type.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(133,6): error TS2786: 'NavigationContainer' cannot be used as a JSX component.
+apps/mobile type-check:   Its type '<RootParamList extends {} = RootParamList>(props: NavigationContainerProps & { theme?: Theme | undefined; linking?: LinkingOptions<RootParamList> | undefined; fallback?: ReactNode; documentTitle?: DocumentTitleOptions | undefined; onReady?: (() => void) | undefined; } & { ...; }) => ReactElement<...>' is not a valid JSX element type.
+apps/mobile type-check:     Type '<RootParamList extends {} = RootParamList>(props: NavigationContainerProps & { theme?: Theme | undefined; linking?: LinkingOptions<RootParamList> | undefined; fallback?: ReactNode; documentTitle?: DocumentTitleOptions | undefined; onReady?: (() => void) | undefined; } & { ...; }) => ReactElement<...>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+apps/mobile type-check:       Type 'ReactElement<unknown, string | JSXElementConstructor<any>>' is not assignable to type 'ReactNode'.
+apps/mobile type-check:         Property 'children' is missing in type 'ReactElement<unknown, string | JSXElementConstructor<any>>' but required in type 'ReactPortal'.
+apps/mobile type-check: src/navigation/RootNavigator.tsx(134,8): error TS2786: 'Tab.Navigator' cannot be used as a JSX component.
+apps/mobile type-check:   Its type 'ComponentType<Omit<DefaultRouterOptions<string> & { id?: string | undefined; children: ReactNode; screenListeners?: Partial<{ tabPress: EventListenerCallback<BottomTabNavigationEventMap & EventMapCore<...>, "tabPress">; ... 4 more ...; beforeRemove: EventListenerCallback<...>; }> | ((props: { ...; }) => Partial<...>...' is not a valid JSX element type.
+apps/mobile type-check:     Type 'ComponentClass<Omit<DefaultRouterOptions<string> & { id?: string | undefined; children: ReactNode; screenListeners?: Partial<{ tabPress: EventListenerCallback<BottomTabNavigationEventMap & EventMapCore<...>, "tabPress">; ... 4 more ...; beforeRemove: EventListenerCallback<...>; }> | ((props: { ...; }) => Partial<......' is not assignable to type 'ElementType'.
+apps/mobile type-check:       Type 'ComponentClass<Omit<DefaultRouterOptions<string> & { id?: string | undefined; children: ReactNode; screenListeners?: Partial<{ tabPress: EventListenerCallback<BottomTabNavigationEventMap & EventMapCore<...>, "tabPress">; ... 4 more ...; beforeRemove: EventListenerCallback<...>; }> | ((props: { ...; }) => Partial<......' is not assignable to type 'new (props: any, deprecatedLegacyContext?: any) => Component<any, any, any>'.
+apps/mobile type-check:         Property 'refs' is missing in type 'Component<Omit<DefaultRouterOptions<string> & { id?: string | undefined; children: ReactNode; screenListeners?: Partial<{ tabPress: EventListenerCallback<BottomTabNavigationEventMap & EventMapCore<...>, "tabPress">; ... 4 more ...; beforeRemove: EventListenerCallback<...>; }> | ((props: { ...; }) => Partial<...>) | ...' but required in type 'Component<any, any, any>'.
+apps/mobile type-check: Failed
+/home/runner/work/forma/forma/apps/mobile:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @forma/mobile@0.1.0 type-check: `tsc --noEmit`
+Exit status 2
