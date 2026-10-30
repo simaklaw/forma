@@ -73,7 +73,7 @@ const JWKS_TTL_MS = 60 * 60 * 1000;
 const JWKS_FETCH_TIMEOUT_MS = 5_000;
 
 /** Basic email shape: local@domain.tld (no spaces, length bounds). */
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export type OidcErrorCode =
   | 'invalid_token'
@@ -117,7 +117,7 @@ export function claimsToAuthSubject(
     claims.email_verified !== false &&
     claims.email_verified !== 'false'
   ) {
-    return email;
+    return `oidc:${provider}:${email}`.slice(0, 200);
   }
   return `oidc:${provider}:${claims.sub}`.slice(0, 200);
 }
