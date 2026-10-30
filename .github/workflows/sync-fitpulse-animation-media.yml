@@ -3,7 +3,10 @@ name: Sync Verified FitPulse Animation Media
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/15 * * * *"
+    # Daily (04:00 UTC) is enough: the workflow only opens/updates
+    # the asset-sync PR when published media changes — a 15-minute
+    # schedule produced ~96 runs/day of pure noise (review #11).
+    - cron: "0 4 * * *"
   push:
     branches:
       - main
