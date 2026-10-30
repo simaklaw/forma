@@ -53,9 +53,9 @@ jobs:
       - name: Check formatting (gate paths)
         run: pnpm exec prettier --version && pnpm format:check:gate
 
-      # Фаза 2 линта (#4): warn остаётся advisory (сигнал в логах/отчёте),
-      # error — блокирует CI. Правила переводятся в error по мере чистки
-      # кода (см. eslint.config.mjs, ERROR_RULES).
+      # Фаза 2 линта (#4): warn остаётся advisory (отчёт в ci-logs),
+      # error — блокирует CI. Чистые правила переводятся в error
+      # в eslint.config.mjs (ERROR_RULES).
       - name: Lint (warn advisory, error blocking)
         run: |
           set +e
@@ -105,27 +105,21 @@ jobs:
       - name: Test web domain helpers
         run: pnpm --filter @forma/web test
 
-      # Фаза 2 линта (#4): advisory-отчёт в ci-logs/lint-report.
-      # Диагностический прогон: пишем debug.txt безусловно.
+      # Фаза 2 линта (#4): advisory-отчёт линтера в ci-logs/lint-report —
+      # обновляется каждым same-repo раном (каталог перезаписывается).
       - name: Publish lint report (ci-logs)
-        if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.id == github.repository.id)
+        if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         run: |
           set +e
-          {
-            echo "run ${{ github.run_id }} commit ${{ github.sha }}"
-            echo "pwd: $(pwd)"
-            ls -la
-            if [ -f lint.log ]; then echo "LINTLOG EXISTS $(wc -c < lint.log)"; else echo "LINTLOG MISSING"; fi
-            [ -f lint.log ] && cat lint.log
-          } > debug.txt 2>&1
+          [ -f lint.log ] || exit 0
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
           git fetch origin ci-logs || true
           git checkout -B ci-logs origin/ci-logs 2>/dev/null || git checkout -B ci-logs
           mkdir -p ci-logs/lint-report
-          cp debug.txt ci-logs/lint-report/debug.txt
-          [ -f lint.log ] && cp lint.log ci-logs/lint-report/lint.log
+          cp lint.log ci-logs/lint-report/lint.log
+          echo "lint report updated $(date -u +%FT%TZ) run ${{ github.run_id }} commit ${{ github.sha }}" > ci-logs/lint-report/README.txt
           git add -f ci-logs/lint-report
           git commit -m "ci: lint report update (run ${{ github.run_id }})" || exit 0
           git push --force origin ci-logs
@@ -133,7 +127,10 @@ jobs:
       - name: Publish diagnostics on failure
         # Ревью #9: в ветку ci-logs пишем только из same-repo ранов —
         # у fork-PR токен read-only: шаг молча падал и краснил CI контрибьютору.
-        if: failure() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.id == github.repository.id)
+        # Фикс регрессии #9: github.repository — строка owner/repo, поэтому
+        # сравнение по .id всегда было false на PR-ранах и шаг скипался;
+        # сравниваем по full_name.
+        if: failure() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         run: |
           set +e
           SAY() { echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
