@@ -36,6 +36,14 @@ export function normalizeBaseUrl(raw: string): string {
   if (!/^https?:\/\//.test(url)) {
     throw new AiClientError('Адрес API должен начинаться с http:// или https://');
   }
+  if (url.startsWith('http://')) {
+    // http:// легален для локальных прокси и LAN-эндпоинтов, но API-ключ
+    // уйдёт в открытом виде — предупреждаем (ревью-находка #13).
+    console.warn(
+      '[ai] baseUrl использует http://: API-ключ передаётся без шифрования. ' +
+        'Используйте https:// вне локальной сети.'
+    );
+  }
   if (!url.endsWith('/v1')) url = url + '/v1';
   return url;
 }

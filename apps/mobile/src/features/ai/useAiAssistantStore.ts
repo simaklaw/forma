@@ -65,6 +65,13 @@ function mergePersistedAiState(persisted: unknown, current: AiStore): AiStore {
   };
 }
 
+/**
+ * Приватность (ревью-находка #14): пользовательские API-ключи провайдеров
+ * хранятся в AsyncStorage в открытом виде (persist-ключ `fitpulse_ai_state`).
+ * Это осознанный компромисс BYO-модели: ключ принадлежит самому пользователю
+ * и не открывает доступ к серверам приложения. Перенос в expo-secure-store —
+ * возможное будущее улучшение (см. apps/mobile/README.md, «AI-ассистент и приватность»).
+ */
 export const useAiAssistantStore = create<AiStore>()(
   persist(
     (set, get) => ({
