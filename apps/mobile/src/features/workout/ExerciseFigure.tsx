@@ -157,7 +157,7 @@ export default function ExerciseFigure({ kind, playing }: ExerciseFigureProps) {
         <Circle cx={pose.shoulder.x} cy={pose.shoulder.y} r={6} fill={colors.paper} />
       </Svg>
       <View style={styles.hudRow}>
-        <View style={[styles.hudChip, { borderColor: stroke }]}>
+        <View style={styles.hudChip}>
           <Text style={[styles.hudChipText, { color: stroke }]}>{phaseLabel}</Text>
         </View>
         <View style={styles.hudRight}>
@@ -177,9 +177,7 @@ function useStyles(colors: ColorTokens) {
       marginTop: spacing.sm,
       marginBottom: spacing.sm,
       borderRadius: radius.card,
-      backgroundColor: colors.panel,
-      borderWidth: 1,
-      borderColor: colors.line,
+      backgroundColor: colors.surfaceContainer,
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.md
     },
@@ -192,10 +190,10 @@ function useStyles(colors: ColorTokens) {
       gap: spacing.sm
     },
     hudChip: {
-      borderWidth: 1,
       borderRadius: radius.pill,
       paddingHorizontal: 10,
       paddingVertical: 4,
+      backgroundColor: colors.surfaceContainerHigh,
       flexShrink: 1
     },
     hudChipText: { fontFamily: fonts.mono, fontSize: 11 },

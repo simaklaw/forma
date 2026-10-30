@@ -75,7 +75,7 @@ export function WarmupCard({ muscles }: Props) {
     <View
       style={[
         styles.card,
-        { backgroundColor: allDone ? colors.limeDim : colors.surfaceContainer }
+        { backgroundColor: allDone ? colors.primaryContainer : colors.surfaceContainer }
       ]}
     >
       <TouchableOpacity
@@ -140,7 +140,7 @@ export function WarmupCard({ muscles }: Props) {
                 </View>
                 {running ? (
                   <TouchableOpacity
-                    style={[styles.stepBtn, { backgroundColor: colors.surfaceContainer }]}
+                    style={[styles.stepBtn, { backgroundColor: colors.surfaceContainerHigh }]}
                     onPress={stopStep}
                     accessibilityRole="button"
                     accessibilityLabel={t('warmupStop')}
@@ -156,13 +156,13 @@ export function WarmupCard({ muscles }: Props) {
                     <TouchableOpacity
                       style={[
                         styles.stepBtn,
-                        { backgroundColor: colors.limeDim }
+                        { backgroundColor: colors.primaryContainer }
                       ]}
                       onPress={() => startStep(step.id, step.durationSec)}
                       accessibilityRole="button"
                       accessibilityLabel={t('warmupStart')}
                     >
-                      <Text style={[styles.stepBtnText, { color: colors.lime }]}>
+                      <Text style={[styles.stepBtnText, { color: colors.onPrimaryContainer }]}>
                         {t('warmupStart')}
                       </Text>
                     </TouchableOpacity>

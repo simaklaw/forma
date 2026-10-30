@@ -64,13 +64,13 @@ const CompletionFeedbackSheet = forwardRef<GorhomBottomSheet, Props>(
         onClose={onSkip}
       >
         <BottomSheetScrollView style={{ flex: 1 }} contentContainerStyle={styles.body}>
-          <View style={[styles.summaryCard, { borderColor: colors.line }]}>
+          <View style={[styles.summaryCard, { backgroundColor: colors.surfaceContainer }]}>
             <Text style={[styles.summaryLine, { color: colors.paperDim }]}>
               {totalSets} подходов{burnedKcal > 0 ? ` · ~${burnedKcal} ккал` : ''}
               {currentStreak > 0 ? ` · серия ${currentStreak} дн.` : ''}
             </Text>
             <TouchableOpacity
-              style={[styles.shareBtn, { borderColor: colors.lineStrong }]}
+              style={[styles.shareBtn, { backgroundColor: colors.surfaceContainer }]}
               onPress={() => {
                 void shareResult();
               }}
@@ -88,11 +88,8 @@ const CompletionFeedbackSheet = forwardRef<GorhomBottomSheet, Props>(
                 key={opt.value}
                 style={[
                   styles.feelBtn,
-                  { borderColor: colors.lineStrong },
-                  feel === opt.value && {
-                    borderColor: colors.lime,
-                    backgroundColor: colors.limeDim
-                  }
+                  { backgroundColor: colors.surfaceContainer },
+                  feel === opt.value && { backgroundColor: colors.primaryContainer }
                 ]}
                 onPress={() => setFeel(opt.value)}
                 accessibilityRole="button"
@@ -110,11 +107,8 @@ const CompletionFeedbackSheet = forwardRef<GorhomBottomSheet, Props>(
                 key={opt.value}
                 style={[
                   styles.chip,
-                  { borderColor: colors.lineStrong },
-                  difficulty === opt.value && {
-                    borderColor: colors.lime,
-                    backgroundColor: colors.limeDim
-                  }
+                  { backgroundColor: colors.surfaceContainer },
+                  difficulty === opt.value && { backgroundColor: colors.primaryContainer }
                 ]}
                 onPress={() => setDifficulty(opt.value)}
                 accessibilityRole="button"
@@ -124,7 +118,7 @@ const CompletionFeedbackSheet = forwardRef<GorhomBottomSheet, Props>(
                   style={[
                     styles.chipText,
                     { color: colors.paperDim },
-                    difficulty === opt.value && { color: colors.lime }
+                    difficulty === opt.value && { color: colors.onPrimaryContainer }
                   ]}
                 >
                   {opt.label}
@@ -147,11 +141,8 @@ const CompletionFeedbackSheet = forwardRef<GorhomBottomSheet, Props>(
                 key={String(opt.v)}
                 style={[
                   styles.chip,
-                  { borderColor: colors.lineStrong },
-                  hadPain === opt.v && {
-                    borderColor: colors.ember,
-                    backgroundColor: 'rgba(255,107,107,0.1)'
-                  }
+                  { backgroundColor: colors.surfaceContainer },
+                  hadPain === opt.v && { backgroundColor: 'rgba(255,107,107,0.1)' }
                 ]}
                 onPress={() => setHadPain(opt.v)}
                 accessibilityRole="button"
@@ -176,11 +167,8 @@ const CompletionFeedbackSheet = forwardRef<GorhomBottomSheet, Props>(
                 key={String(opt.v)}
                 style={[
                   styles.chip,
-                  { borderColor: colors.lineStrong },
-                  wouldRepeat === opt.v && {
-                    borderColor: colors.lime,
-                    backgroundColor: colors.limeDim
-                  }
+                  { backgroundColor: colors.surfaceContainer },
+                  wouldRepeat === opt.v && { backgroundColor: colors.primaryContainer }
                 ]}
                 onPress={() => setWouldRepeat(opt.v)}
                 accessibilityRole="button"
@@ -194,7 +182,7 @@ const CompletionFeedbackSheet = forwardRef<GorhomBottomSheet, Props>(
           <TouchableOpacity
             style={[
               styles.submitBtn,
-              { backgroundColor: canSubmit ? colors.lime : colors.panelRaised }
+              { backgroundColor: canSubmit ? colors.lime : colors.surfaceContainer }
             ]}
             disabled={!canSubmit}
             onPress={() =>
@@ -239,7 +227,6 @@ function createStyles(_colors: ColorTokens) {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      borderWidth: 1,
       borderRadius: radius.control,
       padding: spacing.sm,
       marginBottom: spacing.md
@@ -249,7 +236,6 @@ function createStyles(_colors: ColorTokens) {
       paddingHorizontal: 12,
       height: 32,
       borderRadius: radius.control,
-      borderWidth: 1,
       alignItems: 'center',
       justifyContent: 'center'
     },
@@ -260,7 +246,6 @@ function createStyles(_colors: ColorTokens) {
       width: 48,
       height: 48,
       borderRadius: radius.control,
-      borderWidth: 1,
       alignItems: 'center',
       justifyContent: 'center'
     },
@@ -269,7 +254,6 @@ function createStyles(_colors: ColorTokens) {
       paddingHorizontal: 14,
       height: 40,
       borderRadius: radius.control,
-      borderWidth: 1,
       alignItems: 'center',
       justifyContent: 'center'
     },

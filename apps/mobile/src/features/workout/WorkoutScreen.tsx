@@ -570,7 +570,7 @@ export default function WorkoutScreen() {
                   { backgroundColor: colors.surfaceContainer }
                 ]}
               >
-                <Text style={[styles.programChipText, { color: colors.cyan }]} numberOfLines={1}>
+                <Text style={[styles.programChipText, { color: colors.paper }]} numberOfLines={1}>
                   {t('programTemplateLine', {
                     name: programTemplateTitle(program.templateId, lang),
                     level: levelLabel(program.templateLevel ?? 'intermediate', lang)
@@ -789,7 +789,7 @@ export default function WorkoutScreen() {
                     ? { backgroundColor: colors.lime }
                     : status === 'today-in-progress'
                       ? { backgroundColor: colors.ember }
-                      : { backgroundColor: colors.line }
+                      : { backgroundColor: colors.surfaceContainerHigh }
                 ]}
                 onPress={() => showStreakDay(i)}
                 accessibilityRole="button"
@@ -874,7 +874,7 @@ export default function WorkoutScreen() {
               ) : remoteThumbUri ? (
                 <Image
                   source={{ uri: remoteThumbUri }}
-                  style={[styles.logThumb, { backgroundColor: colors.ink }]}
+                  style={[styles.logThumb, { backgroundColor: colors.surfaceContainerHigh }]}
                   resizeMode="cover"
                   accessibilityLabel={ex.name}
                 />
@@ -883,7 +883,7 @@ export default function WorkoutScreen() {
                   style={[
                     styles.logThumb,
                     styles.logThumbFallback,
-                    { backgroundColor: colors.ink, borderColor: colors.line }
+                    { backgroundColor: colors.surfaceContainerHigh }
                   ]}
                 >
                   <Text style={[styles.logThumbInitials, { color: colors.paperFaint }]}>

@@ -47,7 +47,7 @@ const WorkoutPreviewSheet = forwardRef<GorhomBottomSheet, Props>(
                 {thumb ? (
                   <Image source={thumb} style={styles.rowThumb} />
                 ) : (
-                  <View style={[styles.rowThumb, { backgroundColor: colors.panelRaised }]} />
+                  <View style={[styles.rowThumb, { backgroundColor: colors.surfaceContainer }]} />
                 )}
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.rowName, { color: colors.paper }]} numberOfLines={1}>

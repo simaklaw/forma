@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { getRealtimeSetFeedback } from '@forma/core';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
+import Md3Card from '@/components/md3/Md3Card';
 
 type Props = {
   exerciseId: string;
@@ -29,7 +30,7 @@ export function SetFeedbackCard({
     formCues: formCues?.length ? formCues : undefined
   });
   return (
-    <View style={styles.feedbackCard} accessibilityRole="summary">
+    <Md3Card variant="flat" padding="none" style={styles.feedbackCard} accessibilityRole="summary">
       <View style={styles.accentBar} />
       <View style={styles.feedbackBody}>
         <Text style={styles.feedbackKicker}>
@@ -39,7 +40,7 @@ export function SetFeedbackCard({
         <Text style={styles.feedbackFocus}>{setFeedback.formFocus}</Text>
         <Text style={styles.feedbackSafety}>{setFeedback.safetyCheck}</Text>
       </View>
-    </View>
+    </Md3Card>
   );
 }
 
@@ -49,9 +50,6 @@ function createStyles(colors: ColorTokens) {
       marginTop: spacing.md,
       marginBottom: spacing.sm,
       borderRadius: radius.control,
-      borderWidth: 1,
-      borderColor: colors.line,
-      backgroundColor: colors.panel,
       flexDirection: 'row',
       overflow: 'hidden'
     },

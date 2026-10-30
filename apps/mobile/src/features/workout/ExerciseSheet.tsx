@@ -74,9 +74,9 @@ const REST_PHASE_TINT: Record<
   RestTimerPhase,
   { accent: keyof ColorTokens; surface: keyof ColorTokens }
 > = {
-  plenty: { accent: 'lime', surface: 'limeDim' },
-  soon: { accent: 'warning', surface: 'panel' },
-  final: { accent: 'danger', surface: 'panel' }
+  plenty: { accent: 'lime', surface: 'primaryContainer' },
+  soon: { accent: 'warning', surface: 'surfaceContainer' },
+  final: { accent: 'danger', surface: 'surfaceContainer' }
 };
 
 function remainingRestSeconds(restEndsAtMs: number | null | undefined, nowMs = Date.now()): number | null {
@@ -755,7 +755,6 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
             <TouchableOpacity
               style={[
                 styles.playerBtn,
-                { borderColor: colors.lineStrong },
                 !prevExercise && styles.playerBtnDisabled
               ]}
               disabled={!prevExercise}
@@ -770,7 +769,6 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
             <TouchableOpacity
               style={[
                 styles.playerBtn,
-                { borderColor: colors.lineStrong },
                 !hasActiveSession && styles.playerBtnDisabled
               ]}
               disabled={!hasActiveSession}
@@ -790,7 +788,6 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
             <TouchableOpacity
               style={[
                 styles.playerBtn,
-                { borderColor: colors.lineStrong },
                 !hasActiveSession && styles.playerBtnDisabled
               ]}
               disabled={!hasActiveSession}
@@ -805,7 +802,6 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
             <TouchableOpacity
               style={[
                 styles.playerBtn,
-                { borderColor: colors.ember },
                 !hasActiveSession && styles.playerBtnDisabled
               ]}
               disabled={!hasActiveSession}
@@ -859,13 +855,11 @@ function createStyles(colors: ColorTokens) {
       paddingHorizontal: 10,
       paddingVertical: 4,
       borderRadius: radius.pill,
-      backgroundColor: colors.limeDim,
-      borderWidth: 1,
-      borderColor: colors.lime
+      backgroundColor: colors.primaryContainer
     },
-    currentChipText: { color: colors.lime, fontFamily: fonts.mono, fontSize: 11 },
-    supersetChip: { borderColor: colors.cyan, backgroundColor: colors.cyanDim },
-    supersetChipText: { color: colors.cyan, fontFamily: fonts.mono, fontSize: 11 },
+    currentChipText: { color: colors.onPrimaryContainer, fontFamily: fonts.mono, fontSize: 11 },
+    supersetChip: { backgroundColor: colors.surfaceContainer },
+    supersetChipText: { color: colors.paper, fontFamily: fonts.mono, fontSize: 11 },
     seqBanner: {
       marginBottom: spacing.md,
       padding: 12,
@@ -896,10 +890,8 @@ function createStyles(colors: ColorTokens) {
     grid: {
       flexDirection: 'row',
       borderRadius: radius.control,
-      borderWidth: 1,
-      borderColor: colors.line,
       overflow: 'hidden',
-      backgroundColor: colors.panel
+      backgroundColor: colors.surfaceContainer
     },
     gridCell: {
       flex: 1,
@@ -922,18 +914,14 @@ function createStyles(colors: ColorTokens) {
       marginTop: spacing.md,
       padding: 12,
       borderRadius: radius.control,
-      backgroundColor: colors.panel,
-      borderWidth: 1,
-      borderColor: colors.line
+      backgroundColor: colors.surfaceContainer
     },
     noteText: { color: colors.paperDim, fontFamily: fonts.body, fontSize: 13, lineHeight: 18 },
     datasetBlock: {
       marginTop: spacing.md,
       padding: 12,
       borderRadius: radius.control,
-      borderWidth: 1,
-      borderColor: colors.line,
-      backgroundColor: colors.panel
+      backgroundColor: colors.surfaceContainer
     },
     datasetMeta: {
       color: colors.paperFaint,
@@ -968,10 +956,8 @@ function createStyles(colors: ColorTokens) {
       flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
-      borderWidth: 1,
-      borderColor: colors.line,
       borderRadius: radius.control,
-      backgroundColor: colors.panel
+      backgroundColor: colors.surfaceContainer
     },
     stepperBtn: { width: 40, height: 44, alignItems: 'center', justifyContent: 'center' },
     stepperBtnText: { color: colors.lime, fontSize: 22, fontFamily: fonts.mono },
@@ -983,23 +969,19 @@ function createStyles(colors: ColorTokens) {
       flex: 1,
       height: 40,
       borderRadius: radius.control,
-      borderWidth: 1,
-      borderColor: colors.line,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: colors.panel
+      backgroundColor: colors.surfaceContainer
     },
-    rirBtnActive: { borderColor: colors.lime, backgroundColor: colors.limeDim },
+    rirBtnActive: { backgroundColor: colors.primaryContainer },
     rirBtnText: { color: colors.paperDim, fontFamily: fonts.mono, fontSize: 16 },
-    rirBtnTextActive: { color: colors.lime },
+    rirBtnTextActive: { color: colors.onPrimaryContainer },
     restTimer: {
       marginTop: spacing.lg,
       paddingVertical: 16,
       paddingHorizontal: 16,
       borderRadius: radius.card,
-      borderWidth: 1.5,
-      borderColor: colors.lime,
-      backgroundColor: colors.limeDim,
+      backgroundColor: colors.primaryContainer,
       alignItems: 'center'
     },
     restLabel: {
@@ -1065,11 +1047,10 @@ function createStyles(colors: ColorTokens) {
     playerBtn: {
       flex: 1,
       height: 44,
-      borderWidth: 1,
       borderRadius: radius.control,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: colors.panel
+      backgroundColor: colors.surfaceContainer
     },
     playerBtnDisabled: { opacity: 0.4 },
     playerBtnText: { fontFamily: fonts.bodySemi, fontSize: 12 },
