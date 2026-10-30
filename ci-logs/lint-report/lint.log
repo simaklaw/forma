@@ -1,0 +1,61 @@
+Scope: 5 of 8 workspace projects
+packages/core lint$ eslint .
+packages/sync-contract lint$ eslint .
+packages/workout-domain lint$ eslint .
+packages/sync-contract lint: /home/runner/work/forma/forma/packages/sync-contract/src/client.test.ts
+packages/sync-contract lint:    14:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+packages/sync-contract lint:    41:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+packages/sync-contract lint:    64:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+packages/sync-contract lint:    83:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+packages/sync-contract lint:   106:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+packages/sync-contract lint:   128:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+packages/sync-contract lint:   151:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+packages/sync-contract lint: ✖ 7 problems (0 errors, 7 warnings)
+packages/sync-contract lint: Done
+packages/workout-domain lint: Done
+packages/core lint: /home/runner/work/forma/forma/packages/core/src/services/WgerExerciseService.ts
+packages/core lint:    60:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+packages/core lint:    68:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+packages/core lint:   100:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+packages/core lint: ✖ 3 problems (0 errors, 3 warnings)
+packages/core lint: Done
+apps/api lint$ eslint .
+apps/web lint$ eslint .
+apps/api lint: /home/runner/work/forma/forma/apps/api/src/idempotency.ts
+apps/api lint:    63:24  warning  '_' is assigned a value but never used  @typescript-eslint/no-unused-vars
+apps/api lint:   102:37  warning  '_' is defined but never used           @typescript-eslint/no-unused-vars
+apps/api lint: /home/runner/work/forma/forma/apps/api/src/nutrition.test.ts
+apps/api lint:    19:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+apps/api lint:    60:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+apps/api lint:   128:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+apps/api lint:   143:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+apps/api lint:   145:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+apps/api lint:   165:63  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+apps/api lint:   166:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+apps/api lint:   178:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+apps/api lint:   194:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+apps/api lint:   217:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+apps/api lint: /home/runner/work/forma/forma/apps/api/src/openapi.test.ts
+apps/api lint:    7:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+apps/api lint:   24:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+apps/api lint:   39:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+apps/api lint: /home/runner/work/forma/forma/apps/api/src/projections.ts
+apps/api lint:   252:20  warning  '_input' is defined but never used  @typescript-eslint/no-unused-vars
+apps/api lint: ✖ 16 problems (0 errors, 16 warnings)
+apps/api lint: Done
+apps/web lint: /home/runner/work/forma/forma/apps/web/src/components/ExcalidrawCanvas.tsx
+apps/web lint:    21:26  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+apps/web lint:    22:5   warning  'stylesLoaded' is assigned a value but never used  @typescript-eslint/no-unused-vars
+apps/web lint:    46:16  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+apps/web lint:    50:53  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+apps/web lint:    99:53  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+apps/web lint:   100:43  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+apps/web lint: /home/runner/work/forma/forma/apps/web/src/features/nutrition.tsx
+apps/web lint:   12:10  warning  'cn' is defined but never used  @typescript-eslint/no-unused-vars
+apps/web lint: /home/runner/work/forma/forma/apps/web/src/features/profile.tsx
+apps/web lint:   4:10  warning  'Tag' is defined but never used   @typescript-eslint/no-unused-vars
+apps/web lint:   4:15  warning  'Tags' is defined but never used  @typescript-eslint/no-unused-vars
+apps/web lint: /home/runner/work/forma/forma/apps/web/src/features/progress.tsx
+apps/web lint:   23:10  warning  'Box' is defined but never used  @typescript-eslint/no-unused-vars
+apps/web lint: ✖ 10 problems (0 errors, 10 warnings)
+apps/web lint: Done
