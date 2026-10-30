@@ -27,7 +27,10 @@ yarn-error.log*
 **/android
 **/ios
 *.tsbuildinfo
-routeTree.gen.ts
+# routeTree.gen.ts: правило игнора удалено как мёртвое — файл
+# закоммичен сознательно (tracked-файлы .gitignore не подчиняются),
+# а type-check в CI опирается на сгенерированное дерево маршрутов
+# без запуска dev-сервера (review #10).
 # python (scripts/tests tooling)
 __pycache__/
 *.py[cod]
