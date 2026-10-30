@@ -78,7 +78,7 @@ describe('claimsToAuthSubject', () => {
         email_verified: true,
         exp: 9e9,
       }),
-      'user@mail.ru',
+      'oidc:mailru:user@mail.ru',
     );
   });
 
@@ -201,7 +201,7 @@ describe('POST /api/v1/auth/oidc', () => {
       token: string;
       user_id: string;
     };
-    assert.equal(body.auth_subject, 'oidc-user@mail.ru');
+    assert.equal(body.auth_subject, 'oidc:mailru:oidc-user@mail.ru');
     assert.equal(body.provider, 'mailru');
     assert.equal(verifyJwt(TEST_JWT_SECRET, body.token), body.user_id);
   });
@@ -273,7 +273,7 @@ describe('POST /api/v1/auth/oidc', () => {
     });
     assert.equal(res.status, 200);
     const body = (await res.json()) as { auth_subject: string; provider: string };
-    assert.equal(body.auth_subject, 'code-user@mail.ru');
+    assert.equal(body.auth_subject, 'oidc:mailru:code-user@mail.ru');
     assert.equal(body.provider, 'mailru');
   });
 
@@ -301,6 +301,28 @@ describe('POST /api/v1/auth/oidc', () => {
       });
       assert.equal(res.status, 400, provider);
     }
+  });
+});
+
+describe('POST /api/v1/auth/register with OIDC configured', () => {
+  it('rejects email-shaped subjects — emails must sign in via OIDC', async () => {
+    const res = await app().request('/api/v1/auth/register', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ auth_subject: 'attacker@mail.ru' }),
+    });
+    assert.equal(res.status, 403);
+    const body = (await res.json()) as { error?: string };
+    assert.equal(body.error, 'email_requires_oidc');
+  });
+
+  it('still accepts device subjects', async () => {
+    const res = await app().request('/api/v1/auth/register', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ auth_subject: 'device-abc-def-ghi' }),
+    });
+    assert.equal(res.status, 200);
   });
 });
 

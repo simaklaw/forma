@@ -27,6 +27,7 @@ import {
 import {
   verifyIdToken,
   claimsToAuthSubject,
+  EMAIL_RE,
   type OidcProvider,
   type OidcConfig,
   oidcConfigFromEnv,
@@ -145,6 +146,16 @@ export function createApp(
       );
       if (!parsed.ok) return c.json(parsed.body, 400);
       const subject = parsed.data.auth_subject;
+      if (oidcConfig && EMAIL_RE.test(subject)) {
+        return c.json(
+          {
+            error: 'email_requires_oidc',
+            message:
+              'email auth_subjects are reserved for OIDC sign-in; register accepts device/custom subjects only',
+          },
+          403,
+        );
+      }
       const { user_id, created } = await registerUser.register(subject);
       const token = signJwt(jwtSecret, user_id);
       const expiresAt = new Date(

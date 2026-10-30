@@ -84,6 +84,9 @@ export async function registerSyncCredentials(
     if (res.status === 409) {
       throw new SyncAuthError('email_already_linked', 409);
     }
+    if (res.status === 403) {
+      throw new SyncAuthError('email_requires_oidc', 403);
+    }
     throw new SyncAuthError('register_failed_' + res.status, res.status);
   }
   const json: unknown = await res.json();

@@ -43,6 +43,20 @@ async function requestFromNode(req: IncomingMessage): Promise<Request> {
 }
 
 async function main(): Promise<void> {
+  // Refuse to serve open sync endpoints against a real database:
+  // a misconfigured deploy (DATABASE_URL without JWT_SECRET/SYNC_API_TOKEN)
+  // would expose /api/v1/sync/* to everyone.
+  if (
+    process.env.DATABASE_URL &&
+    !process.env.JWT_SECRET &&
+    !process.env.SYNC_API_TOKEN
+  ) {
+    console.error(
+      '[fitpulse-api] refusing to start: DATABASE_URL is set but neither JWT_SECRET nor SYNC_API_TOKEN is configured.',
+      'Set JWT_SECRET (recommended, per-user auth) or SYNC_API_TOKEN (legacy shared bearer), or unset DATABASE_URL for an in-memory dev instance.',
+    );
+    process.exit(1);
+  }
   const app = await createAppFromEnv();
 
   const server = createServer((req, res: ServerResponse) => {
