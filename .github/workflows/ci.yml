@@ -53,7 +53,6 @@ jobs:
       - name: Check formatting (gate paths)
         run: pnpm exec prettier --version && pnpm format:check:gate
 
-      # Advisory lint (ревью-находка #4): правила в warn — подсвечиваем, не блокируем.
       # Фаза 2 линта (#4): warn остаётся advisory (сигнал в логах/отчёте),
       # error — блокирует CI. Правила переводятся в error по мере чистки
       # кода (см. eslint.config.mjs, ERROR_RULES).
@@ -79,8 +78,7 @@ jobs:
       - name: Type-check core packages
         run: |
           set -o pipefail
-          pnpm --filter @forma/core --filter @forma/workout-domain --filter @forma/mobile --filter @forma/web type-check 2>&1
- | tee typecheck_core.log
+          pnpm --filter @forma/core --filter @forma/workout-domain --filter @forma/mobile --filter @forma/web type-check 2>&1 | tee typecheck_core.log
 
       - name: Type-check P1 packages
         run: pnpm --filter @forma/sync-contract --filter @forma/api type-check
