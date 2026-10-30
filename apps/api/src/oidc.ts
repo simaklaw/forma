@@ -423,6 +423,11 @@ export function oidcConfigFromEnv(
   return { mailruClientId, mailruClientSecret, vkClientId, vkPublicKeyPem };
 }
 
+/**
+ * In-memory sliding-window limiter: windowMs (60s) / max (30) hits per key.
+ * Известное ограничение (ревью #7): состояние в процессе — при более чем
+ * одной машине Fly лимит не общий. Вынести в Postgres/Fly KV при масштабировании.
+ */
 export function createOidcRateLimiter(opts?: {
   windowMs?: number;
   max?: number;

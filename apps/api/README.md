@@ -44,3 +44,8 @@ machine-readable issues array:
 - `JWT_SECRET` — per-user JWT auth on /api/v1/sync/*
 - `SYNC_API_TOKEN` — shared bearer token (legacy fallback)
 - `PORT` — default 8787
+
+## Ограничения масштабирования (известные)
+
+- **OIDC rate-limiter — in-memory** (`createOidcRateLimiter`: Map в процессе, 30 req/мин на ключ). При более чем одной машине Fly (auto_start_stop) лимит не общий — каждая машина считает независимо. Для текущего масштаба приемлемо; при горизонтальном масштабировании вынести в общий стор (Postgres / Fly KV / Redis).
+- **Open-mode guard**: при `DATABASE_URL` без `JWT_SECRET`/`SYNC_API_TOKEN` API отказывается стартовать (#273).
