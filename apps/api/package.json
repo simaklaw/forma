@@ -8,7 +8,7 @@
     "start": "tsx src/server.ts",
     "type-check": "tsc --noEmit",
     "build": "tsc --noEmit",
-    "lint": "echo \"@forma/api: no lint yet\"",
+    "lint": "eslint .",
     "test": "node --experimental-strip-types --test src/sync.test.ts src/projections.test.ts src/auth.test.ts src/oidc.test.ts src/validation.test.ts src/openapi.test.ts src/docs.test.ts src/nutrition.test.ts",
     "test:oidc": "node --experimental-strip-types --test src/oidc.test.ts"
   },

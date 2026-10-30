@@ -8,7 +8,7 @@
     "preview": "vite preview",
     "typecheck": "node ../../scripts/generate-web-route-tree.mjs && tsc --noEmit",
     "type-check": "node ../../scripts/generate-web-route-tree.mjs && tsc --noEmit",
-    "lint": "echo \"@forma/web: add eslint later\"",
+    "lint": "eslint .",
     "test": "node --experimental-strip-types --test src/lib/forma.test.ts src/lib/session-logic.test.ts src/lib/workout-session/*.test.ts",
     "generate:routes": "node ../../scripts/generate-web-route-tree.mjs"
   },

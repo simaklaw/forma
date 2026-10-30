@@ -16,7 +16,7 @@
   "scripts": {
     "type-check": "tsc --noEmit",
     "build": "tsc --noEmit",
-    "lint": "echo \"@forma/core: no lint yet\"",
+    "lint": "eslint .",
     "test": "node --experimental-strip-types --test src/**/*.test.ts"
   },
   "peerDependencies": {

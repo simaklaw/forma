@@ -11,7 +11,7 @@
   "scripts": {
     "type-check": "tsc --noEmit",
     "build": "tsc --noEmit",
-    "lint": "echo \"@forma/sync-contract: no lint yet\"",
+    "lint": "eslint .",
     "test": "node --experimental-strip-types --test src/types.test.ts src/client.test.ts"
   },
   "devDependencies": {

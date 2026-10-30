@@ -53,6 +53,13 @@ jobs:
       - name: Check formatting (gate paths)
         run: pnpm exec prettier --version && pnpm format:check:gate
 
+      # Advisory lint (ревью-находка #4): правила в warn — подсвечиваем, не блокируем.
+      - name: Lint (advisory)
+        run: |
+          set +e
+          pnpm --filter @forma/api --filter @forma/web --filter @forma/core --filter @forma/sync-contract --filter @forma/workout-domain lint 2>&1 | tee lint.log
+          echo "lint exit code: ${PIPESTATUS[0]} (advisory — не блокирует CI)" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Build web
         run: pnpm --filter @forma/web build
 
@@ -112,7 +119,7 @@ jobs:
           SAY "branch=$(git branch --show-current)"
           DIR="ci-logs/${{ github.run_id }}"
           mkdir -p "$DIR"
-          for f in api_test.log typecheck_core.log mobile_test.log; do [ -f "$f" ] && cp "$f" "$DIR/"; done
+          for f in api_test.log typecheck_core.log mobile_test.log lint.log; do [ -f "$f" ] && cp "$f" "$DIR/"; done
           echo "ci failed run: ${{ github.run_id }} commit ${{ github.sha }} date $(date -u +%FT%TZ)" >> "$DIR/README.txt"
           git add -f ci-logs && SAY "add ok" || SAY "add fail"
           git commit -m "ci: diagnostics from failed ci run ${{ github.run_id }}" && SAY "commit ok" || SAY "commit fail: $(git status --short | head -5)"
