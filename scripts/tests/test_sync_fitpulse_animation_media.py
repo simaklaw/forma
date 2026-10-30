@@ -97,10 +97,10 @@ class FitPulseMediaSyncTests(unittest.TestCase):
             self.assertEqual(mobile.resolve(), public.resolve())
             self.assertFalse(Path(mobile.readlink()).is_absolute())
 
-    def test_sync_workflow_has_manual_hourlyish_and_main_update_triggers(self):
+    def test_sync_workflow_has_manual_daily_and_main_update_triggers(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("workflow_dispatch:", workflow)
-        self.assertIn('cron: "*/15 * * * *"', workflow)
+        self.assertIn('cron: "0 4 * * *"', workflow)
         self.assertIn("branches:", workflow)
         self.assertIn("- main", workflow)
         self.assertIn(".github/workflows/sync-fitpulse-animation-media.yml", workflow)
