@@ -51,16 +51,16 @@ export default function ImportGymHistoryButton() {
 
   return (
     <TouchableOpacity
-      style={[styles.btn, { backgroundColor: colors.panel, borderColor: colors.lineStrong }]}
+      style={[styles.btn, { backgroundColor: colors.surfaceContainerHigh }]}
       onPress={() => void onPress()}
       disabled={busy}
       accessibilityRole="button"
       accessibilityLabel="Импорт истории тренировок из CSV Hevy или Strong"
     >
       {busy ? (
-        <ActivityIndicator color={colors.lime} />
+        <ActivityIndicator color={colors.paper} />
       ) : (
-        <Text style={[styles.btnText, { color: colors.lime }]}>Импорт Hevy / Strong (CSV)</Text>
+        <Text style={[styles.btnText, { color: colors.paper }]}>Импорт Hevy / Strong (CSV)</Text>
       )}
     </TouchableOpacity>
   );
@@ -72,7 +72,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: radius.control,
-    borderWidth: 1,
     alignItems: 'center',
   },
   btnText: {

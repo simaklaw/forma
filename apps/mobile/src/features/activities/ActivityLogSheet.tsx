@@ -150,9 +150,7 @@ export default ActivityLogSheet;
 function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
     searchInput: {
-      backgroundColor: colors.panel,
-      borderWidth: 1,
-      borderColor: colors.lineStrong,
+      backgroundColor: colors.surfaceContainer,
       color: colors.paper,
       padding: 10,
       fontSize: 13.5,
@@ -165,15 +163,14 @@ function createStyles(colors: ColorTokens) {
       paddingVertical: 10,
       paddingHorizontal: 8,
       borderRadius: radius.control,
-      borderWidth: 1,
-      borderColor: 'transparent'
+      backgroundColor: colors.surfaceContainer
     },
-    rowSelected: { borderColor: colors.lime, backgroundColor: colors.limeDim },
+    rowSelected: { backgroundColor: colors.primaryContainer },
     rowTexts: { flex: 1, minWidth: 0 },
     rowName: { color: colors.paper, fontSize: 13, fontFamily: fonts.bodySemi },
     rowMeta: { marginTop: 2, color: colors.paperFaint, fontFamily: fonts.mono, fontSize: 10.5 },
     rowPick: { color: colors.paperFaint, fontSize: 14 },
-    rowPickOn: { color: colors.lime },
+    rowPickOn: { color: colors.onPrimaryContainer },
     empty: { color: colors.paperFaint, fontSize: 12, paddingVertical: 8 },
     label: { marginTop: 10, marginBottom: 4, fontSize: 11, color: colors.paperFaint },
     cta: { marginTop: 10, marginBottom: 30, padding: 14, backgroundColor: colors.lime, alignItems: 'center' },

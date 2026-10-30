@@ -175,14 +175,13 @@ function createStyles(colors: ColorTokens) {
       flex: 1,
       height: 44,
       borderRadius: radius.control,
-      borderWidth: 1,
-      borderColor: colors.lineStrong,
+      backgroundColor: colors.surfaceContainerHigh,
       alignItems: 'center',
       justifyContent: 'center'
     },
-    sexBtnOn: { borderColor: colors.lime, backgroundColor: colors.limeDim },
+    sexBtnOn: { backgroundColor: colors.primaryContainer },
     sexText: { color: colors.paperDim, fontFamily: fonts.bodySemi, fontSize: 14 },
-    sexTextOn: { color: colors.lime },
+    sexTextOn: { color: colors.onPrimaryContainer },
     field: { gap: 6 },
     label: {
       color: colors.paperFaint,
@@ -192,10 +191,8 @@ function createStyles(colors: ColorTokens) {
     },
     input: {
       height: 48,
-      borderWidth: 1,
-      borderColor: colors.lineStrong,
       borderRadius: radius.control,
-      backgroundColor: colors.panelRaised,
+      backgroundColor: colors.surfaceContainerHigh,
       color: colors.paper,
       paddingHorizontal: 12,
       fontFamily: fonts.mono,
@@ -217,13 +214,12 @@ function createStyles(colors: ColorTokens) {
       paddingHorizontal: 12,
       height: 34,
       borderRadius: radius.control,
-      borderWidth: 1,
-      borderColor: colors.lineStrong,
+      backgroundColor: colors.surfaceContainerHigh,
       alignItems: 'center',
       justifyContent: 'center'
     },
-    focusChipOn: { borderColor: colors.lime, backgroundColor: colors.limeDim },
+    focusChipOn: { backgroundColor: colors.primaryContainer },
     focusChipText: { color: colors.paperDim, fontFamily: fonts.body, fontSize: 12 },
-    focusChipTextOn: { color: colors.lime, fontFamily: fonts.bodySemi }
+    focusChipTextOn: { color: colors.onPrimaryContainer, fontFamily: fonts.bodySemi }
   });
 }

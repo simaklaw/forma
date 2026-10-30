@@ -4,12 +4,12 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
-  View
+  Text
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
+import { fonts, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
+import Md3Card from '@/components/md3/Md3Card';
 import { useT } from '@/i18n/strings';
 import { useFitPulseStore } from '@/state/useFitPulseStore';
 import { ProfileForm } from './ProfileForm';
@@ -35,7 +35,7 @@ export default function OnboardingScreen() {
           <Text style={styles.eyebrow}>FITPULSE</Text>
           <Text style={styles.title}>{t('onboardingTitle')}</Text>
           <Text style={styles.sub}>{t('onboardingSub')}</Text>
-          <View style={styles.card}>
+          <Md3Card variant="flat" padding="lg" style={styles.card}>
             <ProfileForm
               initial={{
                 weight: profile.weight,
@@ -55,7 +55,7 @@ export default function OnboardingScreen() {
                 })
               }
             />
-          </View>
+          </Md3Card>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -87,13 +87,6 @@ function createStyles(colors: ColorTokens) {
       lineHeight: 42
     },
     sub: { color: colors.paperDim, fontSize: 14, lineHeight: 21, fontFamily: fonts.body },
-    card: {
-      marginTop: spacing.md,
-      padding: spacing.lg,
-      borderRadius: radius.card,
-      borderWidth: 1,
-      borderColor: colors.line,
-      backgroundColor: colors.panel
-    }
+    card: { marginTop: spacing.md }
   });
 }
