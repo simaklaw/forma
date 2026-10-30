@@ -51,6 +51,34 @@ src/
 `.github/workflows/ci.yml` — job `eas-build-android` выключен по умолчанию,
 включите после настройки аккаунта Expo).
 
+## План апгрейда Expo / React Native (ревью-находка #17)
+
+Текущее состояние: Expo SDK **51**, RN 0.74 (2024) — платформа стареет.
+Дополнительно держим осознанный «единый react-18 мир»: react/react-dom
+18.2.0 во всём workspace через pnpm overrides + `node-linker=hoisted` в
+`.npmrc` (требование Expo при pnpm). До апгрейда **не** разносить
+react-версии между пакетами (см. PR #275).
+
+Поэтапный план — по одному SDK за шаг; каждый шаг завершается зелёным
+CI, type-check, jest и ручным smoke-тестом на устройстве; не совмещать
+с другими изменениями:
+
+1. **SDK 51 → 52** — `npx expo install expo@^52 --fix`; сверить breaking
+   changes в changelog Expo; проверить поведение New Architecture и
+   нативных модулей (healthkit, camera, notifications).
+2. **SDK 52 → 53** — повторить цикл; обновить `app.config.js` при
+   необходимости.
+3. **SDK 53 → 54** (RN 0.81+, React 19) — целевой шаг: поднять
+   react/react-dom на 19, снять pnpm overrides единого react-18 мира,
+   пересобрать lockfile (sync-lockfile подхватит), проверить, нужен ли
+   ещё `node-linker=hoisted`.
+4. На каждом шаге: локально `tsc --noEmit` + jest; EAS Build smoke
+   (job `eas-build-android` в ci.yml по умолчанию выключен — включать
+   на время шагов апгрейда).
+
+Апгрейд делать после стабилизации текущих задач; переход web-пакетов на
+React 19 — отдельным шагом после подтверждения совместимости Expo.
+
 ## AI-ассистент и приватность (BYO-ключи)
 
 AI-ассистент работает по модели bring-your-own-key: пользователь сам указывает
