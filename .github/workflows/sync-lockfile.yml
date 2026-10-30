@@ -2,7 +2,7 @@ name: Sync lockfile
 
 on:
   push:
-    branches: [ai/lockfile-sync]
+    branches: [ai/lockfile-sync, fix/react-overrides]
   workflow_dispatch:
 
 permissions:
