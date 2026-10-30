@@ -1,7 +1,6 @@
 import { Lock } from "lucide-react";
 import { Box } from "@/components/ui/box";
 import { Button } from "@/components/ui/button";
-import { Tag, Tags } from "@/components/ui/tag";
 import { EQUIP_LABEL, GOAL_LABEL, PRESENT_LABEL } from "@/lib/forma";
 import { useAppStore } from "@/lib/store";
 import type { ThemeMode } from "@/lib/types";

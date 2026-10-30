@@ -6,8 +6,11 @@ import {
   NutritionService,
   type NutritionCacheEntry,
   type NutritionCacheStore,
+  type OffFetch,
 } from './nutrition.ts';
 import { buildOpenApiDocument } from './openapi.ts';
+
+type JsonRecord = { [key: string]: JsonRecord };
 
 interface OffCall {
   url: string;
@@ -16,7 +19,7 @@ interface OffCall {
 
 function stubOff(status: number, bodyText: string) {
   const calls: OffCall[] = [];
-  const fetch = async (url: string, init: any) => {
+  const fetch: OffFetch = async (url, init) => {
     calls.push({ url, headers: init.headers });
     return {
       ok: status >= 200 && status < 300,
@@ -57,7 +60,7 @@ function makeApp(stub: ReturnType<typeof stubOff>, now?: () => number) {
   return createApp({
     store: new MemoryIdempotencyStore(),
     feed: new MemoryChangeFeed(),
-    nutrition: new NutritionService({ fetch: stub.fetch as any, now }),
+    nutrition: new NutritionService({ fetch: stub.fetch, now }),
   });
 }
 
@@ -125,7 +128,7 @@ describe('GET /api/v1/nutrition/product/:barcode', () => {
       store: new MemoryIdempotencyStore(),
       feed: new MemoryChangeFeed(),
       nutrition: new NutritionService({
-        fetch: stub.fetch as any,
+        fetch: stub.fetch,
         ttlMs: 1_000,
         now: () => clock,
       }),
@@ -140,9 +143,9 @@ describe('GET /api/v1/nutrition/product/:barcode', () => {
   });
 
   it('is documented in the OpenAPI document', () => {
-    const doc = buildOpenApiDocument() as Record<string, any>;
+    const doc = buildOpenApiDocument() as unknown as JsonRecord;
     assert.ok(doc.paths['/api/v1/nutrition/product/{barcode}']);
-    assert.ok(doc.tags.some((t: any) => t.name === 'nutrition'));
+    assert.ok(doc.tags.some((t) => t.name === 'nutrition'));
   });
 });
 
@@ -162,8 +165,8 @@ describe('NutritionService persistent store', () => {
   it('shares cache across service instances through the store', async () => {
     const stub = stubOff(200, foundBody);
     const store = new MapCacheStore();
-    const first = new NutritionService({ fetch: stub.fetch as any, store });
-    const second = new NutritionService({ fetch: stub.fetch as any, store });
+    const first = new NutritionService({ fetch: stub.fetch, store });
+    const second = new NutritionService({ fetch: stub.fetch, store });
     const a = await first.lookup(BARCODE);
     const b = await second.lookup(BARCODE);
     assert.equal(a.status, 'found');
@@ -175,7 +178,7 @@ describe('NutritionService persistent store', () => {
   it('persists not-found misses in the store', async () => {
     const stub = stubOff(200, JSON.stringify({ status: 0 }));
     const store = new MapCacheStore();
-    const svc = new NutritionService({ fetch: stub.fetch as any, store });
+    const svc = new NutritionService({ fetch: stub.fetch, store });
     const first = await svc.lookup('0000000000000');
     assert.equal(first.status, 'not_found');
     const entry = store.map.get('0000000000000');
@@ -191,7 +194,7 @@ describe('NutritionService persistent store', () => {
     const stub = stubOff(200, foundBody);
     const store = new MapCacheStore();
     const svc = new NutritionService({
-      fetch: stub.fetch as any,
+      fetch: stub.fetch,
       store,
       ttlMs: 1_000,
       now: () => clock,
@@ -214,7 +217,7 @@ describe('NutritionService persistent store', () => {
         throw new Error('store down');
       },
     };
-    const svc = new NutritionService({ fetch: stub.fetch as any, store: broken });
+    const svc = new NutritionService({ fetch: stub.fetch, store: broken });
     const res = await svc.lookup(BARCODE);
     assert.equal(res.status, 'found');
     const res2 = await svc.lookup(BARCODE);

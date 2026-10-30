@@ -9,7 +9,6 @@ import { FOODS, foodById } from "@/lib/catalog";
 import { dayMacros, MEAL_LABEL, todayKey } from "@/lib/forma";
 import { useAppStore } from "@/lib/store";
 import type { MealType } from "@/lib/types";
-import { cn } from "@/lib/utils";
 
 const MEALS: MealType[] = ["breakfast", "lunch", "dinner", "snack"];
 

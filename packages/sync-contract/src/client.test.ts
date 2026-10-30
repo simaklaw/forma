@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { createSyncClient, SyncApiError } from './client.ts';
+import { createSyncClient, SyncApiError, type SyncFetch } from './client.ts';
 
 interface RecordedCall {
   url: string;
@@ -11,7 +11,7 @@ interface RecordedCall {
 
 function stubFetch(status: number, bodyText: string) {
   const calls: RecordedCall[] = [];
-  const fetch = async (url: string, init: any) => {
+  const fetch: SyncFetch = async (url, init) => {
     calls.push({
       url,
       method: init.method,
@@ -38,7 +38,7 @@ describe('createSyncClient', () => {
     const client = createSyncClient({
       baseUrl: 'https://api.example.com/',
       token: 'jwt-token',
-      fetch: stub.fetch as any,
+      fetch: stub.fetch,
     });
     const res = await client.push({ user_id: 'u1', operations: [] });
     assert.equal(res.results.length, 1);
@@ -61,7 +61,7 @@ describe('createSyncClient', () => {
     );
     const client = createSyncClient({
       baseUrl: 'https://api.example.com',
-      fetch: stub.fetch as any,
+      fetch: stub.fetch,
     });
     const res = await client.pull({ after_change_id: 5, limit: 50 });
     assert.equal(res.next_change_id, 7);
@@ -80,7 +80,7 @@ describe('createSyncClient', () => {
     );
     const client = createSyncClient({
       baseUrl: 'http://localhost:8787',
-      fetch: stub.fetch as any,
+      fetch: stub.fetch,
     });
     await client.pull({ user_id: 'user 1', after_change_id: 0 });
     assert.equal(
@@ -103,7 +103,7 @@ describe('createSyncClient', () => {
     const client = createSyncClient({
       baseUrl: 'https://api.example.com',
       token: 't',
-      fetch: stub.fetch as any,
+      fetch: stub.fetch,
     });
     await assert.rejects(
       () => client.push({ user_id: 'u1', operations: [] }),
@@ -125,7 +125,7 @@ describe('createSyncClient', () => {
     const stub = stubFetch(502, 'bad gateway');
     const client = createSyncClient({
       baseUrl: 'https://api.example.com',
-      fetch: stub.fetch as any,
+      fetch: stub.fetch,
     });
     await assert.rejects(
       () => client.pull({ after_change_id: 0 }),
@@ -148,7 +148,7 @@ describe('createSyncClient', () => {
     );
     const client = createSyncClient({
       baseUrl: 'https://api.example.com',
-      fetch: stub.fetch as any,
+      fetch: stub.fetch,
     });
     const product = await client.nutritionProduct('3017620422003');
     assert.equal(product.name, 'Nutella');

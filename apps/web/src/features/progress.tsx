@@ -20,7 +20,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tag, Tags } from "@/components/ui/tag";
 import { Level, LevelItem } from "@/components/ui/level";
-import { Box } from "@/components/ui/box";
 import { CompareSlider } from "@/components/compare-slider";
 import { MuscleWeek } from "@/components/muscle-map";
 import { EXERCISES, FOODS, planById, planExercises } from "@/lib/catalog";
