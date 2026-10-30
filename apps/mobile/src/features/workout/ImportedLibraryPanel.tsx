@@ -337,7 +337,7 @@ export default function ImportedLibraryPanel() {
               {src ? (
                 <Image source={src} style={styles.thumb} resizeMode="cover" />
               ) : (
-                <View style={[styles.thumb, { backgroundColor: colors.ink }]} />
+                <View style={[styles.thumb, { backgroundColor: colors.surfaceContainerHigh }]} />
               )}
               <View style={styles.rowBody}>
                 <View style={styles.titleRow}>

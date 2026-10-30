@@ -133,7 +133,7 @@ export default function CustomWorkoutsPanel() {
               ) : null}
               <View style={styles.cardActions}>
                 <TouchableOpacity
-                  style={[styles.startBtn, { backgroundColor: canStart ? colors.lime : colors.line }]}
+                  style={[styles.startBtn, { backgroundColor: canStart ? colors.lime : colors.surfaceContainerHigh }]}
                   disabled={!canStart}
                   onPress={() => start(w.id)}
                   accessibilityRole="button"
@@ -521,7 +521,7 @@ function Stepper({
       <Text style={[styles.stepperLabel, { color: colors.paperDim }]}>{label}</Text>
       <View style={styles.stepperControls}>
         <TouchableOpacity
-          style={[styles.stepperBtn, { borderColor: colors.lineStrong }]}
+          style={[styles.stepperBtn, { backgroundColor: colors.surfaceContainerHigh }]}
           disabled={value <= min}
           onPress={() => onChange(Math.max(min, value - step))}
           accessibilityRole="button"
@@ -534,7 +534,7 @@ function Stepper({
           {unit ?? ''}
         </Text>
         <TouchableOpacity
-          style={[styles.stepperBtn, { borderColor: colors.lineStrong }]}
+          style={[styles.stepperBtn, { backgroundColor: colors.surfaceContainerHigh }]}
           disabled={value >= max}
           onPress={() => onChange(Math.min(max, value + step))}
           accessibilityRole="button"
