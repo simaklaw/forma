@@ -8,13 +8,10 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
-// Правила с реальными срабатываниями в коде (см. ci-logs/lint-report/lint.log):
-// остаются advisory. Когда срабатываний не останется — убрать правило
-// из списка, оно автоматически станет error.
-const WARN_RULES = new Set([
-  '@typescript-eslint/no-explicit-any',
-  '@typescript-eslint/no-unused-vars',
-]);
+// Правила, временно остающиеся advisory. Пуст — все recommended-правила
+// блокирующие; осознанные временные исключения добавлять сюда и убирать
+// по мере чистки кода.
+const WARN_RULES = new Set<string>([]);
 
 // Recommended-наборы: error по умолчанию, из WARN_RULES — warn
 // (off остаётся off).
@@ -54,6 +51,12 @@ export default tseslint.config(
     rules: {
       ...toLevel(js.configs.recommended.rules),
       ...toLevel(tsRecommendedRules),
+      // Идиома «намеренно не используется»: _-префикс аргументов
+      // и rest-siblings в деструктуризации (const { a: _, ...rest } = x).
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', ignoreRestSiblings: true },
+      ],
     },
   },
 );

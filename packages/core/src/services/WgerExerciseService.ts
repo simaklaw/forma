@@ -30,6 +30,22 @@ export interface WgerExerciseReference {
   imageUrl: string;
 }
 
+/** Raw wger exerciseinfo row (subset this service reads). */
+interface WgerRawExercise {
+  id: number;
+  name?: string;
+  category: WgerExercise["category"];
+  description?: string;
+  muscles?: WgerMuscle[];
+  equipment?: WgerEquipment[];
+  images?: Array<{ image: string }>;
+}
+
+/** Raw wger search suggestion (subset this service reads). */
+interface WgerRawSuggestion {
+  data?: { id?: number; name?: string; image?: string; image_thumbnail?: string };
+}
+
 export class WgerExerciseService {
   private static readonly BASE_URL = "https://wger.de/api/v2";
   private static readonly MEDIA_ORIGIN = "https://wger.de";
@@ -57,7 +73,7 @@ export class WgerExerciseService {
       if (!response.ok) throw new Error("Network response was not ok");
 
       const data = await response.json();
-      const results: any[] = data.results || [];
+      const results = (data?.results ?? []) as WgerRawExercise[];
       const normalized: WgerExercise[] = results.map((item) => ({
         id: item.id,
         name: item.name ?? "",
@@ -65,7 +81,7 @@ export class WgerExerciseService {
         description: item.description ? String(item.description).replace(/<[^>]*>?/gm, "") : "",
         muscles: item.muscles ?? [],
         equipment: item.equipment ?? [],
-        images: item.images ? item.images.map((img: any) => img.image) : [],
+        images: item.images ? item.images.map((img) => img.image) : [],
       }));
 
       this.cache.set(cacheKey, normalized);
@@ -97,7 +113,8 @@ export class WgerExerciseService {
       if (!response.ok) throw new Error("Network response was not ok");
 
       const data = await response.json();
-      const suggestions: any[] = Array.isArray(data?.suggestions) ? data.suggestions : [];
+      const rawSuggestions = Array.isArray(data?.suggestions) ? data.suggestions : [];
+      const suggestions = rawSuggestions as WgerRawSuggestion[];
 
       let result: WgerExerciseReference | null = null;
       for (const suggestion of suggestions) {

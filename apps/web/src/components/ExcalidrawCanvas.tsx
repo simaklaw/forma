@@ -14,12 +14,13 @@
  */
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import type { ElementType } from "react";
 import type { ExcalidrawImperativeAPI, ExcalidrawElement } from "@excalidraw/excalidraw";
 import { ExerciseReferencePanel, type ExerciseReferenceMeta } from "@/components/ExerciseReferencePanel";
 
-// Lazy load Excalidraw to reduce initial bundle size
-let ExcalidrawComponent: any = null;
-let stylesLoaded = false;
+// Lazy load Excalidraw to reduce initial bundle size.
+// ElementType — лениво загружаемый сторонний компонент; пропсы не сужаем.
+let ExcalidrawComponent: ElementType | null = null;
 
 async function loadExcalidraw() {
   if (ExcalidrawComponent) return;
@@ -30,7 +31,6 @@ async function loadExcalidraw() {
       import("@excalidraw/excalidraw/styles.css"),
     ]);
     ExcalidrawComponent = module.Excalidraw;
-    stylesLoaded = true;
   } catch (err) {
     console.warn("Failed to load Excalidraw", err);
   }
@@ -43,11 +43,11 @@ export interface ExcalidrawCanvasProps {
   /** Initial data to load into the canvas */
   initialData?: {
     elements: ExcalidrawElement[];
-    appState?: any;
+    appState?: Record<string, unknown>;
   };
   
   /** Callback when canvas elements change */
-  onChange?: (elements: ExcalidrawElement[], state: any) => void;
+  onChange?: (elements: ExcalidrawElement[], state: Record<string, unknown>) => void;
   
   /** Callback when an element is clicked */
   onElementClick?: (element: ExcalidrawElement) => void;
@@ -96,11 +96,13 @@ export const ExcalidrawCanvas = forwardRef<ExcalidrawImperativeAPI, ExcalidrawCa
         onChange?.(elements, state);
         
         // Check for recently added/clicked elements
-        const clickedElements = elements.filter((e: any) => e.customData?.clicked);
-        clickedElements.forEach((element: any) => {
+        const clickedElements = elements.filter((e) => e.customData?.clicked);
+        clickedElements.forEach((element) => {
           onElementClick(element);
           // Remove click marker
-          element.customData.clicked = false;
+          if (element.customData) {
+            element.customData.clicked = false;
+          }
         });
       });
 
