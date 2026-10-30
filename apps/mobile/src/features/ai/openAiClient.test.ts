@@ -46,6 +46,19 @@ describe('normalizeBaseUrl', () => {
     expect(normalizeBaseUrl('https://openrouter.ai/api/v1#/')).toBe('https://openrouter.ai/api/v1');
   });
 
+  it('warns when the base URL is insecure http and stays silent for https', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      expect(normalizeBaseUrl('http://192.168.0.2:8000')).toBe('http://192.168.0.2:8000/v1');
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(String(warn.mock.calls[0][0])).toContain('без шифрования');
+      expect(normalizeBaseUrl('https://api.example.com')).toBe('https://api.example.com/v1');
+      expect(warn).toHaveBeenCalledTimes(1);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
   it('rejects empty and non-http values', () => {
     expect(() => normalizeBaseUrl('')).toThrow(AiClientError);
     expect(() => normalizeBaseUrl('api.example.com')).toThrow(AiClientError);
