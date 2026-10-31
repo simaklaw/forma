@@ -1,9 +1,11 @@
 # Exercise video render scripts (salvaged)
 
-Генераторы 13 бандловых MP4/JPG клипов в `apps/web/public/exercises/`:
+Генераторы 12 бандловых MP4/JPG клипов в `apps/web/public/exercises/`:
 `pushup`, `squat`, `pullup`, `lunge`, `plank`, `dead-bug`, `chair-dip`,
-`glute-bridge`, `row-band`, `hip-thrust`, `shoulder-press`, `side-plank`,
-`stomach-vacuum`.
+`glute-bridge`, `row-band`, `hip-thrust`, `shoulder-press`, `side-plank`.
+
+Нелицензированный клип `stomach-vacuum.mp4` (YouTube-паттерн имени файла,
+без подтверждённого источника) удалён из бандла (решение владельца, ревью #16).
 
 Перенесены из замороженного дубль-репозитория `simaklaw/Forma-fitpulse-google`
 перед его удалением (issue #155) — это единственное место, откуда бандловые

@@ -13,7 +13,6 @@ generated asset family records its source, license, and obligations, and CI
 | Dataset GIF metadata (names, categories, EN instructions) | `exerciseGifManifest.generated.ts` | [hasaneyldrm/exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset) | MIT (dataset data); per-entry `sourceUrl`, `matchScore`. |
 | Dataset GIF/JPG media | `assets/exercises/dataset/**`, remote `gifUrl`/`thumbUrl` | hasaneyldrm/exercises-dataset media files | **© Gym visual** — see the action item below. |
 | Bundled MP4 clips + JPG posters | `assets/exercises/*.mp4|.jpg` | own pipeline (`scripts/exercise-videos/`, salvaged from the former duplicate repo) | project-owned. |
-| `stomach-vacuum.mp4` | `apps/web/public/exercises/stomach-vacuum.mp4` (+ mobile symlink) | restored from git history by `.github/workflows/restore-stomach-vacuum.yml` (source commit `f6cba20`, «Add files via upload») | **unverified — owner decision required, see the section below.** |
 | wger exercise photo references | runtime `wgerSearchTerm` lookups | [wger.de](https://wger.de) / [wger GitHub](https://github.com/wger-project/wger) | AGPL-3.0 server; runtime references only, no bundled assets. |
 | Search normalization pattern | `apps/mobile/src/lib/normalizeSearch.ts` | [bryllim/workout-guide](https://github.com/bryllim/workout-guide) (MIT) | adapted `normalizeSearchText`; see file header. |
 | Manifest validation pattern | `exerciseMediaIntegrity.test.ts` | bryllim/workout-guide `scripts/validate-catalog.mjs` (MIT) | adapted to jest + filesystem checks. |
@@ -39,22 +38,13 @@ use, and the dataset's 180×180 redistribution resolution limit applies.
 This document is the tracking point for that legal review.
 
 
-## ⚠️ stomach-vacuum.mp4 — owner decision required
+## ✅ stomach-vacuum.mp4 — removed (owner decision, review finding #16)
 
-The `stomach-vacuum.mp4` clip (1.6 MB) was not produced by the project's own
-pipeline: it was committed once via a web upload (commit `f6cba20`, message
-«Add files via upload») and is re-restored from git history by
-`.github/workflows/restore-stomach-vacuum.yml`. The original filename
-(`Stomach Vacuums Exercise [ Exercise Library ](720P_HD).mp4`) follows the
-typical naming of a YouTube download, and no license or permission is
-documented for it.
-
-Unlike the other bundled clips (~50–140 KB, rendered by
-`scripts/exercise-videos/`), this asset cannot be claimed as project-owned.
-Before any release that ships it, FitPulse must either:
-
-1. verify the source and obtain a license/permission for the video, or
-2. replace it with a clip rendered by the project's own pipeline, or
-3. remove it from the shipped assets.
-
-This document is the tracking point for that decision.
+The unlicensed `stomach-vacuum.mp4` clip (web upload, YouTube-style filename,
+no documented license) was removed from the shipped assets: the file in
+`apps/web/public/exercises/`, the `apps/mobile/assets/exercises/` symlink, the
+restore workflow `.github/workflows/restore-stomach-vacuum.yml`, the mobile
+media map (`exerciseMedia.ts`) and the `lib-stomach-vacuum` bundled-video
+mapping. The imported library entry stays; it no longer resolves to a bundled
+clip. The blob still exists in git history — a history rewrite would be
+required to purge it completely.

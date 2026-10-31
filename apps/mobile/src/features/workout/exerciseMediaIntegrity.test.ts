@@ -18,7 +18,7 @@ import { IMPORTED_EXERCISE_LIBRARY } from './importedExerciseLibrary.generated';
 const mobileRoot = resolve(__dirname, '../../..'); // apps/mobile
 const webPublic = resolve(mobileRoot, '../web/public'); // apps/web/public
 
-/** Mirrors EXERCISE_VIDEOS keys in exerciseMedia.ts (all 13 ExerciseMediaKey). */
+/** Mirrors EXERCISE_VIDEOS keys in exerciseMedia.ts (all 12 ExerciseMediaKey). */
 const BUNDLED_VIDEO_KEYS = [
   'pushup',
   'squat',
@@ -31,11 +31,10 @@ const BUNDLED_VIDEO_KEYS = [
   'row-band',
   'hip-thrust',
   'shoulder-press',
-  'side-plank',
-  'stomach-vacuum'
+  'side-plank'
 ] as const;
 
-/** Mirrors EXERCISE_THUMBNAILS keys in exerciseMedia.ts (stomach-vacuum has no poster). */
+/** Mirrors EXERCISE_THUMBNAILS keys in exerciseMedia.ts (all 12 keys have posters). */
 const BUNDLED_THUMB_KEYS = [
   'pushup',
   'squat',
