@@ -1,0 +1,792 @@
+
+> @forma/mobile@0.1.0 test /home/runner/work/forma/forma/apps/mobile
+> jest "--ci" "--passWithNoTests"
+
+PASS src/engines/WorkoutStats.test.ts
+PASS src/features/workout/program/programEngine.test.ts
+PASS src/state/useFitPulseStore.test.ts
+FAIL src/features/workout/session/ActiveSessionController.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /home/runner/work/forma/forma/node_modules/expo/virtual/env.js:2
+    export const env = process.env;
+    ^^^^^^
+
+    SyntaxError: Unexpected token 'export'
+
+    [0m [90m 10 |[39m [36mimport[39m { applySessionProjection } [36mfrom[39m [32m'./applySessionProjection'[39m[33m;[39m
+     [90m 11 |[39m
+    [31m[1m>[22m[39m[90m 12 |[39m [36mconst[39m log [33m=[39m createLogger([32m'outbox-bootstrap'[39m)[33m;[39m
+     [90m    |[39m             [31m[1m^[22m[39m
+     [90m 13 |[39m
+     [90m 14 |[39m [36mlet[39m started [33m=[39m [36mfalse[39m[33m;[39m
+     [90m 15 |[39m [36mlet[39m appStateSub[33m:[39m [33mNativeEventSubscription[39m [33m|[39m [36mnull[39m [33m=[39m [36mnull[39m[33m;[39m[0m
+
+      at Runtime.createScriptFromCode (../../node_modules/jest-runtime/build/index.js:1505:14)
+      at Object.<anonymous> (src/features/workout/data/bootstrapOutboxDrain.ts:12:13)
+      at Object.require (src/features/workout/data/index.ts:29:1)
+      at Object.require (src/features/workout/session/ActiveSessionController.test.ts:1:1)
+
+PASS src/features/ai/workoutContext.test.ts
+PASS src/features/sync/syncPullService.test.ts
+  ● Console
+
+    console.info
+      [FitPulse:sync-auth] sync credentials ready { user_id: '11111111-2222-5333-8444-555555555555', revalidated: false }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:sync-pull] pull applied { applied: 3, skipped: 0, pages: 2, cursor: 3 }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:sync-auth] sync credentials ready { user_id: '11111111-2222-5333-8444-555555555555', revalidated: false }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:sync-pull] pull applied { applied: 1, skipped: 1, pages: 1, cursor: 2 }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:sync-auth] sync credentials ready { user_id: '11111111-2222-5333-8444-555555555555', revalidated: false }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:sync-pull] pull applied { applied: 1, skipped: 0, pages: 1, cursor: 6 }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.warn
+      [FitPulse:sync-auth] sync register failed; staying offline { err: 'register_failed_500' }
+
+    [0m [90m 31 |[39m       [36mbreak[39m[33m;[39m
+     [90m 32 |[39m     [36mcase[39m [32m'warn'[39m[33m:[39m
+    [31m[1m>[22m[39m[90m 33 |[39m       console[33m.[39mwarn([33m...[39margs)[33m;[39m
+     [90m    |[39m                   [31m[1m^[22m[39m
+     [90m 34 |[39m       [36mbreak[39m[33m;[39m
+     [90m 35 |[39m     [36mcase[39m [32m'error'[39m[33m:[39m
+     [90m 36 |[39m       console[33m.[39merror([33m...[39margs)[33m;[39m[0m
+
+      at apply (src/core/logger.ts:33:19)
+      at Object.emit (src/core/logger.ts:46:48)
+      at warn (src/features/auth/syncAuth.ts:161:9)
+          at Generator.throw (<anonymous>)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _throw (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
+
+    console.info
+      [FitPulse:sync-auth] sync credentials ready { user_id: '11111111-2222-5333-8444-555555555555', revalidated: false }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.warn
+      [FitPulse:sync-pull] pull interrupted; cursor kept { err: 'pull_failed_503', pages: 1 }
+
+    [0m [90m 31 |[39m       [36mbreak[39m[33m;[39m
+     [90m 32 |[39m     [36mcase[39m [32m'warn'[39m[33m:[39m
+    [31m[1m>[22m[39m[90m 33 |[39m       console[33m.[39mwarn([33m...[39margs)[33m;[39m
+     [90m    |[39m                   [31m[1m^[22m[39m
+     [90m 34 |[39m       [36mbreak[39m[33m;[39m
+     [90m 35 |[39m     [36mcase[39m [32m'error'[39m[33m:[39m
+     [90m 36 |[39m       console[33m.[39merror([33m...[39margs)[33m;[39m[0m
+
+      at apply (src/core/logger.ts:33:19)
+      at Object.emit (src/core/logger.ts:46:48)
+      at SyncPullService.warn (src/features/sync/syncPullService.ts:170:11)
+          at Generator.throw (<anonymous>)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _throw (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
+
+    console.info
+      [FitPulse:sync-pull] pull applied { applied: 1, skipped: 0, pages: 1, cursor: 1 }
+
+      at apply (src/core/logger.ts:30:19)
+          at Generator.throw (<anonymous>)
+
+PASS src/features/workout/loadProgression.test.ts
+PASS src/features/workout/data/HttpOutboxTransport.test.ts
+  ● Console
+
+    console.warn
+      [FitPulse:http-outbox] outbox send skipped: missing userId or token
+
+    [0m [90m 31 |[39m       [36mbreak[39m[33m;[39m
+     [90m 32 |[39m     [36mcase[39m [32m'warn'[39m[33m:[39m
+    [31m[1m>[22m[39m[90m 33 |[39m       console[33m.[39mwarn([33m...[39margs)[33m;[39m
+     [90m    |[39m                   [31m[1m^[22m[39m
+     [90m 34 |[39m       [36mbreak[39m[33m;[39m
+     [90m 35 |[39m     [36mcase[39m [32m'error'[39m[33m:[39m
+     [90m 36 |[39m       console[33m.[39merror([33m...[39margs)[33m;[39m[0m
+
+      at apply (src/core/logger.ts:33:19)
+      at Object.emit (src/core/logger.ts:46:48)
+      at Object.warn (src/features/workout/data/HttpOutboxTransport.ts:125:13)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at ../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+      at Object.apply [as send] (src/features/workout/data/HttpOutboxTransport.ts:123:15)
+      at Object.send (src/features/workout/data/HttpOutboxTransport.test.ts:85:25)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at ../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+    console.warn
+      [FitPulse:http-outbox] outbox send skipped: missing userId or token
+
+    [0m [90m 31 |[39m       [36mbreak[39m[33m;[39m
+     [90m 32 |[39m     [36mcase[39m [32m'warn'[39m[33m:[39m
+    [31m[1m>[22m[39m[90m 33 |[39m       console[33m.[39mwarn([33m...[39margs)[33m;[39m
+     [90m    |[39m                   [31m[1m^[22m[39m
+     [90m 34 |[39m       [36mbreak[39m[33m;[39m
+     [90m 35 |[39m     [36mcase[39m [32m'error'[39m[33m:[39m
+     [90m 36 |[39m       console[33m.[39merror([33m...[39margs)[33m;[39m[0m
+
+      at apply (src/core/logger.ts:33:19)
+      at Object.emit (src/core/logger.ts:46:48)
+      at Object.warn (src/features/workout/data/HttpOutboxTransport.ts:125:13)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at ../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+      at Object.apply [as send] (src/features/workout/data/HttpOutboxTransport.ts:123:15)
+      at Object.send (src/features/workout/data/HttpOutboxTransport.test.ts:93:28)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+    console.warn
+      [FitPulse:http-outbox] resolveEnrichment failed; pushing thin payload {
+        sessionId: '00000000-0000-7000-8000-0000000000s1',
+        err: 'sqlite locked'
+      }
+
+    [0m [90m 31 |[39m       [36mbreak[39m[33m;[39m
+     [90m 32 |[39m     [36mcase[39m [32m'warn'[39m[33m:[39m
+    [31m[1m>[22m[39m[90m 33 |[39m       console[33m.[39mwarn([33m...[39margs)[33m;[39m
+     [90m    |[39m                   [31m[1m^[22m[39m
+     [90m 34 |[39m       [36mbreak[39m[33m;[39m
+     [90m 35 |[39m     [36mcase[39m [32m'error'[39m[33m:[39m
+     [90m 36 |[39m       console[33m.[39merror([33m...[39margs)[33m;[39m[0m
+
+      at apply (src/core/logger.ts:33:19)
+      at Object.emit (src/core/logger.ts:46:48)
+      at Object.warn (src/features/workout/data/HttpOutboxTransport.ts:154:13)
+          at Generator.throw (<anonymous>)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _throw (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
+
+PASS src/features/workout/data/sqlite/SqliteSessionRepository.txn.test.ts
+PASS src/features/workout/data/SessionRepository.contract.test.ts
+PASS src/features/workout/importedLibraryFilter.test.ts
+PASS src/features/workout/customWorkouts.test.ts
+PASS src/engines/shareSummary.test.ts
+PASS src/features/workout/ExerciseMediaService.test.ts
+PASS src/features/workout/data/SessionCommandService.test.ts
+PASS src/engines/MetabolicEngine.test.ts
+PASS src/features/auth/syncAuth.test.ts
+  ● Console
+
+    console.info
+      [FitPulse:sync-auth] sync credentials ready { user_id: '11111111-2222-5333-8444-555555555555', revalidated: false }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:sync-auth] sync credentials ready { user_id: '11111111-2222-5333-8444-555555555555', revalidated: false }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.info
+      [FitPulse:sync-auth] sync credentials ready { user_id: '11111111-2222-5333-8444-555555555555', revalidated: true }
+
+      at apply (src/core/logger.ts:30:19)
+
+    console.warn
+      [FitPulse:sync-auth] sync register failed; staying offline { err: 'register_failed_400' }
+
+    [0m [90m 31 |[39m       [36mbreak[39m[33m;[39m
+     [90m 32 |[39m     [36mcase[39m [32m'warn'[39m[33m:[39m
+    [31m[1m>[22m[39m[90m 33 |[39m       console[33m.[39mwarn([33m...[39margs)[33m;[39m
+     [90m    |[39m                   [31m[1m^[22m[39m
+     [90m 34 |[39m       [36mbreak[39m[33m;[39m
+     [90m 35 |[39m     [36mcase[39m [32m'error'[39m[33m:[39m
+     [90m 36 |[39m       console[33m.[39merror([33m...[39margs)[33m;[39m[0m
+
+      at apply (src/core/logger.ts:33:19)
+      at Object.emit (src/core/logger.ts:46:48)
+      at warn (src/features/auth/syncAuth.ts:161:9)
+          at Generator.throw (<anonymous>)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _throw (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
+
+PASS src/core/theme/themeContrast.test.ts
+PASS src/features/workout/exerciseMediaIntegrity.test.ts
+PASS src/components/md3/md3Surface.test.ts
+PASS src/features/workout/importedLibrarySchema.test.ts
+PASS src/features/workout/program/readyPrograms.test.ts
+PASS src/features/ai/openAiClient.test.ts
+PASS src/features/workout/lastScheme.test.ts
+PASS src/engines/exerciseGoals.test.ts
+PASS src/features/workout/data/sqlite/runMigrations.test.ts
+PASS src/engines/streakFreeze.test.ts
+PASS src/engines/ecoStats.test.ts
+PASS src/features/ai/useAiAssistantStore.test.ts
+PASS src/engines/VoiceCuesEngine.test.ts
+PASS src/features/workout/exerciseFigure.test.ts
+PASS src/state/useCustomWorkoutStore.test.ts
+PASS src/features/backup/backupModules.test.ts
+PASS src/features/auth/oidcClient.test.ts
+PASS src/features/nutrition/labelScan.test.ts
+PASS src/features/workout/warmup.test.ts
+PASS src/features/activities/metActivities.test.ts
+PASS src/features/import/matchGymExercises.test.ts
+PASS src/features/workout/catalogIntegrity.test.ts
+PASS src/features/workout/session/sequentialStep.test.ts
+PASS src/features/nutrition/nutritionTrends.test.ts
+PASS src/services/WgerExerciseService.test.ts
+  ● Console
+
+    console.warn
+      WgerExerciseService: image search failed for unique-term-5 Error: offline
+          at Object.<anonymous> (/home/runner/work/forma/forma/apps/mobile/src/services/WgerExerciseService.test.ts:51:61)
+          at Generator.next (<anonymous>)
+          at asyncGeneratorStep (/home/runner/work/forma/forma/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+          at _next (/home/runner/work/forma/forma/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+          at /home/runner/work/forma/forma/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+          at new Promise (<anonymous>)
+          at Object.<anonymous> (/home/runner/work/forma/forma/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+          at Promise.then.completed (/home/runner/work/forma/forma/node_modules/jest-circus/build/utils.js:298:28)
+          at new Promise (<anonymous>)
+          at callAsyncCircusFn (/home/runner/work/forma/forma/node_modules/jest-circus/build/utils.js:231:10)
+          at _callCircusTest (/home/runner/work/forma/forma/node_modules/jest-circus/build/run.js:316:40)
+          at processTicksAndRejections (node:internal/process/task_queues:103:5)
+          at _runTest (/home/runner/work/forma/forma/node_modules/jest-circus/build/run.js:252:3)
+          at _runTestsForDescribeBlock (/home/runner/work/forma/forma/node_modules/jest-circus/build/run.js:126:9)
+          at _runTestsForDescribeBlock (/home/runner/work/forma/forma/node_modules/jest-circus/build/run.js:121:9)
+          at run (/home/runner/work/forma/forma/node_modules/jest-circus/build/run.js:71:3)
+          at runAndTransformResultsToJestFormat (/home/runner/work/forma/forma/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+          at jestAdapter (/home/runner/work/forma/forma/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+          at runTestInternal (/home/runner/work/forma/forma/node_modules/jest-runner/build/runTest.js:367:16)
+          at runTest (/home/runner/work/forma/forma/node_modules/jest-runner/build/runTest.js:444:34)
+          at Object.worker (/home/runner/work/forma/forma/node_modules/jest-runner/build/testWorker.js:106:12)
+
+    [0m [90m 131 |[39m       [36mreturn[39m result[33m;[39m
+     [90m 132 |[39m     } [36mcatch[39m (error) {
+    [31m[1m>[22m[39m[90m 133 |[39m       console[33m.[39mwarn([32m"WgerExerciseService: image search failed for"[39m[33m,[39m term[33m,[39m error)[33m;[39m
+     [90m     |[39m               [31m[1m^[22m[39m
+     [90m 134 |[39m       [36mthis[39m[33m.[39mimageCache[33m.[39m[36mset[39m(cacheKey[33m,[39m [36mnull[39m)[33m;[39m
+     [90m 135 |[39m       [36mreturn[39m [36mnull[39m[33m;[39m
+     [90m 136 |[39m     }[0m
+
+      at Function.warn (../../packages/core/src/services/WgerExerciseService.ts:133:15)
+          at Generator.throw (<anonymous>)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _throw (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
+
+    console.warn
+      WgerExerciseService: image search failed for unique-term-6 Error: Network response was not ok
+          at Function.<anonymous> (/home/runner/work/forma/forma/packages/core/src/services/WgerExerciseService.ts:113:31)
+          at Generator.next (<anonymous>)
+          at asyncGeneratorStep (/home/runner/work/forma/forma/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+          at _next (/home/runner/work/forma/forma/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+          at processTicksAndRejections (node:internal/process/task_queues:103:5)
+
+    [0m [90m 131 |[39m       [36mreturn[39m result[33m;[39m
+     [90m 132 |[39m     } [36mcatch[39m (error) {
+    [31m[1m>[22m[39m[90m 133 |[39m       console[33m.[39mwarn([32m"WgerExerciseService: image search failed for"[39m[33m,[39m term[33m,[39m error)[33m;[39m
+     [90m     |[39m               [31m[1m^[22m[39m
+     [90m 134 |[39m       [36mthis[39m[33m.[39mimageCache[33m.[39m[36mset[39m(cacheKey[33m,[39m [36mnull[39m)[33m;[39m
+     [90m 135 |[39m       [36mreturn[39m [36mnull[39m[33m;[39m
+     [90m 136 |[39m     }[0m
+
+      at Function.warn (../../packages/core/src/services/WgerExerciseService.ts:133:15)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+PASS src/features/workout/exerciseRealMedia.test.ts
+PASS src/features/nutrition/recentFoods.test.ts
+PASS src/features/workout/workoutResult.test.ts
+PASS src/features/workout/dayPlanOverrides.test.ts
+PASS src/features/health/mapWorkoutToHealthKit.test.ts
+PASS src/state/useThemeStore.test.ts
+PASS src/features/workout/exercisePatterns.test.ts
+PASS src/state/useWorkoutRemindersStore.test.ts
+PASS src/features/workout/restTimerPhase.test.ts
+PASS src/features/workout/exerciseSwaps.test.ts
+PASS src/features/workout/catalogBrowser.test.ts
+PASS src/features/ai/nutritionContext.test.ts
+PASS src/features/workout/workoutScreenHelpers.test.ts
+FAIL src/features/workout/data/OutboxDrainService.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /home/runner/work/forma/forma/node_modules/expo/virtual/env.js:2
+    export const env = process.env;
+    ^^^^^^
+
+    SyntaxError: Unexpected token 'export'
+
+    [0m [90m 10 |[39m [36mimport[39m { applySessionProjection } [36mfrom[39m [32m'./applySessionProjection'[39m[33m;[39m
+     [90m 11 |[39m
+    [31m[1m>[22m[39m[90m 12 |[39m [36mconst[39m log [33m=[39m createLogger([32m'outbox-bootstrap'[39m)[33m;[39m
+     [90m    |[39m             [31m[1m^[22m[39m
+     [90m 13 |[39m
+     [90m 14 |[39m [36mlet[39m started [33m=[39m [36mfalse[39m[33m;[39m
+     [90m 15 |[39m [36mlet[39m appStateSub[33m:[39m [33mNativeEventSubscription[39m [33m|[39m [36mnull[39m [33m=[39m [36mnull[39m[33m;[39m[0m
+
+      at Runtime.createScriptFromCode (../../node_modules/jest-runtime/build/index.js:1505:14)
+      at Object.<anonymous> (src/features/workout/data/bootstrapOutboxDrain.ts:12:13)
+      at Object.require (src/features/workout/data/index.ts:29:1)
+      at Object.require (src/features/workout/session/ActiveSessionController.ts:4:1)
+      at Object.require (src/features/workout/data/OutboxDrainService.test.ts:8:1)
+
+PASS src/features/ai/providerPresets.test.ts
+PASS src/features/workout/data/sessionProjections.test.ts
+PASS src/lib/normalizeSearch.test.ts
+PASS src/features/workout/sessionActionGuard.test.ts
+PASS src/features/workout/exerciseMediaSelection.test.ts
+PASS src/core/theme/tokens.test.ts
+FAIL src/features/workout/session/hydrateSessionReadModel.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /home/runner/work/forma/forma/node_modules/expo/virtual/env.js:2
+    export const env = process.env;
+    ^^^^^^
+
+    SyntaxError: Unexpected token 'export'
+
+    [0m [90m 10 |[39m [36mimport[39m { applySessionProjection } [36mfrom[39m [32m'./applySessionProjection'[39m[33m;[39m
+     [90m 11 |[39m
+    [31m[1m>[22m[39m[90m 12 |[39m [36mconst[39m log [33m=[39m createLogger([32m'outbox-bootstrap'[39m)[33m;[39m
+     [90m    |[39m             [31m[1m^[22m[39m
+     [90m 13 |[39m
+     [90m 14 |[39m [36mlet[39m started [33m=[39m [36mfalse[39m[33m;[39m
+     [90m 15 |[39m [36mlet[39m appStateSub[33m:[39m [33mNativeEventSubscription[39m [33m|[39m [36mnull[39m [33m=[39m [36mnull[39m[33m;[39m[0m
+
+      at Runtime.createScriptFromCode (../../node_modules/jest-runtime/build/index.js:1505:14)
+      at Object.<anonymous> (src/features/workout/data/bootstrapOutboxDrain.ts:12:13)
+      at Object.require (src/features/workout/data/index.ts:29:1)
+      at Object.require (src/features/workout/session/hydrateSessionReadModel.test.ts:1:1)
+
+PASS src/engines/voiceCueEvents.test.ts
+PASS src/features/health/mapWorkoutToHealth.test.ts
+PASS src/features/sync/workoutSessionChangeApplier.test.ts
+PASS src/components/musclePickerGroups.test.ts
+PASS src/features/workout/session/planToSnapshots.test.ts
+PASS src/features/nutrition/dailyMicros.test.ts
+PASS src/features/workout/importedExerciseBridge.test.ts
+PASS src/lib/coachSnapshot.test.ts
+PASS src/engines/RestTimerEngine.test.ts
+PASS src/features/workout/exerciseMeasures.test.ts
+PASS src/engines/RulesLocalAITrainer.test.ts
+PASS src/state/useSessionFeedbackStore.test.ts
+PASS src/components/muscleLoadGroups.test.ts
+PASS src/features/workout/sessionKeepAwake.test.ts
+PASS src/features/nutrition/barcodeFilter.test.ts
+PASS src/engines/estimateWorkoutBurn.test.ts
+PASS src/components/muscleViews.test.ts
+PASS src/features/ai/contextHash.test.ts
+PASS src/features/workout/data/ids.test.ts
+PASS src/features/workout/sexPlan.test.ts
+PASS src/features/nutrition/ownFoods.test.ts
+PASS src/state/useVoiceCuesStore.test.ts
+PASS src/services/LlamaModelService.test.ts
+PASS src/features/workout/catalog.test.ts
+FAIL src/features/workout/data/bootstrapOutboxDrain.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /home/runner/work/forma/forma/node_modules/expo/virtual/env.js:2
+    export const env = process.env;
+    ^^^^^^
+
+    SyntaxError: Unexpected token 'export'
+
+    [0m [90m 10 |[39m [36mimport[39m { applySessionProjection } [36mfrom[39m [32m'./applySessionProjection'[39m[33m;[39m
+     [90m 11 |[39m
+    [31m[1m>[22m[39m[90m 12 |[39m [36mconst[39m log [33m=[39m createLogger([32m'outbox-bootstrap'[39m)[33m;[39m
+     [90m    |[39m             [31m[1m^[22m[39m
+     [90m 13 |[39m
+     [90m 14 |[39m [36mlet[39m started [33m=[39m [36mfalse[39m[33m;[39m
+     [90m 15 |[39m [36mlet[39m appStateSub[33m:[39m [33mNativeEventSubscription[39m [33m|[39m [36mnull[39m [33m=[39m [36mnull[39m[33m;[39m[0m
+
+      at Runtime.createScriptFromCode (../../node_modules/jest-runtime/build/index.js:1505:14)
+      at Object.<anonymous> (src/features/workout/data/bootstrapOutboxDrain.ts:12:13)
+      at Object.require (src/features/workout/data/bootstrapOutboxDrain.test.ts:8:1)
+
+PASS src/features/workout/session/clearDayReadModel.test.ts
+PASS src/lib/lastWorkoutFromLogs.test.ts
+PASS src/state/useStreakFreezeStore.test.ts
+PASS src/engines/sessionBurn.test.ts
+PASS src/features/workout/exerciseFavorites.test.ts
+PASS src/i18n/strings.test.ts
+PASS src/features/workout/data/personalRecords.test.ts
+PASS src/lib/techniqueCues.test.ts
+FAIL src/features/workout/session/dayTemplate.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /home/runner/work/forma/forma/node_modules/expo/virtual/env.js:2
+    export const env = process.env;
+    ^^^^^^
+
+    SyntaxError: Unexpected token 'export'
+
+    [0m [90m 10 |[39m [36mimport[39m { applySessionProjection } [36mfrom[39m [32m'./applySessionProjection'[39m[33m;[39m
+     [90m 11 |[39m
+    [31m[1m>[22m[39m[90m 12 |[39m [36mconst[39m log [33m=[39m createLogger([32m'outbox-bootstrap'[39m)[33m;[39m
+     [90m    |[39m             [31m[1m^[22m[39m
+     [90m 13 |[39m
+     [90m 14 |[39m [36mlet[39m started [33m=[39m [36mfalse[39m[33m;[39m
+     [90m 15 |[39m [36mlet[39m appStateSub[33m:[39m [33mNativeEventSubscription[39m [33m|[39m [36mnull[39m [33m=[39m [36mnull[39m[33m;[39m[0m
+
+      at Runtime.createScriptFromCode (../../node_modules/jest-runtime/build/index.js:1505:14)
+      at Object.<anonymous> (src/features/workout/data/bootstrapOutboxDrain.ts:12:13)
+      at Object.require (src/features/workout/data/index.ts:29:1)
+      at Object.require (src/features/workout/session/ActiveSessionController.ts:4:1)
+      at Object.require (src/features/workout/session/dayTemplate.test.ts:1:1)
+
+Summary of all failing tests
+FAIL src/features/workout/session/ActiveSessionController.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /home/runner/work/forma/forma/node_modules/expo/virtual/env.js:2
+    export const env = process.env;
+    ^^^^^^
+
+    SyntaxError: Unexpected token 'export'
+
+    [0m [90m 10 |[39m [36mimport[39m { applySessionProjection } [36mfrom[39m [32m'./applySessionProjection'[39m[33m;[39m
+     [90m 11 |[39m
+    [31m[1m>[22m[39m[90m 12 |[39m [36mconst[39m log [33m=[39m createLogger([32m'outbox-bootstrap'[39m)[33m;[39m
+     [90m    |[39m             [31m[1m^[22m[39m
+     [90m 13 |[39m
+     [90m 14 |[39m [36mlet[39m started [33m=[39m [36mfalse[39m[33m;[39m
+     [90m 15 |[39m [36mlet[39m appStateSub[33m:[39m [33mNativeEventSubscription[39m [33m|[39m [36mnull[39m [33m=[39m [36mnull[39m[33m;[39m[0m
+
+      at Runtime.createScriptFromCode (../../node_modules/jest-runtime/build/index.js:1505:14)
+      at Object.<anonymous> (src/features/workout/data/bootstrapOutboxDrain.ts:12:13)
+      at Object.require (src/features/workout/data/index.ts:29:1)
+      at Object.require (src/features/workout/session/ActiveSessionController.test.ts:1:1)
+
+FAIL src/features/workout/data/OutboxDrainService.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /home/runner/work/forma/forma/node_modules/expo/virtual/env.js:2
+    export const env = process.env;
+    ^^^^^^
+
+    SyntaxError: Unexpected token 'export'
+
+    [0m [90m 10 |[39m [36mimport[39m { applySessionProjection } [36mfrom[39m [32m'./applySessionProjection'[39m[33m;[39m
+     [90m 11 |[39m
+    [31m[1m>[22m[39m[90m 12 |[39m [36mconst[39m log [33m=[39m createLogger([32m'outbox-bootstrap'[39m)[33m;[39m
+     [90m    |[39m             [31m[1m^[22m[39m
+     [90m 13 |[39m
+     [90m 14 |[39m [36mlet[39m started [33m=[39m [36mfalse[39m[33m;[39m
+     [90m 15 |[39m [36mlet[39m appStateSub[33m:[39m [33mNativeEventSubscription[39m [33m|[39m [36mnull[39m [33m=[39m [36mnull[39m[33m;[39m[0m
+
+      at Runtime.createScriptFromCode (../../node_modules/jest-runtime/build/index.js:1505:14)
+      at Object.<anonymous> (src/features/workout/data/bootstrapOutboxDrain.ts:12:13)
+      at Object.require (src/features/workout/data/index.ts:29:1)
+      at Object.require (src/features/workout/session/ActiveSessionController.ts:4:1)
+      at Object.require (src/features/workout/data/OutboxDrainService.test.ts:8:1)
+
+FAIL src/features/workout/session/hydrateSessionReadModel.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /home/runner/work/forma/forma/node_modules/expo/virtual/env.js:2
+    export const env = process.env;
+    ^^^^^^
+
+    SyntaxError: Unexpected token 'export'
+
+    [0m [90m 10 |[39m [36mimport[39m { applySessionProjection } [36mfrom[39m [32m'./applySessionProjection'[39m[33m;[39m
+     [90m 11 |[39m
+    [31m[1m>[22m[39m[90m 12 |[39m [36mconst[39m log [33m=[39m createLogger([32m'outbox-bootstrap'[39m)[33m;[39m
+     [90m    |[39m             [31m[1m^[22m[39m
+     [90m 13 |[39m
+     [90m 14 |[39m [36mlet[39m started [33m=[39m [36mfalse[39m[33m;[39m
+     [90m 15 |[39m [36mlet[39m appStateSub[33m:[39m [33mNativeEventSubscription[39m [33m|[39m [36mnull[39m [33m=[39m [36mnull[39m[33m;[39m[0m
+
+      at Runtime.createScriptFromCode (../../node_modules/jest-runtime/build/index.js:1505:14)
+      at Object.<anonymous> (src/features/workout/data/bootstrapOutboxDrain.ts:12:13)
+      at Object.require (src/features/workout/data/index.ts:29:1)
+      at Object.require (src/features/workout/session/hydrateSessionReadModel.test.ts:1:1)
+
+FAIL src/features/workout/data/bootstrapOutboxDrain.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /home/runner/work/forma/forma/node_modules/expo/virtual/env.js:2
+    export const env = process.env;
+    ^^^^^^
+
+    SyntaxError: Unexpected token 'export'
+
+    [0m [90m 10 |[39m [36mimport[39m { applySessionProjection } [36mfrom[39m [32m'./applySessionProjection'[39m[33m;[39m
+     [90m 11 |[39m
+    [31m[1m>[22m[39m[90m 12 |[39m [36mconst[39m log [33m=[39m createLogger([32m'outbox-bootstrap'[39m)[33m;[39m
+     [90m    |[39m             [31m[1m^[22m[39m
+     [90m 13 |[39m
+     [90m 14 |[39m [36mlet[39m started [33m=[39m [36mfalse[39m[33m;[39m
+     [90m 15 |[39m [36mlet[39m appStateSub[33m:[39m [33mNativeEventSubscription[39m [33m|[39m [36mnull[39m [33m=[39m [36mnull[39m[33m;[39m[0m
+
+      at Runtime.createScriptFromCode (../../node_modules/jest-runtime/build/index.js:1505:14)
+      at Object.<anonymous> (src/features/workout/data/bootstrapOutboxDrain.ts:12:13)
+      at Object.require (src/features/workout/data/bootstrapOutboxDrain.test.ts:8:1)
+
+FAIL src/features/workout/session/dayTemplate.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    /home/runner/work/forma/forma/node_modules/expo/virtual/env.js:2
+    export const env = process.env;
+    ^^^^^^
+
+    SyntaxError: Unexpected token 'export'
+
+    [0m [90m 10 |[39m [36mimport[39m { applySessionProjection } [36mfrom[39m [32m'./applySessionProjection'[39m[33m;[39m
+     [90m 11 |[39m
+    [31m[1m>[22m[39m[90m 12 |[39m [36mconst[39m log [33m=[39m createLogger([32m'outbox-bootstrap'[39m)[33m;[39m
+     [90m    |[39m             [31m[1m^[22m[39m
+     [90m 13 |[39m
+     [90m 14 |[39m [36mlet[39m started [33m=[39m [36mfalse[39m[33m;[39m
+     [90m 15 |[39m [36mlet[39m appStateSub[33m:[39m [33mNativeEventSubscription[39m [33m|[39m [36mnull[39m [33m=[39m [36mnull[39m[33m;[39m[0m
+
+      at Runtime.createScriptFromCode (../../node_modules/jest-runtime/build/index.js:1505:14)
+      at Object.<anonymous> (src/features/workout/data/bootstrapOutboxDrain.ts:12:13)
+      at Object.require (src/features/workout/data/index.ts:29:1)
+      at Object.require (src/features/workout/session/ActiveSessionController.ts:4:1)
+      at Object.require (src/features/workout/session/dayTemplate.test.ts:1:1)
+
+
+Test Suites: 5 failed, 92 passed, 97 total
+Tests:       731 passed, 731 total
+Snapshots:   0 total
+Time:        7.63 s
+Ran all test suites.
+/home/runner/work/forma/forma/apps/mobile:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @forma/mobile@0.1.0 test: `jest "--ci" "--passWithNoTests"`
+Exit status 1
