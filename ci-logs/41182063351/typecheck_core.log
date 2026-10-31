@@ -1,0 +1,16 @@
+Scope: 4 of 8 workspace projects
+packages/core type-check$ tsc --noEmit
+packages/workout-domain type-check$ tsc --noEmit
+packages/workout-domain type-check: Done
+packages/core type-check: Done
+apps/mobile type-check$ tsc --noEmit
+apps/web type-check$ node ../../scripts/generate-web-route-tree.mjs && tsc --noEmit
+apps/web type-check: routeTree.gen.ts updated
+apps/web type-check: Done
+apps/mobile type-check: src/ai/LlamaLocalAITrainer.ts(41,5): error TS2578: Unused '@ts-expect-error' directive.
+apps/mobile type-check: src/features/profile/WorkoutRemindersPanel.tsx(19,35): error TS2322: Type 'Promise<{ shouldShowAlert: true; shouldPlaySound: false; shouldSetBadge: false; }>' is not assignable to type 'Promise<NotificationBehavior>'.
+apps/mobile type-check:   Type '{ shouldShowAlert: true; shouldPlaySound: false; shouldSetBadge: false; }' is missing the following properties from type 'NotificationBehavior': shouldShowBanner, shouldShowList
+apps/mobile type-check: Failed
+/home/runner/work/forma/forma/apps/mobile:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @forma/mobile@0.1.0 type-check: `tsc --noEmit`
+Exit status 2
