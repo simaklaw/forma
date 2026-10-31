@@ -265,7 +265,7 @@ jobs:
           echo "status=$code"
           [ "$code" = "403" ]
 
-      - name: OC: expected_version 0 creates at version 1
+      - name: "OC: expected_version 0 creates at version 1"
         run: |
           HASH=$(printf 'd%.0s' $(seq 1 64))
           cat > push_oc1.json <<EOF
@@ -278,7 +278,7 @@ jobs:
           grep -q '"status":"accepted"' oc1.json
           grep -q '"entity_version":1' oc1.json
 
-      - name: OC: stale expected_version is version_conflict (not applied)
+      - name: "OC: stale expected_version is version_conflict (not applied)"
         run: |
           HASH=$(printf 'e%.0s' $(seq 1 64))
           cat > push_oc2.json <<EOF
@@ -294,7 +294,7 @@ jobs:
           echo "b1_changes_after_conflict=$CHANGES"
           [ "$CHANGES" = "1" ]
 
-      - name: OC: conflict not persisted — same op retried with fresh version accepted
+      - name: "OC: conflict not persisted — same op retried with fresh version accepted"
         run: |
           HASH=$(printf 'e%.0s' $(seq 1 64))
           cat > push_oc3.json <<EOF
@@ -310,7 +310,7 @@ jobs:
           echo "entity_head=$HEAD"
           [ "$HEAD" = "2" ]
 
-      - name: OC: no expected_version keeps last-write-wins
+      - name: "OC: no expected_version keeps last-write-wins"
         run: |
           HASH=$(printf 'f%.0s' $(seq 1 64))
           cat > push_oc4.json <<EOF
