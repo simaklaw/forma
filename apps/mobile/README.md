@@ -53,38 +53,52 @@ src/
 
 ## План апгрейда Expo / React Native (ревью-находка #17)
 
-Текущее состояние после шага 1: Expo SDK **52**, RN 0.76.9, react 18.3.1 —
-«единый react-18 мир» сохранён: react/react-dom 18.3.1 во всём workspace
-через pnpm overrides + `node-linker=hoisted` в `.npmrc` (требование Expo
-при pnpm); react-версии между пакетами не разнесены (см. PR #275).
-Версии экспо-пакетов сверены с `bundledNativeModules.json` expo 52.0.46 —
+Текущее состояние после шага 2: Expo SDK **53**, RN 0.79.6, react/react-dom
+**19.0.0**. SDK 53 переводит React Native на React 19 — «единый
+react-мир» сохранён, но теперь на 19-й версии: pnpm overrides в корне
+пинят react/react-dom 19.0.0 и @types/react ~19.1.0, плюс
+`node-linker=hoisted` в `.npmrc` (требование Expo при pnpm);
+react-версии между пакетами не разнесены (см. PR #275).
+Версии экспо-пакетов сверены с `bundledNativeModules.json` expo 53.0.27 —
 тот же источник, которым пользуется `npx expo install --fix`.
+TypeScript в mobile поднят ~5.3.3 → ~5.8.3: tsconfig.base SDK 53
+использует `module: preserve` (минимум TS 5.4).
 
 Поэтапный план — по одному SDK за шаг; каждый шаг завершается зелёным
 CI, type-check, jest и ручным smoke-тестом на устройстве; не совмещать
 с другими изменениями:
 
-1. ~~SDK 51 → 52~~ — готово: react 18.2.0 → 18.3.1 (требование RN 0.76),
-   RN 0.74.5 → 0.76.9, все expo-* до SDK-52, view-shot 3.8.0 → ~4.0.3,
-   screens ~4.4.0, reanimated ~3.16.1, gesture-handler ~2.20.2, svg 15.8.0.
-   New Architecture явно выключена (`newArchEnabled: false` в app.json:
+1. ~~SDK 51 → 52~~ — готово (#293): react 18.2.0 → 18.3.1 (требование RN 0.76),
+   RN 0.74.5 → 0.76.9, все expo-* до SDK-52, newArch явно выключен,
+   iOS deployment target 13.4 → 15.1 (минимум RN 0.76).
+2. ~~SDK 52 → 53~~ — готово: RN 0.76.9 → 0.79.6, react 18.3.1 → 19.0.0
+   (требование SDK 53; web переведён на ту же пару react 19.0.0 +
+   react-dom 19.0.0, pnpm overrides — на react-19 мир), все expo-* до
+   SDK-53 по bundledNativeModules expo 53.0.27 (asset ~11.1.7, av
+   ~15.1.7, build-properties ~0.14.8, camera ~16.1.11, dev-client ~5.2.4,
+   document-picker ~13.1.6, file-system ~18.1.11, font ~13.3.2,
+   haptics/keep-awake ~14.1.4, notifications ~0.31.5, speech/sharing
+   ~13.1.x, sqlite ~15.2.14, status-bar ~2.2.3), screens ~4.11.1,
+   reanimated ~3.17.4, gesture-handler ~2.24.0, safe-area-context 5.4.0,
+   svg 15.11.2, async-storage 2.1.2, TS ~5.3.3 → ~5.8.3.
+   New Architecture по-прежнему явно выключена (`newArchEnabled: false`:
    @gorhom/bottom-sheet v4 и healthkit-модули на новой архитектуре не
    проверены — включим отдельным шагом после smoke-теста). iOS
-   deployment target 13.4 → 15.1 (минимум RN 0.76). expo-sqlite поднят
-   до ~15.1.4 (новый API; в приложении пока не используется).
-2. **SDK 52 → 53** — `npx expo install expo@^53 --fix`; сверить breaking
-   changes в changelog Expo; проверить поведение New Architecture и
-   нативных модулей (healthkit, camera, notifications).
-3. **SDK 53 → 54** (React 19) — целевой шаг: поднять react/react-dom на
-   19, снять pnpm overrides единого react-18 мира, пересобрать lockfile
-   (sync-lockfile подхватит), проверить, нужен ли ещё
-   `node-linker=hoisted`.
+   deployment target 15.1 (минимум RN 0.79 — не изменился). В SDK 53 на
+   Android edge-to-edge включён по умолчанию — проверить UI при
+   smoke-тесте. react-test-renderer 19.0.0 (пакет deprecated, но существует
+   для 19-й линии; при переходе на @testing-library/react-native —
+   заменить).
+3. **SDK 53 → 54** — целевой шаг: сверить bundledNativeModules expo 54 и
+   breaking changes; снять pnpm overrides единого react-мира и
+   пересобрать lockfile (sync-lockfile подхватит), проверить, нужен ли
+   ещё `node-linker=hoisted`; унифицировать zustand (mobile 4 → 5).
 4. На каждом шаге: локально `tsc --noEmit` + jest; EAS Build smoke
    (job `eas-build-android` в ci.yml по умолчанию выключен — включать
    на время шагов апгрейда).
 
 Апгрейд не совмещать с другими изменениями; переход web-пакетов на
-React 19 — отдельным шагом после подтверждения совместимости Expo.
+React 19 выполнен в шаге 2 вместе с mobile (единый react-мир, SDK 53).
 
 ## AI-ассистент и приватность (BYO-ключи)
 

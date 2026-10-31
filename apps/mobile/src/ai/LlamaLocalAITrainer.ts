@@ -36,9 +36,8 @@ export class LlamaLocalAITrainer implements ILocalAITrainer {
       return;
     }
 
-    // Expo's legacy TS module target reports TS1323 although Metro supports
-    // this lazy native import at runtime.
-    // @ts-expect-error -- dynamic import is intentionally resolved by Metro.
+    // SDK 53 (TS 5.8, module: preserve) resolves this lazy native import
+    // cleanly; Metro handles it at runtime. @ts-expect-error больше не нужен.
     const { initLlama } = await import('llama.rn');
     this.context = await initLlama(
       {
