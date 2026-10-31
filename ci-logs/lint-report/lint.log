@@ -2,8 +2,8 @@ Scope: 5 of 8 workspace projects
 packages/core lint$ eslint .
 packages/sync-contract lint$ eslint .
 packages/workout-domain lint$ eslint .
-packages/sync-contract lint: Done
 packages/workout-domain lint: Done
+packages/sync-contract lint: Done
 packages/core lint: Done
 apps/api lint$ eslint .
 apps/web lint$ eslint .
