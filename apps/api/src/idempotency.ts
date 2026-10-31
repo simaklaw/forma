@@ -5,6 +5,7 @@ import type {
   PutResult,
   SyncUnitOfWork,
   UnitOfWorkDeps,
+  EntityVersionStore,
 } from './store.ts';
 import type { ProjectionService } from './projections.ts';
 import type { SyncChange } from '@forma/sync-contract';
@@ -128,6 +129,37 @@ export class MemoryChangeFeed implements ChangeFeed {
   }
 }
 
+/** In-memory entity version heads (tests + non-Postgres deploys). */
+export class MemoryEntityVersionStore implements EntityVersionStore {
+  private readonly map = new Map<string, number>();
+
+  private key(userId: string, entityType: string, entityId: string): string {
+    return userId + '|' + entityType + '|' + entityId;
+  }
+
+  async bump(input: {
+    user_id: string;
+    entity_type: string;
+    entity_id: string;
+    expected_version?: number;
+  }): Promise<
+    | { ok: true; new_version: number }
+    | { ok: false; current_version: number }
+  > {
+    const key = this.key(input.user_id, input.entity_type, input.entity_id);
+    const current = this.map.get(key) ?? 0;
+    if (
+      input.expected_version !== undefined &&
+      input.expected_version !== current
+    ) {
+      return { ok: false, current_version: current };
+    }
+    const next = current + 1;
+    this.map.set(key, next);
+    return { ok: true, new_version: next };
+  }
+}
+
 /**
  * Memory unit of work: no real transaction, straight pass-through.
  * Keeps the same shape as PostgresSyncUnitOfWork for the API layer.
@@ -137,14 +169,18 @@ export class MemorySyncUnitOfWork implements SyncUnitOfWork {
   private readonly feed: ChangeFeed;
   private readonly projections: ProjectionService;
 
+  private readonly versions: EntityVersionStore;
+
   constructor(
     store: IdempotencyStore,
     feed: ChangeFeed,
     projections: ProjectionService,
+    versions: EntityVersionStore = new MemoryEntityVersionStore(),
   ) {
     this.store = store;
     this.feed = feed;
     this.projections = projections;
+    this.versions = versions;
   }
 
   async run<T>(userId: string, fn: (deps: UnitOfWorkDeps) => Promise<T>): Promise<T> {
@@ -152,6 +188,7 @@ export class MemorySyncUnitOfWork implements SyncUnitOfWork {
       store: this.store,
       feed: this.feed,
       projections: this.projections,
+      versions: this.versions,
     });
   }
 }

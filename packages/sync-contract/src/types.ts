@@ -14,6 +14,13 @@ export interface SyncPushOperation {
   /** SHA-256 hex of canonical payload JSON. */
   payload_hash: string;
   payload: Record<string, unknown>;
+  /**
+   * Optimistic concurrency: the entity version the client believes in.
+   * 0 = the entity must not exist yet (create); omitted = last-write-wins.
+   * A mismatch with the server head is rejected with error_code
+   * 'version_conflict' and result_body { current_version, expected_version }.
+   */
+  expected_version?: number;
   occurred_at_client: string;
 }
 

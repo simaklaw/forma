@@ -54,11 +54,36 @@ export interface ChangeFeed {
   }): Promise<number>;
 }
 
+/**
+ * Per-entity version head for optimistic concurrency
+ * (platform.entity_head; MemoryEntityVersionStore in tests).
+ */
+export interface EntityVersionStore {
+  /**
+   * Atomically bump the entity version.
+   * - expected_version undefined: unconditional bump (last-write-wins).
+   * - expected_version 0: entity must not exist yet; create at version 1.
+   * - expected_version N: bump only when the current version is N.
+   * On mismatch returns ok=false with the actual current_version
+   * (0 when the entity does not exist).
+   */
+  bump(input: {
+    user_id: string;
+    entity_type: string;
+    entity_id: string;
+    expected_version?: number;
+  }): Promise<
+    | { ok: true; new_version: number }
+    | { ok: false; current_version: number }
+  >;
+}
+
 /** Transaction-scoped dependencies handed to a unit of work. */
 export interface UnitOfWorkDeps {
   store: IdempotencyStore;
   feed: ChangeFeed;
   projections: ProjectionService;
+  versions: EntityVersionStore;
 }
 
 /**

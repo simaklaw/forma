@@ -359,6 +359,30 @@ export function createApp(
         }
       }
 
+      // Optimistic concurrency (review #8): expected_version is optional.
+      // undefined = last-write-wins (legacy behaviour); 0 = create;
+      // N = the entity head must currently be at version N.
+      const expectedRaw: unknown = op.expected_version;
+      let expectedVersion: number | undefined;
+      if (expectedRaw !== undefined && expectedRaw !== null) {
+        if (
+          typeof expectedRaw === 'number' &&
+          Number.isInteger(expectedRaw) &&
+          expectedRaw >= 0
+        ) {
+          expectedVersion = expectedRaw;
+        } else {
+          results.push({
+            client_operation_id: op.client_operation_id,
+            status: 'rejected',
+            error_code: 'invalid_expected_version',
+            error_message:
+              'expected_version must be a non-negative integer',
+          });
+          continue;
+        }
+      }
+
       const opPayload = (op.payload ?? {}) as Record<string, unknown>;
 
       const outcome = await uow.run(body.user_id, async (deps) => {
@@ -386,9 +410,37 @@ export function createApp(
         );
         if (existing) return duplicateFor(existing);
 
+        // Optimistic concurrency (review #8): the bump is the atomic
+        // arbiter — compare-and-increment on the entity head. Mismatch
+        // means another device advanced the entity: the op is NOT
+        // applied, NOT appended to the feed and NOT stored in the
+        // idempotency store, so the client may retry the same
+        // client_operation_id after resolving the state.
+        const bump = await deps.versions.bump({
+          user_id: body.user_id,
+          entity_type: op.aggregate_type,
+          entity_id: op.aggregate_id,
+          expected_version: expectedVersion,
+        });
+        if (!bump.ok) {
+          return {
+            client_operation_id: op.client_operation_id,
+            status: 'rejected',
+            error_code: 'version_conflict',
+            error_message:
+              'expected_version does not match the current entity version; pull the latest change and re-push',
+            result_body: {
+              current_version: bump.current_version,
+              expected_version: expectedVersion,
+            },
+          } satisfies SyncPushOperationResult;
+        }
+        const newVersion = bump.new_version;
+
         const resultBody = {
           aggregate_type: op.aggregate_type,
           aggregate_id: op.aggregate_id,
+          entity_version: newVersion,
         };
 
         const { inserted } = await deps.store.put({
@@ -418,16 +470,15 @@ export function createApp(
           } satisfies SyncPushOperationResult;
         }
 
-        // entity_version is fixed at 1: projections resolve concurrent
-        // edits with last-write-wins, so version checks are not part of
-        // the protocol yet. The column is a reserved slot for a future
-        // optimistic-concurrency design — see «Модель конкурентности»
-        // in apps/api/README.md (review finding #8).
+        // Optimistic concurrency (#8): the bump above is the arbiter —
+        // newVersion is current + 1 (create: 1; no expected_version:
+        // unconditional bump = last-write-wins for legacy clients).
+        // See «Модель конкурентности» in apps/api/README.md.
         await deps.feed.append({
           user_id: body.user_id,
           entity_type: op.aggregate_type,
           entity_id: op.aggregate_id,
-          entity_version: 1,
+          entity_version: newVersion,
           mutation: 'upsert',
           payload: opPayload ?? resultBody,
         });
