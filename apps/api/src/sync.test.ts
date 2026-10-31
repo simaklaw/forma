@@ -10,6 +10,8 @@ function pushBody(
     device_id: string;
     payload_hash: string;
     aggregate_id: string;
+    expected_version: number;
+    payload: Record<string, unknown>;
   }> = {},
 ) {
   return {
@@ -21,7 +23,10 @@ function pushBody(
         aggregate_type: 'workout_session',
         aggregate_id: overrides.aggregate_id ?? 's1',
         payload_hash: overrides.payload_hash ?? 'b'.repeat(64),
-        payload: { event: 'complete_set' },
+        payload: overrides.payload ?? { event: 'complete_set' },
+        ...(overrides.expected_version !== undefined
+          ? { expected_version: overrides.expected_version }
+          : {}),
         occurred_at_client: new Date().toISOString(),
       },
     ],
@@ -139,6 +144,157 @@ describe('sync API', () => {
     const body = await res.json();
     assert.deepEqual(body.changes, []);
     assert.equal(body.next_change_id, 0);
+  });
+});
+
+describe('sync API optimistic concurrency', () => {
+  let app: ReturnType<typeof createApp>;
+
+  beforeEach(() => {
+    app = createApp({
+      store: new MemoryIdempotencyStore(),
+      feed: new MemoryChangeFeed(),
+      requireUuid: false,
+    });
+  });
+
+  it('accepted op reports entity_version and the feed mirrors it', async () => {
+    const res = await app.request('/api/v1/sync/push', jsonRequest(pushBody()));
+    const body = await res.json();
+    assert.equal(body.results[0].status, 'accepted');
+    assert.equal(body.results[0].result_body.entity_version, 1);
+
+    const pull = await app.request('/api/v1/sync/pull?user_id=u1&after_change_id=0');
+    const page = await pull.json();
+    assert.equal(page.changes[0].entity_version, 1);
+  });
+
+  it('bumps entity_version without expected_version (last-write-wins)', async () => {
+    await app.request('/api/v1/sync/push', jsonRequest(pushBody()));
+    const res = await app.request(
+      '/api/v1/sync/push',
+      jsonRequest(pushBody({ client_operation_id: 'op2', payload_hash: 'c'.repeat(64) })),
+    );
+    const body = await res.json();
+    assert.equal(body.results[0].status, 'accepted');
+    assert.equal(body.results[0].result_body.entity_version, 2);
+  });
+
+  it('expected_version 0 creates the entity at version 1', async () => {
+    const res = await app.request(
+      '/api/v1/sync/push',
+      jsonRequest(pushBody({ expected_version: 0 })),
+    );
+    const body = await res.json();
+    assert.equal(body.results[0].status, 'accepted');
+    assert.equal(body.results[0].result_body.entity_version, 1);
+  });
+
+  it('stale expected_version is version_conflict and the op is not applied', async () => {
+    await app.request('/api/v1/sync/push', jsonRequest(pushBody({ expected_version: 0 })));
+    const res = await app.request(
+      '/api/v1/sync/push',
+      jsonRequest(
+        pushBody({
+          client_operation_id: 'op2',
+          payload_hash: 'c'.repeat(64),
+          expected_version: 0,
+        }),
+      ),
+    );
+    const body = await res.json();
+    assert.equal(body.results[0].status, 'rejected');
+    assert.equal(body.results[0].error_code, 'version_conflict');
+    assert.equal(body.results[0].result_body.current_version, 1);
+
+    const pull = await app.request('/api/v1/sync/pull?user_id=u1&after_change_id=0');
+    const page = await pull.json();
+    assert.equal(page.changes.length, 1); // conflict was not appended
+  });
+
+  it('conflict is not persisted: the same op retried with the fresh version is accepted', async () => {
+    await app.request('/api/v1/sync/push', jsonRequest(pushBody({ expected_version: 0 })));
+    await app.request(
+      '/api/v1/sync/push',
+      jsonRequest(
+        pushBody({
+          client_operation_id: 'op2',
+          payload_hash: 'c'.repeat(64),
+          expected_version: 0,
+        }),
+      ),
+    );
+    const res = await app.request(
+      '/api/v1/sync/push',
+      jsonRequest(
+        pushBody({
+          client_operation_id: 'op2',
+          payload_hash: 'c'.repeat(64),
+          expected_version: 1,
+        }),
+      ),
+    );
+    const body = await res.json();
+    assert.equal(body.results[0].status, 'accepted');
+    assert.equal(body.results[0].result_body.entity_version, 2);
+  });
+
+  it('matching expected_version accepts and increments', async () => {
+    await app.request('/api/v1/sync/push', jsonRequest(pushBody({ expected_version: 0 })));
+    const res = await app.request(
+      '/api/v1/sync/push',
+      jsonRequest(
+        pushBody({
+          client_operation_id: 'op2',
+          payload_hash: 'c'.repeat(64),
+          expected_version: 1,
+        }),
+      ),
+    );
+    const body = await res.json();
+    assert.equal(body.results[0].status, 'accepted');
+    assert.equal(body.results[0].result_body.entity_version, 2);
+  });
+
+  it('expected_version on a missing entity conflicts for N > 0', async () => {
+    const res = await app.request(
+      '/api/v1/sync/push',
+      jsonRequest(pushBody({ expected_version: 3 })),
+    );
+    const body = await res.json();
+    assert.equal(body.results[0].status, 'rejected');
+    assert.equal(body.results[0].error_code, 'version_conflict');
+    assert.equal(body.results[0].result_body.current_version, 0);
+  });
+
+  it('versions are tracked per entity', async () => {
+    await app.request('/api/v1/sync/push', jsonRequest(pushBody({ expected_version: 0 })));
+    const res = await app.request(
+      '/api/v1/sync/push',
+      jsonRequest(
+        pushBody({
+          client_operation_id: 'op2',
+          payload_hash: 'c'.repeat(64),
+          aggregate_id: 's2',
+          expected_version: 0,
+        }),
+      ),
+    );
+    const body = await res.json();
+    assert.equal(body.results[0].status, 'accepted');
+    assert.equal(body.results[0].result_body.entity_version, 1);
+  });
+
+  it('rejects a non-integer or negative expected_version', async () => {
+    for (const bad of [-1, 1.5, 'x']) {
+      const res = await app.request(
+        '/api/v1/sync/push',
+        jsonRequest(pushBody({ expected_version: bad as number })),
+      );
+      const json = await res.json();
+      assert.equal(json.results[0].status, 'rejected');
+      assert.equal(json.results[0].error_code, 'invalid_expected_version');
+    }
   });
 });
 

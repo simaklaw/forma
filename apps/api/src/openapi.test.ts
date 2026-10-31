@@ -35,6 +35,7 @@ describe('OpenAPI document', () => {
     const op = doc.components.schemas.SyncPushOperation;
     assert.equal(op.type, 'object');
     assert.ok(op.properties.payload_hash);
+    assert.ok(op.properties.expected_version, 'expected_version documented');
   });
 
   it('documents bearer security and the validation error response', () => {

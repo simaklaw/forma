@@ -9,6 +9,8 @@ name: Verify sync setup (E2E)
 #   activity_credit projection (1 credit for terminal event, none for
 #   intermediate, no double-credit on replay),
 #   pr_observation from enriched projection.setLogs.
+#   optimistic concurrency (expected_version): create at 0, stale →
+#   version_conflict (not applied), retry with fresh version accepted.
 # A summary table is written to the run's Summary page. On failure,
 # diagnostics are committed to the ci-logs branch.
 
@@ -75,19 +77,19 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Migrations 001-007
+      - name: Migrations 001-008
         run: |
           set -o pipefail
           ./scripts/apply-db-migrations.sh 2>&1 | tee migrate_all.log
           ./scripts/apply-db-migrations.sh 2>&1 | tee migrate_repeat.log
-          test "$(psql "$DATABASE_URL" -X -Atc 'SELECT count(*) FROM public.forma_schema_migration')" = 7
+          test "$(psql "$DATABASE_URL" -X -Atc 'SELECT count(*) FROM public.forma_schema_migration')" = 8
 
       - name: RLS strict check
         run: |
           set -o pipefail
           STRICT=$(psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -Atc "select count(*) from pg_class c join pg_namespace n on n.oid = c.relnamespace where c.relrowsecurity and c.relforcerowsecurity and n.nspname in ('platform','workout','engagement','nutrition');" 2>&1 | tee rls_check.log)
           echo "strict_tables=$STRICT"
-          [ "$STRICT" -ge 10 ]
+          [ "$STRICT" -ge 11 ]
 
       - name: Generate secrets (pnpm sync:setup)
         run: |
@@ -263,6 +265,64 @@ jobs:
           echo "status=$code"
           [ "$code" = "403" ]
 
+      - name: OC: expected_version 0 creates at version 1
+        run: |
+          HASH=$(printf 'd%.0s' $(seq 1 64))
+          cat > push_oc1.json <<EOF
+          {"user_id":"$A_USER","operations":[{"client_operation_id":"018f0000-0000-7000-8000-000000000011","device_id":"00000000-0000-4000-8000-0000000000d1","aggregate_type":"note","aggregate_id":"00000000-0000-4000-8000-0000000000b1","payload_hash":"$HASH","payload":{"text":"oc-create"},"expected_version":0,"occurred_at_client":"2026-09-30T11:00:00.000Z"}]}
+          EOF
+          code=$(curl -s -o oc1.json -w '%{http_code}' -X POST http://localhost:8787/api/v1/sync/push \
+            -H 'content-type: application/json' -H "authorization: Bearer $A_TOKEN" --data @push_oc1.json)
+          echo "status=$code"; cat oc1.json
+          [ "$code" = "200" ]
+          grep -q '"status":"accepted"' oc1.json
+          grep -q '"entity_version":1' oc1.json
+
+      - name: OC: stale expected_version is version_conflict (not applied)
+        run: |
+          HASH=$(printf 'e%.0s' $(seq 1 64))
+          cat > push_oc2.json <<EOF
+          {"user_id":"$A_USER","operations":[{"client_operation_id":"018f0000-0000-7000-8000-000000000012","device_id":"00000000-0000-4000-8000-0000000000d1","aggregate_type":"note","aggregate_id":"00000000-0000-4000-8000-0000000000b1","payload_hash":"$HASH","payload":{"text":"oc-conflict"},"expected_version":0,"occurred_at_client":"2026-09-30T11:01:00.000Z"}]}
+          EOF
+          code=$(curl -s -o oc2.json -w '%{http_code}' -X POST http://localhost:8787/api/v1/sync/push \
+            -H 'content-type: application/json' -H "authorization: Bearer $A_TOKEN" --data @push_oc2.json)
+          echo "status=$code"; cat oc2.json
+          [ "$code" = "200" ]
+          grep -q '"error_code":"version_conflict"' oc2.json
+          grep -q '"current_version":1' oc2.json
+          CHANGES=$(psql "$DATABASE_URL" -Atc "select count(*) from platform.sync_change where user_id = '$A_USER' and entity_id = '00000000-0000-4000-8000-0000000000b1'")
+          echo "b1_changes_after_conflict=$CHANGES"
+          [ "$CHANGES" = "1" ]
+
+      - name: OC: conflict not persisted — same op retried with fresh version accepted
+        run: |
+          HASH=$(printf 'e%.0s' $(seq 1 64))
+          cat > push_oc3.json <<EOF
+          {"user_id":"$A_USER","operations":[{"client_operation_id":"018f0000-0000-7000-8000-000000000012","device_id":"00000000-0000-4000-8000-0000000000d1","aggregate_type":"note","aggregate_id":"00000000-0000-4000-8000-0000000000b1","payload_hash":"$HASH","payload":{"text":"oc-conflict"},"expected_version":1,"occurred_at_client":"2026-09-30T11:01:00.000Z"}]}
+          EOF
+          code=$(curl -s -o oc3.json -w '%{http_code}' -X POST http://localhost:8787/api/v1/sync/push \
+            -H 'content-type: application/json' -H "authorization: Bearer $A_TOKEN" --data @push_oc3.json)
+          echo "status=$code"; cat oc3.json
+          [ "$code" = "200" ]
+          grep -q '"status":"accepted"' oc3.json
+          grep -q '"entity_version":2' oc3.json
+          HEAD=$(psql "$DATABASE_URL" -Atc "select current_version from platform.entity_head where user_id = '$A_USER' and entity_id = '00000000-0000-4000-8000-0000000000b1'")
+          echo "entity_head=$HEAD"
+          [ "$HEAD" = "2" ]
+
+      - name: OC: no expected_version keeps last-write-wins
+        run: |
+          HASH=$(printf 'f%.0s' $(seq 1 64))
+          cat > push_oc4.json <<EOF
+          {"user_id":"$A_USER","operations":[{"client_operation_id":"018f0000-0000-7000-8000-000000000013","device_id":"00000000-0000-4000-8000-0000000000d1","aggregate_type":"note","aggregate_id":"00000000-0000-4000-8000-0000000000b1","payload_hash":"$HASH","payload":{"text":"oc-lww"},"occurred_at_client":"2026-09-30T11:02:00.000Z"}]}
+          EOF
+          code=$(curl -s -o oc4.json -w '%{http_code}' -X POST http://localhost:8787/api/v1/sync/push \
+            -H 'content-type: application/json' -H "authorization: Bearer $A_TOKEN" --data @push_oc4.json)
+          echo "status=$code"; cat oc4.json
+          [ "$code" = "200" ]
+          grep -q '"status":"accepted"' oc4.json
+          grep -q '"entity_version":3' oc4.json
+
       - name: Write run summary
         if: always()
         run: |
@@ -282,6 +342,7 @@ jobs:
             echo "| кредит за терминальное событие | $(cat credits_count.log 2>/dev/null || echo fail) строка(и) |"
             echo "| soft PR / materialize | $(cat resp_pr.json 2>/dev/null | head -c 80 || echo n/a) |"
             echo "| pull A / pull B | $(node -e "try{console.log(JSON.parse(require('fs').readFileSync('pull.json','utf8')).changes.length)}catch{console.log('fail')}" 2>/dev/null) / $(node -e "try{console.log(JSON.parse(require('fs').readFileSync('pull_b.json','utf8')).changes.length)}catch{console.log('fail')}" 2>/dev/null) changes |"
+            echo "| OC expected_version | $(grep -o '"entity_version":[0-9]*' oc4.json 2>/dev/null || echo fail) |"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish diagnostics on failure
@@ -297,7 +358,7 @@ jobs:
           git checkout -B ci-logs origin/ci-logs 2>/dev/null || git checkout -B ci-logs
           DIR="ci-logs/${{ github.run_id }}"
           mkdir -p "$DIR"
-          for f in migrate_*.log rls_check.log api.log reg_*.json mismatch*.json push*.json resp*.json pull*.json credits_count.log nutr.json; do
+          for f in migrate_*.log rls_check.log api.log reg_*.json mismatch*.json push*.json resp*.json pull*.json oc*.json credits_count.log nutr.json; do
             [ -f "$f" ] && cp "$f" "$DIR/"
           done
           echo "failed run: ${{ github.run_id }} commit ${{ github.sha }} date $(date -u +%FT%TZ)" >> "$DIR/README.txt"
