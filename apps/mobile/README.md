@@ -53,30 +53,37 @@ src/
 
 ## План апгрейда Expo / React Native (ревью-находка #17)
 
-Текущее состояние: Expo SDK **51**, RN 0.74 (2024) — платформа стареет.
-Дополнительно держим осознанный «единый react-18 мир»: react/react-dom
-18.2.0 во всём workspace через pnpm overrides + `node-linker=hoisted` в
-`.npmrc` (требование Expo при pnpm). До апгрейда **не** разносить
-react-версии между пакетами (см. PR #275).
+Текущее состояние после шага 1: Expo SDK **52**, RN 0.76.9, react 18.3.1 —
+«единый react-18 мир» сохранён: react/react-dom 18.3.1 во всём workspace
+через pnpm overrides + `node-linker=hoisted` в `.npmrc` (требование Expo
+при pnpm); react-версии между пакетами не разнесены (см. PR #275).
+Версии экспо-пакетов сверены с `bundledNativeModules.json` expo 52.0.46 —
+тот же источник, которым пользуется `npx expo install --fix`.
 
 Поэтапный план — по одному SDK за шаг; каждый шаг завершается зелёным
 CI, type-check, jest и ручным smoke-тестом на устройстве; не совмещать
 с другими изменениями:
 
-1. **SDK 51 → 52** — `npx expo install expo@^52 --fix`; сверить breaking
+1. ~~SDK 51 → 52~~ — готово: react 18.2.0 → 18.3.1 (требование RN 0.76),
+   RN 0.74.5 → 0.76.9, все expo-* до SDK-52, view-shot 3.8.0 → ~4.0.3,
+   screens ~4.4.0, reanimated ~3.16.1, gesture-handler ~2.20.2, svg 15.8.0.
+   New Architecture явно выключена (`newArchEnabled: false` в app.json:
+   @gorhom/bottom-sheet v4 и healthkit-модули на новой архитектуре не
+   проверены — включим отдельным шагом после smoke-теста). iOS
+   deployment target 13.4 → 15.1 (минимум RN 0.76). expo-sqlite поднят
+   до ~15.1.4 (новый API; в приложении пока не используется).
+2. **SDK 52 → 53** — `npx expo install expo@^53 --fix`; сверить breaking
    changes в changelog Expo; проверить поведение New Architecture и
    нативных модулей (healthkit, camera, notifications).
-2. **SDK 52 → 53** — повторить цикл; обновить `app.config.js` при
-   необходимости.
-3. **SDK 53 → 54** (RN 0.81+, React 19) — целевой шаг: поднять
-   react/react-dom на 19, снять pnpm overrides единого react-18 мира,
-   пересобрать lockfile (sync-lockfile подхватит), проверить, нужен ли
-   ещё `node-linker=hoisted`.
+3. **SDK 53 → 54** (React 19) — целевой шаг: поднять react/react-dom на
+   19, снять pnpm overrides единого react-18 мира, пересобрать lockfile
+   (sync-lockfile подхватит), проверить, нужен ли ещё
+   `node-linker=hoisted`.
 4. На каждом шаге: локально `tsc --noEmit` + jest; EAS Build smoke
    (job `eas-build-android` в ci.yml по умолчанию выключен — включать
    на время шагов апгрейда).
 
-Апгрейд делать после стабилизации текущих задач; переход web-пакетов на
+Апгрейд не совмещать с другими изменениями; переход web-пакетов на
 React 19 — отдельным шагом после подтверждения совместимости Expo.
 
 ## AI-ассистент и приватность (BYO-ключи)
