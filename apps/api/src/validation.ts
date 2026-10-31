@@ -37,6 +37,15 @@ export const syncPushOperationSchema = z.looseObject({
   aggregate_id: z.string().min(1),
   payload_hash: z.string().regex(/^[0-9a-f]{64}$/i),
   payload: z.record(z.string(), z.unknown()),
+  expected_version: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .describe(
+      'Optimistic concurrency: 0 = create, omitted = last-write-wins. ' +
+        'A mismatch is rejected per-op with error_code version_conflict.',
+    ),
   occurred_at_client: z.string().min(1),
 });
 

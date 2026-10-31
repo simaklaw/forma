@@ -7,6 +7,7 @@ import type {
   PutResult,
   SyncUnitOfWork,
   UnitOfWorkDeps,
+  EntityVersionStore,
 } from './store.ts';
 import { PostgresProjectionService } from './projections.ts';
 import type { SyncChange } from '@forma/sync-contract';
@@ -248,6 +249,79 @@ export class PostgresChangeFeed implements ChangeFeed {
 }
 
 /**
+ * Postgres entity version head (platform.entity_head) for optimistic
+ * concurrency. The compare-and-increment runs as a single guarded
+ * upsert/update inside the unit-of-work transaction, so two concurrent
+ * pushes with the same expected_version cannot both win.
+ */
+export class PostgresEntityVersionStore implements EntityVersionStore {
+  private readonly sql: DbClient;
+
+  constructor(sql: DbClient) {
+    this.sql = sql;
+  }
+
+  async bump(input: {
+    user_id: string;
+    entity_type: string;
+    entity_id: string;
+    expected_version?: number;
+  }): Promise<
+    | { ok: true; new_version: number }
+    | { ok: false; current_version: number }
+  > {
+    await ensureUser(this.sql, input.user_id);
+    const expected = input.expected_version;
+    let rows: { current_version: string | number }[];
+    if (expected === undefined) {
+      rows = (await this.sql`
+        INSERT INTO platform.entity_head (user_id, entity_type, entity_id, current_version)
+        VALUES (${input.user_id}::uuid, ${input.entity_type}, ${input.entity_id}::uuid, 1)
+        ON CONFLICT (user_id, entity_type, entity_id) DO UPDATE SET
+          current_version = platform.entity_head.current_version + 1,
+          updated_at = now()
+        RETURNING current_version
+      `) as { current_version: string | number }[];
+    } else if (expected === 0) {
+      rows = (await this.sql`
+        INSERT INTO platform.entity_head (user_id, entity_type, entity_id, current_version)
+        VALUES (${input.user_id}::uuid, ${input.entity_type}, ${input.entity_id}::uuid, 1)
+        ON CONFLICT (user_id, entity_type, entity_id) DO UPDATE SET
+          current_version = platform.entity_head.current_version + 1,
+          updated_at = now()
+        WHERE platform.entity_head.current_version = 0
+        RETURNING current_version
+      `) as { current_version: string | number }[];
+    } else {
+      rows = (await this.sql`
+        UPDATE platform.entity_head
+        SET current_version = current_version + 1, updated_at = now()
+        WHERE user_id = ${input.user_id}::uuid
+          AND entity_type = ${input.entity_type}
+          AND entity_id = ${input.entity_id}::uuid
+          AND current_version = ${expected}
+        RETURNING current_version
+      `) as { current_version: string | number }[];
+    }
+    if (rows.length > 0) {
+      return { ok: true, new_version: Number(rows[0].current_version) };
+    }
+    const current = (await this.sql`
+      SELECT current_version FROM platform.entity_head
+      WHERE user_id = ${input.user_id}::uuid
+        AND entity_type = ${input.entity_type}
+        AND entity_id = ${input.entity_id}::uuid
+      LIMIT 1
+    `) as { current_version: string | number }[];
+    return {
+      ok: false,
+      current_version:
+        current.length > 0 ? Number(current[0].current_version) : 0,
+    };
+  }
+}
+
+/**
  * Postgres unit of work: every push/pull runs inside ONE transaction that
  * also sets app.current_user_id (transaction-local GUC) so strict RLS
  * policies scope all reads/writes to the requesting user.
@@ -275,6 +349,7 @@ export class PostgresSyncUnitOfWork implements SyncUnitOfWork {
         store: new PostgresIdempotencyStore(tx),
         feed: new PostgresChangeFeed(tx),
         projections: new PostgresProjectionService(tx),
+        versions: new PostgresEntityVersionStore(tx),
       });
     });
   }
