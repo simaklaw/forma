@@ -331,7 +331,7 @@ jobs:
             echo ""
             echo "| Проверка | Результат |"
             echo "|---|---|"
-            echo "| Миграции 001–007 | ${{ job.status }} |"
+            echo "| Миграции 001–008 | ${{ job.status }} |"
             echo "| Строгий RLS (FORCE) | $(cat rls_check.log 2>/dev/null || echo n/a) таблиц |"
             echo "| Nutrition-кэш из Postgres | $(grep -o '"name":"[^"]*"' nutr.json 2>/dev/null || echo fail) |"
             echo "| регистрация A/B | стабильные user_id |"
