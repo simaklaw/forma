@@ -22,8 +22,7 @@ export type ExerciseMediaKey =
   | 'row-band'
   | 'hip-thrust'
   | 'shoulder-press'
-  | 'side-plank'
-  | 'stomach-vacuum';
+  | 'side-plank';
 
 /** Profile-specific render variants published by the FitPulse Animation Studio. */
 export const EXERCISE_PROFILE_VIDEOS: Partial<
@@ -81,6 +80,5 @@ export const EXERCISE_VIDEOS: Partial<Record<ExerciseMediaKey, number>> = {
   'row-band': require('../../../assets/exercises/row-band.mp4'),
   'hip-thrust': require('../../../assets/exercises/hip-thrust.mp4'),
   'shoulder-press': require('../../../assets/exercises/shoulder-press.mp4'),
-  'side-plank': require('../../../assets/exercises/side-plank.mp4'),
-  'stomach-vacuum': require('../../../assets/exercises/stomach-vacuum.mp4')
+  'side-plank': require('../../../assets/exercises/side-plank.mp4')
 };

@@ -13,10 +13,9 @@ import {
   DATASET_THUMB_MODULES,
 } from './exerciseDatasetAssets.generated';
 
-/** Imported library ids that ship a bundled MP4 (see exerciseMedia). */
-const LIBRARY_BUNDLED_VIDEO: Partial<Record<string, ExerciseMediaKey>> = {
-  'lib-stomach-vacuum': 'stomach-vacuum'
-};
+/** Imported library ids that ship a bundled MP4 (see exerciseMedia). Empty since
+ * the unlicensed stomach-vacuum clip was removed (review finding #16). */
+const LIBRARY_BUNDLED_VIDEO: Partial<Record<string, ExerciseMediaKey>> = {};
 
 const CACHE_DIR = `${FileSystem.cacheDirectory ?? ''}exercise_media/`;
 const MAX_CACHE_BYTES = 1024 * 1024 * 1024;

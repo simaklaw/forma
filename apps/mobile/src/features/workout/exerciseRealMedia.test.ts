@@ -69,7 +69,6 @@ describe('exerciseRealMedia', () => {
       'plank',
       'row-band',
       'hip-thrust',
-      'stomach-vacuum',
       undefined
     ];
     for (const key of rejected) {
