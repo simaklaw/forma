@@ -18,6 +18,10 @@ import {
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
+    // SDK 53: NotificationBehavior также требует баннер и список уведомлений
+    // (Android 15+/16 показывают уведомления как banner и/или в списке).
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: false,
     shouldSetBadge: false
   })
