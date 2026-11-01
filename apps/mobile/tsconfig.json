@@ -8,7 +8,7 @@
     "skipLibCheck": true,
     "jsx": "react-native",
     "paths": {
-      "@/*": ["src/*"],
+      "@/*": ["./src/*"],
       "@forma/core": ["../../packages/core/src"],
       "@forma/core/*": ["../../packages/core/src/*"],
       "@forma/workout-domain": ["../../packages/workout-domain/src"],
