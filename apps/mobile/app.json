@@ -52,7 +52,7 @@
           },
           "android": {
             "minSdkVersion": 26,
-            "compileSdkVersion": 35
+            "compileSdkVersion": 36
           }
         }
       ],

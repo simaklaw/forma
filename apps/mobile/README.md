@@ -53,16 +53,21 @@ src/
 
 ## План апгрейда Expo / React Native (ревью-находка #17)
 
-Текущее состояние после шага 2: Expo SDK **53**, RN 0.79.6, react/react-dom
-**19.0.0**. SDK 53 переводит React Native на React 19 — «единый
-react-мир» сохранён, но теперь на 19-й версии: pnpm overrides в корне
-пинят react/react-dom 19.0.0 и @types/react ~19.1.0, плюс
-`node-linker=hoisted` в `.npmrc` (требование Expo при pnpm);
-react-версии между пакетами не разнесены (см. PR #275).
-Версии экспо-пакетов сверены с `bundledNativeModules.json` expo 53.0.27 —
+Текущее состояние после шага 3: Expo SDK **54**, RN 0.81.5, react/react-dom
+**19.1.0**. pnpm overrides единого react-мира сняты: воркспейсы
+сами пинят 19.1.0 (версии совпадают), `node-linker=hoisted` в
+`.npmrc` остаётся — Expo по-прежнему требует его для native-сборок.
+Версии экспо-пакетов сверены с `bundledNativeModules.json` expo 54.0.38 —
 тот же источник, которым пользуется `npx expo install --fix`.
-TypeScript в mobile поднят ~5.3.3 → ~5.8.3: tsconfig.base SDK 53
-использует `module: preserve` (минимум TS 5.4).
+TypeScript в mobile поднят ~5.8.3 → ~5.9.2 (версия шаблона SDK 54).
+Zustand унифицирован: mobile 4.5.2 → ^5.0.0 (API-миграция не
+потребовалась). Осознанные отклонения от bundled для legacy-архитектуры
+(`newArchEnabled: false`): react-native-reanimated ~3.19.5 вместо ~4.1.1
+и slider 4.5.7 вместо 5.0.1 — старшие линии работают только на New
+Architecture. expo-file-system 19: легаси-API перенесён на
+`expo-file-system/legacy` (корневые заглушки кидают в рантайме) —
+импорты в LlamaModelService, BackupCard, importActivityFile и
+importGymHistoryFile переведены.
 
 Поэтапный план — по одному SDK за шаг; каждый шаг завершается зелёным
 CI, type-check, jest и ручным smoke-тестом на устройстве; не совмещать
@@ -89,11 +94,16 @@ CI, type-check, jest и ручным smoke-тестом на устройств�
    smoke-тесте. react-test-renderer 19.0.0 (пакет deprecated, но существует
    для 19-й линии; при переходе на @testing-library/react-native —
    заменить).
-3. **SDK 53 → 54** — целевой шаг: сверить bundledNativeModules expo 54 и
-   breaking changes; снять pnpm overrides единого react-мира и
-   пересобрать lockfile (sync-lockfile подхватит), проверить, нужен ли
-   ещё `node-linker=hoisted`; унифицировать zustand (mobile 4 → 5).
-4. На каждом шаге: локально `tsc --noEmit` + jest; EAS Build smoke
+3. ~~SDK 53 → 54~~ — готово: RN 0.79.6 → 0.81.5, react 19.0.0 → 19.1.0,
+   все expo-* до SDK-54 (bundledNativeModules expo 54.0.38), TS ~5.9.2,
+   zustand 4 → 5, pnpm overrides сняты (`node-linker=hoisted` остаётся),
+   compileSdk 35 → 36; reanimated ~3.19.5 и slider 4.5.7 — осознанно
+   для legacy-архитектуры; легаси file-system → `expo-file-system/legacy`.
+4. **SDK 54 → 55+ = включение New Architecture** (SDK 55 работает только
+   на New Arch): `newArchEnabled: true`, reanimated 4 + react-native-worklets,
+   slider 5, @gorhom/bottom-sheet v5, проверка healthkit/health-connect
+   и llama.rn на новой архитектуре — отдельным шагом после smoke-теста.
+5. На каждом шаге: локально `tsc --noEmit` + jest; EAS Build smoke
    (job `eas-build-android` в ci.yml по умолчанию выключен — включать
    на время шагов апгрейда).
 
