@@ -1,4 +1,4 @@
-jest.mock('expo-file-system', () => ({
+jest.mock('expo-file-system/legacy', () => ({
   documentDirectory: 'file:///tmp/',
   getInfoAsync: jest.fn(async () => ({ exists: false })),
   createDownloadResumable: jest.fn()

@@ -1,4 +1,6 @@
-import * as FileSystem from 'expo-file-system';
+// SDK 54: легаси-API file-system живёт на 'expo-file-system/legacy'
+// (корневой экспорт — новый API; старые имена там кидают в рантайме).
+import * as FileSystem from 'expo-file-system/legacy';
 
 export const LLAMA_MODEL_FILENAME = 'Llama-3.2-1B-Instruct-Q4_K_M.gguf';
 

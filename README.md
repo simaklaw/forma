@@ -59,9 +59,10 @@ pnpm api:dev      # API на :8787 с bearer-авторизацией
 
 Зафиксировано по итогам ревью (октябрь 2026) — почему версии различаются и что нельзя менять точечно.
 
-- **React 19.0.0 на всём воркспейсе** — включая web и mobile. Причина: Expo SDK 53 переводит React Native на React 19, а `.npmrc` требует `node-linker=hoisted` (плоская раскладка node_modules, обязательна для Expo/RN native-сборок) — в корне живёт одна версия react, поэтому единая версия зафиксирована pnpm overrides (react/react-dom 19.0.0, @types/react ~19.1.0). Снятие overrides — кандидат на следующий шаг апгрейда (SDK 54) после проверки, нужен ли ещё hoisted-линкер.
-- **TypeScript `~5.8.3` в mobile** — требование Expo SDK 53: его tsconfig.base использует `module: preserve` (минимум TS 5.4, на ~5.3.3 не парсится); остальные воркспейсы на `^5.7.0`. Не поднимать TS в mobile отдельно от Expo.
-- **Zustand: mobile 4.5.2 vs core/web 5.x** — в нативном бандле живут две мажорные копии (в корне резолвится 5.x, в apps/mobile вложена 4.x). Риск: сторы `@forma/core` и сторы mobile могут оказаться в разных инстансах zustand — не смешивать сторы между слоями до унификации. Унификация — вместе с апгрейдом Expo.
+- **React 19.1.0 на всём воркспейсе** — включая web и mobile. pnpm overrides единого react-мира сняты (шаг SDK 54): каждый воркспейс сам пинит свою пару (react/react-dom 19.1.0, @types/react ~19.1.0), версии совпадают. `.npmrc` с `node-linker=hoisted` остаётся: Expo по-прежнему требует плоскую раскладку для native-сборок, в корне живёт одна версия react.
+- **TypeScript `~5.9.2` в mobile** — версия из шаблона Expo SDK 54 (tsconfig.base: `module: preserve`, минимум TS 5.4); остальные воркспейсы на `^5.7.0`. Не поднимать TS в mobile отдельно от Expo.
+- **Zustand 5.x везде** — mobile переведён 4.5.2 → ^5.0.0 вместе с SDK 54; API-миграция не потребовалась (сторы уже на современном `create()` + `persist`/`createJSONStorage`). Один инстанс библиотеки на монорепо — сторы `@forma/core` и mobile больше не могут разойтись по инстансам.
+- **Reanimated ~3.19.x и slider 4.5.x в mobile (не старшие линии из bundled SDK 54)** — reanimated 4 и slider 5 работают только на New Architecture, а приложение осознанно на legacy (`newArchEnabled: false`): 3.19-stable и 4.5.x — поддерживаемые линии для legacy. При включении New Architecture (обязательно до SDK 55 — он только New Arch) — синхронно перевести оба пакета.
 
 ## Branding
 

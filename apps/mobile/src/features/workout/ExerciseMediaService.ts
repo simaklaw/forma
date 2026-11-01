@@ -1,4 +1,6 @@
-import * as FileSystem from 'expo-file-system';
+// SDK 54: легаси-API file-system живёт на 'expo-file-system/legacy'
+// (корневой экспорт — новый API; старые имена там кидают в рантайме).
+import * as FileSystem from 'expo-file-system/legacy';
 import { EXERCISE_VIDEOS, type ExerciseMediaKey } from './exerciseMedia';
 import { EXERCISE_VIDEO_MANIFEST } from './exerciseVideoManifest.generated';
 import {

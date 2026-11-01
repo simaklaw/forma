@@ -10,7 +10,9 @@ import {
   View
 } from 'react-native';
 import { Camera, CameraView } from 'expo-camera';
-import * as FileSystem from 'expo-file-system';
+// SDK 54: легаси-API file-system живёт на 'expo-file-system/legacy'
+// (корневой экспорт — новый API; старые имена там кидают в рантайме).
+import * as FileSystem from 'expo-file-system/legacy';
 import { fonts, radius, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { useT } from '@/i18n/strings';

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system';
+// SDK 54: легаси-API file-system живёт на 'expo-file-system/legacy'
+// (корневой экспорт — новый API; старые имена там кидают в рантайме).
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';

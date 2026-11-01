@@ -1,4 +1,4 @@
-jest.mock('expo-file-system', () => ({
+jest.mock('expo-file-system/legacy', () => ({
   cacheDirectory: 'file:///mock-cache/',
   getInfoAsync: jest.fn(),
   makeDirectoryAsync: jest.fn(),
@@ -24,7 +24,7 @@ jest.mock('./exerciseDatasetAssets.generated', () => ({
   DATASET_THUMB_MODULES: {},
 }));
 
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { ExerciseMediaService } from './ExerciseMediaService';
 
 const dir = 'file:///mock-cache/exercise_media/';

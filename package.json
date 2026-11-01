@@ -20,13 +20,6 @@
     "db:migrate": "psql postgresql://fitpulse:fitpulse@localhost:5432/fitpulse -f packages/db/migrations/001_init.sql && psql postgresql://fitpulse:fitpulse@localhost:5432/fitpulse -f packages/db/migrations/002_rls_basic.sql && psql postgresql://fitpulse:fitpulse@localhost:5432/fitpulse -f packages/db/migrations/003_rls_strict.sql && psql postgresql://fitpulse:fitpulse@localhost:5432/fitpulse -f packages/db/migrations/004_device_platform_unknown.sql",
     "api:dev": "pnpm --filter @forma/api dev"
   },
-  "pnpm": {
-    "overrides": {
-      "react": "19.0.0",
-      "react-dom": "19.0.0",
-      "@types/react": "~19.1.0"
-    }
-  },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "eslint": "^9.0.0",
