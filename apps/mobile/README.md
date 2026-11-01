@@ -53,18 +53,18 @@ src/
 
 ## План апгрейда Expo / React Native (ревью-находка #17)
 
-Текущее состояние после шага 7: Expo SDK **57**, RN 0.86.3, react/react-dom
-**19.2.3**, **New Architecture включена** (`newArchEnabled: true`).
+Текущее состояние после шага 8: Expo SDK **58**, RN 0.88.1, react/react-dom
+**19.3.0**, **New Architecture включена** (`newArchEnabled: true`).
 pnpm overrides единого react-мира сняты (с шага 3): воркспейсы сами пинят
 одинаковые версии, `node-linker=hoisted` в `.npmrc` остаётся. Версии
-экспо-пакетов сверены с `bundledNativeModules.json` expo 57.0.31.
-TypeScript ~5.9.2, @types/react ~19.2.2, zustand ^5.0.0. compileSdk и
-iOS deploymentTarget — по дефолтам expo-build-properties SDK 57
+экспо-пакетов сверены с `bundledNativeModules.json` expo 58.0.22.
+TypeScript ~6.0.3, @types/react ~19.3.0, zustand ^5.0.0. compileSdk и
+iOS deploymentTarget — по дефолтам expo-build-properties SDK 58
 (явные оверрайды сняты; minSdk 26 сохранён — требование Health Connect).
-reanimated 4.5.1 + worklets 0.10.1 (New Arch-линия с шага 4).
+reanimated 4.7.1 + worklets 0.13.0 (New Arch-линия с шага 4).
 **expo-av удалён** (в SDK 55 его нет): ExerciseVideo переведён на
-expo-video (~57.0.5), звук бипа отдыха — на expo-audio (~57.0.5).
-expo-file-system 57: легаси-API на
+expo-video (~58.0.13), звук бипа отдыха — на expo-audio (~58.0.11).
+expo-file-system 58: легаси-API на
 `expo-file-system/legacy` (7 файлов + jest-моки).
 
 Поэтапный план — по одному SDK за шаг; каждый шаг завершается зелёным
@@ -128,10 +128,20 @@ CI, type-check, jest и ручным smoke-тестом на устройств�
    отклонения от bundled: slider 5.2.2 (в bundled 5.2.0 — наша новее),
    react-native-view-shot 4.0.3 (в bundled 5.1.0 — мажорный апгрейд
    вынесен из шага SDK).
-8. Следующий шаг — SDK 57 → 58 (по bundledNativeModules expo 58): на
-   каждом шаге локально `tsc --noEmit` + jest; EAS Build smoke (job
-   `eas-build-android` в ci.yml по умолчанию выключен — включать
-   на время шагов апгрейда).
+8. ~~SDK 57 → 58~~ — готово: RN 0.86.3 → 0.88.1, react 19.2.3 → 19.3.0
+   (web синхронно, @types/react ~19.3.0), все expo-* до SDK-58
+   (bundledNativeModules expo 58.0.22), reanimated 4.7.1 + worklets
+   0.13.0, gesture-handler ~3.3.0 (мажорная линия; peer-совместим с
+   bottom-sheet ^5.2.14 — его peer >=2.16.1, в коде используется только
+   GestureHandlerRootView), safe-area ~5.10.1, screens ~4.30.1,
+   svg 15.16.0, TS ~5.9.2 → ~6.0.3 (шаблон SDK 58). Осознанные
+   отклонения от bundled: slider 5.2.2 (в bundled 5.2.1 — наша новее),
+   react-native-view-shot 4.0.3 (в bundled 6.1.1 — мажорный апгрейд
+   вынесен из шага SDK).
+9. SDK 58 — последний известный SDK (expo@latest). Апгрейд завершён:
+   остаток — ручной smoke-тест на устройстве (edge-to-edge, жесты,
+   видео, бип, HealthKit/Health Connect, llama.rn) и, при желании,
+   включение job `eas-build-android` в ci.yml для EAS smoke.
 
 Апгрейд не совмещать с другими изменениями; переход web-пакетов на
 React 19 выполнен в шаге 2 вместе с mobile (единый react-мир, SDK 53).
