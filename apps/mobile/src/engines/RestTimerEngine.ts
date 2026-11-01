@@ -32,7 +32,7 @@
 
 import { AppState, AppStateStatus, NativeEventSubscription } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { Audio, AVPlaybackSource } from 'expo-av';
+import { AudioPlayer, AudioSource, createAudioPlayer } from 'expo-audio';
 
 export type TimerTickHandler = (remainingSeconds: number) => void;
 export type TimerCompleteHandler = () => void;
@@ -40,24 +40,27 @@ export type TimerCompleteHandler = () => void;
 export class RestTimerEngine {
   private static intervalId: ReturnType<typeof setInterval> | null = null;
   private static appStateSub: NativeEventSubscription | null = null;
-  private static sound: Audio.Sound | null = null;
+  private static player: AudioPlayer | null = null;
 
   private static startedAt = 0;
   private static durationMs = 0;
   private static onTick: TimerTickHandler | null = null;
   private static onComplete: TimerCompleteHandler | null = null;
-  private static beepSource: AVPlaybackSource | undefined;
+  private static beepSource: AudioSource | undefined;
   private static lastEmitted = -1;
 
-  static async playBeep(source?: AVPlaybackSource) {
+  // SDK 55: expo-av удалён из Expo — короткий бип на expo-audio
+  // (createAudioPlayer + replace; плеер переиспользуется между тиками).
+  static playBeep(source?: AudioSource) {
     try {
       if (!source) return;
-      if (this.sound) {
-        await this.sound.unloadAsync();
+      if (!this.player) {
+        this.player = createAudioPlayer(source);
+      } else {
+        this.player.replace(source);
       }
-      const { sound } = await Audio.Sound.createAsync(source);
-      this.sound = sound;
-      await sound.playAsync();
+      void this.player.seekTo(0).catch(() => {});
+      this.player.play();
     } catch (e) {
       console.warn('RestTimerEngine: beep playback failed', e);
     }
@@ -80,7 +83,7 @@ export class RestTimerEngine {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
   }
 
-  static startTimer(seconds: number, onTick: TimerTickHandler, onComplete: TimerCompleteHandler, beepSource?: AVPlaybackSource) {
+  static startTimer(seconds: number, onTick: TimerTickHandler, onComplete: TimerCompleteHandler, beepSource?: AudioSource) {
     this.stopTimer();
 
     this.startedAt = Date.now();

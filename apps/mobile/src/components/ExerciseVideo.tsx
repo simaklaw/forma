@@ -71,6 +71,23 @@ export default function ExerciseVideo({
   useEffect(() => {
     setFailedSourceKey(null);
   }, [sourceIdentity]);
+  const posterSource =
+    posterAsset != null ? posterAsset : posterUri ? { uri: posterUri } : undefined;
+  // SDK 55: expo-av удалён из Expo — видео на expo-video (VideoPlayer + VideoView).
+  const videoSource = source == null ? null : source;
+  const previewPlayer = useVideoPlayer(videoSource, (player) => {
+    player.muted = true;
+    player.loop = true;
+  });
+  const fullscreenPlayer = useVideoPlayer(videoSource, (player) => {
+    player.muted = false;
+  });
+  const { status: previewStatus, error: previewError } = useEvent(previewPlayer, 'statusChange', {
+    status: previewPlayer.status
+  });
+  const { isPlaying: fullscreenPlaying } = useEvent(fullscreenPlayer, 'playingChange', {
+    isPlaying: fullscreenPlayer.playing
+  });
 
   // Готовность/ошибка источника: события VideoPlayer вместо колбэков expo-av.
   useEffect(() => {
@@ -93,24 +110,6 @@ export default function ExerciseVideo({
       previewPlayer.pause();
     }
   }, [shouldPlay, source, previewPlayer]);
-  const posterSource =
-    posterAsset != null ? posterAsset : posterUri ? { uri: posterUri } : undefined;
-  // SDK 55: expo-av удалён из Expo — видео на expo-video (VideoPlayer + VideoView).
-  const videoSource = source == null ? null : source;
-  const previewPlayer = useVideoPlayer(videoSource, (player) => {
-    player.muted = true;
-    player.loop = true;
-  });
-  const fullscreenPlayer = useVideoPlayer(videoSource, (player) => {
-    player.muted = false;
-  });
-  const { status: previewStatus, error: previewError } = useEvent(previewPlayer, 'statusChange', {
-    status: previewPlayer.status,
-    error: previewPlayer.error
-  });
-  const { isPlaying: fullscreenPlaying } = useEvent(fullscreenPlayer, 'playingChange', {
-    isPlaying: fullscreenPlayer.playing
-  });
 
   useEffect(() => {
     if (source || gifAsset != null || posterAsset != null || posterUri) return;

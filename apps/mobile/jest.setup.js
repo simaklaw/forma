@@ -63,3 +63,16 @@ jest.mock('react-native-reanimated', () => ({
   withRepeat: jest.fn((animation) => animation),
   withTiming: jest.fn((value) => value),
 }));
+
+// SDK 55: expo-av удалён из Expo (бип отдыха — на expo-audio).
+jest.mock('expo-audio', () => ({
+  createAudioPlayer: jest.fn(() => ({
+    play: jest.fn(),
+    pause: jest.fn(),
+    replace: jest.fn(),
+    seekTo: jest.fn(async () => {}),
+    playing: false,
+    loop: false,
+    muted: false
+  }))
+}));

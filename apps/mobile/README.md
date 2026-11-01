@@ -63,7 +63,8 @@ iOS deploymentTarget — по дефолтам expo-build-properties SDK 55
 (явные оверрайды сняты; minSdk 26 сохранён — требование Health Connect).
 reanimated 4.2.1 + worklets 0.7.4 (New Arch-линия с шага 4).
 **expo-av удалён** (в SDK 55 его нет): ExerciseVideo переведён на
-expo-video (~55.0.21). expo-file-system 55: легаси-API на
+expo-video (~55.0.21), звук бипа отдыха — на expo-audio (~55.0.18).
+expo-file-system 55: легаси-API на
 `expo-file-system/legacy` (7 файлов + jest-моки).
 
 Поэтапный план — по одному SDK за шаг; каждый шаг завершается зелёным
@@ -110,7 +111,8 @@ CI, type-check, jest и ручным smoke-тестом на устройств�
    compileSdk/deploymentTarget — по дефолтам SDK 55; **expo-av удалён из
    SDK 55** — ExerciseVideo мигрирован на expo-video (VideoView +
    useVideoPlayer, события statusChange/playingChange вместо
-   AVPlaybackStatus).
+   AVPlaybackStatus), звук бипа отдыха — на expo-audio
+   (createAudioPlayer + replace, RestTimerEngine).
 6. Следующий шаг — SDK 55 → 56 (по bundledNativeModules expo 56): на
    каждом шаге локально `tsc --noEmit` + jest; EAS Build smoke (job
    `eas-build-android` в ci.yml по умолчанию выключен — включать
