@@ -53,18 +53,18 @@ src/
 
 ## План апгрейда Expo / React Native (ревью-находка #17)
 
-Текущее состояние после шага 6: Expo SDK **56**, RN 0.85.3, react/react-dom
+Текущее состояние после шага 7: Expo SDK **57**, RN 0.86.3, react/react-dom
 **19.2.3**, **New Architecture включена** (`newArchEnabled: true`).
 pnpm overrides единого react-мира сняты (с шага 3): воркспейсы сами пинят
 одинаковые версии, `node-linker=hoisted` в `.npmrc` остаётся. Версии
-экспо-пакетов сверены с `bundledNativeModules.json` expo 56.0.24.
+экспо-пакетов сверены с `bundledNativeModules.json` expo 57.0.31.
 TypeScript ~5.9.2, @types/react ~19.2.2, zustand ^5.0.0. compileSdk и
-iOS deploymentTarget — по дефолтам expo-build-properties SDK 56
+iOS deploymentTarget — по дефолтам expo-build-properties SDK 57
 (явные оверрайды сняты; minSdk 26 сохранён — требование Health Connect).
-reanimated 4.3.1 + worklets 0.8.3 (New Arch-линия с шага 4).
+reanimated 4.5.1 + worklets 0.10.1 (New Arch-линия с шага 4).
 **expo-av удалён** (в SDK 55 его нет): ExerciseVideo переведён на
-expo-video (~56.1.4), звук бипа отдыха — на expo-audio (~56.0.13).
-expo-file-system 56: легаси-API на
+expo-video (~57.0.5), звук бипа отдыха — на expo-audio (~57.0.5).
+expo-file-system 57: легаси-API на
 `expo-file-system/legacy` (7 файлов + jest-моки).
 
 Поэтапный план — по одному SDK за шаг; каждый шаг завершается зелёным
@@ -120,7 +120,15 @@ CI, type-check, jest и ручным smoke-тестом на устройств�
    менялись. Осознанные отклонения от bundled: slider 5.2.2 (в bundled
    5.2.0 — наша новее, та же мажорная), react-native-view-shot 4.0.3
    (в bundled 5.1.0 — мажорный апгрейд вынесен из шага SDK).
-7. Следующий шаг — SDK 56 → 57 (по bundledNativeModules expo 57): на
+7. ~~SDK 56 → 57~~ — готово: RN 0.85.3 → 0.86.3, react 19.2.3 не менялся
+   (в SDK 57 та же линия react), все expo-* до SDK-57 (bundledNativeModules
+   expo 57.0.31), reanimated 4.5.1 + worklets 0.10.1, gesture-handler
+   ~2.32.0. safe-area/screens/svg/picker — без изменений (совпадают с
+   bundled). TS ~5.9.2 и @types/react ~19.2.2 не менялись. Осознанные
+   отклонения от bundled: slider 5.2.2 (в bundled 5.2.0 — наша новее),
+   react-native-view-shot 4.0.3 (в bundled 5.1.0 — мажорный апгрейд
+   вынесен из шага SDK).
+8. Следующий шаг — SDK 57 → 58 (по bundledNativeModules expo 58): на
    каждом шаге локально `tsc --noEmit` + jest; EAS Build smoke (job
    `eas-build-android` в ci.yml по умолчанию выключен — включать
    на время шагов апгрейда).
