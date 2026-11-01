@@ -76,7 +76,7 @@ export default function CalorieRing({
           origin={`${size / 2}, ${size / 2}`}
         />
       </Svg>
-      <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
         <View style={styles.center}>
           {!ready ? (
             <>

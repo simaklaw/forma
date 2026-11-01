@@ -37,6 +37,9 @@ interface Props {
   shouldPlay?: boolean;
 }
 
+/** RN 0.85: RN убрал этот оверлей-хелпер — используем явный объект для спредов стилей. */
+const absoluteFillObject = { position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0 };
+
 function normalizeCues(cues: string[] | undefined): string[] {
   if (!cues?.length) {
     return [
@@ -273,11 +276,11 @@ function createStyles(colors: ColorTokens) {
       borderRadius: radius.control
     },
     placeholderBg: {
-      ...StyleSheet.absoluteFillObject,
+      ...absoluteFillObject,
       backgroundColor: colors.ink
     },
     dim: {
-      ...StyleSheet.absoluteFillObject,
+      ...absoluteFillObject,
       backgroundColor: 'rgba(0,0,0,0.55)'
     },
     guide: {
@@ -335,7 +338,7 @@ function createStyles(colors: ColorTokens) {
     },
     fullscreenRoot: { flex: 1, backgroundColor: '#000' },
     pauseOverlay: {
-      ...StyleSheet.absoluteFillObject,
+      ...absoluteFillObject,
       alignItems: 'center',
       justifyContent: 'center'
     },
