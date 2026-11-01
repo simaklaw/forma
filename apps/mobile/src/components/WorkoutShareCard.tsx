@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, type ComponentRef } from 'react';
 import { Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Md3Card from './md3/Md3Card';
 import * as Sharing from 'expo-sharing';
@@ -44,7 +44,8 @@ export default function WorkoutShareCard({ setLogs }: Props) {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const t = useT();
   const lang = useLanguageStore((s) => s.lang);
-  const posterRef = useRef<View>(null);
+  // RN 0.88: View — forwardRef-компонент, тип инстанса — ComponentRef<typeof View>.
+  const posterRef = useRef<ComponentRef<typeof View>>(null);
 
   const names = useMemo(() => {
     const out: Record<number, string> = { ...allExerciseNames() };

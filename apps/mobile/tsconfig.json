@@ -7,9 +7,9 @@
     "moduleResolution": "bundler",
     "skipLibCheck": true,
     "jsx": "react-native",
-    "baseUrl": ".",
+    "types": ["node"],
     "paths": {
-      "@/*": ["src/*"],
+      "@/*": ["./src/*"],
       "@forma/core": ["../../packages/core/src"],
       "@forma/core/*": ["../../packages/core/src/*"],
       "@forma/workout-domain": ["../../packages/workout-domain/src"],
