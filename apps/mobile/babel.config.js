@@ -21,8 +21,9 @@ module.exports = function (api) {
           },
         },
       ],
-      // MUST stay last per react-native-reanimated's setup requirement.
-      'react-native-reanimated/plugin',
+      // reanimated v4: babel-плагин переехал в react-native-worklets;
+      // MUST stay last per react-native-worklets' setup requirement.
+      'react-native-worklets/plugin',
     ],
   };
 };

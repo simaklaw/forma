@@ -62,7 +62,7 @@ pnpm api:dev      # API на :8787 с bearer-авторизацией
 - **React 19.1.0 на всём воркспейсе** — включая web и mobile. pnpm overrides единого react-мира сняты (шаг SDK 54): каждый воркспейс сам пинит свою пару (react/react-dom 19.1.0, @types/react ~19.1.0), версии совпадают. `.npmrc` с `node-linker=hoisted` остаётся: Expo по-прежнему требует плоскую раскладку для native-сборок, в корне живёт одна версия react.
 - **TypeScript `~5.9.2` в mobile** — версия из шаблона Expo SDK 54 (tsconfig.base: `module: preserve`, минимум TS 5.4); остальные воркспейсы на `^5.7.0`. Не поднимать TS в mobile отдельно от Expo.
 - **Zustand 5.x везде** — mobile переведён 4.5.2 → ^5.0.0 вместе с SDK 54; API-миграция не потребовалась (сторы уже на современном `create()` + `persist`/`createJSONStorage`). Один инстанс библиотеки на монорепо — сторы `@forma/core` и mobile больше не могут разойтись по инстансам.
-- **Reanimated ~3.19.x и slider 4.5.x в mobile (не старшие линии из bundled SDK 54)** — reanimated 4 и slider 5 работают только на New Architecture, а приложение осознанно на legacy (`newArchEnabled: false`): 3.19-stable и 4.5.x — поддерживаемые линии для legacy. При включении New Architecture (обязательно до SDK 55 — он только New Arch) — синхронно перевести оба пакета.
+- **New Architecture включена (шаг 4 апгрейда Expo)** — `newArchEnabled: true` в app.json: react-native-reanimated ~4.1.1 + react-native-worklets 0.5.1 (bundled SDK 54; babel-плагин `react-native-worklets/plugin` вместо `react-native-reanimated/plugin`), @react-native-community/slider 5.2.2, @gorhom/bottom-sheet ^5.2.14 (v4 не поддерживает New Arch). SDK 54 — последний SDK с поддержкой legacy; SDK 55 работает только на New Arch — блокер снят.
 
 ## Branding
 
