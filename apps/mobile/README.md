@@ -53,17 +53,18 @@ src/
 
 ## План апгрейда Expo / React Native (ревью-находка #17)
 
-Текущее состояние после шага 4: Expo SDK **54**, RN 0.81.5, react/react-dom
-**19.1.0**, **New Architecture включена** (`newArchEnabled: true`).
-pnpm overrides единого react-мира сняты (шаг 3): воркспейсы сами пинят
-19.1.0, `node-linker=hoisted` в `.npmrc` остаётся. Версии экспо-пакетов
-сверены с `bundledNativeModules.json` expo 54.0.38. TypeScript ~5.9.2,
-zustand ^5.0.0, compileSdk 36. Для New Architecture переведены
-(шаг 4): react-native-reanimated ~3.19.5 → ~4.1.1 (+
-react-native-worklets 0.5.1; babel-плагин `react-native-worklets/plugin`
-вместо `react-native-reanimated/plugin`), slider 4.5.7 → 5.2.2,
-@gorhom/bottom-sheet ^4.6.1 → ^5.2.14. expo-file-system 19: легаси-API
-на `expo-file-system/legacy` (7 файлов + jest-моки).
+Текущее состояние после шага 5: Expo SDK **55**, RN 0.83.10, react/react-dom
+**19.2.0**, **New Architecture включена** (`newArchEnabled: true`).
+pnpm overrides единого react-мира сняты (с шага 3): воркспейсы сами пинят
+одинаковые версии, `node-linker=hoisted` в `.npmrc` остаётся. Версии
+экспо-пакетов сверены с `bundledNativeModules.json` expo 55.0.32.
+TypeScript ~5.9.2, @types/react ~19.2.2, zustand ^5.0.0. compileSdk и
+iOS deploymentTarget — по дефолтам expo-build-properties SDK 55
+(явные оверрайды сняты; minSdk 26 сохранён — требование Health Connect).
+reanimated 4.2.1 + worklets 0.7.4 (New Arch-линия с шага 4).
+**expo-av удалён** (в SDK 55 его нет): ExerciseVideo переведён на
+expo-video (~55.0.21). expo-file-system 55: легаси-API на
+`expo-file-system/legacy` (7 файлов + jest-моки).
 
 Поэтапный план — по одному SDK за шаг; каждый шаг завершается зелёным
 CI, type-check, jest и ручным smoke-тестом на устройстве; не совмещать
@@ -103,9 +104,15 @@ CI, type-check, jest и ручным smoke-тестом на устройств�
    New Arch с v2) и llama.rn 0.9.7 оставлены на текущих версиях —
    проверить нативное поведение при smoke-тесте на устройстве
    (нативные сборки в CI не гоняются).
-5. Следующий шаг — SDK 54 → 55 (по bundledNativeModules expo 55):
-   New Arch уже включена, остаётся синхронизация версий expo-*. На
-   каждом шаге: локально `tsc --noEmit` + jest; EAS Build smoke (job
+5. ~~SDK 54 → 55~~ — готово: RN 0.81.5 → 0.83.10, react 19.1.0 → 19.2.0
+   (web синхронно), все expo-* до SDK-55 (bundledNativeModules expo
+   55.0.32), reanimated 4.2.1 + worklets 0.7.4, @types/react ~19.2.2,
+   compileSdk/deploymentTarget — по дефолтам SDK 55; **expo-av удалён из
+   SDK 55** — ExerciseVideo мигрирован на expo-video (VideoView +
+   useVideoPlayer, события statusChange/playingChange вместо
+   AVPlaybackStatus).
+6. Следующий шаг — SDK 55 → 56 (по bundledNativeModules expo 56): на
+   каждом шаге локально `tsc --noEmit` + jest; EAS Build smoke (job
    `eas-build-android` в ci.yml по умолчанию выключен — включать
    на время шагов апгрейда).
 

@@ -35,14 +35,18 @@ jest.mock('expo-haptics', () => ({
   NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
 }));
 
-jest.mock('expo-av', () => ({
-  Audio: {
-    Sound: {
-      createAsync: jest.fn(async () => ({
-        sound: { playAsync: jest.fn(), unloadAsync: jest.fn() },
-      })),
-    },
-  },
+// SDK 55: expo-av удалён из Expo (видео — на expo-video).
+jest.mock('expo-video', () => ({
+  VideoView: 'VideoView',
+  useVideoPlayer: jest.fn(() => ({
+    play: jest.fn(),
+    pause: jest.fn(),
+    loop: false,
+    muted: false,
+    playing: false,
+    status: 'idle',
+    error: null
+  }))
 }));
 
 jest.mock('react-native-reanimated', () => ({

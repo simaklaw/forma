@@ -7,7 +7,7 @@
  * в светлой «фарфоровой» теме лесной акцент на тёмном оверлее нечитаем.
  */
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Image,
   Modal,
@@ -16,7 +16,8 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { ResizeMode, Video, AVPlaybackStatus } from 'expo-av';
+import { useEvent } from 'expo';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { fonts, radius, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 
@@ -61,7 +62,6 @@ export default function ExerciseVideo({
   const steps = useMemo(() => normalizeCues(cues), [cues]);
   const [stepIdx, setStepIdx] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [readySourceKey, setReadySourceKey] = useState<string | null>(null);
   const [failedSourceKey, setFailedSourceKey] = useState<string | null>(null);
   const sourceIdentity =
@@ -71,10 +71,46 @@ export default function ExerciseVideo({
   useEffect(() => {
     setFailedSourceKey(null);
   }, [sourceIdentity]);
+
+  // Готовность/ошибка источника: события VideoPlayer вместо колбэков expo-av.
+  useEffect(() => {
+    if (!sourceIdentity) return;
+    if (previewError != null || previewStatus === 'error') {
+      setReadySourceKey((ready) => (ready === sourceIdentity ? null : ready));
+      setFailedSourceKey(sourceIdentity);
+    } else if (previewStatus === 'readyToPlay') {
+      setFailedSourceKey((failed) => (failed === sourceIdentity ? null : failed));
+      setReadySourceKey(sourceIdentity);
+    }
+  }, [previewStatus, previewError, sourceIdentity]);
+
+  // Превью играет, только пока шторка/экран видимы (shouldPlay).
+  useEffect(() => {
+    if (!source) return;
+    if (shouldPlay) {
+      previewPlayer.play();
+    } else {
+      previewPlayer.pause();
+    }
+  }, [shouldPlay, source, previewPlayer]);
   const posterSource =
     posterAsset != null ? posterAsset : posterUri ? { uri: posterUri } : undefined;
-  const previewRef = useRef<Video>(null);
-  const fullscreenRef = useRef<Video>(null);
+  // SDK 55: expo-av удалён из Expo — видео на expo-video (VideoPlayer + VideoView).
+  const videoSource = source == null ? null : source;
+  const previewPlayer = useVideoPlayer(videoSource, (player) => {
+    player.muted = true;
+    player.loop = true;
+  });
+  const fullscreenPlayer = useVideoPlayer(videoSource, (player) => {
+    player.muted = false;
+  });
+  const { status: previewStatus, error: previewError } = useEvent(previewPlayer, 'statusChange', {
+    status: previewPlayer.status,
+    error: previewPlayer.error
+  });
+  const { isPlaying: fullscreenPlaying } = useEvent(fullscreenPlayer, 'playingChange', {
+    isPlaying: fullscreenPlayer.playing
+  });
 
   useEffect(() => {
     if (source || gifAsset != null || posterAsset != null || posterUri) return;
@@ -85,36 +121,22 @@ export default function ExerciseVideo({
     return () => clearInterval(id);
   }, [source, gifAsset, posterAsset, posterUri, steps.length]);
 
-  useEffect(() => {
-    if (!source || !previewRef.current) return;
-    if (shouldPlay) {
-      previewRef.current.playAsync().catch(() => {});
-    } else {
-      previewRef.current.pauseAsync().catch(() => {});
-    }
-  }, [shouldPlay, source]);
-
   function openFullscreen() {
     if (!source || videoFailed) return;
-    previewRef.current?.pauseAsync().catch(() => {});
+    previewPlayer.pause();
     setFullscreen(true);
   }
 
   function closeFullscreen() {
-    fullscreenRef.current?.pauseAsync().catch(() => {});
+    fullscreenPlayer.pause();
     setFullscreen(false);
   }
 
-  async function toggleFullscreenPlayback() {
-    const status = (await fullscreenRef.current?.getStatusAsync()) as AVPlaybackStatus & {
-      isPlaying?: boolean;
-    };
-    if (status?.isPlaying) {
-      await fullscreenRef.current?.pauseAsync();
-      setIsPlaying(false);
+  function toggleFullscreenPlayback() {
+    if (fullscreenPlaying) {
+      fullscreenPlayer.pause();
     } else {
-      await fullscreenRef.current?.playAsync();
-      setIsPlaying(true);
+      fullscreenPlayer.play();
     }
   }
 
@@ -135,23 +157,12 @@ export default function ExerciseVideo({
       >
         {source && !videoFailed ? (
           <>
-            <Video
-              ref={previewRef}
-              source={source as any}
+            <VideoView
+              player={previewPlayer}
               style={StyleSheet.absoluteFill}
-              resizeMode={ResizeMode.COVER}
-              isMuted
-              isLooping
-              shouldPlay={shouldPlay}
-              onLoadStart={() => {
-                setReadySourceKey((ready) => (ready === sourceIdentity ? null : ready));
-                setFailedSourceKey((failed) => (failed === sourceIdentity ? null : failed));
-              }}
-              onReadyForDisplay={() => setReadySourceKey(sourceIdentity)}
-              onError={() => {
-                setReadySourceKey((ready) => (ready === sourceIdentity ? null : ready));
-                setFailedSourceKey(sourceIdentity);
-              }}
+              contentFit="cover"
+              nativeControls={false}
+              surfaceType="textureView"
             />
             {posterSource && !videoReady ? (
               <Image
@@ -218,23 +229,14 @@ export default function ExerciseVideo({
               activeOpacity={1}
               onPress={toggleFullscreenPlayback}
             >
-              <Video
-                ref={fullscreenRef}
-                source={source as any}
+              <VideoView
+                player={fullscreenPlayer}
                 style={StyleSheet.absoluteFill}
-                resizeMode={ResizeMode.CONTAIN}
-                shouldPlay
-                useNativeControls={false}
-                onReadyForDisplay={() => setReadySourceKey(sourceIdentity)}
-                onError={() => {
-                  setReadySourceKey((ready) => (ready === sourceIdentity ? null : ready));
-                  setFailedSourceKey(sourceIdentity);
-                }}
-                onPlaybackStatusUpdate={(status) => {
-                  if ('isPlaying' in status) setIsPlaying(!!status.isPlaying);
-                }}
+                contentFit="contain"
+                nativeControls={false}
+                surfaceType="textureView"
               />
-              {!isPlaying && (
+              {!fullscreenPlaying && (
                 <View style={styles.pauseOverlay}>
                   <Text style={styles.pauseIcon}>▶</Text>
                 </View>
@@ -244,7 +246,7 @@ export default function ExerciseVideo({
             <Image
               source={posterSource}
               style={StyleSheet.absoluteFill}
-              resizeMode={ResizeMode.CONTAIN}
+              resizeMode="contain"
               accessibilityIgnoresInvertColors
             />
           ) : null}

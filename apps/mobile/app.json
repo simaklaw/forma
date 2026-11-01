@@ -47,19 +47,10 @@
       [
         "expo-build-properties",
         {
-          "ios": {
-            "deploymentTarget": "15.1"
-          },
+          "ios": {},
           "android": {
-            "minSdkVersion": 26,
-            "compileSdkVersion": 36
+            "minSdkVersion": 26
           }
-        }
-      ],
-      [
-        "expo-av",
-        {
-          "microphonePermission": false
         }
       ],
       "react-native-health-connect",
