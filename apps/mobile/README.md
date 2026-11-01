@@ -134,7 +134,9 @@ CI, type-check, jest и ручным smoke-тестом на устройств�
    0.13.0, gesture-handler ~3.3.0 (мажорная линия; peer-совместим с
    bottom-sheet ^5.2.14 — его peer >=2.16.1, в коде используется только
    GestureHandlerRootView), safe-area ~5.10.1, screens ~4.30.1,
-   svg 15.16.0, TS ~5.9.2 → ~6.0.3 (шаблон SDK 58). Осознанные
+   svg 15.16.0, TS ~5.9.2 → ~6.0.3 (шаблон SDK 58); в tsconfig
+   удалён deprecated в TS 6 `baseUrl` (paths без baseUrl —
+   относительно tsconfig). Осознанные
    отклонения от bundled: slider 5.2.2 (в bundled 5.2.1 — наша новее),
    react-native-view-shot 4.0.3 (в bundled 6.1.1 — мажорный апгрейд
    вынесен из шага SDK).

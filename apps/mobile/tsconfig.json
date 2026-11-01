@@ -7,7 +7,6 @@
     "moduleResolution": "bundler",
     "skipLibCheck": true,
     "jsx": "react-native",
-    "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
       "@forma/core": ["../../packages/core/src"],
