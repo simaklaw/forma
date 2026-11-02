@@ -169,6 +169,21 @@ jobs:
             fi
           fi
 
+          # SDK 58: expo@58 pulls optional peer @expo/dom-webview (pnpm autoInstallPeers).
+          # Its DomWebViewModule references expo-modules-core Kotlin types that were
+          # removed in core 58 — R8 'Missing class' fails the release build.
+          # The app does not use dom-webview; suppress the dangling references.
+          if [[ -f android/app/proguard-rules.pro ]]; then
+            {
+              echo ""
+              echo "# CI: SDK 58 smoke build - missing classes from @expo/dom-webview"
+              echo "-dontwarn expo.modules.kotlin.types.AnyTypeProvider"
+              echo "-dontwarn expo.modules.kotlin.types.LazyKType"
+            } >> android/app/proguard-rules.pro
+          else
+            echo "::warning::android/app/proguard-rules.pro not found after prebuild"
+          fi
+
           if [[ ! -f index.js ]]; then
             echo "::error::apps/mobile/index.js missing"
             exit 1
