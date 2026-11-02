@@ -1,0 +1,1515 @@
+android/src/main/jni.cpp:251:26: warning: 'extract_media_paths' has C-linkage specified, but returns user-defined type 'std::vector<std::string>' (aka 'vector<basic_string<char>>') which is incompatible with C [-Wreturn-type-c-linkage]
+C/C++:   251 | std::vector<std::string> extract_media_paths(JNIEnv *env, jobject params) {
+C/C++:       |                          ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:769:20: warning: object backing the pointer will be destroyed at the end of the full-expression [-Wdangling-gsl]
+C/C++:   769 |     auto sysinfo = common_params_get_system_info(defaultParams).c_str();
+C/C++:       |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1477:20: warning: exception of type 'const std::runtime_error &' will be caught by earlier handler [-Wexceptions]
+C/C++:  1477 |     } catch (const std::runtime_error& e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1472:20: note: for type 'const std::exception &'
+C/C++:  1472 |     } catch (const std::exception &e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1808:20: warning: exception of type 'const std::runtime_error &' will be caught by earlier handler [-Wexceptions]
+C/C++:  1808 |     } catch (const std::runtime_error& e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1805:20: note: for type 'const std::exception &'
+C/C++:  1805 |     } catch (const std::exception &e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1870:20: warning: exception of type 'const std::runtime_error &' will be caught by earlier handler [-Wexceptions]
+C/C++:  1870 |     } catch (const std::runtime_error& e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1866:20: note: for type 'const std::exception &'
+C/C++:  1866 |     } catch (const std::exception &e) {
+C/C++:       |                    ^
+C/C++: 5 warnings generated.
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:251:26: warning: 'extract_media_paths' has C-linkage specified, but returns user-defined type 'std::vector<std::string>' (aka 'vector<basic_string<char>>') which is incompatible with C [-Wreturn-type-c-linkage]
+C/C++:   251 | std::vector<std::string> extract_media_paths(JNIEnv *env, jobject params) {
+C/C++:       |                          ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:769:20: warning: object backing the pointer will be destroyed at the end of the full-expression [-Wdangling-gsl]
+C/C++:   769 |     auto sysinfo = common_params_get_system_info(defaultParams).c_str();
+C/C++:       |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1477:20: warning: exception of type 'const std::runtime_error &' will be caught by earlier handler [-Wexceptions]
+C/C++:  1477 |     } catch (const std::runtime_error& e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1472:20: note: for type 'const std::exception &'
+C/C++:  1472 |     } catch (const std::exception &e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1808:20: warning: exception of type 'const std::runtime_error &' will be caught by earlier handler [-Wexceptions]
+C/C++:  1808 |     } catch (const std::runtime_error& e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1805:20: note: for type 'const std::exception &'
+C/C++:  1805 |     } catch (const std::exception &e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1870:20: warning: exception of type 'const std::runtime_error &' will be caught by earlier handler [-Wexceptions]
+C/C++:  1870 |     } catch (const std::runtime_error& e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1866:20: note: for type 'const std::exception &'
+C/C++:  1866 |     } catch (const std::exception &e) {
+C/C++:       |                    ^
+C/C++: 5 warnings generated.
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:251:26: warning: 'extract_media_paths' has C-linkage specified, but returns user-defined type 'std::vector<std::string>' (aka 'vector<basic_string<char>>') which is incompatible with C [-Wreturn-type-c-linkage]
+C/C++:   251 | std::vector<std::string> extract_media_paths(JNIEnv *env, jobject params) {
+C/C++:       |                          ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:769:20: warning: object backing the pointer will be destroyed at the end of the full-expression [-Wdangling-gsl]
+C/C++:   769 |     auto sysinfo = common_params_get_system_info(defaultParams).c_str();
+C/C++:       |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1477:20: warning: exception of type 'const std::runtime_error &' will be caught by earlier handler [-Wexceptions]
+C/C++:  1477 |     } catch (const std::runtime_error& e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1472:20: note: for type 'const std::exception &'
+C/C++:  1472 |     } catch (const std::exception &e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1808:20: warning: exception of type 'const std::runtime_error &' will be caught by earlier handler [-Wexceptions]
+C/C++:  1808 |     } catch (const std::runtime_error& e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1805:20: note: for type 'const std::exception &'
+C/C++:  1805 |     } catch (const std::exception &e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1870:20: warning: exception of type 'const std::runtime_error &' will be caught by earlier handler [-Wexceptions]
+C/C++:  1870 |     } catch (const std::runtime_error& e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1866:20: note: for type 'const std::exception &'
+C/C++:  1866 |     } catch (const std::exception &e) {
+C/C++:       |                    ^
+C/C++: 5 warnings generated.
+
+> Task :react-native-svg:bundleLibCompileToJarRelease
+> Task :react-native-gesture-handler:javaPreCompileRelease
+> Task :react-native-health-connect:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-health-connect:generateReleaseBuildConfig
+> Task :react-native-health-connect:generateReleaseResources
+> Task :react-native-health-connect:packageReleaseResources
+> Task :react-native-health-connect:processReleaseNavigationResources
+> Task :react-native-health-connect:parseReleaseLocalResources
+> Task :react-native-health-connect:generateReleaseRFile
+> Task :react-native-screens:configureCMakeRelWithDebInfo[armeabi-v7a]
+> Task :react-native-worklets:buildCMakeRelWithDebInfo[arm64-v8a][worklets]
+> Task :react-native-screens:buildCMakeRelWithDebInfo[armeabi-v7a]
+> Task :react-native-screens:configureCMakeRelWithDebInfo[x86]
+> Task :react-native-worklets:configureCMakeRelWithDebInfo[armeabi-v7a]
+> Task :react-native-health-connect:compileReleaseKotlin
+
+> Task :llama.rn:buildCMakeRelWithDebInfo[arm64-v8a]
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:251:26: warning: 'extract_media_paths' has C-linkage specified, but returns user-defined type 'std::vector<std::string>' (aka 'vector<basic_string<char>>') which is incompatible with C [-Wreturn-type-c-linkage]
+C/C++:   251 | std::vector<std::string> extract_media_paths(JNIEnv *env, jobject params) {
+C/C++:       |                          ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:769:20: warning: object backing the pointer will be destroyed at the end of the full-expression [-Wdangling-gsl]
+C/C++:   769 |     auto sysinfo = common_params_get_system_info(defaultParams).c_str();
+C/C++:       |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1477:20: warning: exception of type 'const std::runtime_error &' will be caught by earlier handler [-Wexceptions]
+C/C++:  1477 |     } catch (const std::runtime_error& e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1472:20: note: for type 'const std::exception &'
+C/C++:  1472 |     } catch (const std::exception &e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1808:20: warning: exception of type 'const std::runtime_error &' will be caught by earlier handler [-Wexceptions]
+C/C++:  1808 |     } catch (const std::runtime_error& e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1805:20: note: for type 'const std::exception &'
+C/C++:  1805 |     } catch (const std::exception &e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1870:20: warning: exception of type 'const std::runtime_error &' will be caught by earlier handler [-Wexceptions]
+C/C++:  1870 |     } catch (const std::runtime_error& e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1866:20: note: for type 'const std::exception &'
+C/C++:  1866 |     } catch (const std::exception &e) {
+C/C++:       |                    ^
+C/C++: 5 warnings generated.
+
+> Task :llama.rn:configureCMakeRelWithDebInfo[x86_64]
+C/C++: CMake Warning:
+C/C++:   Manually-specified variables were not used by the project:
+C/C++:     HEXAGON_SDK_ROOT
+C/C++:     HEXAGON_TOOLS_ROOT
+
+> Task :react-native-screens:buildCMakeRelWithDebInfo[x86]
+> Task :react-native-screens:configureCMakeRelWithDebInfo[x86_64]
+> Task :react-native-worklets:buildCMakeRelWithDebInfo[armeabi-v7a][worklets]
+> Task :llama.rn:buildCMakeRelWithDebInfo[x86_64]
+> Task :react-native-screens:buildCMakeRelWithDebInfo[x86_64]
+> Task :react-native-screens:mergeReleaseJniLibFolders
+> Task :react-native-screens:mergeReleaseNativeLibs
+> Task :react-native-screens:copyReleaseJniLibsProjectOnly
+> Task :react-native-health-connect:javaPreCompileRelease
+> Task :react-native-safe-area-context:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-safe-area-context:generateReleaseBuildConfig
+> Task :react-native-safe-area-context:generateReleaseResources
+> Task :react-native-safe-area-context:packageReleaseResources
+> Task :react-native-safe-area-context:processReleaseNavigationResources
+> Task :react-native-safe-area-context:parseReleaseLocalResources
+> Task :react-native-safe-area-context:generateReleaseRFile
+
+> Task :react-native-health-connect:compileReleaseKotlin
+w: file:///home/runner/work/forma/forma/node_modules/react-native-health-connect/android/src/main/java/dev/matinzd/healthconnect/HealthConnectPackage.kt:3:8 'class TurboReactPackage : BaseReactPackage' is deprecated. Use BaseReactPackage instead.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-health-connect/android/src/main/java/dev/matinzd/healthconnect/HealthConnectPackage.kt:10:30 'class TurboReactPackage : BaseReactPackage' is deprecated. Use BaseReactPackage instead.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-health-connect/android/src/main/java/dev/matinzd/healthconnect/HealthConnectPackage.kt:23:47 'constructor(name: String, className: String, canOverrideExistingModule: Boolean, needsEagerInit: Boolean, hasConstants: Boolean, isCxxModule: Boolean, isTurboModule: Boolean): ReactModuleInfo' is deprecated. This constructor is deprecated and will be removed in the future. Use ReactModuleInfo(String, String, boolean, boolean, boolean, boolean)].
+w: file:///home/runner/work/forma/forma/node_modules/react-native-health-connect/android/src/main/java/dev/matinzd/healthconnect/records/ReactHealthRecord.kt:34:26 'fun newInstance(): CapturedType(out ReactHealthRecordImpl<*>)!' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-health-connect/android/src/main/java/dev/matinzd/healthconnect/records/ReactHealthRecord.kt:34:40 Unchecked cast of 'ReactHealthRecordImpl<*>?' to 'ReactHealthRecordImpl<T (of fun <T : Record> createReactHealthRecordInstance)>'.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-health-connect/android/src/main/java/dev/matinzd/healthconnect/records/ReactHealthRecord.kt:43:26 'fun newInstance(): CapturedType(out ReactHealthRecordImpl<out Record>)!' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-health-connect/android/src/main/java/dev/matinzd/healthconnect/records/ReactHealthRecord.kt:43:40 Unchecked cast of 'ReactHealthRecordImpl<out Record>?' to 'ReactHealthRecordImpl<T (of fun <T : Record> createReactHealthRecordInstance)>'.
+
+> Task :react-native-worklets:configureCMakeRelWithDebInfo[x86]
+
+> Task :react-native-safe-area-context:compileReleaseKotlin
+w: file:///home/runner/work/forma/forma/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaProviderManager.kt:40:19 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt:8:8 'class UIManagerModule : ReactContextBaseJavaModule, LifecycleEventListener, UIManager' is deprecated. This class is part of Legacy Architecture and will be removed in a future release.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt:46:54 'class UIManagerModule : ReactContextBaseJavaModule, LifecycleEventListener, UIManager' is deprecated. This class is part of Legacy Architecture and will be removed in a future release.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaViewShadowNode.kt:9:32 'class LayoutShadowNode : ReactShadowNodeImpl' is deprecated. This class is part of Legacy Architecture and will be removed in a future release.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaViewShadowNode.kt:110:61 'class NativeViewHierarchyOptimizer : Any' is deprecated. This class is part of Legacy Architecture and will be removed in a future release.
+
+> Task :react-native-safe-area-context:javaPreCompileRelease
+
+> Task :llama.rn:buildCMakeRelWithDebInfo[x86_64]
+C/C++: ninja: Entering directory `/home/runner/work/forma/forma/node_modules/llama.rn/android/.cxx/RelWithDebInfo/3l3d22u6/x86_64'
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:251:26: warning: 'extract_media_paths' has C-linkage specified, but returns user-defined type 'std::vector<std::string>' (aka 'vector<basic_string<char>>') which is incompatible with C [-Wreturn-type-c-linkage]
+C/C++:   251 | std::vector<std::string> extract_media_paths(JNIEnv *env, jobject params) {
+C/C++:       |                          ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:769:20: warning: object backing the pointer will be destroyed at the end of the full-expression [-Wdangling-gsl]
+C/C++:   769 |     auto sysinfo = common_params_get_system_info(defaultParams).c_str();
+C/C++:       |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1477:20: warning: exception of type 'const std::runtime_error &' will be caught by earlier handler [-Wexceptions]
+C/C++:  1477 |     } catch (const std::runtime_error& e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1472:20: note: for type 'const std::exception &'
+C/C++:  1472 |     } catch (const std::exception &e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1808:20: warning: exception of type 'const std::runtime_error &' will be caught by earlier handler [-Wexceptions]
+C/C++:  1808 |     } catch (const std::runtime_error& e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1805:20: note: for type 'const std::exception &'
+C/C++:  1805 |     } catch (const std::exception &e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1870:20: warning: exception of type 'const std::runtime_error &' will be caught by earlier handler [-Wexceptions]
+C/C++:  1870 |     } catch (const std::runtime_error& e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1866:20: note: for type 'const std::exception &'
+C/C++:  1866 |     } catch (const std::exception &e) {
+C/C++:       |                    ^
+C/C++: 5 warnings generated.
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:251:26: warning: 'extract_media_paths' has C-linkage specified, but returns user-defined type 'std::vector<std::string>' (aka 'vector<basic_string<char>>') which is incompatible with C [-Wreturn-type-c-linkage]
+C/C++:   251 | std::vector<std::string> extract_media_paths(JNIEnv *env, jobject params) {
+C/C++:       |                          ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:769:20: warning: object backing the pointer will be destroyed at the end of the full-expression [-Wdangling-gsl]
+C/C++:   769 |     auto sysinfo = common_params_get_system_info(defaultParams).c_str();
+C/C++:       |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1477:20: warning: exception of type 'const std::runtime_error &' will be caught by earlier handler [-Wexceptions]
+C/C++:  1477 |     } catch (const std::runtime_error& e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1472:20: note: for type 'const std::exception &'
+C/C++:  1472 |     } catch (const std::exception &e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1808:20: warning: exception of type 'const std::runtime_error &' will be caught by earlier handler [-Wexceptions]
+C/C++:  1808 |     } catch (const std::runtime_error& e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1805:20: note: for type 'const std::exception &'
+C/C++:  1805 |     } catch (const std::exception &e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1870:20: warning: exception of type 'const std::runtime_error &' will be caught by earlier handler [-Wexceptions]
+C/C++:  1870 |     } catch (const std::runtime_error& e) {
+C/C++:       |                    ^
+C/C++: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/jni.cpp:1866:20: note: for type 'const std::exception &'
+C/C++:  1866 |     } catch (const std::exception &e) {
+C/C++:       |                    ^
+C/C++: 5 warnings generated.
+
+> Task :react-native-safe-area-context:compileReleaseJavaWithJavac
+> Task :react-native-safe-area-context:mergeReleaseGeneratedProguardFiles
+> Task :react-native-safe-area-context:exportReleaseConsumerProguardFiles
+> Task :llama.rn:mergeReleaseJniLibFolders
+> Task :react-native-screens:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-screens:generateReleaseBuildConfig
+> Task :react-native-screens:generateReleaseResources
+> Task :react-native-health-connect:compileReleaseJavaWithJavac
+> Task :react-native-health-connect:mergeReleaseGeneratedProguardFiles
+> Task :react-native-health-connect:exportReleaseConsumerProguardFiles
+> Task :llama.rn:mergeReleaseNativeLibs
+> Task :expo:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo:generateReleaseResources
+> Task :react-native-screens:packageReleaseResources
+> Task :react-native-screens:processReleaseNavigationResources
+> Task :expo:packageReleaseResources
+> Task :react-native-screens:javaPreCompileRelease
+> Task :expo:processReleaseNavigationResources
+> Task :react-native-screens:parseReleaseLocalResources
+> Task :expo:parseReleaseLocalResources
+> Task :expo:generateReleaseRFile
+> Task :expo-constants:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-screens:generateReleaseRFile
+> Task :expo-constants:generateReleaseResources
+> Task :llama.rn:copyReleaseJniLibsProjectOnly
+> Task :expo-modules-core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-modules-core:generateReleaseBuildConfig
+> Task :expo-constants:packageReleaseResources
+> Task :expo-modules-core:generateReleaseResources
+> Task :expo-constants:processReleaseNavigationResources
+> Task :expo-modules-core:packageReleaseResources
+> Task :expo-modules-core:processReleaseNavigationResources
+> Task :expo-constants:parseReleaseLocalResources
+> Task :expo-modules-core:parseReleaseLocalResources
+> Task :expo-constants:generateReleaseRFile
+> Task :expo-constants:javaPreCompileRelease
+> Task :expo-modules-core:generateReleaseRFile
+> Task :expo-log-box:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-modules-core:javaPreCompileRelease
+> Task :expo-log-box:generateReleaseBuildConfig
+> Task :expo:javaPreCompileRelease
+> Task :react-native-async-storage_async-storage:generateReleaseBuildConfig
+> Task :expo-log-box:generateReleaseResources
+> Task :react-native-async-storage_async-storage:generateReleaseResources
+> Task :expo-log-box:packageReleaseResources
+> Task :react-native-async-storage_async-storage:packageReleaseResources
+> Task :expo-log-box:processReleaseNavigationResources
+> Task :react-native-async-storage_async-storage:processReleaseNavigationResources
+> Task :react-native-async-storage_async-storage:parseReleaseLocalResources
+> Task :expo-log-box:parseReleaseLocalResources
+> Task :expo-log-box:javaPreCompileRelease
+> Task :expo-log-box:generateReleaseRFile
+> Task :react-native-async-storage_async-storage:generateReleaseRFile
+> Task :react-native-community_slider:generateReleaseBuildConfig
+> Task :react-native-async-storage_async-storage:javaPreCompileRelease
+> Task :react-native-community_slider:generateReleaseResources
+> Task :react-native-community_slider:packageReleaseResources
+> Task :react-native-community_slider:processReleaseNavigationResources
+> Task :react-native-community_slider:parseReleaseLocalResources
+> Task :react-native-community_slider:generateReleaseRFile
+> Task :react-native-community_slider:javaPreCompileRelease
+
+> Task :react-native-async-storage_async-storage:compileReleaseJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: /home/runner/work/forma/forma/node_modules/@react-native-async-storage/async-storage/android/src/javaPackage/java/com/reactnativecommunity/asyncstorage/AsyncStoragePackage.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :react-native-async-storage_async-storage:mergeReleaseGeneratedProguardFiles
+> Task :react-native-async-storage_async-storage:exportReleaseConsumerProguardFiles
+> Task :react-native-picker_picker:generateReleaseBuildConfig
+> Task :react-native-picker_picker:generateReleaseResources
+> Task :react-native-picker_picker:packageReleaseResources
+> Task :react-native-picker_picker:processReleaseNavigationResources
+> Task :react-native-picker_picker:parseReleaseLocalResources
+> Task :react-native-picker_picker:generateReleaseRFile
+> Task :react-native-picker_picker:javaPreCompileRelease
+
+> Task :react-native-community_slider:compileReleaseJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :react-native-community_slider:mergeReleaseGeneratedProguardFiles
+> Task :react-native-community_slider:exportReleaseConsumerProguardFiles
+> Task :llama.rn:generateReleaseBuildConfig
+> Task :llama.rn:generateReleaseResources
+> Task :llama.rn:packageReleaseResources
+> Task :llama.rn:processReleaseNavigationResources
+> Task :llama.rn:parseReleaseLocalResources
+> Task :llama.rn:generateReleaseRFile
+> Task :llama.rn:javaPreCompileRelease
+
+> Task :react-native-picker_picker:compileReleaseJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :react-native-picker_picker:mergeReleaseGeneratedProguardFiles
+> Task :react-native-picker_picker:exportReleaseConsumerProguardFiles
+> Task :react-native-svg:mergeReleaseGeneratedProguardFiles
+> Task :react-native-svg:exportReleaseConsumerProguardFiles
+> Task :react-native-view-shot:generateReleaseBuildConfig
+> Task :react-native-view-shot:generateReleaseResources
+> Task :react-native-view-shot:packageReleaseResources
+> Task :react-native-view-shot:processReleaseNavigationResources
+> Task :react-native-view-shot:parseReleaseLocalResources
+> Task :react-native-view-shot:generateReleaseRFile
+> Task :react-native-view-shot:javaPreCompileRelease
+
+> Task :llama.rn:compileReleaseJavaWithJavac
+Note: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/java/com/rnllama/RNLlamaPackage.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :react-native-view-shot:compileReleaseJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :react-native-view-shot:mergeReleaseGeneratedProguardFiles
+> Task :react-native-view-shot:exportReleaseConsumerProguardFiles
+> Task :llama.rn:mergeReleaseGeneratedProguardFiles
+> Task :llama.rn:exportReleaseConsumerProguardFiles
+> Task :app:buildKotlinToolingMetadata
+> Task :llama.rn:bundleLibCompileToJarRelease
+> Task :react-native-async-storage_async-storage:bundleLibCompileToJarRelease
+> Task :react-native-community_slider:bundleLibCompileToJarRelease
+> Task :react-native-health-connect:bundleLibCompileToJarRelease
+> Task :react-native-picker_picker:bundleLibCompileToJarRelease
+> Task :react-native-safe-area-context:bundleLibCompileToJarRelease
+> Task :react-native-view-shot:bundleLibCompileToJarRelease
+> Task :expo:prepareReleaseArtProfile
+> Task :expo-constants:prepareReleaseArtProfile
+> Task :expo-log-box:prepareReleaseArtProfile
+> Task :expo-modules-core:prepareReleaseArtProfile
+> Task :llama.rn:prepareReleaseArtProfile
+> Task :react-native-async-storage_async-storage:prepareReleaseArtProfile
+> Task :react-native-community_slider:prepareReleaseArtProfile
+> Task :react-native-gesture-handler:prepareReleaseArtProfile
+> Task :react-native-health-connect:prepareReleaseArtProfile
+> Task :react-native-picker_picker:prepareReleaseArtProfile
+> Task :react-native-reanimated:prepareReleaseArtProfile
+> Task :react-native-safe-area-context:prepareReleaseArtProfile
+> Task :react-native-screens:prepareReleaseArtProfile
+> Task :react-native-svg:prepareReleaseArtProfile
+> Task :react-native-view-shot:prepareReleaseArtProfile
+> Task :expo:writeReleaseAarMetadata
+> Task :expo-constants:writeReleaseAarMetadata
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:generateReleaseBuildConfig
+> Task :app:checkReleaseDuplicateClasses
+> Task :expo-log-box:writeReleaseAarMetadata
+> Task :expo-modules-core:writeReleaseAarMetadata
+> Task :llama.rn:writeReleaseAarMetadata
+> Task :react-native-async-storage_async-storage:writeReleaseAarMetadata
+> Task :react-native-community_slider:writeReleaseAarMetadata
+> Task :react-native-gesture-handler:writeReleaseAarMetadata
+> Task :react-native-health-connect:writeReleaseAarMetadata
+> Task :react-native-picker_picker:writeReleaseAarMetadata
+> Task :react-native-reanimated:writeReleaseAarMetadata
+> Task :react-native-safe-area-context:writeReleaseAarMetadata
+> Task :react-native-screens:writeReleaseAarMetadata
+> Task :react-native-svg:writeReleaseAarMetadata
+> Task :react-native-view-shot:writeReleaseAarMetadata
+> Task :expo:extractDeepLinksRelease
+> Task :expo:processReleaseManifest
+> Task :expo-constants:extractDeepLinksRelease
+> Task :expo-constants:processReleaseManifest
+> Task :expo-log-box:extractDeepLinksRelease
+> Task :expo-log-box:processReleaseManifest
+> Task :expo-modules-core:extractDeepLinksRelease
+
+> Task :expo-modules-core:processReleaseManifest
+/home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/AndroidManifest.xml:8:9-11:45 Warning:
+	meta-data#com.facebook.soloader.enabled@android:value was tagged at AndroidManifest.xml:8 to replace other declarations but no other declaration present
+
+> Task :llama.rn:extractDeepLinksRelease
+
+> Task :llama.rn:processReleaseManifest
+package="com.rnllama" found in source AndroidManifest.xml: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.rnllama" from the source AndroidManifest.xml: /home/runner/work/forma/forma/node_modules/llama.rn/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-async-storage_async-storage:extractDeepLinksRelease
+
+> Task :react-native-async-storage_async-storage:processReleaseManifest
+package="com.reactnativecommunity.asyncstorage" found in source AndroidManifest.xml: /home/runner/work/forma/forma/node_modules/@react-native-async-storage/async-storage/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.reactnativecommunity.asyncstorage" from the source AndroidManifest.xml: /home/runner/work/forma/forma/node_modules/@react-native-async-storage/async-storage/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-community_slider:extractDeepLinksRelease
+
+> Task :react-native-community_slider:processReleaseManifest
+package="com.reactnativecommunity.slider" found in source AndroidManifest.xml: /home/runner/work/forma/forma/node_modules/@react-native-community/slider/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.reactnativecommunity.slider" from the source AndroidManifest.xml: /home/runner/work/forma/forma/node_modules/@react-native-community/slider/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-gesture-handler:extractDeepLinksRelease
+> Task :react-native-gesture-handler:processReleaseManifest
+> Task :react-native-health-connect:extractDeepLinksRelease
+
+> Task :react-native-health-connect:processReleaseManifest
+package="dev.matinzd.healthconnect" found in source AndroidManifest.xml: /home/runner/work/forma/forma/node_modules/react-native-health-connect/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="dev.matinzd.healthconnect" from the source AndroidManifest.xml: /home/runner/work/forma/forma/node_modules/react-native-health-connect/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-picker_picker:extractDeepLinksRelease
+
+> Task :react-native-picker_picker:processReleaseManifest
+package="com.reactnativecommunity.picker" found in source AndroidManifest.xml: /home/runner/work/forma/forma/node_modules/@react-native-picker/picker/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.reactnativecommunity.picker" from the source AndroidManifest.xml: /home/runner/work/forma/forma/node_modules/@react-native-picker/picker/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-reanimated:extractDeepLinksRelease
+> Task :react-native-reanimated:processReleaseManifest
+> Task :react-native-safe-area-context:extractDeepLinksRelease
+
+> Task :react-native-safe-area-context:processReleaseManifest
+package="com.th3rdwave.safeareacontext" found in source AndroidManifest.xml: /home/runner/work/forma/forma/node_modules/react-native-safe-area-context/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.th3rdwave.safeareacontext" from the source AndroidManifest.xml: /home/runner/work/forma/forma/node_modules/react-native-safe-area-context/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-screens:extractDeepLinksRelease
+> Task :react-native-screens:processReleaseManifest
+> Task :react-native-svg:extractDeepLinksRelease
+> Task :react-native-svg:processReleaseManifest
+> Task :react-native-view-shot:extractDeepLinksRelease
+
+> Task :react-native-view-shot:processReleaseManifest
+package="fr.greweb.reactnativeviewshot" found in source AndroidManifest.xml: /home/runner/work/forma/forma/node_modules/react-native-view-shot/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="fr.greweb.reactnativeviewshot" from the source AndroidManifest.xml: /home/runner/work/forma/forma/node_modules/react-native-view-shot/android/src/main/AndroidManifest.xml.
+
+> Task :expo:mapReleaseSourceSetPaths
+> Task :react-native-worklets:buildCMakeRelWithDebInfo[x86][worklets]
+> Task :expo:compileReleaseLibraryResources
+> Task :expo-constants:mapReleaseSourceSetPaths
+> Task :expo-constants:compileReleaseLibraryResources
+> Task :expo-log-box:mapReleaseSourceSetPaths
+> Task :expo-log-box:compileReleaseLibraryResources
+> Task :expo-modules-core:mapReleaseSourceSetPaths
+> Task :expo-modules-core:compileReleaseLibraryResources
+> Task :llama.rn:mapReleaseSourceSetPaths
+> Task :llama.rn:compileReleaseLibraryResources
+> Task :react-native-async-storage_async-storage:mapReleaseSourceSetPaths
+> Task :react-native-async-storage_async-storage:compileReleaseLibraryResources
+> Task :react-native-community_slider:mapReleaseSourceSetPaths
+> Task :react-native-community_slider:compileReleaseLibraryResources
+> Task :react-native-gesture-handler:mapReleaseSourceSetPaths
+> Task :react-native-gesture-handler:compileReleaseLibraryResources
+> Task :react-native-health-connect:mapReleaseSourceSetPaths
+> Task :react-native-health-connect:compileReleaseLibraryResources
+> Task :react-native-picker_picker:mapReleaseSourceSetPaths
+> Task :react-native-picker_picker:compileReleaseLibraryResources
+> Task :react-native-reanimated:mapReleaseSourceSetPaths
+> Task :react-native-reanimated:compileReleaseLibraryResources
+> Task :react-native-safe-area-context:mapReleaseSourceSetPaths
+> Task :react-native-safe-area-context:compileReleaseLibraryResources
+> Task :react-native-screens:mapReleaseSourceSetPaths
+> Task :react-native-screens:compileReleaseLibraryResources
+> Task :react-native-svg:mapReleaseSourceSetPaths
+
+> Task :app:createBundleReleaseJsAndAssets
+Expo Autolinking module resolution enabled
+
+> Task :react-native-svg:compileReleaseLibraryResources
+> Task :react-native-view-shot:mapReleaseSourceSetPaths
+> Task :react-native-view-shot:compileReleaseLibraryResources
+> Task :llama.rn:bundleLibRuntimeToJarRelease
+> Task :react-native-async-storage_async-storage:bundleLibRuntimeToJarRelease
+> Task :react-native-community_slider:bundleLibRuntimeToJarRelease
+> Task :react-native-health-connect:bundleLibRuntimeToJarRelease
+> Task :react-native-picker_picker:bundleLibRuntimeToJarRelease
+> Task :react-native-safe-area-context:bundleLibRuntimeToJarRelease
+> Task :react-native-svg:bundleLibRuntimeToJarRelease
+> Task :react-native-view-shot:bundleLibRuntimeToJarRelease
+> Task :llama.rn:processReleaseJavaRes NO-SOURCE
+> Task :react-native-async-storage_async-storage:processReleaseJavaRes NO-SOURCE
+> Task :react-native-community_slider:processReleaseJavaRes NO-SOURCE
+> Task :react-native-health-connect:processReleaseJavaRes
+> Task :react-native-picker_picker:processReleaseJavaRes NO-SOURCE
+> Task :react-native-safe-area-context:processReleaseJavaRes
+> Task :react-native-svg:processReleaseJavaRes NO-SOURCE
+> Task :react-native-view-shot:processReleaseJavaRes NO-SOURCE
+> Task :expo:generateReleaseAssets UP-TO-DATE
+> Task :expo:mergeReleaseAssets
+> Task :expo-constants:generateReleaseAssets UP-TO-DATE
+> Task :expo-constants:mergeReleaseAssets
+> Task :expo-log-box:generateReleaseAssets UP-TO-DATE
+> Task :expo-log-box:mergeReleaseAssets
+> Task :expo-modules-core:generateReleaseAssets UP-TO-DATE
+> Task :expo-modules-core:mergeReleaseAssets
+> Task :llama.rn:generateReleaseAssets UP-TO-DATE
+> Task :llama.rn:mergeReleaseAssets
+> Task :react-native-async-storage_async-storage:generateReleaseAssets UP-TO-DATE
+> Task :react-native-async-storage_async-storage:mergeReleaseAssets
+> Task :react-native-community_slider:generateReleaseAssets UP-TO-DATE
+> Task :react-native-community_slider:mergeReleaseAssets
+> Task :react-native-gesture-handler:generateReleaseAssets UP-TO-DATE
+> Task :react-native-gesture-handler:mergeReleaseAssets
+> Task :react-native-health-connect:generateReleaseAssets UP-TO-DATE
+> Task :react-native-health-connect:mergeReleaseAssets
+> Task :react-native-picker_picker:generateReleaseAssets UP-TO-DATE
+> Task :react-native-picker_picker:mergeReleaseAssets
+> Task :react-native-reanimated:generateReleaseAssets UP-TO-DATE
+> Task :react-native-reanimated:mergeReleaseAssets
+> Task :react-native-safe-area-context:generateReleaseAssets UP-TO-DATE
+> Task :react-native-safe-area-context:mergeReleaseAssets
+> Task :react-native-screens:generateReleaseAssets UP-TO-DATE
+> Task :react-native-screens:mergeReleaseAssets
+> Task :react-native-svg:generateReleaseAssets UP-TO-DATE
+> Task :react-native-svg:mergeReleaseAssets
+> Task :react-native-view-shot:generateReleaseAssets UP-TO-DATE
+> Task :react-native-view-shot:mergeReleaseAssets
+> Task :expo:extractProguardFiles
+> Task :expo-constants:extractProguardFiles
+> Task :expo-modules-core:extractProguardFiles
+> Task :expo-modules-core:prepareLintJarForPublish
+> Task :expo-constants:prepareLintJarForPublish
+> Task :expo-log-box:extractProguardFiles
+> Task :expo-log-box:prepareLintJarForPublish
+> Task :expo:prepareLintJarForPublish
+> Task :llama.rn:createFullJarRelease
+> Task :llama.rn:extractProguardFiles
+
+> Task :app:createBundleReleaseJsAndAssets
+Starting Metro Bundler
+
+
+> Task :react-native-screens:compileReleaseKotlin
+> Task :react-native-worklets:configureCMakeRelWithDebInfo[x86_64]
+> Task :llama.rn:generateReleaseLintModel
+> Task :llama.rn:prepareLintJarForPublish
+> Task :react-native-async-storage_async-storage:createFullJarRelease
+> Task :react-native-async-storage_async-storage:extractProguardFiles
+> Task :react-native-async-storage_async-storage:generateReleaseLintModel
+> Task :react-native-async-storage_async-storage:prepareLintJarForPublish
+> Task :react-native-community_slider:createFullJarRelease
+> Task :react-native-community_slider:extractProguardFiles
+> Task :react-native-community_slider:generateReleaseLintModel
+> Task :react-native-community_slider:prepareLintJarForPublish
+> Task :react-native-gesture-handler:extractProguardFiles
+> Task :react-native-reanimated:extractProguardFiles
+> Task :react-native-reanimated:prepareLintJarForPublish
+> Task :react-native-svg:createFullJarRelease
+> Task :react-native-svg:extractProguardFiles
+> Task :react-native-svg:generateReleaseLintModel
+> Task :react-native-svg:prepareLintJarForPublish
+> Task :react-native-gesture-handler:prepareLintJarForPublish
+> Task :react-native-health-connect:createFullJarRelease
+> Task :react-native-health-connect:extractProguardFiles
+> Task :react-native-health-connect:generateReleaseLintModel
+> Task :react-native-health-connect:prepareLintJarForPublish
+> Task :react-native-picker_picker:createFullJarRelease
+> Task :react-native-picker_picker:extractProguardFiles
+> Task :react-native-picker_picker:generateReleaseLintModel
+> Task :react-native-picker_picker:prepareLintJarForPublish
+> Task :react-native-safe-area-context:createFullJarRelease
+> Task :react-native-safe-area-context:extractProguardFiles
+> Task :react-native-safe-area-context:generateReleaseLintModel
+> Task :react-native-safe-area-context:prepareLintJarForPublish
+> Task :react-native-screens:extractProguardFiles
+> Task :react-native-screens:prepareLintJarForPublish
+> Task :react-native-view-shot:createFullJarRelease
+> Task :react-native-view-shot:extractProguardFiles
+> Task :react-native-view-shot:generateReleaseLintModel
+> Task :react-native-view-shot:prepareLintJarForPublish
+> Task :react-native-gesture-handler:extractDeepLinksForAarRelease
+> Task :react-native-health-connect:checkReleaseAarMetadata
+> Task :react-native-health-connect:stripReleaseDebugSymbols NO-SOURCE
+> Task :react-native-health-connect:copyReleaseJniLibsProjectAndLocalJars
+> Task :react-native-health-connect:extractDeepLinksForAarRelease
+> Task :react-native-health-connect:extractReleaseAnnotations
+> Task :react-native-health-connect:mergeReleaseConsumerProguardFiles
+> Task :react-native-health-connect:mergeReleaseJavaResource
+> Task :react-native-health-connect:syncReleaseLibJars
+> Task :react-native-health-connect:bundleReleaseLocalLintAar
+> Task :react-native-reanimated:extractDeepLinksForAarRelease
+> Task :react-native-safe-area-context:checkReleaseAarMetadata
+> Task :react-native-safe-area-context:stripReleaseDebugSymbols NO-SOURCE
+> Task :react-native-safe-area-context:copyReleaseJniLibsProjectAndLocalJars
+> Task :react-native-safe-area-context:extractDeepLinksForAarRelease
+> Task :react-native-safe-area-context:extractReleaseAnnotations
+> Task :react-native-safe-area-context:mergeReleaseConsumerProguardFiles
+> Task :react-native-safe-area-context:mergeReleaseJavaResource
+> Task :react-native-safe-area-context:syncReleaseLibJars
+> Task :react-native-safe-area-context:bundleReleaseLocalLintAar
+> Task :react-native-screens:checkReleaseAarMetadata
+> Task :react-native-screens:stripReleaseDebugSymbols
+> Task :react-native-screens:copyReleaseJniLibsProjectAndLocalJars
+> Task :react-native-screens:extractDeepLinksForAarRelease
+> Task :expo:stripReleaseDebugSymbols NO-SOURCE
+> Task :expo:copyReleaseJniLibsProjectAndLocalJars
+> Task :expo:extractDeepLinksForAarRelease
+> Task :expo-modules-core:extractDeepLinksForAarRelease
+> Task :react-native-async-storage_async-storage:checkReleaseAarMetadata
+> Task :react-native-async-storage_async-storage:stripReleaseDebugSymbols NO-SOURCE
+> Task :react-native-async-storage_async-storage:copyReleaseJniLibsProjectAndLocalJars
+> Task :react-native-async-storage_async-storage:extractDeepLinksForAarRelease
+> Task :react-native-async-storage_async-storage:extractReleaseAnnotations
+> Task :react-native-async-storage_async-storage:mergeReleaseConsumerProguardFiles
+> Task :react-native-async-storage_async-storage:mergeReleaseJavaResource
+> Task :react-native-async-storage_async-storage:syncReleaseLibJars
+> Task :react-native-async-storage_async-storage:bundleReleaseLocalLintAar
+> Task :react-native-community_slider:checkReleaseAarMetadata
+> Task :react-native-community_slider:stripReleaseDebugSymbols NO-SOURCE
+> Task :react-native-community_slider:copyReleaseJniLibsProjectAndLocalJars
+> Task :react-native-community_slider:extractDeepLinksForAarRelease
+> Task :react-native-community_slider:extractReleaseAnnotations
+> Task :react-native-community_slider:mergeReleaseConsumerProguardFiles
+> Task :react-native-community_slider:mergeReleaseJavaResource
+> Task :react-native-community_slider:syncReleaseLibJars
+> Task :react-native-community_slider:bundleReleaseLocalLintAar
+> Task :react-native-picker_picker:checkReleaseAarMetadata
+> Task :react-native-picker_picker:stripReleaseDebugSymbols NO-SOURCE
+> Task :react-native-picker_picker:copyReleaseJniLibsProjectAndLocalJars
+> Task :react-native-picker_picker:extractDeepLinksForAarRelease
+> Task :react-native-picker_picker:extractReleaseAnnotations
+> Task :react-native-picker_picker:mergeReleaseConsumerProguardFiles
+> Task :react-native-picker_picker:mergeReleaseJavaResource
+> Task :react-native-picker_picker:syncReleaseLibJars
+> Task :react-native-picker_picker:bundleReleaseLocalLintAar
+> Task :llama.rn:checkReleaseAarMetadata
+> Task :llama.rn:stripReleaseDebugSymbols
+> Task :llama.rn:copyReleaseJniLibsProjectAndLocalJars
+> Task :llama.rn:extractDeepLinksForAarRelease
+> Task :llama.rn:extractReleaseAnnotations
+> Task :llama.rn:mergeReleaseConsumerProguardFiles
+> Task :llama.rn:mergeReleaseJavaResource
+> Task :llama.rn:syncReleaseLibJars
+> Task :react-native-worklets:buildCMakeRelWithDebInfo[x86_64][worklets]
+> Task :llama.rn:bundleReleaseLocalLintAar
+> Task :react-native-svg:checkReleaseAarMetadata
+> Task :react-native-svg:stripReleaseDebugSymbols NO-SOURCE
+> Task :react-native-svg:copyReleaseJniLibsProjectAndLocalJars
+> Task :react-native-svg:extractDeepLinksForAarRelease
+> Task :react-native-svg:extractReleaseAnnotations
+> Task :react-native-svg:mergeReleaseConsumerProguardFiles
+> Task :react-native-svg:mergeReleaseJavaResource
+> Task :react-native-svg:syncReleaseLibJars
+> Task :react-native-svg:bundleReleaseLocalLintAar
+> Task :react-native-view-shot:checkReleaseAarMetadata
+> Task :react-native-view-shot:stripReleaseDebugSymbols NO-SOURCE
+> Task :react-native-view-shot:copyReleaseJniLibsProjectAndLocalJars
+> Task :react-native-view-shot:extractDeepLinksForAarRelease
+
+> Task :react-native-screens:compileReleaseKotlin
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/RNScreensPackage.kt:70:9 The corresponding parameter in the supertype 'BaseReactPackage' is named 'name'. This may cause problems when calling this function with named arguments.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/RNScreensPackage.kt:71:9 The corresponding parameter in the supertype 'BaseReactPackage' is named 'reactContext'. This may cause problems when calling this function with named arguments.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/RNScreensPackage.kt:83:17 'constructor(name: String, className: String, canOverrideExistingModule: Boolean, needsEagerInit: Boolean, hasConstants: Boolean, isCxxModule: Boolean, isTurboModule: Boolean): ReactModuleInfo' is deprecated. This constructor is deprecated and will be removed in the future. Use ReactModuleInfo(String, String, boolean, boolean, boolean, boolean)].
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:54:77 Unchecked cast of '(CoordinatorLayout.Behavior<View!>?..CoordinatorLayout.Behavior<*>?)' to 'BottomSheetBehavior<Screen>'.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:59:33 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:534:14 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenContainer.kt:73:74 'static field HIDE_NOT_ALWAYS: Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenContainer.kt:252:18 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenContainer.kt:262:18 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenFragment.kt:225:37 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenFragment.kt:242:14 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenFragment.kt:258:22 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenFragment.kt:327:22 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStack.kt:120:14 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:179:18 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:236:31 'var targetElevation: Float' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:239:13 'fun setHasOptionsMenu(p0: Boolean): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:450:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:457:22 'fun onPrepareOptionsMenu(p0: Menu): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:460:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:465:22 'fun onCreateOptionsMenu(p0: Menu, p1: MenuInflater): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfig.kt:199:14 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfig.kt:209:14 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:48:42 'fun replaceSystemWindowInsets(p0: Int, p1: Int, p2: Int, p3: Int): @NonNull() WindowInsetsCompat' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:49:39 'val systemWindowInsetLeft: Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:51:39 'val systemWindowInsetRight: Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:52:39 'val systemWindowInsetBottom: Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreensModule.kt:104:14 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarView.kt:137:29 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/DimmingView.kt:66:9 The corresponding parameter in the supertype 'ReactCompoundView' is named 'touchX'. This may cause problems when calling this function with named arguments.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/DimmingView.kt:67:9 The corresponding parameter in the supertype 'ReactCompoundView' is named 'touchY'. This may cause problems when calling this function with named arguments.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/DimmingView.kt:71:9 The corresponding parameter in the supertype 'ReactCompoundViewGroup' is named 'touchX'. This may cause problems when calling this function with named arguments.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/DimmingView.kt:72:9 The corresponding parameter in the supertype 'ReactCompoundViewGroup' is named 'touchY'. This may cause problems when calling this function with named arguments.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/common/event/BaseEventEmitter.kt:12:38 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/modals/dimmingview/DimmingView.kt:64:9 The corresponding parameter in the supertype 'ReactCompoundView' is named 'touchX'. This may cause problems when calling this function with named arguments.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/modals/dimmingview/DimmingView.kt:65:9 The corresponding parameter in the supertype 'ReactCompoundView' is named 'touchY'. This may cause problems when calling this function with named arguments.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/modals/dimmingview/DimmingView.kt:69:9 The corresponding parameter in the supertype 'ReactCompoundViewGroup' is named 'touchX'. This may cause problems when calling this function with named arguments.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/modals/dimmingview/DimmingView.kt:70:9 The corresponding parameter in the supertype 'ReactCompoundViewGroup' is named 'touchY'. This may cause problems when calling this function with named arguments.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/modals/formsheet/FormSheetContentView.kt:11:8 'object ReactFeatureFlags : Any' is deprecated. Use com.facebook.react.internal.featureflags.ReactNativeFeatureFlags instead.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/modals/formsheet/FormSheetContentView.kt:39:33 'fun getEventDispatcher(context: ReactContext, uiManagerType: Int): EventDispatcher?' is deprecated. UIManagerType is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/modals/formsheet/FormSheetContentView.kt:44:13 'object ReactFeatureFlags : Any' is deprecated. Use com.facebook.react.internal.featureflags.ReactNativeFeatureFlags instead.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/modals/formsheet/FormSheetHostViewManager.kt:38:9 The corresponding parameter in the supertype 'ViewGroupManager' is named 'view'. This may cause problems when calling this function with named arguments.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/tabs/host/TabsHostViewManager.kt:44:9 The corresponding parameter in the supertype 'ViewGroupManager' is named 'view'. This may cause problems when calling this function with named arguments.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/safearea/SafeAreaView.kt:143:45 'fun consumeDisplayCutout(): @NonNull() WindowInsetsCompat' is deprecated. Deprecated in Java.
+
+> Task :react-native-view-shot:extractReleaseAnnotations
+Warning: fr.greweb.reactnativeviewshot.ViewShot.Formats: The typedef annotation should have @Retention(RetentionPolicy.SOURCE)
+Warning: fr.greweb.reactnativeviewshot.ViewShot.Results: The typedef annotation should have @Retention(RetentionPolicy.SOURCE)
+
+> Task :react-native-view-shot:mergeReleaseConsumerProguardFiles
+> Task :react-native-view-shot:mergeReleaseJavaResource
+> Task :react-native-view-shot:syncReleaseLibJars
+> Task :react-native-view-shot:bundleReleaseLocalLintAar
+> Task :expo-log-box:checkReleaseAarMetadata
+> Task :expo-log-box:stripReleaseDebugSymbols NO-SOURCE
+> Task :expo-log-box:copyReleaseJniLibsProjectAndLocalJars
+> Task :expo-log-box:extractDeepLinksForAarRelease
+> Task :expo-constants:checkReleaseAarMetadata
+> Task :expo-constants:stripReleaseDebugSymbols NO-SOURCE
+> Task :expo-constants:copyReleaseJniLibsProjectAndLocalJars
+> Task :expo-constants:extractDeepLinksForAarRelease
+> Task :expo-constants:writeReleaseLintModelMetadata
+> Task :expo-log-box:writeReleaseLintModelMetadata
+> Task :expo-modules-core:writeReleaseLintModelMetadata
+> Task :expo:writeReleaseLintModelMetadata
+> Task :llama.rn:lintVitalAnalyzeRelease SKIPPED
+> Task :llama.rn:writeReleaseLintModelMetadata
+> Task :react-native-async-storage_async-storage:lintVitalAnalyzeRelease SKIPPED
+> Task :react-native-async-storage_async-storage:writeReleaseLintModelMetadata
+> Task :react-native-community_slider:lintVitalAnalyzeRelease SKIPPED
+> Task :react-native-community_slider:writeReleaseLintModelMetadata
+> Task :react-native-reanimated:writeReleaseLintModelMetadata
+> Task :react-native-svg:writeReleaseLintModelMetadata
+> Task :react-native-gesture-handler:writeReleaseLintModelMetadata
+> Task :react-native-health-connect:lintVitalAnalyzeRelease SKIPPED
+> Task :react-native-health-connect:writeReleaseLintModelMetadata
+> Task :react-native-picker_picker:lintVitalAnalyzeRelease SKIPPED
+> Task :react-native-picker_picker:writeReleaseLintModelMetadata
+> Task :react-native-safe-area-context:lintVitalAnalyzeRelease SKIPPED
+> Task :react-native-safe-area-context:writeReleaseLintModelMetadata
+> Task :react-native-svg:lintVitalAnalyzeRelease SKIPPED
+> Task :react-native-view-shot:lintVitalAnalyzeRelease SKIPPED
+> Task :react-native-view-shot:writeReleaseLintModelMetadata
+> Task :llama.rn:generateReleaseLintVitalModel
+> Task :react-native-async-storage_async-storage:generateReleaseLintVitalModel
+> Task :react-native-community_slider:generateReleaseLintVitalModel
+> Task :react-native-health-connect:generateReleaseLintVitalModel
+> Task :react-native-picker_picker:generateReleaseLintVitalModel
+> Task :react-native-safe-area-context:generateReleaseLintVitalModel
+> Task :react-native-svg:generateReleaseLintVitalModel
+> Task :react-native-view-shot:generateReleaseLintVitalModel
+> Task :expo-constants:mergeReleaseResources
+> Task :expo-constants:verifyReleaseResources
+> Task :react-native-screens:compileReleaseJavaWithJavac
+> Task :react-native-screens:mergeReleaseGeneratedProguardFiles
+> Task :react-native-screens:exportReleaseConsumerProguardFiles
+> Task :react-native-screens:bundleLibCompileToJarRelease
+> Task :react-native-screens:bundleLibRuntimeToJarRelease
+> Task :react-native-screens:processReleaseJavaRes
+> Task :react-native-screens:createFullJarRelease
+> Task :expo-log-box:mergeReleaseResources
+> Task :react-native-screens:generateReleaseLintModel
+> Task :react-native-screens:extractReleaseAnnotations
+> Task :react-native-screens:mergeReleaseConsumerProguardFiles
+> Task :react-native-screens:mergeReleaseJavaResource
+> Task :react-native-screens:syncReleaseLibJars
+> Task :react-native-screens:bundleReleaseLocalLintAar
+> Task :react-native-screens:lintVitalAnalyzeRelease SKIPPED
+> Task :react-native-screens:writeReleaseLintModelMetadata
+> Task :react-native-screens:generateReleaseLintVitalModel
+> Task :expo-log-box:verifyReleaseResources
+> Task :react-native-async-storage_async-storage:bundleReleaseAar
+> Task :react-native-worklets:externalNativeBuildRelease
+> Task :react-native-worklets:generateJsonModelRelease
+> Task :react-native-worklets:prefabReleaseConfigurePackage
+> Task :react-native-async-storage_async-storage:mergeReleaseResources
+> Task :react-native-worklets:prefabReleasePackage
+> Task :react-native-worklets:mergeReleaseJniLibFolders
+
+> Task :app:createBundleReleaseJsAndAssets
+Android Bundled 69665ms apps/mobile/index.js (2353 modules)
+Writing bundle output to: /home/runner/work/forma/forma/apps/mobile/android/app/build/generated/assets/react/release/index.android.bundle
+Writing sourcemap output to: /home/runner/work/forma/forma/apps/mobile/android/app/build/intermediates/sourcemaps/react/release/index.android.bundle.packager.map
+Copying 380 asset files
+Done writing bundle output
+Done writing sourcemap output
+
+> Task :react-native-worklets:mergeReleaseNativeLibs
+> Task :react-native-reanimated:configureCMakeRelWithDebInfo[arm64-v8a]
+> Task :react-native-worklets:copyReleaseJniLibsProjectOnly
+> Task :llama.rn:bundleReleaseAar
+> Task :react-native-worklets:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-worklets:generateReleaseBuildConfig
+> Task :react-native-worklets:generateReleaseResources
+> Task :react-native-worklets:packageReleaseResources
+> Task :react-native-worklets:processReleaseNavigationResources
+> Task :react-native-worklets:parseReleaseLocalResources
+> Task :react-native-worklets:generateReleaseRFile
+> Task :react-native-reanimated:configureCMakeRelWithDebInfo[armeabi-v7a]
+> Task :react-native-worklets:compileReleaseKotlin
+> Task :react-native-worklets:javaPreCompileRelease
+> Task :expo-modules-core:configureCMakeRelWithDebInfo[arm64-v8a]
+> Task :react-native-worklets:compileReleaseJavaWithJavac
+> Task :react-native-worklets:bundleLibCompileToJarRelease
+> Task :react-native-worklets:mergeReleaseGeneratedProguardFiles
+> Task :react-native-worklets:exportReleaseConsumerProguardFiles
+> Task :react-native-worklets:prepareReleaseArtProfile
+> Task :react-native-worklets:writeReleaseAarMetadata
+> Task :react-native-worklets:extractDeepLinksRelease
+> Task :react-native-worklets:processReleaseManifest
+> Task :react-native-worklets:mapReleaseSourceSetPaths
+> Task :react-native-worklets:compileReleaseLibraryResources
+> Task :react-native-worklets:bundleLibRuntimeToJarRelease
+> Task :react-native-worklets:processReleaseJavaRes
+> Task :react-native-worklets:generateReleaseAssets UP-TO-DATE
+> Task :react-native-worklets:mergeReleaseAssets
+> Task :react-native-worklets:createFullJarRelease
+> Task :react-native-worklets:extractProguardFiles
+> Task :react-native-reanimated:configureCMakeRelWithDebInfo[x86]
+> Task :react-native-reanimated:configureCMakeRelWithDebInfo[x86_64]
+> Task :react-native-reanimated:generateJsonModelRelease
+> Task :react-native-reanimated:prefabReleaseConfigurePackage
+> Task :react-native-worklets:generateReleaseLintModel
+> Task :expo-modules-core:buildCMakeRelWithDebInfo[arm64-v8a]
+> Task :react-native-reanimated:buildCMakeRelWithDebInfo[arm64-v8a][reanimated]
+> Task :react-native-gesture-handler:configureCMakeRelWithDebInfo[arm64-v8a]
+> Task :expo-modules-core:configureCMakeRelWithDebInfo[armeabi-v7a]
+> Task :app:configureCMakeRelWithDebInfo[arm64-v8a]
+> Task :expo-modules-core:buildCMakeRelWithDebInfo[armeabi-v7a]
+> Task :expo-modules-core:configureCMakeRelWithDebInfo[x86]
+> Task :expo-modules-core:buildCMakeRelWithDebInfo[x86]
+> Task :react-native-gesture-handler:configureCMakeRelWithDebInfo[armeabi-v7a]
+> Task :app:configureCMakeRelWithDebInfo[armeabi-v7a]
+> Task :react-native-gesture-handler:configureCMakeRelWithDebInfo[x86]
+> Task :app:configureCMakeRelWithDebInfo[x86]
+> Task :react-native-gesture-handler:configureCMakeRelWithDebInfo[x86_64]
+> Task :react-native-worklets:prepareLintJarForPublish
+> Task :react-native-gesture-handler:checkReleaseAarMetadata
+> Task :app:configureCMakeRelWithDebInfo[x86_64]
+> Task :app:generateReleaseResValues
+> Task :app:generateReleaseResources
+
+> Task :app:pruneDuplicateExerciseImages
+Pruned 61 duplicate exercise JPG resources; GIF resources retained
+
+> Task :app:packageReleaseResources
+> Task :app:processReleaseNavigationResources
+> Task :expo:checkReleaseAarMetadata
+> Task :react-native-worklets:checkReleaseAarMetadata
+> Task :app:javaPreCompileRelease
+> Task :app:parseReleaseLocalResources
+> Task :react-native-worklets:stripReleaseDebugSymbols
+> Task :app:mergeReleaseArtProfile
+> Task :react-native-worklets:copyReleaseJniLibsProjectAndLocalJars
+> Task :react-native-worklets:extractDeepLinksForAarRelease
+> Task :app:generateReleaseRFile
+> Task :react-native-worklets:extractReleaseAnnotations
+> Task :react-native-worklets:mergeReleaseConsumerProguardFiles
+> Task :react-native-worklets:mergeReleaseJavaResource
+> Task :app:checkReleaseAarMetadata
+> Task :react-native-worklets:syncReleaseLibJars
+> Task :app:mapReleaseSourceSetPaths
+> Task :app:compileReleaseNavigationResources
+> Task :react-native-worklets:bundleReleaseLocalLintAar
+> Task :react-native-worklets:writeReleaseLintModelMetadata
+> Task :react-native-worklets:lintVitalAnalyzeRelease SKIPPED
+> Task :react-native-worklets:generateReleaseLintVitalModel
+> Task :expo:mergeReleaseResources
+> Task :expo-modules-core:configureCMakeRelWithDebInfo[x86_64]
+> Task :app:mergeReleaseResources
+> Task :app:createReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksRelease
+> Task :react-native-reanimated:buildCMakeRelWithDebInfo[armeabi-v7a][reanimated]
+
+> Task :app:processReleaseMainManifest
+/home/runner/work/forma/forma/apps/mobile/android/app/src/main/AndroidManifest.xml Warning:
+	provider#expo.modules.filesystem.FileSystemFileProvider@android:authorities was tagged at AndroidManifest.xml:0 to replace other declarations but no other declaration present
+
+> Task :app:expoReleaseOverrideMaxSdkConflicts
+[33m---------- Expo Max Sdk Override Plugin ----------[0m
+[32m>>> No 'android:maxSdkVersion' conflicts found[0m
+[33m--------------------------------------------------[0m
+
+> Task :app:processReleaseManifest
+> Task :app:processReleaseManifestForPackage
+> Task :expo:verifyReleaseResources
+> Task :llama.rn:mergeReleaseResources
+> Task :llama.rn:verifyReleaseResources
+> Task :app:extractProguardFiles
+> Task :app:mergeReleaseStartupProfile
+> Task :app:generateReleaseAssets UP-TO-DATE
+> Task :app:mergeReleaseAssets
+> Task :app:compressReleaseAssets
+> Task :app:extractReleaseVersionControlInfo
+> Task :app:collectReleaseDependencies
+> Task :app:sdkReleaseDependencyData
+> Task :app:validateSigningRelease
+> Task :app:writeReleaseAppMetadata
+> Task :app:writeReleaseSigningConfigVersions
+> Task :llama.rn:assembleRelease
+> Task :app:processReleaseResources
+> Task :react-native-async-storage_async-storage:verifyReleaseResources
+> Task :react-native-async-storage_async-storage:assembleRelease
+> Task :react-native-community_slider:bundleReleaseAar
+> Task :react-native-community_slider:mergeReleaseResources
+> Task :app:optimizeReleaseResources
+> Task :react-native-community_slider:verifyReleaseResources
+> Task :react-native-community_slider:assembleRelease
+> Task :react-native-gesture-handler:mergeReleaseResources
+> Task :react-native-health-connect:bundleReleaseAar
+> Task :react-native-health-connect:mergeReleaseResources
+> Task :expo-modules-core:buildCMakeRelWithDebInfo[x86_64]
+> Task :react-native-gesture-handler:verifyReleaseResources
+> Task :react-native-picker_picker:bundleReleaseAar
+> Task :react-native-health-connect:verifyReleaseResources
+> Task :react-native-health-connect:assembleRelease
+> Task :react-native-safe-area-context:bundleReleaseAar
+> Task :react-native-picker_picker:mergeReleaseResources
+> Task :react-native-safe-area-context:mergeReleaseResources
+> Task :react-native-picker_picker:verifyReleaseResources
+> Task :react-native-picker_picker:assembleRelease
+> Task :react-native-screens:bundleReleaseAar
+> Task :react-native-safe-area-context:verifyReleaseResources
+> Task :react-native-safe-area-context:assembleRelease
+> Task :react-native-svg:bundleReleaseAar
+> Task :react-native-svg:mergeReleaseResources
+> Task :react-native-screens:mergeReleaseResources
+> Task :react-native-svg:verifyReleaseResources
+> Task :react-native-svg:assembleRelease
+> Task :react-native-view-shot:bundleReleaseAar
+> Task :react-native-view-shot:mergeReleaseResources
+> Task :react-native-screens:verifyReleaseResources
+> Task :react-native-screens:assembleRelease
+> Task :react-native-view-shot:verifyReleaseResources
+> Task :react-native-view-shot:assembleRelease
+> Task :react-native-worklets:bundleReleaseAar
+> Task :react-native-worklets:mergeReleaseResources
+> Task :react-native-worklets:verifyReleaseResources
+> Task :react-native-worklets:assembleRelease
+> Task :expo-modules-core:mergeReleaseNativeLibs
+> Task :expo-modules-core:checkReleaseAarMetadata
+> Task :expo-modules-core:stripReleaseDebugSymbols
+> Task :expo-modules-core:copyReleaseJniLibsProjectAndLocalJars
+> Task :expo-modules-core:copyReleaseJniLibsProjectOnly
+> Task :expo-modules-core:mergeReleaseResources
+> Task :expo-modules-core:verifyReleaseResources
+
+> Task :expo-modules-core:compileReleaseKotlin
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/CppType.kt:42:23 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/JavaCallback.kt:38:10 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/JavaCallback.kt:96:45 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:49:15 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:64:30 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:66:14 'constructor(byteBuffer: ByteBuffer): NativeArrayBuffer' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:74:39 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:75:7 'constructor(byteBuffer: ByteBuffer): NativeArrayBuffer' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:80:37 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:86:47 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:92:23 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:92:43 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:95:41 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:105:14 'constructor(byteBuffer: ByteBuffer): NativeArrayBuffer' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/types/ColorCompat.kt:115:5 This annotation is currently applied to the value parameter only, but in the future it will also be applied to field.
+- To opt in to applying to both value parameter and field, add '-Xannotation-default-target=param-property' to your compiler arguments.
+- To keep applying to the value parameter only, use the '@param:' annotation target.
+
+See https://youtrack.jetbrains.com/issue/KT-73255 for more details.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/types/JSTypeConverter.kt:7:8 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/types/JSTypeConverter.kt:245:55 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/types/JSTypeConverter.kt:247:19 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/types/ReturnType.kt:6:8 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/types/ReturnType.kt:45:5 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/types/TypeConverterProvider.kt:19:8 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/types/TypeConverterProvider.kt:254:7 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+
+> Task :expo-modules-core:compileReleaseJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :expo-modules-core:mergeReleaseGeneratedProguardFiles
+> Task :expo-modules-core:bundleLibCompileToJarRelease
+> Task :expo-modules-core:exportReleaseConsumerProguardFiles
+> Task :expo-modules-core:bundleLibRuntimeToJarRelease
+> Task :expo-modules-core:processReleaseJavaRes
+> Task :expo-modules-core:createFullJarRelease
+> Task :expo-modules-core:generateReleaseLintModel
+> Task :expo-modules-core:extractReleaseAnnotations
+> Task :expo-modules-core:mergeReleaseConsumerProguardFiles
+> Task :expo-modules-core:mergeReleaseJavaResource
+> Task :expo-modules-core:syncReleaseLibJars
+> Task :expo-constants:compileReleaseKotlin
+> Task :expo-constants:compileReleaseJavaWithJavac NO-SOURCE
+> Task :expo-modules-core:bundleReleaseLocalLintAar
+> Task :expo-constants:bundleLibCompileToJarRelease
+> Task :expo-constants:mergeReleaseGeneratedProguardFiles
+> Task :expo-constants:exportReleaseConsumerProguardFiles
+> Task :expo-constants:bundleLibRuntimeToJarRelease
+> Task :expo-constants:processReleaseJavaRes
+> Task :expo-constants:createFullJarRelease
+> Task :expo-constants:generateReleaseLintModel
+> Task :expo-modules-core:lintVitalAnalyzeRelease SKIPPED
+> Task :expo-modules-core:generateReleaseLintVitalModel
+> Task :expo-constants:extractReleaseAnnotations
+> Task :expo-constants:mergeReleaseConsumerProguardFiles
+> Task :expo-constants:mergeReleaseJavaResource
+> Task :expo-constants:syncReleaseLibJars
+> Task :expo-constants:bundleReleaseLocalLintAar
+> Task :expo-constants:lintVitalAnalyzeRelease SKIPPED
+> Task :expo-constants:generateReleaseLintVitalModel
+> Task :expo-constants:bundleReleaseAar
+> Task :expo-constants:assembleRelease
+> Task :expo-log-box:compileReleaseKotlin
+> Task :expo-modules-core:bundleReleaseAar
+> Task :expo-modules-core:assembleRelease
+> Task :expo-log-box:compileReleaseJavaWithJavac
+> Task :expo-log-box:mergeReleaseGeneratedProguardFiles
+> Task :expo-log-box:bundleLibCompileToJarRelease
+> Task :expo-log-box:exportReleaseConsumerProguardFiles
+> Task :expo-log-box:bundleLibRuntimeToJarRelease
+> Task :expo-log-box:processReleaseJavaRes
+> Task :expo-log-box:createFullJarRelease
+> Task :expo-log-box:generateReleaseLintModel
+> Task :expo-log-box:extractReleaseAnnotations
+> Task :expo-log-box:mergeReleaseConsumerProguardFiles
+> Task :expo-log-box:lintVitalAnalyzeRelease SKIPPED
+> Task :expo-log-box:generateReleaseLintVitalModel
+> Task :expo-log-box:mergeReleaseJavaResource
+> Task :expo-log-box:syncReleaseLibJars
+> Task :expo-log-box:bundleReleaseLocalLintAar
+> Task :expo-log-box:bundleReleaseAar
+> Task :expo-log-box:assembleRelease
+
+> Task :expo:compileReleaseKotlin
+w: file:///home/runner/work/forma/forma/node_modules/expo/android/src/main/java/expo/modules/ExpoModulesPackage.kt:34:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/runner/work/forma/forma/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:22:8 'class ReactInstanceManager : Any' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/forma/forma/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:103:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/runner/work/forma/forma/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:103:43 'class ReactInstanceManager : Any' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/forma/forma/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:104:21 'val reactInstanceManager: ReactInstanceManager' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/forma/forma/node_modules/expo/android/src/main/java/expo/modules/fetch/ExpoFetchModule.kt:15:8 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo/android/src/main/java/expo/modules/fetch/ExpoFetchModule.kt:33:39 'constructor(reactContext: ReactContext): ForwardingCookieHandler' is deprecated. Use the default constructor.
+w: file:///home/runner/work/forma/forma/node_modules/expo/android/src/main/java/expo/modules/fetch/ExpoFetchModule.kt:111:27 'constructor(byteBuffer: ByteBuffer): NativeArrayBuffer' is deprecated. Use ArrayBuffer instead.
+w: file:///home/runner/work/forma/forma/node_modules/expo/android/src/main/java/expo/modules/fetch/NativeResponse.kt:44:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/runner/work/forma/forma/node_modules/expo/android/src/main/java/expo/modules/fetch/NativeResponse.kt:46:11 'fun deallocate(): Unit' is deprecated. Use sharedObjectDidRelease() instead.
+
+> Task :expo:compileReleaseJavaWithJavac NO-SOURCE
+> Task :expo:mergeReleaseGeneratedProguardFiles
+> Task :expo:exportReleaseConsumerProguardFiles
+> Task :expo:processReleaseJavaRes
+> Task :expo:bundleLibRuntimeToJarRelease
+> Task :expo:bundleLibCompileToJarRelease
+> Task :expo:generateReleaseLintModel
+> Task :expo:createFullJarRelease
+> Task :expo:extractReleaseAnnotations
+> Task :expo:mergeReleaseConsumerProguardFiles
+> Task :expo:lintVitalAnalyzeRelease SKIPPED
+> Task :expo:mergeReleaseJavaResource
+> Task :expo:generateReleaseLintVitalModel
+> Task :expo:syncReleaseLibJars
+> Task :expo:bundleReleaseLocalLintAar
+> Task :expo:bundleReleaseAar
+> Task :expo:assembleRelease
+> Task :react-native-reanimated:buildCMakeRelWithDebInfo[x86][reanimated]
+> Task :react-native-reanimated:buildCMakeRelWithDebInfo[x86_64][reanimated]
+> Task :react-native-reanimated:externalNativeBuildRelease
+> Task :react-native-reanimated:prefabReleasePackage
+> Task :react-native-reanimated:mergeReleaseNativeLibs
+> Task :react-native-reanimated:copyReleaseJniLibsProjectOnly
+> Task :react-native-reanimated:checkReleaseAarMetadata
+> Task :react-native-reanimated:stripReleaseDebugSymbols
+> Task :react-native-reanimated:copyReleaseJniLibsProjectAndLocalJars
+> Task :react-native-reanimated:mergeReleaseResources
+> Task :react-native-reanimated:verifyReleaseResources
+
+> Task :react-native-reanimated:compileReleaseKotlin
+w: file:///home/runner/work/forma/forma/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/NodesManager.kt:13:8 'class UIManagerModule : ReactContextBaseJavaModule, LifecycleEventListener, UIManager' is deprecated. This class is part of Legacy Architecture and will be removed in a future release.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/NodesManager.kt:58:95 'fun resolveCustomDirectEventName(eventName: String): String?' is deprecated.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/NodesManager.kt:232:29 'fun receiveEvent(surfaceId: Int, targetTag: Int, eventName: String, canCoalesceEvent: Boolean, customCoalesceKey: Int, params: WritableMap?, category: Int): Unit' is deprecated. Use the overload with eventTimestamp parameter instead.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/ReanimatedPackage.kt:5:8 'class ReactInstanceManager : Any' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/ReanimatedPackage.kt:60:73 'class ReactInstanceManager : Any' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/ReanimatedPackage.kt:61:63 'val reactNativeHost: ReactNativeHost' is deprecated. You should not use ReactNativeHost directly in the New Architecture. Use ReactHost instead.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/nativeProxy/EventHandler.kt:7:8 'class UIManagerModule : ReactContextBaseJavaModule, LifecycleEventListener, UIManager' is deprecated. This class is part of Legacy Architecture and will be removed in a future release.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/nativeProxy/EventHandler.kt:26:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/nativeProxy/EventHandler.kt:39:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/nativeProxy/EventHandler.kt:49:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/nativeProxy/EventHandler.kt:58:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/nativeProxy/NoopEventHandler.kt:8:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/nativeProxy/NoopEventHandler.kt:20:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/nativeProxy/NoopEventHandler.kt:29:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/nativeProxy/NoopEventHandler.kt:37:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/sensor/ReanimatedSensor.kt:28:26 'val defaultDisplay: Display!' is deprecated. Deprecated in Java.
+
+> Task :react-native-reanimated:compileReleaseJavaWithJavac
+> Task :react-native-reanimated:mergeReleaseGeneratedProguardFiles
+> Task :react-native-reanimated:exportReleaseConsumerProguardFiles
+> Task :react-native-reanimated:bundleLibCompileToJarRelease
+> Task :react-native-reanimated:bundleLibRuntimeToJarRelease
+> Task :react-native-reanimated:processReleaseJavaRes
+> Task :react-native-reanimated:createFullJarRelease
+> Task :react-native-reanimated:generateReleaseLintModel
+> Task :react-native-reanimated:extractReleaseAnnotations
+> Task :react-native-reanimated:mergeReleaseConsumerProguardFiles
+> Task :react-native-reanimated:mergeReleaseJavaResource
+> Task :react-native-gesture-handler:buildCMakeRelWithDebInfo[arm64-v8a]
+> Task :react-native-reanimated:syncReleaseLibJars
+> Task :react-native-reanimated:bundleReleaseLocalLintAar
+> Task :react-native-reanimated:lintVitalAnalyzeRelease SKIPPED
+> Task :react-native-reanimated:generateReleaseLintVitalModel
+> Task :react-native-gesture-handler:buildCMakeRelWithDebInfo[armeabi-v7a]
+> Task :app:buildCMakeRelWithDebInfo[arm64-v8a]
+> Task :react-native-gesture-handler:buildCMakeRelWithDebInfo[x86]
+> Task :react-native-reanimated:bundleReleaseAar
+> Task :react-native-reanimated:assembleRelease
+> Task :react-native-gesture-handler:buildCMakeRelWithDebInfo[x86_64]
+> Task :react-native-gesture-handler:mergeReleaseNativeLibs
+> Task :react-native-gesture-handler:stripReleaseDebugSymbols
+> Task :react-native-gesture-handler:copyReleaseJniLibsProjectAndLocalJars
+> Task :react-native-gesture-handler:copyReleaseJniLibsProjectOnly
+
+> Task :react-native-gesture-handler:compileReleaseKotlin
+w: file:///home/runner/work/forma/forma/node_modules/react-native-gesture-handler/android/src/main/java/com/swmansion/gesturehandler/react/RNGestureHandlerButtonViewManager.kt:799:45 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-gesture-handler/android/src/main/java/com/swmansion/gesturehandler/react/RNGestureHandlerButtonViewManager.kt:1187:45 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///home/runner/work/forma/forma/node_modules/react-native-gesture-handler/android/src/main/java/com/swmansion/gesturehandler/react/RNGestureHandlerDetectorView.kt:240:43 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+
+> Task :react-native-gesture-handler:compileReleaseJavaWithJavac
+> Task :react-native-gesture-handler:mergeReleaseGeneratedProguardFiles
+> Task :react-native-gesture-handler:exportReleaseConsumerProguardFiles
+> Task :react-native-gesture-handler:bundleLibCompileToJarRelease
+> Task :react-native-gesture-handler:bundleLibRuntimeToJarRelease
+> Task :react-native-gesture-handler:processReleaseJavaRes
+> Task :react-native-gesture-handler:createFullJarRelease
+> Task :react-native-gesture-handler:generateReleaseLintModel
+> Task :react-native-gesture-handler:extractReleaseAnnotations
+> Task :react-native-gesture-handler:mergeReleaseConsumerProguardFiles
+> Task :react-native-gesture-handler:lintVitalAnalyzeRelease SKIPPED
+> Task :react-native-gesture-handler:mergeReleaseJavaResource
+> Task :react-native-gesture-handler:generateReleaseLintVitalModel
+> Task :react-native-gesture-handler:syncReleaseLibJars
+> Task :react-native-gesture-handler:bundleReleaseLocalLintAar
+> Task :react-native-gesture-handler:bundleReleaseAar
+> Task :react-native-gesture-handler:assembleRelease
+> Task :app:buildCMakeRelWithDebInfo[armeabi-v7a]
+> Task :app:buildCMakeRelWithDebInfo[x86]
+> Task :app:buildCMakeRelWithDebInfo[x86_64]
+
+> Task :app:compileReleaseKotlin
+w: file:///home/runner/work/forma/forma/apps/mobile/android/app/src/main/java/app/fitpulse/app/MainActivity.kt:36:20 'constructor(activity: ReactActivity, mainComponentName: String, fabricEnabled: Boolean): DefaultReactActivityDelegate' is deprecated. Creating DefaultReactActivityDelegate with flags is deprecated.
+
+> Task :app:compileReleaseJavaWithJavac
+> Task :app:mergeReleaseGeneratedProguardFiles
+> Task :app:processReleaseJavaRes
+> Task :app:expandReleaseArtProfileWildcards
+> Task :app:mergeReleaseJavaResource
+> Task :app:mergeReleaseNativeLibs
+> Task :app:generateReleaseLintVitalReportModel
+> Task :app:stripReleaseDebugSymbols
+> Task :app:extractReleaseNativeSymbolTables
+> Task :app:mergeReleaseNativeDebugMetadata
+> Task :app:lintVitalAnalyzeRelease
+> Task :app:lintVitalReportRelease
+> Task :app:lintVitalRelease
+> Task :app:minifyReleaseWithR8
+ERROR: Missing classes detected while running R8. Please add the missing classes or apply additional keep rules that are generated in /home/runner/work/forma/forma/apps/mobile/android/app/build/outputs/mapping/release/missing_rules.txt.
+ERROR: R8: Missing class expo.modules.kotlin.types.AnyTypeProvider (referenced from: expo.modules.kotlin.modules.ModuleDefinitionData expo.modules.webview.DomWebViewModule.definition())
+Missing class expo.modules.kotlin.types.LazyKType (referenced from: expo.modules.kotlin.modules.ModuleDefinitionData expo.modules.webview.DomWebViewModule.definition())
+
+> Task :app:minifyReleaseWithR8 FAILED
+
+[Incubating] Problems report is available at: file:///home/runner/work/forma/forma/apps/mobile/android/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:minifyReleaseWithR8'.
+> A failure occurred while executing com.android.build.gradle.internal.tasks.R8Task$R8Runnable
+   > Compilation failed to complete
+
+* Try:
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+* Exception is:
+org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':app:minifyReleaseWithR8'.
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.lambda$executeIfValid$1(ExecuteActionsTaskExecuter.java:135)
+	at org.gradle.internal.Try$Failure.ifSuccessfulOrElse(Try.java:288)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:133)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.execute(ExecuteActionsTaskExecuter.java:121)
+	at org.gradle.api.internal.tasks.execution.ProblemsTaskPathTrackingTaskExecuter.execute(ProblemsTaskPathTrackingTaskExecuter.java:41)
+	at org.gradle.api.internal.tasks.execution.ResolveTaskExecutionModeExecuter.execute(ResolveTaskExecutionModeExecuter.java:51)
+	at org.gradle.api.internal.tasks.execution.FinalizePropertiesTaskExecuter.execute(FinalizePropertiesTaskExecuter.java:46)
+	at org.gradle.api.internal.tasks.execution.SkipTaskWithNoActionsExecuter.execute(SkipTaskWithNoActionsExecuter.java:57)
+	at org.gradle.api.internal.tasks.execution.SkipOnlyIfTaskExecuter.execute(SkipOnlyIfTaskExecuter.java:74)
+	at org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecuter.execute(CatchExceptionTaskExecuter.java:36)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.executeTask(EventFiringTaskExecuter.java:77)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:55)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:52)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter.execute(EventFiringTaskExecuter.java:52)
+	at org.gradle.execution.plan.DefaultNodeExecutor.executeLocalTaskNode(DefaultNodeExecutor.java:55)
+	at org.gradle.execution.plan.DefaultNodeExecutor.execute(DefaultNodeExecutor.java:34)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:355)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:343)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.lambda$execute$0(DefaultTaskExecutionGraph.java:339)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:84)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:339)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:328)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:459)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:376)
+	at org.gradle.execution.plan.DefaultPlanExecutor.process(DefaultPlanExecutor.java:111)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph.executeWithServices(DefaultTaskExecutionGraph.java:146)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph.execute(DefaultTaskExecutionGraph.java:131)
+	at org.gradle.execution.SelectedTaskExecutionAction.execute(SelectedTaskExecutionAction.java:35)
+	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor$ExecuteTasks.call(BuildOperationFiringBuildWorkerExecutor.java:54)
+	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor$ExecuteTasks.call(BuildOperationFiringBuildWorkerExecutor.java:43)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor.execute(BuildOperationFiringBuildWorkerExecutor.java:40)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.lambda$executeTasks$11(DefaultBuildLifecycleController.java:323)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:304)
+	at org.gradle.internal.model.StateTransitionController.lambda$tryTransition$9(StateTransitionController.java:215)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:45)
+	at org.gradle.internal.model.StateTransitionController.tryTransition(StateTransitionController.java:215)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.executeTasks(DefaultBuildLifecycleController.java:314)
+	at org.gradle.internal.build.DefaultBuildWorkGraphController$DefaultBuildWorkGraph.runWork(DefaultBuildWorkGraphController.java:220)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$withLocksAcquired$0(DefaultWorkerLeaseService.java:275)
+	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:43)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocksAcquired(DefaultWorkerLeaseService.java:273)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:265)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:128)
+	at org.gradle.composite.internal.DefaultBuildController.doRun(DefaultBuildController.java:182)
+	at org.gradle.composite.internal.DefaultBuildController.access$000(DefaultBuildController.java:50)
+	at org.gradle.composite.internal.DefaultBuildController$BuildOpRunnable.lambda$run$0(DefaultBuildController.java:199)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:84)
+	at org.gradle.composite.internal.DefaultBuildController$BuildOpRunnable.run(DefaultBuildController.java:199)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+Caused by: org.gradle.workers.internal.DefaultWorkerExecutor$WorkExecutionException: A failure occurred while executing com.android.build.gradle.internal.tasks.R8Task$R8Runnable
+	at org.gradle.workers.internal.DefaultWorkerExecutor$WorkItemExecution.waitForCompletion(DefaultWorkerExecutor.java:289)
+	at org.gradle.internal.work.DefaultAsyncWorkTracker.lambda$waitForItemsAndGatherFailures$2(DefaultAsyncWorkTracker.java:130)
+	at org.gradle.internal.Factories$1.create(Factories.java:30)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$withoutLocks$2(DefaultWorkerLeaseService.java:350)
+	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:43)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withoutLocks(DefaultWorkerLeaseService.java:348)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withoutLocks(DefaultWorkerLeaseService.java:332)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withoutLock(DefaultWorkerLeaseService.java:337)
+	at org.gradle.internal.work.DefaultAsyncWorkTracker.waitForItemsAndGatherFailures(DefaultAsyncWorkTracker.java:126)
+	at org.gradle.internal.work.DefaultAsyncWorkTracker.waitForItemsAndGatherFailures(DefaultAsyncWorkTracker.java:92)
+	at org.gradle.internal.work.DefaultAsyncWorkTracker.waitForAll(DefaultAsyncWorkTracker.java:78)
+	at org.gradle.internal.work.DefaultAsyncWorkTracker.waitForCompletion(DefaultAsyncWorkTracker.java:66)
+	at org.gradle.api.internal.tasks.execution.TaskExecution$3.run(TaskExecution.java:267)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:30)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:27)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:48)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeAction(TaskExecution.java:244)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeActions(TaskExecution.java:227)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeWithPreviousOutputFiles(TaskExecution.java:210)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.execute(TaskExecution.java:176)
+	at org.gradle.internal.execution.steps.ExecuteStep.executeInternal(ExecuteStep.java:167)
+	at org.gradle.internal.execution.steps.ExecuteStep.access$000(ExecuteStep.java:47)
+	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:137)
+	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:134)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:134)
+	at org.gradle.internal.execution.steps.ExecuteStep$Mutable.execute(ExecuteStep.java:80)
+	at org.gradle.internal.execution.steps.CancelExecutionStep.execute(CancelExecutionStep.java:42)
+	at org.gradle.internal.execution.steps.TimeoutStep.executeWithoutTimeout(TimeoutStep.java:75)
+	at org.gradle.internal.execution.steps.TimeoutStep.execute(TimeoutStep.java:55)
+	at org.gradle.internal.execution.steps.PreCreateOutputParentsStep.execute(PreCreateOutputParentsStep.java:51)
+	at org.gradle.internal.execution.steps.PreCreateOutputParentsStep.execute(PreCreateOutputParentsStep.java:29)
+	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.executeMutable(RemovePreviousOutputsStep.java:67)
+	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.executeMutable(RemovePreviousOutputsStep.java:39)
+	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+	at org.gradle.internal.execution.steps.BroadcastChangingOutputsStep.execute(BroadcastChangingOutputsStep.java:42)
+	at org.gradle.internal.execution.steps.BroadcastChangingOutputsStep.execute(BroadcastChangingOutputsStep.java:24)
+	at org.gradle.internal.execution.steps.CaptureOutputsAfterExecutionStep.execute(CaptureOutputsAfterExecutionStep.java:69)
+	at org.gradle.internal.execution.steps.CaptureOutputsAfterExecutionStep.execute(CaptureOutputsAfterExecutionStep.java:46)
+	at org.gradle.internal.execution.steps.ResolveInputChangesStep.executeMutable(ResolveInputChangesStep.java:39)
+	at org.gradle.internal.execution.steps.ResolveInputChangesStep.executeMutable(ResolveInputChangesStep.java:28)
+	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+	at org.gradle.internal.execution.steps.BuildCacheStep.executeWithoutCache(BuildCacheStep.java:189)
+	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$execute$1(BuildCacheStep.java:76)
+	at org.gradle.internal.Either$Right.fold(Either.java:176)
+	at org.gradle.internal.execution.caching.CachingState.fold(CachingState.java:62)
+	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:74)
+	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:49)
+	at org.gradle.internal.execution.steps.StoreExecutionStateStep.executeMutable(StoreExecutionStateStep.java:46)
+	at org.gradle.internal.execution.steps.StoreExecutionStateStep.executeMutable(StoreExecutionStateStep.java:35)
+	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.executeBecause(SkipUpToDateStep.java:75)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.lambda$execute$2(SkipUpToDateStep.java:53)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:53)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:35)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:37)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:27)
+	at org.gradle.internal.execution.steps.ResolveMutableCachingStateStep.executeDelegate(ResolveMutableCachingStateStep.java:70)
+	at org.gradle.internal.execution.steps.ResolveMutableCachingStateStep.executeDelegate(ResolveMutableCachingStateStep.java:32)
+	at org.gradle.internal.execution.steps.AbstractResolveCachingStateStep.execute(AbstractResolveCachingStateStep.java:69)
+	at org.gradle.internal.execution.steps.AbstractResolveCachingStateStep.execute(AbstractResolveCachingStateStep.java:37)
+	at org.gradle.internal.execution.steps.ResolveChangesStep.executeMutable(ResolveChangesStep.java:63)
+	at org.gradle.internal.execution.steps.ResolveChangesStep.executeMutable(ResolveChangesStep.java:34)
+	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+	at org.gradle.internal.execution.steps.ValidateStep$Mutable.executeDelegate(ValidateStep.java:79)
+	at org.gradle.internal.execution.steps.ValidateStep$Mutable.executeDelegate(ValidateStep.java:65)
+	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:99)
+	at org.gradle.internal.execution.steps.ValidateStep$Mutable.execute(ValidateStep.java:65)
+	at org.gradle.internal.execution.steps.CaptureMutableStateBeforeExecutionStep.executeMutable(CaptureMutableStateBeforeExecutionStep.java:86)
+	at org.gradle.internal.execution.steps.CaptureMutableStateBeforeExecutionStep.execute(CaptureMutableStateBeforeExecutionStep.java:65)
+	at org.gradle.internal.execution.steps.CaptureMutableStateBeforeExecutionStep.execute(CaptureMutableStateBeforeExecutionStep.java:45)
+	at org.gradle.internal.execution.steps.SkipEmptyMutableWorkStep.executeWithNonEmptySources(SkipEmptyMutableWorkStep.java:210)
+	at org.gradle.internal.execution.steps.SkipEmptyMutableWorkStep.executeMutable(SkipEmptyMutableWorkStep.java:85)
+	at org.gradle.internal.execution.steps.SkipEmptyMutableWorkStep.executeMutable(SkipEmptyMutableWorkStep.java:53)
+	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsStartedStep.execute(MarkSnapshottingInputsStartedStep.java:38)
+	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.executeMutable(LoadPreviousExecutionStateStep.java:36)
+	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.executeMutable(LoadPreviousExecutionStateStep.java:23)
+	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.executeMutable(HandleStaleOutputsStep.java:77)
+	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.executeMutable(HandleStaleOutputsStep.java:43)
+	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.lambda$executeMutable$0(AssignMutableWorkspaceStep.java:34)
+	at org.gradle.api.internal.tasks.execution.TaskExecution$4.withWorkspace(TaskExecution.java:305)
+	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.executeMutable(AssignMutableWorkspaceStep.java:30)
+	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.executeMutable(AssignMutableWorkspaceStep.java:21)
+	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:40)
+	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:23)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.lambda$execute$2(ExecuteWorkBuildOperationFiringStep.java:67)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:67)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:39)
+	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:46)
+	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:34)
+	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:56)
+	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:38)
+	at org.gradle.internal.execution.impl.DefaultExecutionEngine$1.execute(DefaultExecutionEngine.java:68)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:132)
+	... 61 more
+Caused by: com.android.tools.r8.CompilationFailedException: Compilation failed to complete
+	at Version.fakeStackEntry(Version_9.2.14.java:0)
+	at com.android.tools.r8.w0.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:1)
+	at com.android.tools.r8.internal.us0.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:81)
+	at com.android.tools.r8.internal.us0.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:32)
+	at com.android.tools.r8.internal.us0.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:31)
+	at com.android.tools.r8.R8.run(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:8)
+	at com.android.builder.dexing.R8Tool.runR8(r8Tool.kt:352)
+	at com.android.build.gradle.internal.tasks.R8Task$Companion.shrink(R8Task.kt:689)
+	at com.android.build.gradle.internal.tasks.R8Task$R8Runnable.execute(R8Task.kt:784)
+	at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:68)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:64)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:61)
+	at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:102)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:61)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:58)
+	at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$0(DefaultWorkerExecutor.java:176)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQueue.java:194)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$700(DefaultConditionalExecutionQueue.java:127)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.java:169)
+	at org.gradle.internal.Factories$1.create(Factories.java:30)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$withLocksAcquired$0(DefaultWorkerLeaseService.java:275)
+	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:43)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocksAcquired(DefaultWorkerLeaseService.java:273)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:265)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:128)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:133)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue.java:164)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java:133)
+	... 2 more
+Caused by: com.android.tools.r8.internal.j: Missing class expo.modules.kotlin.types.AnyTypeProvider (referenced from: expo.modules.kotlin.modules.ModuleDefinitionData expo.modules.webview.DomWebViewModule.definition())
+Missing class expo.modules.kotlin.types.LazyKType (referenced from: expo.modules.kotlin.modules.ModuleDefinitionData expo.modules.webview.DomWebViewModule.definition())
+	at com.android.tools.r8.internal.ek3.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:21)
+	at com.android.tools.r8.internal.ek3.error(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:1)
+	at com.android.tools.r8.shaking.p0.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:7011)
+	at com.android.tools.r8.shaking.p0.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:1680)
+	at com.android.tools.r8.R8.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:2013)
+	at com.android.tools.r8.R8.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:185)
+	at com.android.tools.r8.R8.c(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:11)
+	at com.android.tools.r8.R8.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:5)
+	at com.android.tools.r8.internal.us0.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:28)
+	... 35 more
+	Suppressed: java.lang.RuntimeException: com.android.tools.r8.internal.j: Missing class expo.modules.kotlin.types.AnyTypeProvider (referenced from: expo.modules.kotlin.modules.ModuleDefinitionData expo.modules.webview.DomWebViewModule.definition())
+Missing class expo.modules.kotlin.types.LazyKType (referenced from: expo.modules.kotlin.modules.ModuleDefinitionData expo.modules.webview.DomWebViewModule.definition())
+		at com.android.tools.r8.internal.ek3.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:27)
+		at com.android.tools.r8.shaking.p0.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:7013)
+		at com.android.tools.r8.shaking.p0.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:1680)
+		at com.android.tools.r8.R8.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:2013)
+		at com.android.tools.r8.R8.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:185)
+		at com.android.tools.r8.R8.c(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:11)
+		at com.android.tools.r8.R8.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:5)
+		at com.android.tools.r8.internal.us0.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:28)
+		at com.android.tools.r8.R8.run(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:8)
+		at com.android.builder.dexing.R8Tool.runR8(r8Tool.kt:352)
+		at com.android.build.gradle.internal.tasks.R8Task$Companion.shrink(R8Task.kt:689)
+		at com.android.build.gradle.internal.tasks.R8Task$R8Runnable.execute(R8Task.kt:784)
+		at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:68)
+		at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:64)
+		at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:61)
+		at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:102)
+		at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:61)
+		at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
+		at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
+		at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+		at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+		at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+		at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+		at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+		at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+		at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+		at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
+		at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:58)
+		at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$0(DefaultWorkerExecutor.java:176)
+		at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+		at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQueue.java:194)
+		at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$700(DefaultConditionalExecutionQueue.java:127)
+		at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.java:169)
+		at org.gradle.internal.Factories$1.create(Factories.java:30)
+		at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$withLocksAcquired$0(DefaultWorkerLeaseService.java:275)
+		at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:43)
+		at org.gradle.internal.work.DefaultWorkerLeaseService.withLocksAcquired(DefaultWorkerLeaseService.java:273)
+		at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:265)
+		at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:128)
+		at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:133)
+		at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue.java:164)
+		at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java:133)
+		at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+		at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+		at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+		at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+		at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+		at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+		at java.base/java.lang.Thread.run(Thread.java:1583)
+	Caused by: java.lang.Throwable: [CIRCULAR REFERENCE: com.android.tools.r8.internal.j: Missing class expo.modules.kotlin.types.AnyTypeProvider (referenced from: expo.modules.kotlin.modules.ModuleDefinitionData expo.modules.webview.DomWebViewModule.definition())
+Missing class expo.modules.kotlin.types.LazyKType (referenced from: expo.modules.kotlin.modules.ModuleDefinitionData expo.modules.webview.DomWebViewModule.definition())]
+		at com.android.tools.r8.internal.ek3.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:21)
+		at com.android.tools.r8.internal.ek3.error(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:1)
+		at com.android.tools.r8.shaking.p0.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:7011)
+		at com.android.tools.r8.shaking.p0.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:1680)
+		at com.android.tools.r8.R8.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:2013)
+		at com.android.tools.r8.R8.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:185)
+		at com.android.tools.r8.R8.c(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:11)
+		at com.android.tools.r8.R8.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:5)
+		at com.android.tools.r8.internal.us0.a(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:28)
+		at com.android.tools.r8.R8.run(R8_9.2.14_217d8129b9fa27bd32dcd01727a59b0d1b25e2a49895de5fd69be347da7e2b91:8)
+		at com.android.builder.dexing.R8Tool.runR8(r8Tool.kt:352)
+		at com.android.build.gradle.internal.tasks.R8Task$Companion.shrink(R8Task.kt:689)
+		at com.android.build.gradle.internal.tasks.R8Task$R8Runnable.execute(R8Task.kt:784)
+		at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:68)
+		at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:64)
+		at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:61)
+		at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:102)
+		at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:61)
+		at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
+		at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
+		at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+		at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+		at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+		at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+		at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+		at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+		at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+		at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
+		at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:58)
+		at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$0(DefaultWorkerExecutor.java:176)
+		at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQueue.java:194)
+		at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$700(DefaultConditionalExecutionQueue.java:127)
+		at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.java:169)
+		at org.gradle.internal.Factories$1.create(Factories.java:30)
+		at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$withLocksAcquired$0(DefaultWorkerLeaseService.java:275)
+		at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:43)
+		at org.gradle.internal.work.DefaultWorkerLeaseService.withLocksAcquired(DefaultWorkerLeaseService.java:273)
+		at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:265)
+		at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:128)
+		at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:133)
+		at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue.java:164)
+		at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java:133)
+		at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+		at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.4.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 27m 6s
+811 actionable tasks: 811 executed
