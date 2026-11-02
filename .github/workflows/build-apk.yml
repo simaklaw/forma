@@ -231,18 +231,20 @@ jobs:
             }
 
             def bundleTask = appProject.tasks.findByName('createBundleReleaseJsAndAssets')
-            def mergeTask = appProject.tasks.findByName('mergeReleaseResources')
-            if (bundleTask == null || mergeTask == null) {
-              throw new GradleException("Expected React Native bundle and Android resource merge tasks were not found in ${appProject.path}")
+            if (bundleTask == null) {
+              throw new GradleException("React Native JS bundle task createBundleReleaseJsAndAssets was not found in ${appProject.path}")
             }
 
             def pruneTask = appProject.tasks.register('pruneDuplicateExerciseImages') {
               dependsOn bundleTask
               doLast {
-                def generatedRes = new File(appProject.layout.buildDirectory.get().asFile, 'generated/res/createBundleReleaseJsAndAssets')
+                // SDK 58 / RN 0.88: Metro writes resources into build/generated/res/react/release —
+                // scan the whole build/generated/res tree recursively instead of a fixed
+                // directory name, so the prune keeps working across SDK upgrades.
+                def genResRoot = new File(appProject.layout.buildDirectory.get().asFile, 'generated/res')
                 int removed = 0
-                if (generatedRes.exists()) {
-                  generatedRes.eachFileRecurse { file ->
+                if (genResRoot.exists()) {
+                  genResRoot.eachFileRecurse { file ->
                     if (file.isFile() && file.name.endsWith('.jpg') && file.name.startsWith('assets_exercises_dataset_')) {
                       def gif = new File(file.parentFile, file.name.substring(0, file.name.lastIndexOf('.')) + '.gif')
                       if (gif.exists()) {
@@ -253,11 +255,18 @@ jobs:
                       }
                     }
                   }
+                } else {
+                  println "generated/res root not found: ${genResRoot}"
                 }
                 println "Pruned ${removed} duplicate exercise JPG resources; GIF resources retained"
               }
             }
-            mergeTask.configure { dependsOn pruneTask }
+            // AGP 8 runs the resource merger as mergeReleaseResources; AGP 9 (SDK 58)
+            // reports the duplicate-resource failure from packageReleaseResources.
+            // Wire the prune into every candidate so the merger always sees clean res.
+            appProject.tasks.matching { it.name == 'mergeReleaseResources' || it.name == 'packageReleaseResources' }.all { tsk ->
+              tsk.dependsOn pruneTask
+            }
           }
           GRADLE
 
