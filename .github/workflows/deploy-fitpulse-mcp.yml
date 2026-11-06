@@ -1,0 +1,63 @@
+name: Deploy FitPulse MCP
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "tools/fitpulse-mcp/**"
+      - ".github/workflows/deploy-fitpulse-mcp.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-fitpulse-mcp
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check required deployment secrets
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          MCP_BEARER_TOKEN: ${{ secrets.MCP_BEARER_TOKEN }}
+          FITPULSE_GITHUB_TOKEN: ${{ secrets.FITPULSE_GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          for name in CLOUDFLARE_ACCOUNT_ID CLOUDFLARE_API_TOKEN MCP_BEARER_TOKEN FITPULSE_GITHUB_TOKEN; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing GitHub Actions secret: $name"
+              exit 1
+            fi
+          done
+
+      - name: Install and type-check
+        working-directory: tools/fitpulse-mcp
+        run: |
+          npm install
+          npm run typecheck
+
+      - name: Deploy Worker and update runtime secrets
+        working-directory: tools/fitpulse-mcp
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          MCP_BEARER_TOKEN: ${{ secrets.MCP_BEARER_TOKEN }}
+          FITPULSE_GITHUB_TOKEN: ${{ secrets.FITPULSE_GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          npx wrangler secret put MCP_BEARER_TOKEN <<< "$MCP_BEARER_TOKEN"
+          npx wrangler secret put GITHUB_TOKEN <<< "$FITPULSE_GITHUB_TOKEN"
+          npx wrangler deploy --config wrangler.toml
