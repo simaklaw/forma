@@ -9,6 +9,11 @@
  * --download  fetch matched GIF + thumb into:
  *   apps/web/public/exercises/dataset/{id}.gif|.jpg
  *   apps/mobile/assets/exercises/dataset/{id}.gif|.jpg
+ *
+ * Android note: Metro packs required image assets as drawables whose names
+ * strip the file extension. Requiring both `{id}.gif` and `{id}.jpg` therefore
+ * collides (Duplicate resources). DATASET_THUMB_MODULES therefore requires the
+ * GIF; the static JPG remains on disk for web/public only.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -271,7 +276,9 @@ export function resolveThumbUri(entry: ExerciseGifManifestEntry): string | undef
 
   fs.writeFileSync(OUT_FILE, body, 'utf8');
 
-  // Mobile Metro require map for offline GIF/thumb modules
+  // Mobile Metro require map for offline GIF/thumb modules.
+  // Android drawable names strip extensions → requiring both id.gif and id.jpg
+  // collides. Thumbs therefore require the GIF (first frame works in <Image>).
   const assetOut = path.join(
     ROOT,
     'apps/mobile/src/features/workout/exerciseDatasetAssets.generated.ts'
@@ -289,13 +296,11 @@ export function resolveThumbUri(entry: ExerciseGifManifestEntry): string | undef
     const id = f.replace(/\.gif$/, '');
     assetLines.push(`  '${id}': require('../../../assets/exercises/dataset/${f}'),`);
   }
-  assetLines.push('};', '', 'export const DATASET_THUMB_MODULES: Record<string, number> = {');
+  assetLines.push('};', '', '// Thumbs require the GIF to avoid Android drawable name collision with .jpg.');
+  assetLines.push('export const DATASET_THUMB_MODULES: Record<string, number> = {');
   for (const f of gifFiles.sort()) {
     const id = f.replace(/\.gif$/, '');
-    const jpg = `${id}.jpg`;
-    if (fs.existsSync(path.join(MOBILE_MEDIA_DIR, jpg))) {
-      assetLines.push(`  '${id}': require('../../../assets/exercises/dataset/${jpg}'),`);
-    }
+    assetLines.push(`  '${id}': require('../../../assets/exercises/dataset/${f}'),`);
   }
   assetLines.push('};', '');
   fs.writeFileSync(assetOut, assetLines.join('\n'), 'utf8');
