@@ -40,7 +40,9 @@ export const workoutScreenStyles = StyleSheet.create({
     paddingVertical: 9
   },
   dayTabText: { fontFamily: fonts.bodySemi, fontSize: 13 },
-  body: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: 40 },
+  body: { paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+  /** Единый вертикальный скролл всего экрана: шапка уезжает вместе с контентом. */
+  scrollBody: { paddingBottom: 48 },
   ticket: {
     borderRadius: 22,
     overflow: 'hidden',

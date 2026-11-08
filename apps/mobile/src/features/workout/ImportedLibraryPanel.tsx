@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import {
@@ -60,6 +61,7 @@ export default function ImportedLibraryPanel() {
   const t = useT();
   const lang = useLanguageStore((s) => s.lang);
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
+  const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<ImportedExercise['category'] | null>(null);
   const [level, setLevel] = useState<string | null>(null);
@@ -369,12 +371,12 @@ export default function ImportedLibraryPanel() {
       >
         {selected ? (
           <View style={[styles.modalRoot, { backgroundColor: colors.ink }]}>
-            <View style={styles.modalHeader}>
+            <View style={[styles.modalHeader, { paddingTop: insets.top + 8 }]}>
               <TouchableOpacity onPress={() => setSelected(null)} accessibilityRole="button">
                 <Text style={[styles.close, { color: colors.lime }]}>{t('close')}</Text>
               </TouchableOpacity>
             </View>
-            <ScrollView contentContainerStyle={styles.modalBody}>
+            <ScrollView contentContainerStyle={[styles.modalBody, { paddingBottom: 40 + insets.bottom }]}>
               {videoSource ? (
                 <ExerciseVideo source={videoSource} label={displayName(selected)} />
               ) : gifUri ? (
@@ -537,7 +539,7 @@ const styles = StyleSheet.create({
   enBadgeText: { fontSize: 10, fontFamily: fonts.mono },
   modalRoot: { flex: 1 },
   modalHeader: {
-    paddingTop: 56,
+    paddingTop: 8,
     paddingHorizontal: spacing.xl,
     paddingBottom: 8
   },

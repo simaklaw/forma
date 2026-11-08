@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Line, Path, Rect } from 'react-native-svg';
 import { fonts } from '@/core/theme/tokens';
 import { useThemeColors, useThemeMode } from '@/core/theme/useThemeColors';
@@ -113,6 +114,7 @@ export default function RootNavigator() {
   const colors = useThemeColors();
   const mode = useThemeMode();
   const t = useT();
+  const insets = useSafeAreaInsets();
 
   const navTheme = useMemo(
     () => ({
@@ -140,8 +142,8 @@ export default function RootNavigator() {
             backgroundColor: colors.barSurface,
             borderTopColor: colors.line,
             borderTopWidth: 1,
-            height: 78,
-            paddingBottom: 10,
+            height: 78 + insets.bottom,
+            paddingBottom: 10 + insets.bottom,
             paddingTop: 8,
             elevation: 12,
             shadowColor: '#000000',

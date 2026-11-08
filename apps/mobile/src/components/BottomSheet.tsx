@@ -5,7 +5,8 @@
 
 import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import GorhomBottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import GorhomBottomSheet, { BottomSheetBackdrop, BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 import { fonts, radius, spacing, type ColorTokens } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 
@@ -13,14 +14,17 @@ interface Props {
   title: string;
   eyebrow?: string;
   snapPoints?: (string | number)[];
+  /** Прокручиваемое тело листа: для контента выше высоты листа (шторка упражнения). */
+  scrollable?: boolean;
   onClose?: () => void;
   onChange?: (index: number) => void;
   children: React.ReactNode;
 }
 
 const AppBottomSheet = forwardRef<GorhomBottomSheet, Props>(
-  ({ title, eyebrow, snapPoints, onClose, onChange, children }, ref) => {
+  ({ title, eyebrow, snapPoints, scrollable, onClose, onChange, children }, ref) => {
     const colors = useThemeColors();
+    const insets = useSafeAreaInsets();
     const styles = createStyles(colors);
     const points = useMemo(() => snapPoints ?? ['60%', '85%'], [snapPoints]);
 
@@ -46,6 +50,7 @@ const AppBottomSheet = forwardRef<GorhomBottomSheet, Props>(
         index={-1}
         snapPoints={points}
         enablePanDownToClose
+        bottomInset={insets.bottom}
         onClose={onClose}
         onChange={onChange}
         backdropComponent={renderBackdrop}
@@ -68,7 +73,13 @@ const AppBottomSheet = forwardRef<GorhomBottomSheet, Props>(
               <Text style={styles.closeText}>×</Text>
             </TouchableOpacity>
           </View>
-          {children}
+          {scrollable ? (
+            <BottomSheetScrollView style={styles.flex} contentContainerStyle={styles.scrollContent}>
+              {children}
+            </BottomSheetScrollView>
+          ) : (
+            children
+          )}
         </BottomSheetView>
       </GorhomBottomSheet>
     );
@@ -87,6 +98,8 @@ function createStyles(colors: ColorTokens) {
   },
   handle: { backgroundColor: colors.lineStrong, width: 40, height: 4 },
   content: { flex: 1, paddingHorizontal: spacing.xl },
+  flex: { flex: 1 },
+  scrollContent: { paddingBottom: spacing.xl },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

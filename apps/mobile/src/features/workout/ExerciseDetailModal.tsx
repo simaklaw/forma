@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import MuscleMap from '@/components/MuscleMap';
@@ -48,6 +49,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
   const t = useT();
   const lang = useLanguageStore((s) => s.lang);
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
+  const insets = useSafeAreaInsets();
   const reference = useExerciseReference(item?.wgerSearchTerm ?? null);
   const profileSex = useFitPulseStore((s) => s.profile.sex);
   const [favorited, setFavorited] = useState(false);
@@ -138,7 +140,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
       onRequestClose={onClose}
     >
       <View style={[styles.root, { backgroundColor: colors.ink }]}>
-        <View style={[styles.topBar, { borderBottomColor: colors.line }]}>
+        <View style={[styles.topBar, { borderBottomColor: colors.line, paddingTop: spacing.lg + insets.top }]}>
           <TouchableOpacity
             onPress={onClose}
             accessibilityRole="button"
@@ -163,7 +165,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
           </TouchableOpacity>
         </View>
 
-        <ScrollView contentContainerStyle={styles.body}>
+        <ScrollView contentContainerStyle={[styles.body, { paddingBottom: 48 + insets.bottom }]}>
           <Text style={[styles.eyebrow, { color: colors.lime }]}>
             {item.mode === 'gym' ? t('gymShort') : t('homeShort')} · {item.dayName.toUpperCase()}
           </Text>
