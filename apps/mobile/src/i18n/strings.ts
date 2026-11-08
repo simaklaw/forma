@@ -186,6 +186,15 @@ const RU = {
   // Экран тренировки (ExerciseSheet)
   sheetExerciseShort: 'Упр. {index} · шаг {step}/{total}',
   sheetExerciseFull: 'Упражнение {index}',
+  sheetExerciseTimerTitle: 'ТАЙМЕР ПОДХОДА',
+  sheetExerciseTimerHint: 'Таймер не отмечает подход автоматически.',
+  sheetTimerStart: 'Старт',
+  sheetTimerPause: 'Пауза',
+  sheetTimerResume: 'Продолжить',
+  sheetTimerReset: 'Сбросить',
+  sheetTimerAdjustDown: 'Уменьшить длительность на 15 секунд',
+  sheetTimerAdjustUp: 'Увеличить длительность на 15 секунд',
+  sheetTimerDone: 'Время вышло · отметьте подход ниже',
   sheetPrevExercise: 'предыдущее',
   sheetGoToCurrent: 'Перейти к текущему упражнению',
   sheetDecreaseWeight: 'Уменьшить вес',
@@ -906,6 +915,15 @@ const EN: Record<StringKey, string> = {
 
   sheetExerciseShort: 'Ex. {index} · step {step}/{total}',
   sheetExerciseFull: 'Exercise {index}',
+  sheetExerciseTimerTitle: 'SET TIMER',
+  sheetExerciseTimerHint: 'The timer does not log a set automatically.',
+  sheetTimerStart: 'Start',
+  sheetTimerPause: 'Pause',
+  sheetTimerResume: 'Resume',
+  sheetTimerReset: 'Reset',
+  sheetTimerAdjustDown: 'Decrease duration by 15 seconds',
+  sheetTimerAdjustUp: 'Increase duration by 15 seconds',
+  sheetTimerDone: 'Time is up · log the set below',
   sheetPrevExercise: 'previous',
   sheetGoToCurrent: 'Go to current exercise',
   sheetDecreaseWeight: 'Decrease weight',
@@ -1606,6 +1624,7 @@ export function streakDayWord(count: number, lang: Language): string {
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'дня';
   return 'дней';
 }
+
 
 
 
