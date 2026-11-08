@@ -139,6 +139,7 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
       animationType="slide"
       presentationStyle="fullScreen"
       statusBarTranslucent
+      navigationBarTranslucent
       onRequestClose={onClose}
     >
       <View style={[styles.root, { backgroundColor: colors.ink }]}>

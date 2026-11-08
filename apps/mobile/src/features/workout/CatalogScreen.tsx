@@ -8,13 +8,14 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { RestTimerEngine } from '@/engines/RestTimerEngine';
 import { type MuscleKey } from '@/components/MuscleMap';
 import ScreenHeader from '@/components/ScreenHeader';
 import { type TrainingMode } from './catalog';
+import { SHOW_GYM_MODE_TOGGLE } from './workoutScreenHelpers';
 import {
   buildCatalogItems,
   filterCatalogItems,
@@ -47,13 +48,13 @@ const EQUIPMENT_ORDER: Equipment[] = [
   'bench'
 ];
 
-/** Временно скрыт — home-only product decision (см. WorkoutScreen). */
-const SHOW_GYM_MODE_TOGGLE = false;
-
 export default function CatalogScreen() {
   const colors = useThemeColors();
   const t = useT();
   const lang = useLanguageStore((s) => s.lang);
+  // Edge-to-edge (Android 15): таб-бар — 78 + insets.bottom, нижний отступ
+  // списков каталога считаем от реальных insets, а не от магической константы.
+  const insets = useSafeAreaInsets();
   const [mode, setMode] = useState<TrainingMode>('home');
   const [query, setQuery] = useState('');
   const [muscle, setMuscle] = useState<MuscleKey | null>(null);
@@ -173,6 +174,7 @@ export default function CatalogScreen() {
                 : catalogScope === 'custom'
                   ? t('catalogHintCustom')
                   : t('catalogHintOffline', {
+                      mode: t(mode === 'gym' ? 'modeGymLower' : 'modeHomeLower'),
                       shown: browsingDays ? planDays.length : listed.length,
                       total: browsingDays ? planDays.length : items.length
                     })
@@ -445,7 +447,7 @@ export default function CatalogScreen() {
               data={planDays}
               keyExtractor={(day) => `day-${day.id}`}
               style={styles.exerciseList}
-              contentContainerStyle={styles.list}
+              contentContainerStyle={[styles.list, { paddingBottom: 96 + insets.bottom }]}
               renderItem={({ item: day, index }) => (
                 <TouchableOpacity
                   onPress={() => {
@@ -492,7 +494,7 @@ export default function CatalogScreen() {
                 data={listed}
                 keyExtractor={(item) => `${item.mode}-${item.id}-${item.dayName}`}
                 style={styles.exerciseList}
-                contentContainerStyle={styles.list}
+                contentContainerStyle={[styles.list, { paddingBottom: 96 + insets.bottom }]}
                 renderItem={({ item, index }) => {
                   const isFav = favoriteKeys.includes(favoriteKey(item.mode, item.id));
                   return (

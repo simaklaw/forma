@@ -1,0 +1,23 @@
+name: Build Android APK (smoke branch)
+
+# Обратная связь с устройства требует свежий APK после каждого кодового
+# фикса. Главный build-apk.yml срабатывает только на медиа-файлы в main
+# или по workflow_dispatch. Этот воркфлоу запускает ту же сборку
+# автоматически при пуше любой ветки build/android-smoke-*:
+# пуш ветки = готовый APK-артефакт для установки на устройство.
+on:
+  push:
+    branches:
+      - 'build/android-smoke-*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-apk-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-apk:
+    name: Reusable APK build (build-apk.yml)
+    uses: simaklaw/forma/.github/workflows/build-apk.yml@main
