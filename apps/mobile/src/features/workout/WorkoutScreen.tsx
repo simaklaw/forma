@@ -531,6 +531,9 @@ export default function WorkoutScreen() {
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]} edges={['top']}>
+      {/* Единый вертикальный скролл всего экрана: шапка, билет и вкладки дней
+          уезжают вместе с контентом — раньше листался только список внизу. */}
+      <ScrollView contentContainerStyle={styles.scrollBody}>
       <View style={[styles.header, { borderBottomColor: colors.line }]}>
         <Text style={[styles.eyebrow, { color: colors.lime }]}>FITPULSE  /  {todayLabel}</Text>
         <View style={styles.titleRow}>
@@ -755,7 +758,7 @@ export default function WorkoutScreen() {
         </TouchableOpacity>
       )}
 
-      <ScrollView contentContainerStyle={styles.body}>
+      <View style={styles.body}>
         <View
           style={[styles.streakRow, { backgroundColor: colors.surfaceContainer }]}
           accessibilityLabel={
@@ -923,6 +926,7 @@ export default function WorkoutScreen() {
             </TouchableOpacity>
           );
         })}
+      </View>
       </ScrollView>
 
       <WorkoutPreviewSheet

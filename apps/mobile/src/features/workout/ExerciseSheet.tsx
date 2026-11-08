@@ -448,6 +448,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
     return (
       <AppBottomSheet
+        scrollable
         ref={ref}
         eyebrow={
           seq.totalSteps > 0

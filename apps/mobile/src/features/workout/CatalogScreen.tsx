@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,6 +8,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import { RestTimerEngine } from '@/engines/RestTimerEngine';
@@ -159,7 +159,7 @@ export default function CatalogScreen() {
   }, [browsingDays, narrowing, planDayId, filtered]);
 
   return (
-    <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]}>
+    <SafeAreaView style={[styles.screen, { backgroundColor: colors.ink }]} edges={['top']}>
       <ScreenHeader
         eyebrow={t('catalogSegmentPlansFull')}
         title={t('catalogHeaderLibrary')}
