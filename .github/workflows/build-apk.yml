@@ -1,24 +1,10 @@
 name: Build Android APK
 
 on:
-  # Общие изменения кода по-прежнему не запускают APK автоматически.
-  # Проверенные мужские/женские ролики и постеры запускают тестовую сборку,
-  # чтобы можно было проверить воспроизведение на Android после синхронизации медиа.
+  # Одноразовая smoke-ветка: пуш этой ветки запускает сборку APK (main-код, SDK 58).
   push:
     branches:
-      - main
-    paths:
-      - "apps/mobile/assets/exercises/pushup-*.mp4"
-      - "apps/mobile/assets/exercises/pushup-*.png"
-      - "apps/mobile/assets/exercises/pullup-*.mp4"
-      - "apps/mobile/assets/exercises/pullup-*.png"
-      # Mobile bundles reference these public files through symlinks, so watch
-      # the actual target files too (the symlink text itself may not change).
-      - "apps/web/public/exercises/pushup-*.mp4"
-      - "apps/web/public/exercises/pushup-*.png"
-      - "apps/web/public/exercises/pullup-*.mp4"
-      - "apps/web/public/exercises/pullup-*.png"
-      - "apps/web/public/exercises/fitpulse-animation-manifest.json"
+      - build/android-smoke-3
   workflow_dispatch:
     inputs:
       sync_api_url:
@@ -31,7 +17,7 @@ on:
         default: "01a0f7166d967e68a13e38353948a6a5"
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: build-apk-${{ github.ref }}
@@ -75,7 +61,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "21"
 
       - name: Configure Android SDK (preinstalled on GitHub runners)
         shell: bash
@@ -95,12 +81,22 @@ jobs:
           done
 
           yes | sdkmanager --licenses >/dev/null 2>&1 || true
-          sdkmanager --install \
+          # SDK 58 / RN 0.88: широкий набор инструментов; точные версии AGP докачает сам
+          # (лицензии приняты). Каждый пакет — отдельный вызов: неизвестная ревизия
+          # не должна ронять остальные установки.
+          for pkg in \
             "platform-tools" \
             "platforms;android-35" \
+            "platforms;android-36" \
+            "platforms;android-37" \
             "build-tools;35.0.0" \
+            "build-tools;36.0.0" \
             "ndk;25.1.8937393" \
-            "cmake;3.22.1" || true
+            "ndk;27.2.9100651" \
+            "cmake;3.22.1" \
+            "cmake;3.31.0"; do
+            sdkmanager --install "$pkg" >/dev/null 2>&1 || echo "::warning::sdkmanager failed: $pkg"
+          done
 
       - name: Validate production app configuration
         shell: bash
@@ -173,6 +169,21 @@ jobs:
             fi
           fi
 
+          # SDK 58: expo@58 pulls optional peer @expo/dom-webview (pnpm autoInstallPeers).
+          # Its DomWebViewModule references expo-modules-core Kotlin types that were
+          # removed in core 58 — R8 'Missing class' fails the release build.
+          # The app does not use dom-webview; suppress the dangling references.
+          if [[ -f android/app/proguard-rules.pro ]]; then
+            {
+              echo ""
+              echo "# CI: SDK 58 smoke build - missing classes from @expo/dom-webview"
+              echo "-dontwarn expo.modules.kotlin.types.AnyTypeProvider"
+              echo "-dontwarn expo.modules.kotlin.types.LazyKType"
+            } >> android/app/proguard-rules.pro
+          else
+            echo "::warning::android/app/proguard-rules.pro not found after prebuild"
+          fi
+
           if [[ ! -f index.js ]]; then
             echo "::error::apps/mobile/index.js missing"
             exit 1
@@ -235,18 +246,20 @@ jobs:
             }
 
             def bundleTask = appProject.tasks.findByName('createBundleReleaseJsAndAssets')
-            def mergeTask = appProject.tasks.findByName('mergeReleaseResources')
-            if (bundleTask == null || mergeTask == null) {
-              throw new GradleException("Expected React Native bundle and Android resource merge tasks were not found in ${appProject.path}")
+            if (bundleTask == null) {
+              throw new GradleException("React Native JS bundle task createBundleReleaseJsAndAssets was not found in ${appProject.path}")
             }
 
             def pruneTask = appProject.tasks.register('pruneDuplicateExerciseImages') {
               dependsOn bundleTask
               doLast {
-                def generatedRes = new File(appProject.buildDir, 'generated/res/createBundleReleaseJsAndAssets')
+                // SDK 58 / RN 0.88: Metro writes resources into build/generated/res/react/release —
+                // scan the whole build/generated/res tree recursively instead of a fixed
+                // directory name, so the prune keeps working across SDK upgrades.
+                def genResRoot = new File(appProject.layout.buildDirectory.get().asFile, 'generated/res')
                 int removed = 0
-                if (generatedRes.exists()) {
-                  generatedRes.eachFileRecurse { file ->
+                if (genResRoot.exists()) {
+                  genResRoot.eachFileRecurse { file ->
                     if (file.isFile() && file.name.endsWith('.jpg') && file.name.startsWith('assets_exercises_dataset_')) {
                       def gif = new File(file.parentFile, file.name.substring(0, file.name.lastIndexOf('.')) + '.gif')
                       if (gif.exists()) {
@@ -257,15 +270,51 @@ jobs:
                       }
                     }
                   }
+                } else {
+                  println "generated/res root not found: ${genResRoot}"
                 }
                 println "Pruned ${removed} duplicate exercise JPG resources; GIF resources retained"
               }
             }
-            mergeTask.configure { dependsOn pruneTask }
+            // AGP 8 runs the resource merger as mergeReleaseResources; AGP 9 (SDK 58)
+            // reports the duplicate-resource failure from packageReleaseResources.
+            // Wire the prune into every candidate so the merger always sees clean res.
+            appProject.tasks.matching { it.name == 'mergeReleaseResources' || it.name == 'packageReleaseResources' }.all { tsk ->
+              tsk.dependsOn pruneTask
+            }
           }
           GRADLE
 
-          ./gradlew -I "$RUNNER_TEMP/prune-duplicate-exercise-assets.gradle" assembleRelease --no-daemon --stacktrace
+          ./gradlew -I "$RUNNER_TEMP/prune-duplicate-exercise-assets.gradle" assembleRelease --no-daemon --stacktrace 2>&1 | tee "$RUNNER_TEMP/gradle-build.log"
+
+      - name: Publish build diagnostics on failure (ci-logs)
+        if: failure()
+        shell: bash
+        run: |
+          set +e
+          DIAG="$RUNNER_TEMP/build-apk-diag"
+          mkdir -p "$DIAG"
+          if [[ -f "$RUNNER_TEMP/gradle-build.log" ]]; then
+            tail -c 131072 "$RUNNER_TEMP/gradle-build.log" > "$DIAG/gradle-build.log"
+            head -c 8192 "$RUNNER_TEMP/gradle-build.log" > "$DIAG/gradle-build-head.log"
+          else
+            echo "gradle-build.log missing" > "$DIAG/gradle-build.log"
+          fi
+          cp apps/mobile/android/build.gradle "$DIAG/root-build.gradle" 2>/dev/null || true
+          cp apps/mobile/android/app/build.gradle "$DIAG/app-build.gradle" 2>/dev/null || true
+          cp apps/mobile/android/gradle.properties "$DIAG/gradle.properties" 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          git fetch origin ci-logs || true
+          git checkout -B ci-logs origin/ci-logs 2>/dev/null || git checkout -B ci-logs
+          DIR="ci-logs/build-apk/${{ github.run_id }}"
+          mkdir -p "$DIR"
+          cp "$DIAG"/* "$DIR"/
+          echo "build-apk failed: run ${{ github.run_id }} commit ${{ github.sha }} date $(date -u +%FT%TZ)" > "$DIR/README.txt"
+          git add -f "$DIR"
+          git commit -m "ci: build-apk diagnostics from failed run ${{ github.run_id }}" || exit 0
+          git push --force origin ci-logs
 
       - name: Verify bundle inside APK
         shell: bash
