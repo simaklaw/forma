@@ -5,7 +5,7 @@ packages/workout-domain lint$ eslint .
 packages/sync-contract lint: Done
 packages/workout-domain lint: Done
 packages/core lint: Done
-apps/api lint$ eslint .
 apps/web lint$ eslint .
+apps/api lint$ eslint .
 apps/api lint: Done
 apps/web lint: Done
