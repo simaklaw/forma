@@ -319,7 +319,7 @@ export default function ImportedLibraryPanel() {
         data={filtered}
         keyExtractor={(item) => item.id}
         style={styles.flex}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, { paddingBottom: 96 + insets.bottom }]}
         keyboardShouldPersistTaps="handled"
         ListEmptyComponent={
           <Text style={[styles.empty, { color: colors.paperFaint }]}>
@@ -367,6 +367,8 @@ export default function ImportedLibraryPanel() {
       <Modal
         visible={selected != null}
         animationType="slide"
+        statusBarTranslucent
+        navigationBarTranslucent
         onRequestClose={() => setSelected(null)}
       >
         {selected ? (

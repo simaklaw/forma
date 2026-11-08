@@ -40,15 +40,17 @@ function formatClockTime(ms?: number): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
-/** Прошло с начала голодания: полные дни и часы:минуты. */
-function fastingClock(startedAt: number, nowMs: number): { days: number; hhmm: string } {
-  const totalMin = Math.max(0, Math.floor((nowMs - startedAt) / 60000));
-  const days = Math.floor(totalMin / 1440);
-  const hours = Math.floor((totalMin % 1440) / 60);
-  const minutes = totalMin % 60;
+/** Прошло с начала голодания: полные дни и часы:минуты:секунды. */
+function fastingClock(startedAt: number, nowMs: number): { days: number; clock: string } {
+  const totalSec = Math.max(0, Math.floor((nowMs - startedAt) / 1000));
+  const days = Math.floor(totalSec / 86400);
+  const hours = Math.floor((totalSec % 86400) / 3600);
+  const minutes = Math.floor((totalSec % 3600) / 60);
+  const seconds = totalSec % 60;
+  const pad = (n: number) => String(n).padStart(2, '0');
   return {
     days,
-    hhmm: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+    clock: [pad(hours), pad(minutes), pad(seconds)].join(':')
   };
 }
 
@@ -146,12 +148,15 @@ export default function NutritionScreen() {
     RestTimerEngine.hapticTabSwitch();
   }
 
-  // Тикающие часы таймера голодания — обновляем раз в 30 с, только пока идёт.
+  // Тикающие часы таймера голодания — живой секундный тик, только пока идёт.
+  // Раньше: тик раз в 30 с + формат ЧЧ:ММ — первые 59 секунд после старта
+  // дисплей показывал «00:00» и не менялся; на устройстве читалось как
+  // «таймер всегда на 0 и не движется» (обратная связь владельца).
   const [fastingNow, setFastingNow] = React.useState(() => Date.now());
   React.useEffect(() => {
     if (fastingStartedAt == null) return;
     setFastingNow(Date.now());
-    const id = setInterval(() => setFastingNow(Date.now()), 30000);
+    const id = setInterval(() => setFastingNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [fastingStartedAt]);
 
@@ -339,8 +344,8 @@ export default function NutritionScreen() {
             {fastingStartedAt != null ? (
               <Text style={styles.fastingClock}>
                 {(() => {
-                  const { days, hhmm } = fastingClock(fastingStartedAt, fastingNow);
-                  return days > 0 ? t('fastingElapsedDays', { days, time: hhmm }) : hhmm;
+                  const { days, clock } = fastingClock(fastingStartedAt, fastingNow);
+                  return days > 0 ? t('fastingElapsedDays', { days, time: clock }) : clock;
                 })()}
               </Text>
             ) : null}
@@ -595,11 +600,16 @@ function createStyles(colors: ColorTokens) {
     waterTitle: { color: colors.paperDim, fontSize: 13, fontFamily: fonts.bodySemi },
     waterCount: { color: colors.paperDim, fontFamily: fonts.mono, fontSize: 13 },
     waterCells: { flexDirection: 'row', gap: 6 },
+    // Регрессия MD3-фазы 3 (#262, «тон вместо рамок»): ячейка получила тот же
+    // тон surfaceContainer, что и карточка — пустые клетки слились с фоном и
+    // стали невидимыми (обратная связь с устройства). Тон уровнем выше + линия.
     waterCell: {
       flex: 1,
       height: 32,
       borderRadius: radius.control,
-      backgroundColor: colors.surfaceContainer
+      backgroundColor: colors.surfaceContainerHigh,
+      borderWidth: 1,
+      borderColor: colors.lineStrong
     },
     waterCellFilled: {
       backgroundColor: colors.cyan,
@@ -631,7 +641,7 @@ function createStyles(colors: ColorTokens) {
       backgroundColor: colors.surfaceContainer,
       borderRadius: radius.card
     },
-    fastingClock: { color: colors.lime, fontFamily: fonts.mono, fontSize: 13 },
+    fastingClock: { color: colors.lime, fontFamily: fonts.mono, fontSize: 15 },
     fastingStartBtn: {
       paddingVertical: 10,
       borderRadius: radius.control,

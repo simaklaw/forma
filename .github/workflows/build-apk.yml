@@ -25,9 +25,25 @@ on:
         description: "HTTPS sync API URL for this test APK"
         required: false
         default: "https://fitpulse-api.fly.dev"
+        type: string
       mailru_client_id:
         description: "Public Mail.ru OIDC client ID"
         required: false
+        default: "01a0f7166d967e68a13e38353948a6a5"
+        type: string
+  # Вызывается из build-apk-smoke.yml (push в build/android-smoke-*):
+  # кодовые фиксы должны попадать в тестовый APK без ручного workflow_dispatch.
+  workflow_call:
+    inputs:
+      sync_api_url:
+        description: "HTTPS sync API URL for this test APK"
+        required: false
+        type: string
+        default: "https://fitpulse-api.fly.dev"
+      mailru_client_id:
+        description: "Public Mail.ru OIDC client ID"
+        required: false
+        type: string
         default: "01a0f7166d967e68a13e38353948a6a5"
 
 permissions:
