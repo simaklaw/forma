@@ -15,7 +15,7 @@ import ExerciseVideo from '@/components/ExerciseVideo';
 import { fonts, radius, spacing } from '@/core/theme/tokens';
 import { useThemeColors } from '@/core/theme/useThemeColors';
 import type { TabParamList } from '@/navigation/types';
-import type { CatalogItem } from './catalogBrowser';
+import { inferEquipment, type CatalogItem } from './catalogBrowser';
 import { useExerciseReference } from './useExerciseReference';
 import { isFavorite, pushRecent, toggleFavorite } from './exerciseFavorites';
 import { catalogFor } from './catalog';
@@ -35,7 +35,7 @@ import { formatPlanAmount } from './exerciseMeasures';
 import { isTimedMeasure, resolveSetMeasure } from '@forma/core';
 import { techniqueCuesFromNote } from '@/lib/techniqueCues';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
-import { useT, muscleLabel } from '@/i18n/strings';
+import { useT, equipmentLabel, muscleLabel } from '@/i18n/strings';
 
 interface Props {
   item: CatalogItem | null;
@@ -102,6 +102,8 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
   }
 
   if (!item) return null;
+
+  const equipment = inferEquipment(item);
 
   const timed = isTimedMeasure(resolveSetMeasure(item.measure));
   const secondsUnit = t('secShort');
@@ -222,6 +224,12 @@ export default function ExerciseDetailModal({ item, visible, onClose, onFavorite
             {t('importedModalMuscles')}
           </Text>
           <View style={styles.chipWrapRow}>
+            {/* Чип оборудования первым: снаряд виден до списка мышц. */}
+            <View style={[styles.metaChip, { backgroundColor: colors.surfaceContainer }]}>
+              <Text style={[styles.metaChipText, { color: colors.paperDim }]}>
+                {equipmentLabel(equipment, lang)}
+              </Text>
+            </View>
             {item.targetMuscles.map((key) => (
               <View key={key} style={[styles.metaChip, { backgroundColor: colors.surfaceContainer }]}>
                 <Text style={[styles.metaChipText, { color: colors.paperDim }]}>
@@ -341,3 +349,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.md
   }
 });
+

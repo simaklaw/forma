@@ -1,10 +1,11 @@
-import React, { forwardRef, useCallback, useEffect, useState } from 'react';
-import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import GorhomBottomSheet from '@gorhom/bottom-sheet';
 import type { WorkoutSession } from '@forma/workout-domain';
 import { SetFeedbackCard } from './SetFeedbackCard';
 import AppBottomSheet from '@/components/BottomSheet';
 import ExerciseVideo from '@/components/ExerciseVideo';
+import ExerciseTimer from '@/components/ExerciseTimer';
 import ExerciseFigure from './ExerciseFigure';
 import { figureKindForMediaKey } from './exerciseFigure';
 import MuscleMap, { type MuscleKey } from '@/components/MuscleMap';
@@ -20,13 +21,19 @@ import { formatRestClock, techniqueCuesFromNote } from '@/lib/techniqueCues';
 import { EXERCISE_GIF_MANIFEST } from './exerciseGifManifest.generated';
 import { useExerciseReference } from './useExerciseReference';
 import { ActiveSessionController, dayIdFromTemplate } from './session/ActiveSessionController';
-import { sequentialStepInfo, sessionForViewedDay } from './session/sequentialStep';
+import {
+  sequentialStepInfo,
+  sessionForViewedDay,
+  sessionMatchesDayAndExercises
+} from './session/sequentialStep';
 import { applySessionProjection } from './data/applySessionProjection';
 import { getSessionService } from './data';
 import { formatLoadLabel, isBodyweightExercise, resolveWorkingLoadKg } from './catalog';
 import { EXERCISE_PROFILE_POSTERS, EXERCISE_PROFILE_VIDEOS, EXERCISE_THUMBNAILS, EXERCISE_VIDEOS } from './exerciseMedia';
 import { isCanonicalProfileAnimationExercise, resolveProfileExerciseMedia } from './exerciseMediaSelection';
 import { planExerciseMediaOverride, realGifForMediaKey } from './exerciseRealMedia';
+import { exercisePosterAsset } from './exercisePosterMedia';
+import { verifiedMediaKeyForExercise } from './verifiedExerciseMedia';
 import { importedByNumericId, IMPORTED_NUMERIC_ID_BASE } from './importedExerciseBridge';
 import { useLanguageStore } from '@/i18n/useLanguageStore';
 import { useT } from '@/i18n/strings';
@@ -118,6 +125,8 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const [restRemaining, setRestRemaining] = useState<number | null>(null);
     const [sessionSnap, setSessionSnap] = useState<WorkoutSession | null>(null);
     const [sheetOpen, setSheetOpen] = useState(true);
+    const [recordingSet, setRecordingSet] = useState(false);
+    const recordingSetRef = useRef(false);
 
     const startRestFromDeadline = useCallback((restEndsAtMs: number) => {
       const sec = remainingRestSeconds(restEndsAtMs);
@@ -143,6 +152,10 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       (id: number) => dayExercises?.find((e) => e.id === id)?.name,
       [dayExercises]
     );
+
+    // Идентичности упражнений дня: сессия валидна только при полном совпадении списка.
+    const dayExerciseIdentities = (dayExercises ?? []).map(({ id, name }) => ({ id, name }));
+    const dayExerciseIdentitiesKey = JSON.stringify(dayExerciseIdentities);
 
     const bodyKg =
       typeof profileWeight === 'number' && Number.isFinite(profileWeight) && profileWeight > 0
@@ -176,10 +189,20 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
       let cancelled = false;
       void (async () => {
-        const session = sessionForViewedDay(await ActiveSessionController.load(), dayId);
+        const loadedSession = await ActiveSessionController.load();
         if (cancelled) return;
+        const session = sessionForViewedDay(loadedSession, dayId);
+        if (!session) {
+          setSessionSnap(null);
+          return;
+        }
+        // Валидируем и день, и точный упорядоченный список упражнений:
+        // сессия чужого дня или старого ревизии плана не должна подхватываться.
+        if (!sessionMatchesDayAndExercises(session, dayId, dayExerciseIdentities)) {
+          setSessionSnap(null);
+          return;
+        }
         setSessionSnap(session);
-        if (!session) return;
         const steps = session.steps ?? [];
         const step = steps[session.currentStepIndex];
         if (!step || step.snapshot.exerciseId !== String(exercise.id)) return;
@@ -191,7 +214,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       return () => {
         cancelled = true;
       };
-    }, [exercise?.id, bodyKg, startRestFromDeadline, dayId]);
+    }, [exercise?.id, bodyKg, startRestFromDeadline, dayId, dayExerciseIdentitiesKey]);
 
     if (!exercise) return null;
 
@@ -199,7 +222,14 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     const timed = isTimedMeasure(measure);
     const secondsUnit = t('secShort');
 
-    const sessionForDay = sessionForViewedDay(sessionSnap, dayId);
+    const sessionCandidateForDay = sessionForViewedDay(sessionSnap, dayId);
+    const sessionForDay = sessionMatchesDayAndExercises(
+      sessionCandidateForDay,
+      dayId,
+      dayExerciseIdentities
+    )
+      ? sessionCandidateForDay
+      : null;
     const seq =
       dayId && dayExercises?.length
         ? sequentialStepInfo(sessionForDay, exercise.id, nameById)
@@ -231,8 +261,26 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       restRemaining != null ? REST_PHASE_TINT[restTimerPhase(restRemaining, restTotal)] : null;
 
     function recordNextSet() {
-      if (!exercise || completedSets >= exercise.totalSets || blockedBySequence) return;
+      if (
+        !exercise ||
+        recordingSetRef.current ||
+        completedSets >= exercise.totalSets ||
+        blockedBySequence ||
+        restRemaining !== null ||
+        sessionPaused
+      )
+        return;
       if (!(Number.isFinite(weight) && weight > 0)) return;
+
+      // Блокируем синхронно до старта асинхронной записи: одного setState
+      // недостаточно, чтобы два быстрых тапа не залогировали подход дважды.
+      recordingSetRef.current = true;
+      setRecordingSet(true);
+      const releaseRecordingLock = () => {
+        recordingSetRef.current = false;
+        setRecordingSet(false);
+      };
+
       if (dayId && dayExercises?.length) {
         void ActiveSessionController.recordSetForExercise({
           dayId,
@@ -242,70 +290,80 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           reps,
           rir,
           restSecondsOverride: resolvedRestSeconds
-        }).then(async (session) => {
-          if (!session) {
-            setSessionSnap(await ActiveSessionController.load());
-            return;
-          }
-          setSessionSnap(session);
-          const projection = await ActiveSessionController.getLegacyProjection(session.sessionId);
-          if (!projection) return;
-          applySessionProjection(projection);
-          const next =
-            useFitPulseStore.getState().dayProgress[toDateKey(new Date())]?.[exercise.id] ?? 0;
-          setCompletedSets(next);
-          const sessionIdForFeedback = session.sessionId;
-          const dayIdForFeedback =
-            dayIdFromTemplate(session.templateRevisionId) ?? dayId ?? '';
-          await ActiveSessionController.completeDayIfDone();
-          if (next >= exercise.totalSets) {
-            const dayComplete = ActiveSessionController.getSessionId() == null;
-            if (dayComplete) {
-              RestTimerEngine.hapticDayComplete();
-              VoiceCuesEngine.announceDayComplete();
-              if (sessionIdForFeedback && dayIdForFeedback) {
-                onDayComplete?.({ sessionId: sessionIdForFeedback, dayId: dayIdForFeedback, session });
-              }
-            } else {
-              RestTimerEngine.hapticSetComplete();
-              VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
+        })
+          .then(async (session) => {
+            if (!session) {
+              setSessionSnap(await ActiveSessionController.load());
+              return;
             }
-            onFinished?.(exercise.id);
-            return;
-          }
+            setSessionSnap(session);
+            const projection = await ActiveSessionController.getLegacyProjection(session.sessionId);
+            if (!projection) return;
+            applySessionProjection(projection);
+            const next =
+              useFitPulseStore.getState().dayProgress[toDateKey(new Date())]?.[exercise.id] ?? 0;
+            setCompletedSets(next);
+            const sessionIdForFeedback = session.sessionId;
+            const dayIdForFeedback =
+              dayIdFromTemplate(session.templateRevisionId) ?? dayId ?? '';
+            await ActiveSessionController.completeDayIfDone();
+            if (next >= exercise.totalSets) {
+              const dayComplete = ActiveSessionController.getSessionId() == null;
+              if (dayComplete) {
+                RestTimerEngine.hapticDayComplete();
+                VoiceCuesEngine.announceDayComplete();
+                if (sessionIdForFeedback && dayIdForFeedback) {
+                  onDayComplete?.({ sessionId: sessionIdForFeedback, dayId: dayIdForFeedback, session });
+                }
+              } else {
+                RestTimerEngine.hapticSetComplete();
+                VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
+              }
+              onFinished?.(exercise.id);
+              return;
+            }
+            RestTimerEngine.hapticSetComplete();
+            VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
+            if (session.restEndsAtMs != null) startRestFromDeadline(session.restEndsAtMs);
+          })
+          .catch((error) => {
+            console.warn('ExerciseSheet: failed to record set', error);
+            void ActiveSessionController.load().then(setSessionSnap).catch(() => {});
+          })
+          .finally(releaseRecordingLock);
+        return;
+      }
+
+      try {
+        const current = useFitPulseStore.getState();
+        const next = current.recordSet(exercise.id, weight, reps, rir);
+        setCompletedSets(next);
+
+        if (next >= exercise.totalSets) {
           RestTimerEngine.hapticSetComplete();
           VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
-          if (session.restEndsAtMs != null) startRestFromDeadline(session.restEndsAtMs);
-        });
-        return;
-      }
+          onFinished?.(exercise.id);
+          return;
+        }
 
-      const current = useFitPulseStore.getState();
-      const next = current.recordSet(exercise.id, weight, reps, rir);
-      setCompletedSets(next);
-
-      if (next >= exercise.totalSets) {
         RestTimerEngine.hapticSetComplete();
         VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
-        onFinished?.(exercise.id);
-        return;
-      }
-
-      RestTimerEngine.hapticSetComplete();
-      VoiceCuesEngine.announceSetComplete(next, exercise.totalSets);
-      if (resolvedRestSeconds != null) {
-        RestTimerEngine.startTimer(
-          resolvedRestSeconds,
-          (remaining) => {
-            setRestRemaining(remaining);
-            VoiceCuesEngine.announceRestCountdown(remaining);
-          },
-          () => {
-            setRestRemaining(null);
-            VoiceCuesEngine.announceRestOver();
-          },
-          beepSource
-        );
+        if (resolvedRestSeconds != null) {
+          RestTimerEngine.startTimer(
+            resolvedRestSeconds,
+            (remaining) => {
+              setRestRemaining(remaining);
+              VoiceCuesEngine.announceRestCountdown(remaining);
+            },
+            () => {
+              setRestRemaining(null);
+              VoiceCuesEngine.announceRestOver();
+            },
+            beepSource
+          );
+        }
+      } finally {
+        releaseRecordingLock();
       }
     }
 
@@ -359,7 +417,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
     function togglePause() {
       void (async () => {
         const session =
-          sessionSnap?.status === 'paused'
+          sessionForDay?.status === 'paused'
             ? await ActiveSessionController.resumeSession()
             : await ActiveSessionController.pauseSession();
         if (session) setSessionSnap(session);
@@ -396,7 +454,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
       );
     }
 
-    const sessionPaused = sessionSnap?.status === 'paused';
+    const sessionPaused = sessionForDay?.status === 'paused';
     const dayList = dayExercises ?? [];
     const navIndex = dayList.findIndex((e) => e.id === exercise.id);
     const prevExercise = navIndex > 0 ? dayList[navIndex - 1] : null;
@@ -424,31 +482,45 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
           : t('sheetRestNext', { name: restNext.name, sets: restNext.sets, amount: restNext.amount });
     const hasActiveSession =
       Boolean(dayId && dayList.length) &&
-      sessionSnap != null &&
-      sessionSnap.status !== 'completed' &&
-      sessionSnap.status !== 'abandoned';
-    const ctaDisabled = finished || restRemaining !== null || blockedBySequence || sessionPaused;
+      sessionForDay != null &&
+      sessionForDay.status !== 'completed' &&
+      sessionForDay.status !== 'abandoned';
+    const ctaDisabled =
+      finished || recordingSet || restRemaining !== null || blockedBySequence || sessionPaused;
     const cues = techniqueCuesFromNote(exercise.note);
+    const verifiedMediaKey = verifiedMediaKeyForExercise(exercise.mediaKey, exercise.wgerSearchTerm);
     const mediaOverride = planExerciseMediaOverride(exercise.id, exercise.mediaKey);
     const useProfileVideo = isCanonicalProfileAnimationExercise(exercise.id, exercise.mediaKey);
     const videoSource = mediaOverride?.suppressSharedVideo
       ? undefined
       : useProfileVideo
         ? resolveProfileExerciseMedia(exercise.mediaKey, profileSex, EXERCISE_PROFILE_VIDEOS, {})
-        : resolveProfileExerciseMedia(exercise.mediaKey, profileSex, {}, EXERCISE_VIDEOS);
+        : resolveProfileExerciseMedia(verifiedMediaKey, profileSex, {}, EXERCISE_VIDEOS);
     const videoPoster = mediaOverride?.suppressSharedVideo
       ? mediaOverride.posterAsset
       : useProfileVideo
         ? resolveProfileExerciseMedia(exercise.mediaKey, profileSex, EXERCISE_PROFILE_POSTERS, {})
         : resolveProfileExerciseMedia(exercise.mediaKey, profileSex, {}, EXERCISE_THUMBNAILS);
+    // Точный локальный постер (импорт-библиотека/точный слаг/верифицированный ключ)
+    // как фолбэк к профильным постерам; неточные совпадения запрещены.
+    const posterAsset =
+      videoPoster ?? exercisePosterAsset(exercise.id, exercise.mediaKey, exercise.wgerSearchTerm);
     const gifAsset = mediaOverride?.suppressSharedVideo
       ? mediaOverride.gifAsset
-      : realGifForMediaKey(exercise.mediaKey);
+      : realGifForMediaKey(verifiedMediaKey);
     const figureKind = figureKindForMediaKey(exercise.mediaKey);
+    const timerIsSecondsBased =
+      /секунд|seconds/i.test(exercise.note) ||
+      exercise.mediaKey === 'plank' ||
+      exercise.mediaKey === 'side-plank';
+    const exerciseTimerSeconds = timerIsSecondsBased
+      ? Math.max(5, Math.min(600, exercise.workingReps))
+      : 45;
 
     return (
       <AppBottomSheet
         scrollable
+        snapPoints={['82%', '94%']}
         ref={ref}
         eyebrow={
           seq.totalSteps > 0
@@ -497,7 +569,7 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
         <ExerciseVideo
           source={videoSource}
-          posterAsset={videoPoster}
+          posterAsset={posterAsset}
           gifAsset={gifAsset}
           posterUri={reference?.imageUrl}
           cues={cues}
@@ -506,16 +578,12 @@ const ExerciseSheet = forwardRef<GorhomBottomSheet, Props>(
 
         {figureKind && <ExerciseFigure kind={figureKind} playing={sheetOpen} />}
 
-        {reference && (
-          <View style={styles.refPhotoWrap}>
-            <Image
-              source={{ uri: reference.imageUrl }}
-              style={styles.refPhoto}
-              resizeMode="cover"
-              accessibilityLabel={reference.name}
-            />
-          </View>
-        )}
+        <ExerciseTimer
+          key={exercise.id}
+          initialSeconds={exerciseTimerSeconds}
+          active={sheetOpen}
+          disabled={finished || blockedBySequence || sessionPaused || restRemaining !== null}
+        />
 
         <View style={[styles.grid, { marginTop: spacing.md }]}>
           <View style={styles.gridCell}>
@@ -901,14 +969,6 @@ function createStyles(colors: ColorTokens) {
       borderRightWidth: 1,
       borderColor: colors.line
     },
-    refPhotoWrap: { marginTop: spacing.md },
-    refPhoto: { width: '100%', height: 160, borderRadius: radius.control },
-    refPhotoCaption: {
-      color: colors.paperFaint,
-      fontSize: 11,
-      fontFamily: fonts.body,
-      marginTop: 4
-    },
     gridVal: { color: colors.paper, fontFamily: fonts.mono, fontSize: 16 },
     gridLbl: { color: colors.paperFaint, fontFamily: fonts.body, fontSize: 11, marginTop: 2 },
     note: {
@@ -1068,3 +1128,4 @@ function createStyles(colors: ColorTokens) {
     pausedBadgeText: { color: colors.ember, fontFamily: fonts.mono, fontSize: 11 }
   });
 }
+

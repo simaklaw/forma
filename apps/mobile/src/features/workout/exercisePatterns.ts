@@ -30,6 +30,7 @@ export const PLAN_PATTERNS: Record<number, MovementPattern> = {
   33: 'pull_horizontal',
   50: 'pull_horizontal',
   12: 'pull_horizontal',
+  66: 'pull_horizontal',
   8: 'pull_vertical',
   11: 'pull_vertical',
   // приседания и выпады
@@ -46,6 +47,7 @@ export const PLAN_PATTERNS: Record<number, MovementPattern> = {
   57: 'squat',
   58: 'squat',
   62: 'squat',
+  65: 'squat',
   // шарниры: становая, румынская тяга, мостик
   2: 'hinge',
   37: 'hinge',
@@ -60,6 +62,7 @@ export const PLAN_PATTERNS: Record<number, MovementPattern> = {
   53: 'core',
   54: 'core',
   61: 'core',
+  63: 'core',
   // изоляция
   32: 'isolation',
   27: 'isolation',
@@ -76,7 +79,8 @@ export const PLAN_PATTERNS: Record<number, MovementPattern> = {
   47: 'isolation',
   39: 'isolation',
   36: 'isolation',
-  56: 'isolation'
+  56: 'isolation',
+  64: 'isolation'
 };
 
 /**

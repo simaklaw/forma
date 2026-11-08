@@ -124,6 +124,12 @@ export default function ExerciseVideo({
   }, [source, gifAsset, posterAsset, posterUri, steps.length]);
 
   function openFullscreen() {
+    // GIF и постер тоже открываются на весь экран — карточка не должна
+    // выглядеть сломанным плеером там, где видео нет (issue #160).
+    if (gifAsset != null || posterSource) {
+      setFullscreen(true);
+      return;
+    }
     if (!source || videoFailed) return;
     previewPlayer.pause();
     setFullscreen(true);
@@ -147,14 +153,16 @@ export default function ExerciseVideo({
       <TouchableOpacity
         style={styles.hero}
         onPress={openFullscreen}
-        disabled={!source || videoFailed}
+        disabled={!source && gifAsset == null && !posterSource}
         accessibilityRole="button"
         accessibilityLabel={
           source && !videoFailed
             ? 'Открыть видео техники на весь экран'
-            : posterSource
-              ? 'Видео недоступно; показан постер упражнения'
-              : 'Пошаговая техника выполнения'
+            : gifAsset != null
+              ? 'Анимированная иллюстрация упражнения'
+              : posterSource
+                ? 'Видео недоступно; показан постер упражнения'
+                : 'Пошаговая техника выполнения'
         }
       >
         {source && !videoFailed ? (
@@ -193,7 +201,8 @@ export default function ExerciseVideo({
           <View style={styles.placeholderBg} />
         )}
 
-        <View style={styles.dim} />
+        {/* Затемнение — только поверх реального видео; постеры показываем без него. */}
+        {source != null && !videoFailed ? <View style={styles.dim} /> : null}
 
         {!source && gifAsset == null && !posterSource ? (
           <View style={styles.guide}>
@@ -219,7 +228,11 @@ export default function ExerciseVideo({
         ) : null}
 
         <Text style={styles.heroLabel}>
-          {((source != null && !videoFailed) || gifAsset != null || posterSource) ? label : 'ТЕХНИКА · ПО ШАГАМ'}
+          {(source != null && !videoFailed) || gifAsset != null
+            ? label
+            : posterSource
+              ? 'ИЛЛЮСТРАЦИЯ УПРАЖНЕНИЯ'
+              : 'ТЕХНИКА · ПО ШАГАМ'}
         </Text>
       </TouchableOpacity>
 
@@ -244,6 +257,13 @@ export default function ExerciseVideo({
                 </View>
               )}
             </TouchableOpacity>
+          ) : gifAsset != null ? (
+            <Image
+              source={gifAsset}
+              style={StyleSheet.absoluteFill}
+              resizeMode="contain"
+              accessibilityIgnoresInvertColors
+            />
           ) : posterSource ? (
             <Image
               source={posterSource}
@@ -269,8 +289,10 @@ export default function ExerciseVideo({
 function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
     hero: {
-      height: 180,
-      backgroundColor: colors.surfaceContainer,
+      height: 286,
+      borderWidth: 1,
+      borderColor: colors.lineStrong,
+      backgroundColor: colors.panel,
       overflow: 'hidden',
       justifyContent: 'flex-end',
       borderRadius: radius.control
@@ -357,3 +379,4 @@ function createStyles(colors: ColorTokens) {
     closeBtnText: { color: '#fff', fontSize: 20, lineHeight: 20 }
   });
 }
+
