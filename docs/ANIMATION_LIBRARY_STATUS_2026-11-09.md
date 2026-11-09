@@ -31,7 +31,7 @@ The committed `docs/EXERCISE_ANIMATION_COVERAGE.json` currently records:
 - 25 preliminary motion-family candidates, all unreviewed;
 - 3 records requiring manual movement/equipment classification.
 
-The prior hand-drawn SVG prototype was rejected after device review. It must not be counted as coverage or revived unchanged. Existing dataset GIFs, JPG frames, and profile-specific MP4 videos are legacy/reference media, not approved original 2D animations.
+The prior hand-drawn SVG prototype was rejected after device review. It must not be counted as coverage or revived unchanged. Existing dataset GIFs and JPG frames are legacy/reference media; profile-specific MP4 videos belong to a separate FitPulse video-render track. None of these assets count as original 2D coverage.
 
 ## 3. Current asset inventory
 
