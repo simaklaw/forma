@@ -43,10 +43,19 @@
     "gifManifestEntries": 58,
     "gifManifestEntriesWithLocalPath": 56,
     "metroGifRequireEntries": 61,
+    "metroGifThumbnailRequireEntries": 61,
+    "uniqueMetroGifAssetIds": 61,
+    "totalMetroGifRequireReferences": 122,
     "extraMetroGifRequireEntries": 3,
     "manifestEntriesWithoutLocalGif": 2,
     "videoManifestEntries": 0,
-    "bundledVideoKeys": 13,
+    "bundledVideoKeys": 12,
+    "genericBundledVideoKeys": 12,
+    "profileVideoExerciseKeys": 2,
+    "profileVideoVariantEntries": 4,
+    "profilePosterExerciseKeys": 2,
+    "profilePosterVariantEntries": 4,
+    "totalBundledMp4Assets": 16,
     "explicitMaleFemaleVariantStatus": true
   },
   "rule": "No new animation is currently approved as exercise-accurate coverage. Existing videos, GIFs and legacy images are tracked separately and do not count as newly verified animation coverage.",
@@ -5644,6 +5653,53 @@
       "currentMediaKey": null,
       "legacyMediaRights": "no-mapped-legacy-media"
     }
-  ]
+  ],
+  "mediaTracks": {
+    "genericMp4Keys": [
+      "pushup",
+      "squat",
+      "pullup",
+      "lunge",
+      "plank",
+      "dead-bug",
+      "chair-dip",
+      "glute-bridge",
+      "row-band",
+      "hip-thrust",
+      "shoulder-press",
+      "side-plank"
+    ],
+    "profileVideos": [
+      {
+        "key": "pushup",
+        "variants": [
+          "male",
+          "female"
+        ]
+      },
+      {
+        "key": "pullup",
+        "variants": [
+          "male",
+          "female"
+        ]
+      }
+    ],
+    "profilePosters": [
+      {
+        "key": "pushup",
+        "variants": [
+          "male",
+          "female"
+        ]
+      },
+      {
+        "key": "pullup",
+        "variants": [
+          "male",
+          "female"
+        ]
+      }
+    ]
+  }
 }
-

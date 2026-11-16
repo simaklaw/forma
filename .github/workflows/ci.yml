@@ -49,6 +49,9 @@ jobs:
           python -m pip install --disable-pip-version-check Pillow
           python -m unittest discover -s scripts/tests -v
 
+      - name: Verify exercise animation inventory
+        run: node scripts/report-exercise-animation-inventory.mjs --check
+
       # Progressive Prettier gate — expand as packages are formatted.
       - name: Check formatting (gate paths)
         run: pnpm exec prettier --version && pnpm format:check:gate

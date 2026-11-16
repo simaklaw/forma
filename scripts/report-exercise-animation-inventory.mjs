@@ -22,6 +22,57 @@ function read(relativePath) {
   return fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
 }
 
+function readExportObject(source, exportName) {
+  const declaration = source.indexOf('export const ' + exportName);
+  if (declaration < 0) throw new Error('Cannot find exported object ' + exportName);
+  const equals = source.indexOf('=', declaration);
+  const start = source.indexOf('{', equals);
+  if (start < 0) throw new Error('Cannot find object opening brace for ' + exportName);
+  let depth = 0;
+  let quote = null;
+  let escaped = false;
+  for (let i = start; i < source.length; i += 1) {
+    const ch = source[i];
+    if (quote) {
+      if (escaped) escaped = false;
+      else if (ch === '\\') escaped = true;
+      else if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === "'" || ch === '"') {
+      quote = ch;
+      continue;
+    }
+    if (ch === '{') depth += 1;
+    else if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) return source.slice(start, i + 1);
+    }
+  }
+  throw new Error('Unclosed object ' + exportName);
+}
+
+function parseRequireKeys(source, extension) {
+  const pattern = /^\s*(['a-z][^']*'|[a-z][a-z0-9-]*):\s*require\([^)]*\.([a-z0-9]+)'\)/gm;
+  return [...source.matchAll(pattern)]
+    .filter((match) => match[2] === extension)
+    .map((match) => match[1].replace(/'/g, ''));
+}
+
+function parseProfileVariants(source, exportName, extension) {
+  const object = readExportObject(source, exportName);
+  const entries = [...object.matchAll(/^ {2}([a-z][a-z0-9-]*):\s*\{([\s\S]*?)^ {2}\},?/gm)]
+    .map((match) => ({ key: match[1], variants: parseRequireKeys(match[2], extension) }));
+  if (!entries.length) throw new Error('No profile entries found for ' + exportName);
+  for (const entry of entries) {
+    const variants = [...new Set(entry.variants)].sort();
+    if (variants.join(',') !== 'female,male') {
+      throw new Error(exportName + ' must define male and female variants for ' + entry.key);
+    }
+  }
+  return entries;
+}
+
 function parseExportedJsonArray(source, exportName) {
   const declaration = source.indexOf('export const ' + exportName);
   if (declaration < 0) throw new Error('Cannot find exported array ' + exportName);
@@ -185,10 +236,25 @@ const imported = parseExportedJsonArray(read(PATHS.imported), 'IMPORTED_EXERCISE
 const gifManifest = parseExportedJsonArray(read(PATHS.gifManifest), 'EXERCISE_GIF_MANIFEST');
 const videoManifest = parseExportedJsonArray(read(PATHS.videoManifest), 'EXERCISE_VIDEO_MANIFEST');
 const gifModuleSource = read(PATHS.gifModules);
-const gifModuleIds = [...gifModuleSource.matchAll(/'([^']+)':\s*require\([^)]*\.gif'\)/g)].map((match) => match[1]);
+const gifModuleIds = parseRequireKeys(readExportObject(gifModuleSource, 'DATASET_GIF_MODULES'), 'gif');
+const gifThumbModuleIds = parseRequireKeys(readExportObject(gifModuleSource, 'DATASET_THUMB_MODULES'), 'gif');
+if (new Set(gifModuleIds).size !== gifModuleIds.length) {
+  throw new Error('DATASET_GIF_MODULES contains duplicate exercise IDs.');
+}
+if ([...gifModuleIds].sort().join('|') !== [...gifThumbModuleIds].sort().join('|')) {
+  throw new Error('DATASET_THUMB_MODULES must reference the same GIF asset IDs as DATASET_GIF_MODULES.');
+}
 const mediaSource = read(PATHS.media);
-const bundledVideoKeys = [...mediaSource.matchAll(/^\s*(['a-z][^']*'|[a-z][a-z0-9-]*):\s*require\([^)]*\.mp4'\)/gm)]
-  .map((match) => match[1].replace(/'/g, ''));
+const bundledVideoKeys = parseRequireKeys(readExportObject(mediaSource, 'EXERCISE_VIDEOS'), 'mp4');
+const profileVideoVariants = parseProfileVariants(mediaSource, 'EXERCISE_PROFILE_VIDEOS', 'mp4');
+const profilePosterVariants = parseProfileVariants(mediaSource, 'EXERCISE_PROFILE_POSTERS', 'png');
+const profileVideoVariantCount = profileVideoVariants.reduce((sum, entry) => sum + entry.variants.length, 0);
+const profilePosterVariantCount = profilePosterVariants.reduce((sum, entry) => sum + entry.variants.length, 0);
+const profileVideoKeys = profileVideoVariants.map((entry) => entry.key).sort();
+const profilePosterKeys = profilePosterVariants.map((entry) => entry.key).sort();
+if (profileVideoKeys.join('|') !== profilePosterKeys.join('|')) {
+  throw new Error('Profile-specific video and poster exercise keys do not match.');
+}
 const imageFolders = scanImageFolders();
 const imageFolderBySlug = new Map(imageFolders.map((item) => [item.slug, item]));
 const gifFiles = listFiles(PATHS.gifs, (name) => name.toLowerCase().endsWith('.gif'));
@@ -370,6 +436,12 @@ const familyCandidateMarkdown = Object.entries(familyCandidateCounts)
   })
   .join('\n');
 
+const profileMediaMarkdown = profileVideoVariants.map((entry) => {
+  const poster = profilePosterVariants.find((candidate) => candidate.key === entry.key);
+  return '| ' + entry.key + ' | ' + entry.variants.join(', ') + ' | ' +
+    (poster ? poster.variants.join(', ') : 'нет') + ' |';
+}).join('\n');
+
 const coverageKeys = new Set(coverageEntries.map((entry) => entry.key));
 if (uniquePlans.size !== planRows.length) {
   throw new Error('Workout plan IDs are not unique; resolve collisions before producing the coverage registry.');
@@ -431,11 +503,25 @@ const coverageJson = JSON.stringify({
     gifManifestEntries: gifManifest.length,
     gifManifestEntriesWithLocalPath: gifManifest.filter((entry) => entry.localGifPath).length,
     metroGifRequireEntries: gifModuleIds.length,
+    metroGifThumbnailRequireEntries: gifThumbModuleIds.length,
+    uniqueMetroGifAssetIds: new Set([...gifModuleIds, ...gifThumbModuleIds]).size,
+    totalMetroGifRequireReferences: gifModuleIds.length + gifThumbModuleIds.length,
     extraMetroGifRequireEntries: extraGifModuleIds.length,
     manifestEntriesWithoutLocalGif: manifestWithoutLocalAsset.length,
     videoManifestEntries: videoManifest.length,
     bundledVideoKeys: bundledVideoKeys.length,
+    genericBundledVideoKeys: bundledVideoKeys.length,
+    profileVideoExerciseKeys: profileVideoVariants.length,
+    profileVideoVariantEntries: profileVideoVariantCount,
+    profilePosterExerciseKeys: profilePosterVariants.length,
+    profilePosterVariantEntries: profilePosterVariantCount,
+    totalBundledMp4Assets: bundledVideoKeys.length + profileVideoVariantCount,
     explicitMaleFemaleVariantStatus: true
+  },
+  mediaTracks: {
+    genericMp4Keys: bundledVideoKeys,
+    profileVideos: profileVideoVariants,
+    profilePosters: profilePosterVariants
   },
   rule: 'No new animation is currently approved as exercise-accurate coverage. Existing videos, GIFs and legacy images are tracked separately and do not count as newly verified animation coverage.',
   entries: coverageEntries
@@ -457,10 +543,18 @@ const report = [
   '- Предварительное группирование: **' + Object.keys(familyCandidateCounts).length + '** семейств-кандидатов; **' + coverageEntries.filter((entry) => entry.familyReviewStatus === 'manual-review-required').length + '** записей требуют ручной классификации из-за недостатка данных или конфликтов в источнике. Все остальные назначения также непроверенные и не означают одобрение анимации или эквивалентности техники.',
   '- Распределение импортированного каталога по оборудованию: ' + Object.entries(equipmentCounts).map(([key, value]) => key + ': ' + value).join('; ') + '.',
    '- Старые локальные изображения: **' + imageFolders.length + '** папок и **' + imageFolders.reduce((sum, folder) => sum + folder.frames.length, 0) + '** JPG-кадров. Происхождение по истории импорта — \`yuhonas/free-exercise-db\`; репозиторий заявляет Unlicense/Public Domain ([LICENSE](https://github.com/yuhonas/free-exercise-db/blob/main/LICENSE.md)), однако права на конкретные JPG, включённые в текущий проект, отдельно не подтверждены. Атрибуция источника сохраняется; права отмечены как непроверенные. Папки, совпавшие с ID импортированного каталога: **' + imported.filter((entry) => imageFolderBySlug.has(normalizeId(entry.id))).length + ' из ' + imported.length + '**.',
-  '- GIF-манифест: **' + gifManifest.length + '** записей, с localGifPath — **' + gifManifest.filter((entry) => entry.localGifPath).length + '**; локальных GIF-файлов — **' + gifFiles.length + '**; статических GIF require-записей — **' + gifModuleIds.length + '**.',
-  '- GIF-реестр: **' + extraGifModuleIds.length + '** локальных файлов есть в Metro require, но нет в манифесте (' + (extraGifModuleIds.join(', ') || 'нет') + '); **' + manifestWithoutLocalAsset.length + '** записей манифеста не имеют соответствующего локального GIF-файла.',
-  '- MP4-манифест: **' + videoManifest.length + '** записей; встроенных MP4-ключей — **' + bundledVideoKeys.length + '**.',
+  '- GIF-манифест: **' + gifManifest.length + '** записей, с localGifPath — **' + gifManifest.filter((entry) => entry.localGifPath).length + '**; локальных GIF-файлов — **' + gifFiles.length + '**; `DATASET_GIF_MODULES` — **' + gifModuleIds.length + '**, `DATASET_THUMB_MODULES` — **' + gifThumbModuleIds.length + '** (всего **' + (gifModuleIds.length + gifThumbModuleIds.length) + '** ссылок на **' + new Set([...gifModuleIds, ...gifThumbModuleIds]).size + '** уникальных GIF-файлов).',
+  '- GIF-реестр: **' + extraGifModuleIds.length + '** файлов есть в DATASET_GIF_MODULES, но отсутствуют в манифесте (' + (extraGifModuleIds.map((id) => id + '.gif').join(', ') || 'нет') + '); **' + manifestWithoutLocalAsset.length + '** записей манифеста не имеют локального файла (' + (manifestWithoutLocalAsset.map((entry) => entry.id + '.gif').join(', ') || 'нет') + '). DATASET_THUMB_MODULES ссылается на тот же набор уникальных GIF.',
+  '- MP4-манифест: **' + videoManifest.length + '** записей; общих встроенных MP4-ключей — **' + bundledVideoKeys.length + '**; профильных MP4-вариантов — **' + profileVideoVariantCount + '** для **' + profileVideoVariants.length + '** упражнений; профильных PNG-постеров — **' + profilePosterVariantCount + '**; всего статических MP4-файлов — **' + (bundledVideoKeys.length + profileVideoVariantCount) + '**.',
   '- В домашних упражнениях **' + home.filter((row) => row.mediaKey).length + ' из ' + home.length + '** имеют mediaKey, и ключи повторно используются между вариантами. Теперь приложение воспроизводит MP4/GIF только при точном совпадении канонического термина с ключом; похожие варианты без проверенного совпадения не получают чужой ролик. Для упражнений зала mediaKey в плане не задан.',
+  '',
+  '## Отдельный профильный видео-трек (не входит в оригинальное 2D-покрытие)',
+  '',
+  'Профильные рендеры FitPulse Animation Studio учитываются отдельно от 2D-библиотеки. Они уже подключены в мобильном приложении, но не увеличивают число одобренных оригинальных 2D-анимаций.',
+  '',
+  '| Упражнение | Видео | Постеры |',
+  '|---|---|---|',
+  profileMediaMarkdown,
   '',
   '## Исправление назначения медиа после теста на телефоне',
   '',
@@ -474,9 +568,9 @@ const report = [
   '1. Наличие JPG-кадров не означает наличие непрерывной анимации.',
   '2. Разные упражнения могут наследовать один legacy mediaKey, но приложение больше не использует его как достаточное основание для воспроизведения: требуется точное каноническое совпадение термина.',
   '3. Библиотека содержит ' + imported.length + ' упражнения, GIF-манифест — ' + gifManifest.length + ' записи, а папки JPG покрывают только часть импортированного каталога.',
-  '4. Есть конкретное расхождение реестров: файлы `lib-band-hip-adductions.gif`, `lib-glute-kickback.gif` и `lib-side-bridge.gif` остаются среди физических assets/Metro require, но отсутствуют в GIF-манифесте (были исключены как неверные автосопоставления). Кроме того, 2 записи манифеста не имеют локального GIF пути. Перед заявлением об офлайн-покрытии сверить физические файлы, манифест и Metro require; не возвращать исключённые упражнения как корректное медиа без ручной проверки.',
+  '4. Расхождение GIF-реестров: ' + extraGifModuleIds.length + ' файлов есть в DATASET_GIF_MODULES, но отсутствуют в манифесте (' + extraGifModuleIds.map((id) => id + '.gif').join(', ') + '); ' + manifestWithoutLocalAsset.length + ' записей манифеста не имеют локального GIF (' + manifestWithoutLocalAsset.map((entry) => entry.id + '.gif').join(', ') + '). Не включать эти упражнения в UI как точные демонстрации без ручной проверки.',
    '5. Источники нужно разделять по лицензии. История импорта связывает JPG-кадры в \`assets/exercise-library/\` с \`yuhonas/free-exercise-db\`, чей репозиторий заявляет Unlicense/Public Domain ([LICENSE](https://github.com/yuhonas/free-exercise-db/blob/main/LICENSE.md)); права на конкретные JPG в текущем проекте остаются непроверенными, атрибуция источника сохранена. Для \`hasaneyldrm/exercises-dataset\` MIT не распространяется на \`images/\` и \`videos/\`: эти медиа принадлежат Gym visual, NOTICE устанавливает атрибуцию \`© Gym visual — https://gymvisual.com/\` и ссылается на условия повторного использования ([LICENSE](https://github.com/hasaneyldrm/exercises-dataset/blob/main/LICENSE), [NOTICE](https://github.com/hasaneyldrm/exercises-dataset/blob/main/NOTICE.md)). Не считать GIF доступными для повторного распространения в APK без отдельной проверки/разрешения; вся новая графика и риг должны быть оригинальными.',
-  '6. Текущие MP4/GIF не имеют систематически проверенной мужской/женской пары для каждого упражнения. Реестр явно отмечает половые варианты для всех ' + coverageEntries.length + ' stable ID, но все 225 записей остаются not-created для новой одобренной анимации.',
+  '6. Текущие MP4/GIF не имеют систематически проверенной мужской/женской пары для каждого упражнения. Реестр явно отмечает половые варианты для всех ' + coverageEntries.length + ' stable ID, но все ' + coverageEntries.filter((entry) => entry.status === 'not-started').length + ' записей остаются not-created для новой одобренной анимации.',
   '7. Записи, заблокированные на ручную проверку: ' + coverageEntries.filter((entry) => entry.familyReviewStatus === 'manual-review-required').map((entry) => '**' + entry.nameRu + '** (' + entry.stableId + '): ' + entry.familyReviewNote).join(' ') + '.',
   '',
   '## Ключи видео, назначенные упражнениям повторно',
@@ -514,7 +608,79 @@ const report = [
   ''
 ].join('\n');
 
-if (process.argv.includes('--write')) {
+const writeRequested = process.argv.includes('--write');
+const checkRequested = process.argv.includes('--check');
+if (writeRequested && checkRequested) {
+  throw new Error('Use either --write or --check, not both.');
+}
+if (checkRequested) {
+  const currentCoverage = JSON.parse(read(PATHS.coverage));
+  const expectedSummary = {
+    planEntries: planRows.length,
+    uniquePlanIds: uniquePlans.size,
+    importedLibraryEntries: imported.length,
+    totalEntries: coverageEntries.length,
+    originalRigPrototypeEntries: coverageEntries.filter((entry) => entry.status === 'prototype').length,
+    entriesWithoutRig: coverageEntries.filter((entry) => entry.status === 'not-started').length,
+    candidateMotionFamilyGroups: Object.keys(familyCandidateCounts).length,
+    entriesPendingFamilyReview: coverageEntries.filter((entry) => entry.familyReviewStatus !== 'pending-device-review').length,
+    entriesRequiringManualClassification: coverageEntries.filter((entry) => entry.familyReviewStatus === 'manual-review-required').length,
+    legacyImageFolders: imageFolders.length,
+    legacyImageFrames: imageFolders.reduce((sum, folder) => sum + folder.frames.length, 0),
+    localGifFiles: gifFiles.length,
+    gifManifestEntries: gifManifest.length,
+    gifManifestEntriesWithLocalPath: gifManifest.filter((entry) => entry.localGifPath).length,
+    metroGifRequireEntries: gifModuleIds.length,
+    metroGifThumbnailRequireEntries: gifThumbModuleIds.length,
+    uniqueMetroGifAssetIds: new Set([...gifModuleIds, ...gifThumbModuleIds]).size,
+    totalMetroGifRequireReferences: gifModuleIds.length + gifThumbModuleIds.length,
+    extraMetroGifRequireEntries: extraGifModuleIds.length,
+    manifestEntriesWithoutLocalGif: manifestWithoutLocalAsset.length,
+    videoManifestEntries: videoManifest.length,
+    bundledVideoKeys: bundledVideoKeys.length,
+    genericBundledVideoKeys: bundledVideoKeys.length,
+    profileVideoExerciseKeys: profileVideoVariants.length,
+    profileVideoVariantEntries: profileVideoVariantCount,
+    profilePosterExerciseKeys: profilePosterVariants.length,
+    profilePosterVariantEntries: profilePosterVariantCount,
+    totalBundledMp4Assets: bundledVideoKeys.length + profileVideoVariantCount,
+    explicitMaleFemaleVariantStatus: true
+  };
+  const summaryFailures = Object.entries(expectedSummary)
+    .filter(([key, value]) => JSON.stringify(currentCoverage.summary?.[key]) !== JSON.stringify(value))
+    .map(([key, value]) => key + ': expected ' + JSON.stringify(value) +
+      ', got ' + JSON.stringify(currentCoverage.summary?.[key]));
+  const expectedMediaTracks = {
+    genericMp4Keys: bundledVideoKeys,
+    profileVideos: profileVideoVariants,
+    profilePosters: profilePosterVariants
+  };
+  const mediaTracksMatch = JSON.stringify(currentCoverage.mediaTracks) === JSON.stringify(expectedMediaTracks);
+  const currentReport = read(PATHS.report);
+  const reportChecks = [
+    ['current stable ID total', currentReport.includes(coverageEntries.length + ' stable ID')],
+    ['no stale historical total 225', !/\b225\b/.test(currentReport)],
+    ['generic MP4 key count', currentReport.includes('общих встроенных MP4-ключей — **' + bundledVideoKeys.length + '**')],
+    ['profile video variant count', currentReport.includes('профильных MP4-вариантов — **' + profileVideoVariantCount + '**')],
+    ['profile poster count', currentReport.includes('профильных PNG-постеров — **' + profilePosterVariantCount + '**')],
+    ['separate GIF module maps', currentReport.includes('DATASET_GIF_MODULES') && currentReport.includes('DATASET_THUMB_MODULES')],
+    ['orphan GIF IDs', extraGifModuleIds.every((id) => currentReport.includes(id))],
+    ['manifest entries without local GIF', manifestWithoutLocalAsset.every((entry) => currentReport.includes(entry.id))]
+  ];
+  const reportFailures = reportChecks.filter(([, passed]) => !passed).map(([label]) => label);
+  if (currentCoverage.entries?.length !== coverageEntries.length) {
+    summaryFailures.push('entries length: expected ' + coverageEntries.length + ', got ' + currentCoverage.entries?.length);
+  }
+  if (!mediaTracksMatch) summaryFailures.push('mediaTracks does not match current exerciseMedia.ts');
+  if (summaryFailures.length || reportFailures.length) {
+    console.error('Exercise animation inventory is stale.');
+    for (const failure of summaryFailures) console.error(' - ' + failure);
+    for (const failure of reportFailures) console.error(' - report check failed: ' + failure);
+    process.exitCode = 1;
+  } else {
+    console.log('Exercise animation inventory is current.');
+  }
+} else if (writeRequested) {
   fs.mkdirSync(path.dirname(path.join(ROOT, PATHS.report)), { recursive: true });
   fs.writeFileSync(path.join(ROOT, PATHS.report), report);
   fs.writeFileSync(path.join(ROOT, PATHS.coverage), coverageJson);
@@ -531,6 +697,9 @@ console.log(JSON.stringify({
   localGifFiles: gifFiles.length,
   gifManifestEntries: gifManifest.length,
   videoManifestEntries: videoManifest.length,
-  bundledVideoKeys: bundledVideoKeys.length
+  genericBundledVideoKeys: bundledVideoKeys.length,
+  profileVideoVariantEntries: profileVideoVariantCount,
+  profilePosterVariantEntries: profilePosterVariantCount,
+  uniqueMetroGifAssetIds: new Set([...gifModuleIds, ...gifThumbModuleIds]).size
 }, null, 2));
 
