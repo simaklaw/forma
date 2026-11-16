@@ -413,6 +413,9 @@ for (const [key, expectedRule] of Object.entries(expectedManualReview)) {
   }
 }
 
+const manualReviewEntries = coverageEntries.filter((entry) => entry.familyReviewStatus === 'manual-review-required');
+const manualReviewWithNotes = manualReviewEntries.filter((entry) => entry.familyReviewNote);
+const manualReviewWithoutNotes = manualReviewEntries.filter((entry) => !entry.familyReviewNote);
 const familyCandidateCounts = coverageEntries.reduce((out, entry) => {
   out[entry.motionFamilyCandidate] = (out[entry.motionFamilyCandidate] || 0) + 1;
   return out;
@@ -488,7 +491,9 @@ const coverageJson = JSON.stringify({
     entriesWithoutRig: coverageEntries.filter((entry) => entry.status === 'not-started').length,
     candidateMotionFamilyGroups: Object.keys(familyCandidateCounts).length,
     entriesPendingFamilyReview: coverageEntries.filter((entry) => entry.familyReviewStatus !== 'pending-device-review').length,
-    entriesRequiringManualClassification: coverageEntries.filter((entry) => entry.familyReviewStatus === 'manual-review-required').length,
+    entriesRequiringManualClassification: manualReviewEntries.length,
+    entriesWithExplicitSourceConflict: manualReviewWithNotes.length,
+    entriesWithoutSafeNameRule: manualReviewWithoutNotes.length,
     familyCandidateCounts,
     legacyImageFolders: imageFolders.length,
     legacyImageFrames: imageFolders.reduce((sum, folder) => sum + folder.frames.length, 0),
@@ -564,7 +569,7 @@ const report = [
   '4. Расхождение GIF-реестров: ' + extraGifModuleIds.length + ' файлов есть в DATASET_GIF_MODULES, но отсутствуют в манифесте (' + extraGifModuleIds.map((id) => id + '.gif').join(', ') + '); ' + manifestWithoutLocalAsset.length + ' записей манифеста не имеют локального GIF (' + manifestWithoutLocalAsset.map((entry) => entry.id + '.gif').join(', ') + '). Не включать эти упражнения в UI как точные демонстрации без ручной проверки.',
    '5. Источники нужно разделять по лицензии. История импорта связывает JPG-кадры в \`assets/exercise-library/\` с \`yuhonas/free-exercise-db\`, чей репозиторий заявляет Unlicense/Public Domain ([LICENSE](https://github.com/yuhonas/free-exercise-db/blob/main/LICENSE.md)); права на конкретные JPG в текущем проекте остаются непроверенными, атрибуция источника сохранена. Для \`hasaneyldrm/exercises-dataset\` MIT не распространяется на \`images/\` и \`videos/\`: эти медиа принадлежат Gym visual, NOTICE устанавливает атрибуцию \`© Gym visual — https://gymvisual.com/\` и ссылается на условия повторного использования ([LICENSE](https://github.com/hasaneyldrm/exercises-dataset/blob/main/LICENSE), [NOTICE](https://github.com/hasaneyldrm/exercises-dataset/blob/main/NOTICE.md)). Не считать GIF доступными для повторного распространения в APK без отдельной проверки/разрешения; вся новая графика и риг должны быть оригинальными.',
   '6. Текущие MP4/GIF не имеют систематически проверенной мужской/женской пары для каждого упражнения. Реестр явно отмечает половые варианты для всех ' + coverageEntries.length + ' stable ID, но все ' + coverageEntries.filter((entry) => entry.status === 'not-started').length + ' записей остаются not-created для новой одобренной анимации.',
-  '7. Записи, заблокированные на ручную проверку: ' + coverageEntries.filter((entry) => entry.familyReviewStatus === 'manual-review-required').map((entry) => '**' + entry.nameRu + '** (' + entry.stableId + '): ' + entry.familyReviewNote).join(' ') + '.',
+  '7. Ручная классификация: **' + manualReviewEntries.length + '** записей — **' + manualReviewWithNotes.length + '** с явным конфликтом исходных данных и **' + manualReviewWithoutNotes.length + '** без безопасного совпадения по названию. Явные конфликты: ' + manualReviewWithNotes.map((entry) => '**' + entry.nameRu + '** (' + entry.stableId + '): ' + entry.familyReviewNote).join(' ') + '.',
   '',
   '## Ключи видео, назначенные упражнениям повторно',
   '',
@@ -607,7 +612,8 @@ if (writeRequested && checkRequested) {
   throw new Error('Use either --write or --check, not both.');
 }
 if (checkRequested) {
-  const currentCoverage = JSON.parse(read(PATHS.coverage));
+  const currentCoverageText = read(PATHS.coverage);
+  const currentCoverage = JSON.parse(currentCoverageText);
   const expectedSummary = {
     planEntries: planRows.length,
     uniquePlanIds: uniquePlans.size,
@@ -617,7 +623,9 @@ if (checkRequested) {
     entriesWithoutRig: coverageEntries.filter((entry) => entry.status === 'not-started').length,
     candidateMotionFamilyGroups: Object.keys(familyCandidateCounts).length,
     entriesPendingFamilyReview: coverageEntries.filter((entry) => entry.familyReviewStatus !== 'pending-device-review').length,
-    entriesRequiringManualClassification: coverageEntries.filter((entry) => entry.familyReviewStatus === 'manual-review-required').length,
+    entriesRequiringManualClassification: manualReviewEntries.length,
+    entriesWithExplicitSourceConflict: manualReviewWithNotes.length,
+    entriesWithoutSafeNameRule: manualReviewWithoutNotes.length,
     legacyImageFolders: imageFolders.length,
     legacyImageFrames: imageFolders.reduce((sum, folder) => sum + folder.frames.length, 0),
     localGifFiles: gifFiles.length,
@@ -643,6 +651,9 @@ if (checkRequested) {
     .filter(([key, value]) => JSON.stringify(currentCoverage.summary?.[key]) !== JSON.stringify(value))
     .map(([key, value]) => key + ': expected ' + JSON.stringify(value) +
       ', got ' + JSON.stringify(currentCoverage.summary?.[key]));
+  if (currentCoverageText !== coverageJson) {
+    summaryFailures.push('coverage JSON does not exactly match the generated source inventory');
+  }
   const expectedMediaTracks = {
     genericMp4Keys: bundledVideoKeys,
     profileVideos: profileVideoVariants,
@@ -651,6 +662,7 @@ if (checkRequested) {
   const mediaTracksMatch = JSON.stringify(currentCoverage.mediaTracks) === JSON.stringify(expectedMediaTracks);
   const currentReport = read(PATHS.report);
   const reportChecks = [
+    ['generated report exact match', currentReport === report],
     ['current stable ID total', currentReport.includes(coverageEntries.length + ' stable ID')],
     ['no stale historical total 225', !/\b225\b/.test(currentReport)],
     ['generic MP4 key count', currentReport.includes('общих встроенных MP4-ключей — **' + bundledVideoKeys.length + '**')],
