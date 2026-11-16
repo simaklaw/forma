@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execFileSync } from 'node:child_process';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PATHS = {
@@ -272,12 +271,6 @@ for (const row of planRows.filter((entry) => entry.mediaKey)) {
   if (!reusedKeys.has(row.mediaKey)) reusedKeys.set(row.mediaKey, []);
   reusedKeys.get(row.mediaKey).push(row);
 }
-let revision = process.env.GITHUB_SHA || 'not supplied';
-if (revision === 'not supplied') {
-  try { revision = execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim(); }
-  catch { /* Report still works outside a Git checkout. */ }
-}
-
 const equipmentCounts = imported.reduce((out, entry) => {
   out[entry.equipment] = (out[entry.equipment] || 0) + 1;
   return out;
@@ -530,7 +523,7 @@ const coverageJson = JSON.stringify({
 const report = [
   '# Инвентаризация библиотеки анимаций FitPulse',
   '',
-  'Снимок исходников: ветка и ревизия, на которой запущен скрипт: ' + revision + '.',
+  'Снимок исходников: текущее дерево исходников, проверенное этим генератором.',
   'Пересоздать отчёт: node scripts/report-exercise-animation-inventory.mjs --write.',
   '',
   '## Итог',
