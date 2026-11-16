@@ -10,6 +10,8 @@
     "candidateMotionFamilyGroups": 26,
     "entriesPendingFamilyReview": 739,
     "entriesRequiringManualClassification": 160,
+    "entriesWithExplicitSourceConflict": 3,
+    "entriesWithoutSafeNameRule": 157,
     "familyCandidateCounts": {
       "squat-knee-dominant": 54,
       "hip-hinge-deadlift": 31,
